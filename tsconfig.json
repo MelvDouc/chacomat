@@ -11,5 +11,8 @@
     "outDir": "./dist",
     "strict": true,
     "strictPropertyInitialization": false
+  },
+  "ts-node": {
+    "esm": true
   }
 }
