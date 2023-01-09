@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "A chess game.",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -19,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/MelvDouc/melv_chess/issues"
   },
-  "homepage": "https://github.com/MelvDouc/melv_chess#readme"
+  "homepage": "https://github.com/MelvDouc/melv_chess#readme",
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "nodemon": "^2.0.20",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  }
 }
