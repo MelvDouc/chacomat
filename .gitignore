@@ -1,0 +1,6 @@
+**/.vscode
+**/__old*
+dist
+
+# Bundles
+**/*.bundle.js

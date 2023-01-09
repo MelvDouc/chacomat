@@ -1,0 +1,23 @@
+{
+  "name": "melv_chess",
+  "version": "1.0.0",
+  "description": "A chess game.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MelvDouc/melv_chess.git"
+  },
+  "keywords": [
+    "chess",
+    "javascript"
+  ],
+  "author": "Melvin Doucet <melv.douc@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MelvDouc/melv_chess/issues"
+  },
+  "homepage": "https://github.com/MelvDouc/melv_chess#readme"
+}
