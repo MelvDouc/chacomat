@@ -13,7 +13,7 @@ test("should be able to convert a string to an object", () => {
 });
 
 test("should be able to convert an object to a string", () => {
-  const castlingRights = CastlingRights();
+  const castlingRights = new CastlingRights();
   castlingRights[Color.WHITE][Wing.KING_SIDE] = false;
 
   expect(castlingRights.toString()).toBe("Qkq");

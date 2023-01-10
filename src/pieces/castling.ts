@@ -5,7 +5,7 @@ import type {
   Color,
   Coords,
   CoordsGenerator,
-  ICastlingRights,
+  CastlingRights,
   Position,
 } from "../types.js";
 
@@ -25,7 +25,7 @@ function canCastleToWing(
     color: Color;
     wing: Wing;
     kingCoords: Coords;
-    castlingRights: ICastlingRights;
+    castlingRights: CastlingRights;
     attackedCoords: AttackedCoordsRecord;
     board: Board;
   },

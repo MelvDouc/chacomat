@@ -1,5 +1,4 @@
 import Color from "./constants/Color.js";
-import Wing from "./constants/Wing.js";
 import GameStatus from "./constants/GameStatus.js";
 
 export type { Color, GameStatus };
@@ -19,6 +18,7 @@ export type Piece = import("./pieces/Piece.js").default;
 export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
 export type Board = import("./game/Board.js").default;
+export type CastlingRights = import("./game/CastlingRights.js").default;
 export type AttackedCoordsRecord = Record<number, Record<number, true>>;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
@@ -34,18 +34,9 @@ export interface Coords {
 
 export interface PositionInfo {
   board: Board;
-  castlingRights: ICastlingRights;
+  castlingRights: CastlingRights;
   colorToMove: Color;
   enPassantFile: number;
   halfMoveClock: number;
   fullMoveNumber: number;
 }
-
-export type ICastlingRights = {
-  [C in Color]: {
-    [W in Wing]: boolean;
-  };
-} & {
-  clone(): ICastlingRights;
-  toString(): string;
-};

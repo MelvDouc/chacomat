@@ -5,10 +5,8 @@ import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
-  AttackedCoordsRecord,
   Coords,
   FenString,
-  ICastlingRights,
   Move,
   PositionInfo,
   Promotable,
@@ -52,7 +50,7 @@ export default class Position implements PositionInfo {
   }
 
   readonly board!: Board;
-  readonly castlingRights!: ICastlingRights;
+  readonly castlingRights!: CastlingRights;
   readonly colorToMove!: Color;
   /**
    * The empty square index where an en passant capture can be played.
@@ -143,7 +141,7 @@ export default class Position implements PositionInfo {
       Piece.promote(board[srcCoords.x][srcCoords.y]!, promotionType);
   }
 
-  #handleKingMove(srcCoords: Coords, destCoords: Coords, board: Board, castlingRights: ICastlingRights, srcColor: Color): void {
+  #handleKingMove(srcCoords: Coords, destCoords: Coords, board: Board, castlingRights: CastlingRights, srcColor: Color): void {
     castlingRights[srcColor][Wing.QUEEN_SIDE] = false;
     castlingRights[srcColor][Wing.KING_SIDE] = false;
     board.kingCoords[srcColor] = destCoords;
