@@ -1,8 +1,8 @@
 import Color from "./constants/Color.js";
+import Wing from "./constants/Wing.js";
 import GameStatus from "./constants/GameStatus.js";
-import type { ICastlingRights } from "./game/CastlingRights.js";
 
-export type { Color, GameStatus, ICastlingRights };
+export type { Color, GameStatus };
 export type ChessRank = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type ChessFile = ChessRank;
 
@@ -40,3 +40,14 @@ export interface PositionInfo {
   halfMoveClock: number;
   fullMoveNumber: number;
 }
+
+export type ICastlingRights =
+  & {
+    [C in Color]: {
+      [W in Wing]: boolean;
+    };
+  }
+  & {
+    clone(): ICastlingRights;
+    toString(): string;
+  };

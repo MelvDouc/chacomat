@@ -1,5 +1,6 @@
 import Color from "../constants/Color.js";
 import Wing from "../constants/Wing.js";
+import { ICastlingRights } from "../types.js";
 
 /**
  * The characters used in an FEN string to represent castling rights.
@@ -19,7 +20,7 @@ const initials = {
  * Create an object that represents the castling rights in a position.
  * It is clonable and stringifiable.
  */
-export const CastlingRights = () => {
+export const CastlingRights = (): ICastlingRights => {
   return {
     [Color.BLACK]: {
       [Wing.KING_SIDE]: true,
@@ -78,15 +79,5 @@ CastlingRights.fromString = (castlingString: string): ICastlingRights => {
   return castlingRights;
 };
 
-export type ICastlingRights =
-  & {
-    [C in Color]: {
-      [W in Wing]: boolean;
-    };
-  }
-  & {
-    clone(): ICastlingRights;
-    toString(): string;
-  };
 
 export default CastlingRights;
