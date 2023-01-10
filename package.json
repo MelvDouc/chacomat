@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A chess game.",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
     "test": "node --test dist",
     "build": "tsc",
