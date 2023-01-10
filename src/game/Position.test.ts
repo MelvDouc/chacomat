@@ -1,15 +1,10 @@
-import { describe, it } from "node:test";
-import { strictEqual } from "node:assert";
 import Position from "./Position.js";
 
 describe("FEN string", () => {
   it("should be produce itself", () => {
     const pos = Position.fromFenString(Position.startFenString);
 
-    strictEqual(
-      pos.toString(),
-      Position.startFenString,
-    );
+    expect(pos.toString()).toBe(Position.startFenString);
   });
 
   it("should be valid after a move", () => {
@@ -23,9 +18,6 @@ describe("FEN string", () => {
       true,
     );
 
-    strictEqual(
-      pos2.toString(),
-      `r5k1/p3rppp/4pn2/pP1bN3/8/2R1PP2/4B1PP/R5K1 w - - 0 25`,
-    );
+    expect(pos2.toString()).toBe(`r5k1/p3rppp/4pn2/pP1bN3/8/2R1PP2/4B1PP/R5K1 w - - 0 25`);
   });
 });

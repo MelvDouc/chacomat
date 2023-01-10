@@ -1,5 +1,3 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
 import Board from "./Board.js";
 import Piece from "../pieces/Piece.js";
 import Color from "../constants/Color.js";
@@ -15,6 +13,6 @@ describe("A board", () => {
     board[6] = Array.from({ length: 8 }, () => new Piece(Color.WHITE, Piece.Types.PAWN));
     board[7][7] = new Piece(Color.WHITE, Piece.Types.KING);
 
-    assert.strictEqual("k7/pppppppp/8/8/8/8/PPPPPPPP/7K", board.toString());
+    expect("k7/pppppppp/8/8/8/8/PPPPPPPP/7K").toBe(board.toString());
   });
 });

@@ -39,7 +39,6 @@ function canCastleToWing(
     file !== wing;
     file += direction
   ) {
-    console.log(kingCoords);
     if (board[kingCoords.x][file]) {
       return false;
     }
