@@ -5,9 +5,8 @@ import Color from "../constants/Color.js";
 describe("A board", () => {
   it("should be serializable", () => {
     const board = new Board();
-    for (let x = 0; x < 8; x++) {
+    for (let x = 0; x < 8; x++)
       board.push(Array(8).fill(null));
-    }
     board[0][0] = new Piece(Color.BLACK, Piece.Types.KING);
     board[1] = Array.from({ length: 8 }, () => new Piece(Color.BLACK, Piece.Types.PAWN));
     board[6] = Array.from({ length: 8 }, () => new Piece(Color.WHITE, Piece.Types.PAWN));
