@@ -86,13 +86,15 @@ export default class Piece {
     board: Board,
   ): CoordsGenerator {
     for (let i = 0; i < this.#offsets.x.length; i++) {
-      let x = srcCoords.x + this.#offsets.x[i],
-        y = srcCoords.y + this.#offsets.y[i];
-      while (Piece.#isSafe(x, y)) {
-        yield { x, y };
-        if (board[x][y]) break;
-        x += this.#offsets.x[i];
-        y += this.#offsets.y[i];
+      const coords = {
+        x: srcCoords.x + this.#offsets.x[i],
+        y: srcCoords.y + this.#offsets.y[i]
+      };
+      while (Piece.#isSafe(coords.x, coords.y)) {
+        yield { ...coords };
+        if (board.get(coords)) break;
+        coords.x += this.#offsets.x[i];
+        coords.y += this.#offsets.y[i];
       }
     }
   }
@@ -122,7 +124,7 @@ export default class Piece {
     }
 
     for (const targetCoords of this.attackedCoords(srcCoords, position.board))
-      if (position.board[targetCoords.x][targetCoords.y]?.color !== this.color)
+      if (position.board.get(targetCoords)?.color !== this.color)
         yield targetCoords;
   }
 

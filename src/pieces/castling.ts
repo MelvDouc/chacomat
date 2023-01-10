@@ -40,7 +40,7 @@ function canCastleToWing(
     file !== wing;
     file += direction
   ) {
-    if (board[kingCoords.x][file] !== null) {
+    if (board.get({ x: kingCoords.x, y: file }) !== null) {
       return false;
     }
     // If a square traversed by the king is controlled by the enemy color.
@@ -57,7 +57,7 @@ function canCastleToWing(
 }
 
 function* castlingCoords(kingCoords: Coords, position: Position): CoordsGenerator {
-  const attackedCoords = position.board.getAttackedCoords(-position.colorToMove as Color);
+  const attackedCoords = position.board.getCoordsAttackedByColor(-position.colorToMove as Color);
 
   for (const wing of wings)
     if (

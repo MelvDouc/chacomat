@@ -13,21 +13,17 @@ import Position from "./Position.js";
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
  */
 export default class ChessGame {
-  static readonly Statuses = GameStatus;
+  public static readonly Statuses = GameStatus;
 
-  #currentPosition: Position;
+  public currentPosition: Position;
 
   constructor(fenStringOrPositionInfo: FenString | PositionInfo = Position.startFenString) {
-    this.#currentPosition = (typeof fenStringOrPositionInfo === "string")
+    this.currentPosition = (typeof fenStringOrPositionInfo === "string")
       ? Position.fromFenString(fenStringOrPositionInfo)
       : new Position(fenStringOrPositionInfo);
   }
 
-  get currentPosition(): Position {
-    return this.#currentPosition;
-  }
-
-  get status(): GameStatus {
+  public get status(): GameStatus {
     return this.currentPosition.status;
   }
 
@@ -38,11 +34,11 @@ export default class ChessGame {
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
    * @returns The current instance of a game containing the position after the move.
    */
-  move(srcCoords: Coords, destCoords: Coords, promotionType: Promotable = "Q"): this {
-    if (this.#currentPosition.status !== GameStatus.ACTIVE)
-      throw new Error(`Position is inactive: ${this.#currentPosition.status}`);
+  public move(srcCoords: Coords, destCoords: Coords, promotionType: Promotable = "Q"): this {
+    if (this.currentPosition.status !== GameStatus.ACTIVE)
+      throw new Error(`Position is inactive: ${this.currentPosition.status}`);
 
-    const { legalMoves } = this.#currentPosition;
+    const { legalMoves } = this.currentPosition;
 
     if (!legalMoves.some(([src, dest]) =>
       src.x === srcCoords.x && src.y === srcCoords.y &&
@@ -50,20 +46,20 @@ export default class ChessGame {
     ))
       throw new Error(`Ilegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
 
-    const nextPosition = this.#currentPosition.getPositionFromMove(
+    const nextPosition = this.currentPosition.getPositionFromMove(
       srcCoords,
       destCoords,
       promotionType,
       true
     );
-    nextPosition.prev = this.#currentPosition;
-    this.#currentPosition.next.push(nextPosition);
-    this.#currentPosition = nextPosition;
+    nextPosition.prev = this.currentPosition;
+    this.currentPosition.next.push(nextPosition);
+    this.currentPosition = nextPosition;
 
     return this;
   }
 
-  moveWithNotations(
+  public moveWithNotations(
     srcNotation: AlgebraicSquareNotation,
     destNotation: AlgebraicSquareNotation,
     promotionType: Promotable = "Q",

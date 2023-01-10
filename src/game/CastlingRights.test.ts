@@ -26,6 +26,7 @@ test("after some moves", () => {
     .moveWithNotations("e7", "e6")
     .moveWithNotations("e1", "e2");
 
-  expect(game.currentPosition.castlingRights[Color.WHITE][Wing.QUEEN_SIDE]).toBe(false);
-  expect(game.currentPosition.castlingRights[Color.WHITE][Wing.KING_SIDE]).toBe(false);
+  const whiteCR = game.currentPosition.castlingRights[Color.WHITE];
+  expect(whiteCR[Wing.QUEEN_SIDE]).toBe(false);
+  expect(whiteCR[Wing.KING_SIDE]).toBe(false);
 });
