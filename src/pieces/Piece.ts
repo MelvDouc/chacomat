@@ -65,8 +65,7 @@ export default class Piece {
   public get initial(): PieceInitial {
     return (this.color === Color.WHITE)
       ? PieceByInitial[this.type] as WhitePieceInitial
-      : (PieceByInitial[this.type] as WhitePieceInitial)
-        .toLowerCase() as BlackPieceInitial;
+      : (PieceByInitial[this.type] as WhitePieceInitial).toLowerCase() as BlackPieceInitial;
   }
 
   public get oppositeColor(): Color {
