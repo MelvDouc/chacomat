@@ -4,7 +4,7 @@ enum PieceType {
   BISHOP,
   ROOK,
   QUEEN,
-  KING,
+  KING
 }
 
 export enum PieceByInitial {
@@ -13,7 +13,7 @@ export enum PieceByInitial {
   B = PieceType.BISHOP,
   R = PieceType.ROOK,
   Q = PieceType.QUEEN,
-  K = PieceType.KING,
+  K = PieceType.KING
 }
 
 export default PieceType;

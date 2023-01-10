@@ -15,9 +15,7 @@ import Position from "./Position.js";
 export default class ChessGame {
   #currentPosition: Position;
 
-  constructor(
-    fenStringOrPositionInfo: FenString | PositionInfo = Position.startFenString,
-  ) {
+  constructor(fenStringOrPositionInfo: FenString | PositionInfo = Position.startFenString) {
     this.#currentPosition = (typeof fenStringOrPositionInfo === "string")
       ? Position.fromFenString(fenStringOrPositionInfo)
       : new Position(fenStringOrPositionInfo);
@@ -34,37 +32,24 @@ export default class ChessGame {
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
    * @returns The current instance of a game containing the position after the move.
    */
-  move(
-    srcCoords: Coords,
-    destCoords: Coords,
-    promotionType: Promotable = "Q",
-  ): this {
+  move(srcCoords: Coords, destCoords: Coords, promotionType: Promotable = "Q"): this {
     if (this.#currentPosition.status !== GameStatus.ACTIVE) {
-      throw new Error(
-        `Position is inactive: ${this.#currentPosition.status}`,
-      );
+      throw new Error(`Position is inactive: ${this.#currentPosition.status}`);
     }
 
     const { legalMoves } = this.#currentPosition;
 
-    if (
-      !legalMoves.some(([src, dest]) =>
-        src.x === srcCoords.x && src.y === srcCoords.y &&
-        dest.x === destCoords.x && dest.y === destCoords.y
-      )
-    ) {
-      throw new Error(
-        `Ilegal move: ${coordsToNotation(srcCoords)}-${
-          coordsToNotation(destCoords)
-        }`,
-      );
-    }
+    if (!legalMoves.some(([src, dest]) =>
+      src.x === srcCoords.x && src.y === srcCoords.y &&
+      dest.x === destCoords.x && dest.y === destCoords.y
+    ))
+      throw new Error(`Ilegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
 
     const nextPosition = this.#currentPosition.getPositionFromMove(
       srcCoords,
       destCoords,
       promotionType,
-      true,
+      true
     );
     nextPosition.prev = this.#currentPosition;
     this.#currentPosition.next.push(nextPosition);

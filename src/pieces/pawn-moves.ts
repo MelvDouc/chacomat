@@ -24,24 +24,21 @@ function* forwardMoves(
     y: srcCoords.y,
   };
 
-  if (board[coords1.x][coords1.y]) {
+  if (board[coords1.x][coords1.y])
     return;
-  }
 
   yield coords1;
 
-  if (srcCoords.x !== INITIAL_PAWN_RANKS[color]) {
+  if (srcCoords.x !== INITIAL_PAWN_RANKS[color])
     return;
-  }
 
   const coords2 = {
     x: coords1.x - color,
     y: coords1.y,
   };
 
-  if (!board[coords2.x][coords2.y]) {
+  if (!board[coords2.x][coords2.y])
     yield coords2;
-  }
 }
 
 function* captures(
@@ -49,16 +46,12 @@ function* captures(
   srcCoords: Coords,
   position: Position,
 ): CoordsGenerator {
-  for (
-    const destCoords of pawn.attackedCoords(srcCoords, position.board)
-  ) {
+  for (const destCoords of pawn.attackedCoords(srcCoords, position.board))
     if (
-      position.board[destCoords.x][destCoords.y]?.color ===
-        pawn.oppositeColor || destCoords.y === position.enPassantFile
-    ) {
+      position.board[destCoords.x][destCoords.y]?.color === pawn.oppositeColor
+      || destCoords.y === position.enPassantFile
+    )
       yield destCoords;
-    }
-  }
 }
 
 function* pseudoLegalMoves(

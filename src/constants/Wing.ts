@@ -3,7 +3,7 @@
  */
 enum Wing {
   QUEEN_SIDE = 0,
-  KING_SIDE = 7,
+  KING_SIDE = 7
 }
 
 export default Wing;

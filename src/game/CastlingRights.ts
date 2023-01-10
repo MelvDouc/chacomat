@@ -8,12 +8,12 @@ import { ICastlingRights } from "../types.js";
 const initials = {
   [Color.BLACK]: {
     [Wing.KING_SIDE]: "k",
-    [Wing.QUEEN_SIDE]: "q",
+    [Wing.QUEEN_SIDE]: "q"
   },
   [Color.WHITE]: {
     [Wing.KING_SIDE]: "K",
-    [Wing.QUEEN_SIDE]: "Q",
-  },
+    [Wing.QUEEN_SIDE]: "Q"
+  }
 } as const;
 
 /**
@@ -24,11 +24,11 @@ export const CastlingRights = (): ICastlingRights => {
   return {
     [Color.BLACK]: {
       [Wing.KING_SIDE]: true,
-      [Wing.QUEEN_SIDE]: true,
+      [Wing.QUEEN_SIDE]: true
     },
     [Color.WHITE]: {
       [Wing.KING_SIDE]: true,
-      [Wing.QUEEN_SIDE]: true,
+      [Wing.QUEEN_SIDE]: true
     },
     clone(): ICastlingRights {
       const copy = CastlingRights();
@@ -39,21 +39,17 @@ export const CastlingRights = (): ICastlingRights => {
     toString(): string {
       let result = "";
 
-      if (this[Color.WHITE][Wing.KING_SIDE]) {
+      if (this[Color.WHITE][Wing.KING_SIDE])
         result += initials[Color.WHITE][Wing.KING_SIDE];
-      }
-      if (this[Color.WHITE][Wing.QUEEN_SIDE]) {
+      if (this[Color.WHITE][Wing.QUEEN_SIDE])
         result += initials[Color.WHITE][Wing.QUEEN_SIDE];
-      }
-      if (this[Color.BLACK][Wing.KING_SIDE]) {
+      if (this[Color.BLACK][Wing.KING_SIDE])
         result += initials[Color.BLACK][Wing.KING_SIDE];
-      }
-      if (this[Color.BLACK][Wing.QUEEN_SIDE]) {
+      if (this[Color.BLACK][Wing.QUEEN_SIDE])
         result += initials[Color.BLACK][Wing.QUEEN_SIDE];
-      }
 
       return result || "-";
-    },
+    }
   };
 };
 

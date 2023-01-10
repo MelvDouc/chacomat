@@ -79,17 +79,14 @@ export default class Position implements PositionInfo {
   }
 
   get legalMoves(): Move[] {
-    if (this.#legalMoves) {
+    if (this.#legalMoves)
       return this.#legalMoves;
-    }
 
     this.#legalMoves = [];
 
-    for (const move of this.#pseudoLegalMoves()) {
-      if (!this.getPositionFromMove(move[0], move[1]).isCheck()) {
+    for (const move of this.#pseudoLegalMoves())
+      if (!this.getPositionFromMove(move[0], move[1]).isCheck())
         this.#legalMoves.push(move);
-      }
-    }
 
     if (!this.isCheck()) {
       const kingCoords = this.board.kingCoords[this.colorToMove];
@@ -114,15 +111,12 @@ export default class Position implements PositionInfo {
    * Determine whether the position is active, checkmate or a draw and what kind of draw.
    */
   get status(): GameStatus {
-    if (this.board.pieceCount < 3) {
+    if (this.board.pieceCount < 3)
       return GameStatus.INSUFFICIENT_MATERIAL;
-    }
-    if (this.halfMoveClock > 50) {
+    if (this.halfMoveClock > 50)
       return GameStatus.FIFTY_MOVE_DRAW;
-    }
-    if (!this.legalMoves.length) {
+    if (!this.legalMoves.length)
       return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
-    }
     return GameStatus.ACTIVE;
   }
 
@@ -139,14 +133,8 @@ export default class Position implements PositionInfo {
       for (let y = 0; y < 8; y++) {
         if (this.board[x][y]?.color === this.colorToMove) {
           const srcCoords = { x, y };
-          for (
-            const destCoords of this.board[x][y]!.pseudoLegalMoves(
-              srcCoords,
-              this,
-            )
-          ) {
+          for (const destCoords of this.board[x][y]!.pseudoLegalMoves(srcCoords, this))
             yield [srcCoords, destCoords] as Move;
-          }
         }
       }
     }
@@ -156,8 +144,7 @@ export default class Position implements PositionInfo {
    * This is to be checked before the src piece has moved and the color to move has been updated.
    */
   #isPromotion(destCoords: Coords): boolean {
-    return destCoords.y ===
-      Piece.INITIAL_PIECE_RANKS[-this.colorToMove as Color];
+    return destCoords.y === Piece.INITIAL_PIECE_RANKS[-this.colorToMove as Color];
   }
 
   /**
@@ -255,7 +242,7 @@ export default class Position implements PositionInfo {
         x: Piece.MIDDLE_RANKS[this.colorToMove] + this.colorToMove,
       }),
       String(this.halfMoveClock),
-      String(this.fullMoveNumber),
+      String(this.fullMoveNumber)
     ].join(" ");
   }
 }

@@ -28,13 +28,10 @@ export default class Board extends Array<Array<Piece | null>> {
       return acc;
     }, new Board());
 
-    for (let x = 0; x < 8; x++) {
-      for (let y = 0; y < 8; y++) {
-        if (board[x][y]?.type === Piece.Types.KING) {
+    for (let x = 0; x < 8; x++)
+      for (let y = 0; y < 8; y++)
+        if (board[x][y]?.type === Piece.Types.KING)
           board.kingCoords[board[x][y]!.color] = { x, y };
-        }
-      }
-    }
 
     return board;
   }
@@ -44,7 +41,7 @@ export default class Board extends Array<Array<Piece | null>> {
    */
   readonly kingCoords = {
     [Color.WHITE]: { x: -1, y: -1 },
-    [Color.BLACK]: { x: -1, y: -1 },
+    [Color.BLACK]: { x: -1, y: -1 }
   };
 
   /**
@@ -61,9 +58,8 @@ export default class Board extends Array<Array<Piece | null>> {
    * Transfer a piece to given coords and remove the piece from the source.
    */
   transfer(srcCoords: Coords, destCoords: Coords): this {
-    if (this[srcCoords.x][srcCoords.y]?.type === Piece.Types.KING) {
+    if (this[srcCoords.x][srcCoords.y]?.type === Piece.Types.KING)
       this.kingCoords[this[srcCoords.x][srcCoords.y]!.color] = destCoords;
-    }
     this[destCoords.x][destCoords.y] = this[srcCoords.x][srcCoords.y];
     this[srcCoords.x][srcCoords.y] = null;
     return this;
@@ -97,7 +93,9 @@ export default class Board extends Array<Array<Piece | null>> {
   clone(): Board {
     const clone = new Board();
     clone.push(
-      ...this.map((row) => row.map((item) => item ? item.clone() : null)),
+      ...this.map((row) => {
+        return row.map((item) => item ? item.clone() : null);
+      })
     );
     clone.kingCoords[Color.WHITE] = { ...this.kingCoords[Color.WHITE] };
     clone.kingCoords[Color.BLACK] = { ...this.kingCoords[Color.BLACK] };
@@ -110,8 +108,7 @@ export default class Board extends Array<Array<Piece | null>> {
   log(): void {
     for (let x = 0; x < 8; x++) {
       console.log(
-        Array.from({ length: 8 }, (_, y) => this[x][y]?.initial ?? "-")
-          .join(" "),
+        Array.from({ length: 8 }, (_, y) => this[x][y]?.initial ?? "-").join(" ")
       );
     }
   }
@@ -122,9 +119,8 @@ export default class Board extends Array<Array<Piece | null>> {
   toString(): string {
     return Array.from({ length: 8 }, (_, x) => {
       let row = "";
-      for (let y = 0; y < 8; y++) {
+      for (let y = 0; y < 8; y++)
         row += this[x][y]?.initial ?? Board.#nullPiece;
-      }
       return row.replace(
         Board.#nullPieceRegex,
         (zeros) => String(zeros.length),
