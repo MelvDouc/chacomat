@@ -39,13 +39,14 @@ function canCastleToWing(
     file !== wing;
     file += direction
   ) {
-    if (board[kingCoords.x][file]) {
+    if (board[kingCoords.x][file] !== null) {
       return false;
     }
     // If a square traversed by the king is controlled by the enemy color.
     if (
-      CASTLED_KING_FILES[wing] - file !== -direction &&
-      attackedCoords[kingCoords.x][file]
+      CASTLED_KING_FILES[wing] - file !== -direction
+      && kingCoords.x in attackedCoords
+      && attackedCoords[kingCoords.x][file]
     ) {
       return false;
     }

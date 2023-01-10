@@ -73,6 +73,10 @@ export default class Piece {
     return -this.color as Color;
   }
 
+  get oppositeMidRank(): ChessRank {
+    return Piece.MIDDLE_RANKS[this.oppositeColor];
+  }
+
   get #offsets(): { x: number[]; y: number[]; } {
     return offsets[this.color][this.type];
   }

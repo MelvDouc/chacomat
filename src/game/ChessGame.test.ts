@@ -67,7 +67,7 @@ describe("full games", () => {
       .moveWithNotations("c4", "b5")
       .moveWithNotations("b8", "d7")
       .moveWithNotations("e1", "c1")
-      .moveWithNotations("a8", "c8")
+      .moveWithNotations("a8", "d8")
       .moveWithNotations("d1", "d7")
       .moveWithNotations("d8", "d7")
       .moveWithNotations("h1", "d1")
@@ -78,6 +78,7 @@ describe("full games", () => {
       .moveWithNotations("d7", "b8")
       .moveWithNotations("d1", "d8");
 
+    console.log(game.currentPosition.board.asBoardString());
     expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
   });
 });
