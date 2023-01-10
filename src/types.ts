@@ -41,13 +41,11 @@ export interface PositionInfo {
   fullMoveNumber: number;
 }
 
-export type ICastlingRights =
-  & {
-    [C in Color]: {
-      [W in Wing]: boolean;
-    };
-  }
-  & {
-    clone(): ICastlingRights;
-    toString(): string;
+export type ICastlingRights = {
+  [C in Color]: {
+    [W in Wing]: boolean;
   };
+} & {
+  clone(): ICastlingRights;
+  toString(): string;
+};
