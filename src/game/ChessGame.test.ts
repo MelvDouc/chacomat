@@ -27,7 +27,7 @@ describe("en passant", () => {
     expect(game.currentPosition.enPassantFile).toBe(notationToCoords("e6")!.y);
   });
 
-  /* it("#2", () => {
+  it("#2", () => {
     const game = new ChessGame();
     game
       .moveWithNotations("e2", "e4")
@@ -36,10 +36,10 @@ describe("en passant", () => {
       .moveWithNotations("e7", "e5");
 
     expect(game.currentPosition.legalMovesAsNotation.includes(`d5-e6`)).toBe(true);
-  }); */
+  });
 });
 
-/* describe("full games", () => {
+describe("full games", () => {
   it("The Opera game", () => {
     const game = new ChessGame();
 
@@ -80,4 +80,4 @@ describe("en passant", () => {
 
     expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
   });
-}); */
+});

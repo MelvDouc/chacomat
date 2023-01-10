@@ -50,7 +50,7 @@ function* captures(
   for (const destCoords of pawn.attackedCoords(srcCoords, position.board))
     if (
       position.board[destCoords.x][destCoords.y]?.color === pawn.oppositeColor
-      || destCoords.y === position.enPassantFile && destCoords.x === Piece.MIDDLE_RANKS[pawn.oppositeColor]
+      || destCoords.y === position.enPassantFile && destCoords.x === Piece.MIDDLE_RANKS[pawn.oppositeColor] - pawn.color
     )
       yield destCoords;
 }
