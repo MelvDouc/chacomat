@@ -3,4 +3,5 @@
 src
 dist/**/*.test.js
 tsconfig.json
+jest.config.js
 .gitignore

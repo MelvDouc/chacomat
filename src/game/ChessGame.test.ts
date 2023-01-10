@@ -1,6 +1,4 @@
-import Colors from "../constants/Color.js";
 import { notationToCoords } from "../constants/coords.js";
-import Wings from "../constants/Wing.js";
 import ChessGame from "./ChessGame.js";
 
 describe("Checkmate", () => {
