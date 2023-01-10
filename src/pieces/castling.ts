@@ -9,6 +9,7 @@ import type {
   Position,
 } from "../types.js";
 
+const wings = [Wing.QUEEN_SIDE, Wing.KING_SIDE];
 const initialFile = 4;
 
 const CASTLED_KING_FILES = {
@@ -58,7 +59,7 @@ function canCastleToWing(
 function* castlingCoords(kingCoords: Coords, position: Position): CoordsGenerator {
   const attackedCoords = position.board.getAttackedCoords(-position.colorToMove as Color);
 
-  for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
+  for (const wing of wings)
     if (
       canCastleToWing({
         color: position.colorToMove,

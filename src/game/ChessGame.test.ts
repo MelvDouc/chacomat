@@ -16,26 +16,18 @@ describe("Checkmate", () => {
 });
 
 describe("en passant", () => {
+  const game1 = new ChessGame();
+  game1
+    .moveWithNotations("e2", "e4")
+    .moveWithNotations("d7", "d5")
+    .moveWithNotations("e4", "d5")
+    .moveWithNotations("e7", "e5");
   it("#1", () => {
-    const game = new ChessGame();
-    game
-      .moveWithNotations("e2", "e4")
-      .moveWithNotations("d7", "d5")
-      .moveWithNotations("e4", "d5")
-      .moveWithNotations("e7", "e5");
-
-    expect(game.currentPosition.enPassantFile).toBe(notationToCoords("e6")!.y);
+    expect(game1.currentPosition.enPassantFile).toBe(notationToCoords("e6")!.y);
   });
 
   it("#2", () => {
-    const game = new ChessGame();
-    game
-      .moveWithNotations("e2", "e4")
-      .moveWithNotations("d7", "d5")
-      .moveWithNotations("e4", "d5")
-      .moveWithNotations("e7", "e5");
-
-    expect(game.currentPosition.legalMovesAsNotation.includes(`d5-e6`)).toBe(true);
+    expect(game1.currentPosition.legalMovesAsNotation.includes(`d5-e6`)).toBe(true);
   });
 });
 
@@ -78,7 +70,6 @@ describe("full games", () => {
       .moveWithNotations("d7", "b8")
       .moveWithNotations("d1", "d8");
 
-    console.log(game.currentPosition.board.asBoardString());
     expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
   });
 });
