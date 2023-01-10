@@ -55,11 +55,8 @@ function canCastleToWing(
   return true;
 }
 
-function* castlingIndices(
-  kingCoords: Coords,
-  position: Position,
-): CoordsGenerator {
-  for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
+function* castlingCoords(kingCoords: Coords, position: Position): CoordsGenerator {
+  for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
     if (
       canCastleToWing({
         color: position.colorToMove,
@@ -69,13 +66,11 @@ function* castlingIndices(
         castlingRights: position.castlingRights,
         board: position.board,
       })
-    ) {
+    )
       yield {
         x: kingCoords.x,
         y: CASTLED_KING_FILES[wing],
       };
-    }
-  }
 }
 
-export default castlingIndices;
+export default castlingCoords;

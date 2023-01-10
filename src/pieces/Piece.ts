@@ -40,7 +40,7 @@ export default class Piece {
   static fromInitial(initial: PieceInitial) {
     const initialKey = initial.toUpperCase() as WhitePieceInitial;
     return new Piece(
-      initialKey === initial ? Color.WHITE : Color.BLACK,
+      (initialKey === initial) ? Color.WHITE : Color.BLACK,
       PieceByInitial[initialKey] as unknown as PieceType,
     );
   }
@@ -73,7 +73,7 @@ export default class Piece {
     return -this.color as Color;
   }
 
-  get #offsets(): { x: number[]; y: number[] } {
+  get #offsets(): { x: number[]; y: number[]; } {
     return offsets[this.color][this.type];
   }
 
@@ -119,15 +119,9 @@ export default class Piece {
       return;
     }
 
-    for (
-      const targetCoords of this.attackedCoords(srcCoords, position.board)
-    ) {
-      if (
-        position.board[targetCoords.x][targetCoords.y]?.color !== this.color
-      ) {
+    for (const targetCoords of this.attackedCoords(srcCoords, position.board))
+      if (position.board[targetCoords.x][targetCoords.y]?.color !== this.color)
         yield targetCoords;
-      }
-    }
   }
 
   clone(): Piece {
