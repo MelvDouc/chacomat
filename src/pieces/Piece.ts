@@ -86,9 +86,7 @@ export default class Piece {
         y = srcCoords.y + this.#offsets.y[i];
       while (Piece.#isSafe(x, y)) {
         yield { x, y };
-        if (board[x][y]) {
-          break;
-        }
+        if (board[x][y]) break;
         x += this.#offsets.x[i];
         y += this.#offsets.y[i];
       }

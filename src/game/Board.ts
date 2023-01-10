@@ -55,17 +55,6 @@ export default class Board extends Array<Array<Piece | null>> {
   }
 
   /**
-   * Transfer a piece to given coords and remove the piece from the source.
-   */
-  transfer(srcCoords: Coords, destCoords: Coords): this {
-    if (this[srcCoords.x][srcCoords.y]?.type === Piece.Types.KING)
-      this.kingCoords[this[srcCoords.x][srcCoords.y]!.color] = destCoords;
-    this[destCoords.x][destCoords.y] = this[srcCoords.x][srcCoords.y];
-    this[srcCoords.x][srcCoords.y] = null;
-    return this;
-  }
-
-  /**
    * The coords attacked by the given color.
    * Used in determining if a position is check and which castling moves are actually legal.
    * This will be calculated only once for performance.
@@ -102,15 +91,12 @@ export default class Board extends Array<Array<Piece | null>> {
     return clone;
   }
 
-  /**
-   * A debugging method to take a look at the current board.
-   */
-  log(): void {
-    for (let x = 0; x < 8; x++) {
-      console.log(
-        Array.from({ length: 8 }, (_, y) => this[x][y]?.initial ?? "-").join(" ")
-      );
-    }
+  asPrintable(): string {
+    return this
+      .map((row) => {
+        return row.map((item) => item?.initial ?? "-").join(" ");
+      })
+      .join("\n");
   }
 
   /**

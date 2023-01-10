@@ -5,9 +5,9 @@ import type {
   ChessRank,
   Coords,
   CoordsGenerator,
-  Piece,
   Position,
 } from "../types.js";
+import Piece from "./Piece.js";
 
 const INITIAL_PAWN_RANKS: BlackAndWhite<ChessRank> = {
   [Color.WHITE]: 6,
@@ -46,10 +46,11 @@ function* captures(
   srcCoords: Coords,
   position: Position,
 ): CoordsGenerator {
+  // TODO: Get rid of Piece import
   for (const destCoords of pawn.attackedCoords(srcCoords, position.board))
     if (
       position.board[destCoords.x][destCoords.y]?.color === pawn.oppositeColor
-      || destCoords.y === position.enPassantFile
+      || destCoords.y === position.enPassantFile && destCoords.x === Piece.MIDDLE_RANKS[pawn.oppositeColor]
     )
       yield destCoords;
 }

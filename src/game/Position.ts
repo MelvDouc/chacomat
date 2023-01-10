@@ -90,8 +90,8 @@ export default class Position implements PositionInfo {
 
     if (!this.isCheck()) {
       const kingCoords = this.board.kingCoords[this.colorToMove];
-      for (const castlingIndex of Piece.castlingCoords(kingCoords, this)) {
-        this.#legalMoves.push([kingCoords, castlingIndex]);
+      for (const destCoords of Piece.castlingCoords(kingCoords, this)) {
+        this.#legalMoves.push([kingCoords, destCoords]);
       }
     }
 
@@ -131,20 +131,39 @@ export default class Position implements PositionInfo {
   *#pseudoLegalMoves(): Generator<Move, void, unknown> {
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
-        if (this.board[x][y]?.color === this.colorToMove) {
-          const srcCoords = { x, y };
-          for (const destCoords of this.board[x][y]!.pseudoLegalMoves(srcCoords, this))
-            yield [srcCoords, destCoords] as Move;
-        }
+        if (this.board[x][y]?.color !== this.colorToMove)
+          continue;
+        const srcCoords = { x, y };
+        for (const destCoords of this.board[x][y]!.pseudoLegalMoves(srcCoords, this))
+          yield [srcCoords, destCoords] as Move;
       }
     }
   }
 
-  /**
-   * This is to be checked before the src piece has moved and the color to move has been updated.
-   */
-  #isPromotion(destCoords: Coords): boolean {
-    return destCoords.y === Piece.INITIAL_PIECE_RANKS[-this.colorToMove as Color];
+  #handlePawnMove(srcCoords: Coords, destCoords: Coords, board: Board, promotionType: Promotable = "Q") {
+    if (destCoords.y === this.enPassantFile) {
+      board[srcCoords.x][destCoords.y] = null;
+      return;
+    }
+
+    if (destCoords.y === Piece.INITIAL_PIECE_RANKS[-this.colorToMove as Color])
+      Piece.promote(board[srcCoords.x][srcCoords.y]!, promotionType);
+  }
+
+  #handleKingMove(srcCoords: Coords, destCoords: Coords, board: Board, castlingRights: ICastlingRights, srcColor: Color): void {
+    castlingRights[srcColor][Wing.QUEEN_SIDE] = false;
+    castlingRights[srcColor][Wing.KING_SIDE] = false;
+
+    if (Math.abs(destCoords.y - srcCoords.y) > 1) {
+      const wing = Position.#getWing(destCoords.y);
+      board[srcCoords.x][Piece.CASTLED_ROOK_FILES[wing]] = board[srcCoords.x][wing];
+      board[srcCoords.x][wing] = null;
+    }
+  }
+
+  #isInitialRookSquare(coords: Coords, color: Color): boolean {
+    return coords.x === Piece.INITIAL_PIECE_RANKS[color]
+      && (coords.y === Wing.QUEEN_SIDE || coords.y === Wing.KING_SIDE);
   }
 
   /**
@@ -166,55 +185,35 @@ export default class Position implements PositionInfo {
 
     switch (srcPiece.type) {
       case Piece.Types.PAWN:
-        if (destCoords.y === this.enPassantFile) {
-          board[srcCoords.x][destCoords.y] = null;
-        } else if (this.#isPromotion(destCoords)) {
-          Piece.promote(srcPiece, promotionType);
-        }
+        this.#handlePawnMove(srcCoords, destCoords, board, promotionType);
         break;
       case Piece.Types.KING:
-        castlingRights[srcPiece.color][Wing.QUEEN_SIDE] = false;
-        castlingRights[srcPiece.color][Wing.KING_SIDE] = false;
-        if (Math.abs(destCoords.y - srcCoords.y) > 1) {
-          const wing = Position.#getWing(destCoords.y);
-          board.transfer(
-            { x: srcCoords.x, y: wing },
-            { x: srcCoords.x, y: Piece.CASTLED_ROOK_FILES[wing] },
-          );
-        }
+        this.#handleKingMove(srcCoords, destCoords, board, castlingRights, srcPiece.color);
         break;
       case Piece.Types.ROOK:
-        if (
-          srcCoords.x === Piece.INITIAL_PIECE_RANKS[srcPiece.color] &&
-          (srcCoords.y === Wing.QUEEN_SIDE || srcCoords.y === Wing.KING_SIDE)
-        ) {
-          castlingRights[srcPiece.color][srcCoords.y] = false;
-        }
+        if (this.#isInitialRookSquare(srcCoords, srcPiece.color))
+          castlingRights[srcPiece.color][srcCoords.y as Wing] = false;
     }
 
-    if (
-      destPiece?.type === Piece.Types.KING &&
-      destCoords.y === Piece.INITIAL_PIECE_RANKS[srcPiece.color] &&
-      (destCoords.y === Wing.QUEEN_SIDE || destCoords.y === Wing.KING_SIDE)
-    ) {
-      castlingRights[destPiece.color][destCoords.y] = false;
-    }
+    if (destPiece?.type === Piece.Types.ROOK && this.#isInitialRookSquare(destCoords, destPiece!.color))
+      castlingRights[destPiece.color][destCoords.y as Wing] = false;
 
-    board.transfer(srcCoords, destCoords);
+    board[destCoords.x][destCoords.y] = srcPiece;
+    board[srcCoords.x][srcCoords.y] = null;
 
     return new Position({
       board,
       castlingRights,
-      enPassantFile:
-        (isSrcPiecePawn && Math.abs(destCoords.x - srcCoords.x) > 1)
-          ? srcCoords.y
-          : -1,
+      enPassantFile: (isSrcPiecePawn && Math.abs(destCoords.x - srcCoords.x) > 1)
+        ? srcCoords.y
+        : -1,
       colorToMove: (updateColorAndMoveNumber)
         ? -this.colorToMove as Color
         : this.colorToMove,
       halfMoveClock: (isCaptureOrPawnMove) ? 0 : this.halfMoveClock + 1,
-      fullMoveNumber: this.fullMoveNumber +
-        +(updateColorAndMoveNumber && this.colorToMove === Color.BLACK),
+      fullMoveNumber: (updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
+        ? this.fullMoveNumber + 1
+        : this.fullMoveNumber,
     });
   }
 

@@ -13,6 +13,8 @@ import Position from "./Position.js";
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
  */
 export default class ChessGame {
+  static readonly Statuses = GameStatus;
+
   #currentPosition: Position;
 
   constructor(fenStringOrPositionInfo: FenString | PositionInfo = Position.startFenString) {
@@ -33,9 +35,8 @@ export default class ChessGame {
    * @returns The current instance of a game containing the position after the move.
    */
   move(srcCoords: Coords, destCoords: Coords, promotionType: Promotable = "Q"): this {
-    if (this.#currentPosition.status !== GameStatus.ACTIVE) {
+    if (this.#currentPosition.status !== GameStatus.ACTIVE)
       throw new Error(`Position is inactive: ${this.#currentPosition.status}`);
-    }
 
     const { legalMoves } = this.#currentPosition;
 

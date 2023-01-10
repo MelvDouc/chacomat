@@ -4,4 +4,4 @@ A chess application built for NodeJS.
 
 ## Tasks
 
-- [ ] Add tasks
+- [ ] Parse PGN
