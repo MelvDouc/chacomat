@@ -55,13 +55,15 @@ function canCastleToWing(
 }
 
 function* castlingCoords(kingCoords: Coords, position: Position): CoordsGenerator {
+  const attackedCoords = position.board.getAttackedCoords(-position.colorToMove as Color);
+
   for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
     if (
       canCastleToWing({
         color: position.colorToMove,
         wing,
         kingCoords,
-        attackedCoords: position.attackedCoords,
+        attackedCoords,
         castlingRights: position.castlingRights,
         board: position.board,
       })

@@ -60,7 +60,6 @@ export default class Position implements PositionInfo {
   readonly enPassantFile!: number;
   readonly halfMoveClock!: number;
   readonly fullMoveNumber!: number;
-  #attackedCoords!: AttackedCoordsRecord;
   #legalMoves!: Move[];
   prev: Position | null = null;
   next: Position[] = [];
@@ -69,24 +68,17 @@ export default class Position implements PositionInfo {
     Object.assign(this, positionInfo);
   }
 
-  /**
-   * A set containing the coords controlled by the currently inactive color.
-   */
-  get attackedCoords(): AttackedCoordsRecord {
-    return this.#attackedCoords ??= this.board.getAttackedCoords(
-      -this.colorToMove as Color,
-    );
-  }
-
   get legalMoves(): Move[] {
     if (this.#legalMoves)
       return this.#legalMoves;
 
     this.#legalMoves = [];
 
-    for (const move of this.#pseudoLegalMoves())
+    for (const move of this.#pseudoLegalMoves()) {
+
       if (!this.getPositionFromMove(move[0], move[1]).isCheck())
         this.#legalMoves.push(move);
+    }
 
     if (!this.isCheck()) {
       const kingCoords = this.board.kingCoords[this.colorToMove];
@@ -122,7 +114,8 @@ export default class Position implements PositionInfo {
 
   isCheck(): boolean {
     const { x, y } = this.board.kingCoords[this.colorToMove];
-    return this.attackedCoords[x] && this.attackedCoords[x][y] === true;
+    const attackedCoords = this.board.getAttackedCoords(-this.colorToMove as Color);
+    return x in attackedCoords && attackedCoords[x][y] === true;
   }
 
   /**
@@ -153,6 +146,7 @@ export default class Position implements PositionInfo {
   #handleKingMove(srcCoords: Coords, destCoords: Coords, board: Board, castlingRights: ICastlingRights, srcColor: Color): void {
     castlingRights[srcColor][Wing.QUEEN_SIDE] = false;
     castlingRights[srcColor][Wing.KING_SIDE] = false;
+    board.kingCoords[srcColor] = destCoords;
 
     if (Math.abs(destCoords.y - srcCoords.y) > 1) {
       const wing = Position.#getWing(destCoords.y);

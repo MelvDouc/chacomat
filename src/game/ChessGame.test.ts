@@ -11,7 +11,7 @@ describe("Checkmate", () => {
       .moveWithNotations("d8", "h4");
 
     expect(game.currentPosition.isCheck()).toBe(true);
-    // expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
+    expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
   });
 });
 

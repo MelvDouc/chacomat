@@ -27,6 +27,10 @@ export default class ChessGame {
     return this.#currentPosition;
   }
 
+  get status(): GameStatus {
+    return this.currentPosition.status;
+  }
+
   /**
    * Assumes an indexed 64-square board where a8 is 0 and h1 is 63.
    * @param srcCoords The coords of the source square. Must contain a piece who can legally move in the current position.

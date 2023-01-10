@@ -86,12 +86,12 @@ export default class Board extends Array<Array<Piece | null>> {
         return row.map((item) => item ? item.clone() : null);
       })
     );
-    clone.kingCoords[Color.WHITE] = { ...this.kingCoords[Color.WHITE] };
-    clone.kingCoords[Color.BLACK] = { ...this.kingCoords[Color.BLACK] };
+    clone.kingCoords[Color.WHITE] = this.kingCoords[Color.WHITE];
+    clone.kingCoords[Color.BLACK] = this.kingCoords[Color.BLACK];
     return clone;
   }
 
-  asPrintable(): string {
+  asBoardString(): string {
     return this
       .map((row) => {
         return row.map((item) => item?.initial ?? "-").join(" ");
