@@ -164,7 +164,7 @@ export default class Position implements PositionInfo {
       return srcPiece;
     }
 
-    if (destCoords.y === Piece.initialPieceRanks[this.inactiveColor])
+    if (destCoords.y === Piece.startPieceRanks[this.inactiveColor])
       return srcPiece.promote(promotionType);
 
     return srcPiece;

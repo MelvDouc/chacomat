@@ -10,7 +10,7 @@ import Piece from "./_Piece.js";
 
 export default class King extends Piece {
   public static readonly initial = "K";
-  private static initialFile = 4;
+  public static startFiles = [4];
   private static readonly castledFiles = {
     [Wing.QUEEN_SIDE]: 2,
     [Wing.KING_SIDE]: 6
@@ -29,9 +29,9 @@ export default class King extends Piece {
     if (!castlingRights[this.color][wing])
       return false;
 
-    const direction = Math.sign(wing - King.initialFile);
+    const direction = Math.sign(wing - King.startFiles[0]);
     for (
-      let file = King.initialFile + direction;
+      let file = King.startFiles[0] + direction;
       file !== wing;
       file += direction
     ) {

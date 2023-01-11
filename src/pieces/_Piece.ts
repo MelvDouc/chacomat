@@ -15,18 +15,19 @@ export default abstract class Piece {
   public static readonly offsets: { x: number[]; y: number[]; };
   public static readonly initial: WhitePieceInitial;
   public static readonly constructors = new Map<WhitePieceInitial, typeof Piece>();
+  public static startFiles: number[];
 
   public static readonly directions: BlackAndWhite<number> = {
     [Color.WHITE]: -1,
     [Color.BLACK]: 1
   };
 
-  public static readonly initialPieceRanks: BlackAndWhite<number> = {
+  public static readonly startPieceRanks: BlackAndWhite<number> = {
     [Color.WHITE]: 7,
     [Color.BLACK]: 0
   };
 
-  public static readonly initialPawnRanks = {
+  public static readonly startPawnRanks = {
     [Color.WHITE]: 6,
     [Color.BLACK]: 1
   };
@@ -67,6 +68,11 @@ export default abstract class Piece {
 
   public get oppositeColor(): Color {
     return (this.color === Color.WHITE) ? Color.BLACK : Color.WHITE;
+  }
+
+  public isOnInitialSquare({ x, y }: Coords): boolean {
+    const { startPieceRanks, startFiles } = this.constructor as typeof Piece;
+    return x === startPieceRanks[this.color] && startFiles.includes(y);
   }
 
   public *attackedCoords(srcCoords: Coords, board: Board): CoordsGenerator {
