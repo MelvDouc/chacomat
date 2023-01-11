@@ -29,13 +29,11 @@ export default class Board {
       }, new Board());
   }
 
-  private readonly squares: Array<Array<Piece | null>> = Array.from({ length: 8 }, () => {
-    return Array(8).fill(null);
-  });
-  public readonly kingCoords: BlackAndWhite<Coords> = {
-    [Color.WHITE]: { x: -1, y: -1 },
-    [Color.BLACK]: { x: -1, y: -1 }
-  };
+  private readonly squares: Array<Array<Piece | null>> = Array.from(
+    { length: 8 },
+    () => Array(8).fill(null)
+  );
+  public readonly kingCoords: BlackAndWhite<Coords> = {} as BlackAndWhite<Coords>;
 
   public get pieceCount(): number {
     return this.squares.reduce((total, row) => {
