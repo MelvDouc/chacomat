@@ -1,8 +1,7 @@
-import { coordsToNotation, notationToCoords } from "../constants/coords.js";
+import Coords from "../constants/Coords.js";
 import GameStatus from "../constants/GameStatus.js";
 import type {
   AlgebraicSquareNotation,
-  Coords,
   FenString,
   PositionInfo,
   Promotable,
@@ -40,11 +39,10 @@ export default class ChessGame {
 
     const { legalMoves } = this.currentPosition;
 
-    if (!legalMoves.some(([src, dest]) =>
-      src.x === srcCoords.x && src.y === srcCoords.y &&
-      dest.x === destCoords.x && dest.y === destCoords.y
+    if (!legalMoves.some(([srcCoords2, destCoords2]) =>
+      srcCoords2 === srcCoords && destCoords2 === destCoords
     ))
-      throw new Error(`Ilegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
+      throw new Error(`Ilegal move: ${srcCoords.notation}-${destCoords.notation}`);
 
     const nextPosition = this.currentPosition.getPositionFromMove(
       srcCoords,
@@ -65,8 +63,8 @@ export default class ChessGame {
     promotionType: Promotable = "Q",
   ): this {
     return this.move(
-      notationToCoords(srcNotation)!,
-      notationToCoords(destNotation)!,
+      Coords.fromNotation(srcNotation)!,
+      Coords.fromNotation(destNotation)!,
       promotionType,
     );
   }

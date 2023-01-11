@@ -1,12 +1,11 @@
 import Color from "../constants/Color.js";
-import { coordsToNotation, notationToCoords } from "../constants/coords.js";
+import Coords from "../constants/Coords.js";
 import GameStatus from "../constants/GameStatus.js";
 import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
-  AttackedCoordsRecord,
-  Coords,
+  AttackedCoordsRecord as AttackedCoordsSet,
   FenString,
   King,
   Move,
@@ -42,7 +41,7 @@ export default class Position implements PositionInfo {
       colorToMove: (color === "w") ? Color.WHITE : Color.BLACK,
       enPassantFile: (enPassant === "-")
         ? -1
-        : notationToCoords(enPassant as AlgebraicSquareNotation)!.y,
+        : Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
       halfMoveClock: +halfMoveClock,
       fullMoveNumber: +fullMoveNumber,
     });
@@ -62,7 +61,7 @@ export default class Position implements PositionInfo {
   public readonly halfMoveClock!: number;
   public readonly fullMoveNumber!: number;
   private _legalMoves!: Move[];
-  private _attackedCoords!: AttackedCoordsRecord;
+  private _attackedCoordsSet!: AttackedCoordsSet;
   public prev: Position | null = null;
   public next: Position[] = [];
 
@@ -83,7 +82,7 @@ export default class Position implements PositionInfo {
     if (!this.isCheck()) {
       const kingCoords = this.board.kingCoords[this.colorToMove],
         king = this.board.get(kingCoords) as King;
-      for (const destCoords of king.castlingCoords(kingCoords, this.attackedCoords, this))
+      for (const destCoords of king.castlingCoords(kingCoords, this.attackedCoordsSet, this))
         this._legalMoves.push([kingCoords, destCoords]);
     }
 
@@ -95,13 +94,13 @@ export default class Position implements PositionInfo {
    */
   public get legalMovesAsNotation(): string[] {
     return this.legalMoves.map(([srcCoords, destCoords]) =>
-      `${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`
+      `${srcCoords.notation}-${destCoords.notation}`
     );
   }
 
-  private get attackedCoords(): AttackedCoordsRecord {
-    this._attackedCoords ??= this.board.getCoordsAttackedByColor(-this.colorToMove as Color);
-    return this._attackedCoords;
+  private get attackedCoordsSet(): AttackedCoordsSet {
+    this._attackedCoordsSet ??= this.board.getCoordsAttackedByColor(-this.colorToMove as Color);
+    return this._attackedCoordsSet;
   }
 
   /**
@@ -120,8 +119,7 @@ export default class Position implements PositionInfo {
   }
 
   public isCheck(): boolean {
-    const { x, y } = this.board.kingCoords[this.colorToMove];
-    return x in this.attackedCoords && this.attackedCoords[x][y] === true;
+    return this.attackedCoordsSet.has(this.board.kingCoords[this.colorToMove]);
   }
 
   private isTripleRepetition(): boolean {
@@ -141,7 +139,7 @@ export default class Position implements PositionInfo {
   private *pseudoLegalMoves(): Generator<Move, void, unknown> {
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
-        const srcCoords = { x, y };
+        const srcCoords = Coords.get(x, y)!;
         if (this.board.get(srcCoords)?.color === this.colorToMove)
           for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves(srcCoords, this))
             yield [srcCoords, destCoords] as Move;
@@ -154,7 +152,7 @@ export default class Position implements PositionInfo {
       destCoords.y === this.enPassantFile
       && srcCoords.x === Piece.middleRanks[srcPiece.oppositeColor]
     ) {
-      board.unset({ x: srcCoords.x, y: destCoords.y });
+      board.unset(Coords.get(srcCoords.x, destCoords.y)!);
       return srcPiece;
     }
 
@@ -171,9 +169,9 @@ export default class Position implements PositionInfo {
 
     if (Math.abs(destCoords.y - srcCoords.y) > 1) {
       const wing = Position.getWing(destCoords.y);
-      const rookCoords = { x: srcCoords.x, y: wing };
+      const rookCoords = Coords.get(srcCoords.x, wing)!;
       board
-        .set({ x: srcCoords.x, y: Piece.castledRookFiles[wing] }, board.get(rookCoords)!)
+        .set(Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!, board.get(rookCoords)!)
         .unset(rookCoords);
     }
   }
@@ -248,10 +246,9 @@ export default class Position implements PositionInfo {
       this.board.toString(),
       (this.colorToMove === Color.WHITE) ? "w" : "b",
       this.castlingRights.toString(),
-      (this.enPassantFile === -1) ? "-" : coordsToNotation({
-        x: Piece.middleRanks[this.colorToMove] + this.colorToMove,
-        y: this.enPassantFile,
-      }),
+      (this.enPassantFile === -1)
+        ? "-"
+        : Coords.get(Piece.middleRanks[this.colorToMove] + this.colorToMove, this.enPassantFile)!.notation,
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
     ].join(" ");

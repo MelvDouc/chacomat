@@ -1,6 +1,7 @@
 import Color from "../constants/Color.js";
+import Coords from "../constants/Coords.js";
 import Piece from "../pieces/Piece.js";
-import type { AttackedCoordsRecord, BlackAndWhite, Coords, PieceInitial } from "../types.js";
+import type { AttackedCoordsRecord as AttackedCoordsSet, BlackAndWhite, PieceInitial } from "../types.js";
 
 export default class Board {
   private static readonly nullPiece = "0";
@@ -20,55 +21,45 @@ export default class Board {
           .forEach((item, y) => {
             if (item === Board.nullPiece)
               return;
-            const piece = Piece.fromInitial(item as PieceInitial);
-            acc.set({ x, y }, piece);
+            const piece = Piece.fromInitial(item as PieceInitial),
+              coords = Coords.get(x, y)!;
+            acc.set(coords, piece);
             if (piece.whiteInitial === "K")
-              acc.kingCoords[piece.color] = { x, y };
+              acc.kingCoords[piece.color] = coords;
           });
         return acc;
       }, new Board());
   }
 
-  private readonly squares: Array<Array<Piece | null>> = Array.from(
-    { length: 8 },
-    () => Array(8).fill(null)
-  );
+  private readonly squares: Map<Coords, Piece> = new Map();
   public readonly kingCoords: BlackAndWhite<Coords> = {} as BlackAndWhite<Coords>;
 
   public get pieceCount(): number {
-    return this.squares.reduce((total, row) => {
-      for (const item of row)
-        if (item)
-          total++;
-      return total;
-    }, 0);
+    return this.squares.size;
   }
 
-  public get({ x, y }: Coords): Piece | null {
-    return this.squares[x][y];
+  public get(coords: Coords): Piece | null {
+    return this.squares.get(coords) ?? null;
   }
 
-  public set({ x, y }: Coords, value: Piece): this {
-    this.squares[x][y] = value;
+  public set(coords: Coords, value: Piece): this {
+    this.squares.set(coords, value);
     return this;
   }
 
-  public unset({ x, y }: Coords): void {
-    this.squares[x][y] = null;
+  public unset(coords: Coords): void {
+    this.squares.delete(coords);
   }
 
-  public getCoordsAttackedByColor(color: Color): AttackedCoordsRecord {
-    const record: AttackedCoordsRecord = {};
+  public getCoordsAttackedByColor(color: Color): AttackedCoordsSet {
+    const set: AttackedCoordsSet = new Set();
 
-    for (let x = 0; x < 8; x++)
-      for (let y = 0; y < 8; y++)
-        if (this.squares[x][y]?.color === color)
-          for (const coords of this.squares[x][y]!.attackedCoords({ x, y }, this)) {
-            record[coords.x] ??= {};
-            record[coords.x][coords.y] = true;
-          }
+    for (const [srcCoords, piece] of this.squares)
+      if (piece.color === color)
+        for (const destCoords of piece.attackedCoords(srcCoords, this))
+          set.add(destCoords);
 
-    return record;
+    return set;
   }
 
   /**
@@ -76,10 +67,8 @@ export default class Board {
    */
   public clone(): Board {
     const clone = new Board();
-    for (let x = 0; x < 8; x++)
-      for (let y = 0; y < 8; y++)
-        if (this.squares[x][y])
-          clone.set({ x, y }, this.squares[x][y]!.clone());
+    for (const [coords, piece] of this.squares)
+      clone.set(coords, piece);
     clone.kingCoords[Color.WHITE] = this.kingCoords[Color.WHITE];
     clone.kingCoords[Color.BLACK] = this.kingCoords[Color.BLACK];
     return clone;
@@ -89,18 +78,23 @@ export default class Board {
    * The board portion of an FEN string.
    */
   public toString(): string {
-    return this.squares
-      .map((row) => row
-        .map((item) => item?.initial ?? Board.nullPiece)
-        .join("")
-        .replace(Board.nullPieceRegex, (zeros) => String(zeros.length))
-      )
+    return Array
+      .from({ length: 8 }, (_, x) => {
+        return Array
+          .from({ length: 8 }, (_, y) => this.squares.get(Coords.get(x, y)!)?.initial ?? Board.nullPiece)
+          .join("")
+          .replace(Board.nullPieceRegex, (zeros) => String(zeros.length));
+      })
       .join("/");
   }
 
   public toReadableBoardString(): string {
-    return this.squares
-      .map((row) => row.map((item) => item?.initial ?? " ").join(" "))
+    return Array
+      .from({ length: 8 }, (_, x) => {
+        return Array
+          .from({ length: 8 }, (_, y) => this.squares.get(Coords.get(x, y)!)?.initial ?? "-")
+          .join(" ");
+      })
       .join("\n");
   }
 }

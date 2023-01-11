@@ -26,7 +26,7 @@ export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
 export type Board = import("./game/Board.js").default;
 export type CastlingRights = import("./game/CastlingRights.js").default;
-export type AttackedCoordsRecord = Record<number, Record<number, true>>;
+export type AttackedCoordsRecord = Set<Coords>;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
 
@@ -34,10 +34,7 @@ export type BlackAndWhite<T> = {
   [K in Color]: T;
 };
 
-export interface Coords {
-  x: number;
-  y: number;
-}
+export type Coords = import("./constants/Coords.js").default;
 
 export interface PositionInfo {
   board: Board;

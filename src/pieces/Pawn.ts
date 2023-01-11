@@ -1,6 +1,15 @@
 import Piece from "./_Piece.js";
 import Color from "../constants/Color.js";
-import { Bishop, Board, Coords, Knight, Position, Promotable, Queen, Rook } from "../types.js";
+import {
+  Bishop,
+  Board,
+  Knight,
+  Position,
+  Promotable,
+  Queen,
+  Rook
+} from "../types.js";
+import Coords from "../constants/Coords.js";
 
 export default class Pawn extends Piece {
   public static readonly initial = "P";
@@ -13,19 +22,13 @@ export default class Pawn extends Piece {
   private static pawnYOffsets = [-1, 1];
 
   private *forwardMoves(srcCoords: Coords, board: Board) {
-    const coords1 = {
-      x: srcCoords.x - this.color,
-      y: srcCoords.y
-    };
+    const coords1 = Coords.get(srcCoords.x - this.color, srcCoords.y)!;
 
     if (!board.get(coords1)) {
       yield coords1;
 
       if (srcCoords.x === Piece.initialPawnRanks[this.color]) {
-        const coords2 = {
-          x: coords1.x - this.color,
-          y: coords1.y
-        };
+        const coords2 = Coords.get(coords1.x - this.color, coords1.y)!;
 
         if (!board.get(coords2))
           yield coords2;
@@ -45,12 +48,11 @@ export default class Pawn extends Piece {
   public *attackedCoords(srcCoords: Coords, _board: Board) {
     for (const xOffset of Pawn.pawnXOffsets[this.color]) {
       const x = srcCoords.x + xOffset;
-      if (x >= 0 && x < 8)
-        for (const yOffset of Pawn.pawnYOffsets) {
-          const y = srcCoords.y + yOffset;
-          if (y >= 0 && y < 8)
-            yield { x, y };
-        }
+      for (const yOffset of Pawn.pawnYOffsets) {
+        const coords = Coords.get(x, srcCoords.y + yOffset);
+        if (coords)
+          yield coords;
+      }
     }
   }
 

@@ -1,9 +1,9 @@
+import Coords from "../constants/Coords.js";
 import Wing from "../constants/Wing.js";
 import {
   AttackedCoordsRecord,
   Board,
   CastlingRights,
-  Coords,
   CoordsGenerator,
   Position
 } from "../types.js";
@@ -36,13 +36,13 @@ export default class King extends Piece {
       file !== wing;
       file += direction
     ) {
-      if (board.get({ x: kingCoords.x, y: file }) !== null)
+      const castlingCoords = Coords.get(kingCoords.x, file)!;
+      if (board.get(castlingCoords) !== null)
         return false;
       // If a square traversed by the king is controlled by the enemy color.
       if (
         King.castledFiles[wing] - file !== -direction
-        && kingCoords.x in attackedCoords
-        && attackedCoords[kingCoords.x][file]
+        && attackedCoords.has(castlingCoords)
       )
         return false;
     }
@@ -61,9 +61,6 @@ export default class King extends Piece {
           board: position.board
         })
       )
-        yield {
-          x: kingCoords.x,
-          y: King.castledFiles[wing]
-        };
+        yield Coords.get(kingCoords.x, King.castledFiles[wing])!;
   }
 }

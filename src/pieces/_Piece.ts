@@ -1,11 +1,11 @@
 import Color from "../constants/Color.js";
+import Coords from "../constants/Coords.js";
 import Wing from "../constants/Wing.js";
 import type {
   BlackAndWhite,
   BlackPieceInitial,
   Board,
   ChessRank,
-  Coords,
   CoordsGenerator,
   PieceInitial,
   Position,
@@ -69,10 +69,9 @@ export default abstract class Piece {
     const { x: xOffsets, y: yOffsets } = (this.constructor as typeof Piece).offsets;
 
     for (let i = 0; i < xOffsets.length; i++) {
-      const x = srcCoords.x + xOffsets[i],
-        y = srcCoords.y + yOffsets[i];
-      if (x >= 0 && x < 8 && y >= 0 && y < 8)
-        yield { x, y };
+      const destCoords = srcCoords.getPeer({ xOffset: xOffsets[i], yOffset: yOffsets[i] });
+      if (destCoords)
+        yield destCoords;
     }
   }
 
