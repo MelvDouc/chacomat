@@ -1,5 +1,5 @@
-import Color from "../constants/Color.js";
 import GameStatus from "../constants/GameStatus.js";
+import Color from "../constants/Color.js";
 import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
@@ -22,6 +22,11 @@ import CastlingRights from "./CastlingRights.js";
 export default class Position implements PositionInfo {
   public static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+  private static readonly colorAbbreviations = {
+    w: Color.WHITE,
+    b: Color.BLACK
+  };
+
   /**
    * Create a new position using only an FEN string.
    */
@@ -38,7 +43,7 @@ export default class Position implements PositionInfo {
     return new Position({
       board,
       castlingRights: CastlingRights.fromString(castlingString),
-      colorToMove: (color === "w") ? Color.WHITE : Color.BLACK,
+      colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations],
       enPassantFile: (enPassant === "-")
         ? -1
         : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
@@ -67,6 +72,10 @@ export default class Position implements PositionInfo {
 
   constructor(positionInfo: PositionInfo) {
     Object.assign(this, positionInfo);
+  }
+
+  public get inactiveColor(): Color {
+    return (this.colorToMove === Color.WHITE) ? Color.BLACK : Color.WHITE;
   }
 
   public get legalMoves(): Move[] {
@@ -98,7 +107,7 @@ export default class Position implements PositionInfo {
   }
 
   private get attackedCoordsSet(): Set<Coords> {
-    this._attackedCoordsSet ??= this.board.getCoordsAttackedByColor(-this.colorToMove as Color);
+    this._attackedCoordsSet ??= this.board.getCoordsAttackedByColor(this.inactiveColor);
     return this._attackedCoordsSet;
   }
 
@@ -155,7 +164,7 @@ export default class Position implements PositionInfo {
       return srcPiece;
     }
 
-    if (destCoords.y === Piece.initialPieceRanks[-this.colorToMove as Color])
+    if (destCoords.y === Piece.initialPieceRanks[this.inactiveColor])
       return srcPiece.promote(promotionType);
 
     return srcPiece;
@@ -218,7 +227,7 @@ export default class Position implements PositionInfo {
         ? srcCoords.y
         : -1,
       colorToMove: (updateColorAndMoveNumber)
-        ? -this.colorToMove as Color
+        ? this.inactiveColor
         : this.colorToMove,
       halfMoveClock: (isCaptureOrPawnMove) ? 0 : this.halfMoveClock + 1,
       fullMoveNumber: (updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
@@ -234,7 +243,7 @@ export default class Position implements PositionInfo {
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
         ? "-"
-        : this.board.Coords.get(Piece.middleRanks[this.colorToMove] + this.colorToMove, this.enPassantFile)!.notation,
+        : this.board.Coords.get(Piece.middleRanks[this.colorToMove] - Piece.directions[this.colorToMove], this.enPassantFile)!.notation,
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
     ].join(" ");

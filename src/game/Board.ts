@@ -1,5 +1,5 @@
-import Color from "../constants/Color.js";
 import Coords from "./Coords.js";
+import Color from "../constants/Color.js";
 import Piece from "../pieces/Piece.js";
 import type {
   BlackAndWhite,

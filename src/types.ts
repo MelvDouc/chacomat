@@ -1,7 +1,9 @@
-import Color from "./constants/Color.js";
+import Colors from "./constants/Color.js";
 import GameStatus from "./constants/GameStatus.js";
 
-export type { Color, GameStatus };
+export type { GameStatus };
+
+export type Color = typeof Colors.WHITE | typeof Colors.BLACK;
 
 export type FenString = string;
 export type WhitePieceInitial = "N" | "B" | "R" | "Q" | "K" | "P";

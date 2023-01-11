@@ -16,6 +16,11 @@ export default abstract class Piece {
   public static readonly initial: WhitePieceInitial;
   public static readonly constructors = new Map<WhitePieceInitial, typeof Piece>();
 
+  public static readonly directions: BlackAndWhite<number> = {
+    [Color.WHITE]: -1,
+    [Color.BLACK]: 1
+  };
+
   public static readonly initialPieceRanks: BlackAndWhite<number> = {
     [Color.WHITE]: 7,
     [Color.BLACK]: 0
@@ -61,7 +66,7 @@ export default abstract class Piece {
   }
 
   public get oppositeColor(): Color {
-    return -this.color as Color;
+    return (this.color === Color.WHITE) ? Color.BLACK : Color.WHITE;
   }
 
   public *attackedCoords(srcCoords: Coords, board: Board): CoordsGenerator {

@@ -1,13 +1,12 @@
 import Piece from "./_Piece.js";
-import Color from "../constants/Color.js";
 import {
   Bishop,
   Board,
+  Coords,
   Knight,
   Position,
   Promotable,
   Queen,
-  Coords,
   Rook
 } from "../types.js";
 
@@ -15,20 +14,20 @@ export default class Pawn extends Piece {
   public static readonly initial = "P";
 
   private static pawnXOffsets = {
-    [Color.WHITE]: [-Color.WHITE, -Color.WHITE],
-    [Color.BLACK]: [-Color.BLACK, -Color.BLACK]
+    WHITE: [-1, -1],
+    BLACK: [1, 1]
   };
 
   private static pawnYOffsets = [-1, 1];
 
   private *forwardMoves(srcCoords: Coords, board: Board) {
-    const coords1 = board.Coords.get(srcCoords.x - this.color, srcCoords.y)!;
+    const coords1 = srcCoords.getPeer({ xOffset: Pawn.directions[this.color], yOffset: 0 })!;
 
     if (!board.get(coords1)) {
       yield coords1;
 
       if (srcCoords.x === Piece.initialPawnRanks[this.color]) {
-        const coords2 = board.Coords.get(coords1.x - this.color, coords1.y)!;
+        const coords2 = coords1.getPeer({ xOffset: Pawn.directions[this.color], yOffset: 0 })!;
 
         if (!board.get(coords2))
           yield coords2;

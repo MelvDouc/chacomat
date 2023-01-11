@@ -1,5 +1,6 @@
-import Color from "../constants/Color.js";
 import Wing from "../constants/Wing.js";
+import Color from "../constants/Color.js";
+import { BlackAndWhite } from "../types.js";
 
 /**
  * @classdesc Create an object that represents the castling rights in a position.
@@ -9,7 +10,7 @@ export default class CastlingRights {
   /**
    * The characters used in an FEN string to represent castling rights.
    */
-  private static readonly initials = {
+  private static readonly initials: BlackAndWhite<{ [W in Wing]: string }> = {
     [Color.BLACK]: {
       [Wing.KING_SIDE]: "k",
       [Wing.QUEEN_SIDE]: "q"
