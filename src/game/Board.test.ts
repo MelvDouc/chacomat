@@ -2,7 +2,6 @@ import Board from "./Board.js";
 import Color from "../constants/Color.js";
 import { King, Pawn } from "../pieces/Piece.js";
 import Position from "./Position.js";
-import exp from "constants";
 
 describe("A board", () => {
   it("should be serializable", () => {

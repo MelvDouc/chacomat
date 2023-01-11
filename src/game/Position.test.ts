@@ -1,4 +1,3 @@
-import Coords from "./Coords.js";
 import ChessGame from "./ChessGame.js";
 import Position from "./Position.js";
 
@@ -14,8 +13,8 @@ describe("FEN string", () => {
       `r5k1/p3rppp/1p2pn2/PP1bN3/8/2R1PP2/4B1PP/R5K1 b - - 0 24`,
     );
     const pos2 = pos1.getPositionFromMove(
-      Coords.get(2, 1)!,
-      Coords.get(3, 0)!,
+      pos1.board.Coords.get(2, 1)!,
+      pos1.board.Coords.get(3, 0)!,
       "Q",
       true,
     );
