@@ -14,10 +14,10 @@ import Queen from "./sliding/Queen.js";
 export default class King extends Piece {
   public static readonly initial = "K";
   public static readonly offsets = Queen.offsets;
-  private static readonly initialFile = 4;
+  private static initialFile = 4;
   private static readonly castledFiles = {
     [Wing.QUEEN_SIDE]: 2,
-    [Wing.KING_SIDE]: 6,
+    [Wing.KING_SIDE]: 6
   };
 
   /**
@@ -53,9 +53,7 @@ export default class King extends Piece {
     return true;
   }
 
-  public *castlingCoords(kingCoords: Coords, position: Position): CoordsGenerator {
-    const attackedCoords = position.board.getCoordsAttackedByColor(-position.colorToMove as Color);
-
+  public *castlingCoords(kingCoords: Coords, attackedCoords: AttackedCoordsRecord, position: Position): CoordsGenerator {
     for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
       if (
         this.canCastleToWing({
@@ -63,7 +61,7 @@ export default class King extends Piece {
           kingCoords,
           attackedCoords,
           castlingRights: position.castlingRights,
-          board: position.board,
+          board: position.board
         })
       )
         yield {

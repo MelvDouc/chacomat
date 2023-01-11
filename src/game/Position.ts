@@ -5,6 +5,7 @@ import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
+  AttackedCoordsRecord,
   Coords,
   FenString,
   King,
@@ -61,6 +62,7 @@ export default class Position implements PositionInfo {
   public readonly halfMoveClock!: number;
   public readonly fullMoveNumber!: number;
   private _legalMoves!: Move[];
+  private _attackedCoords!: AttackedCoordsRecord;
   public prev: Position | null = null;
   public next: Position[] = [];
 
@@ -81,7 +83,7 @@ export default class Position implements PositionInfo {
     if (!this.isCheck()) {
       const kingCoords = this.board.kingCoords[this.colorToMove],
         king = this.board.get(kingCoords) as King;
-      for (const destCoords of king.castlingCoords(kingCoords, this))
+      for (const destCoords of king.castlingCoords(kingCoords, this.attackedCoords, this))
         this._legalMoves.push([kingCoords, destCoords]);
     }
 
@@ -95,6 +97,11 @@ export default class Position implements PositionInfo {
     return this.legalMoves.map(([srcCoords, destCoords]) =>
       `${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`
     );
+  }
+
+  private get attackedCoords(): AttackedCoordsRecord {
+    this._attackedCoords ??= this.board.getCoordsAttackedByColor(-this.colorToMove as Color);
+    return this._attackedCoords;
   }
 
   /**
@@ -114,8 +121,7 @@ export default class Position implements PositionInfo {
 
   public isCheck(): boolean {
     const { x, y } = this.board.kingCoords[this.colorToMove];
-    const attackedCoords = this.board.getCoordsAttackedByColor(-this.colorToMove as Color);
-    return x in attackedCoords && attackedCoords[x][y] === true;
+    return x in this.attackedCoords && this.attackedCoords[x][y] === true;
   }
 
   private isTripleRepetition(): boolean {
@@ -149,7 +155,7 @@ export default class Position implements PositionInfo {
       return srcPiece;
     }
 
-    if (destCoords.y === Piece.INITIAL_PIECE_RANKS[-this.colorToMove as Color])
+    if (destCoords.y === Piece.initialPieceRanks[-this.colorToMove as Color])
       return srcPiece.promote(promotionType);
 
     return srcPiece;
@@ -164,7 +170,7 @@ export default class Position implements PositionInfo {
       const wing = Position.getWing(destCoords.y);
       const rookCoords = { x: srcCoords.x, y: wing };
       board
-        .set({ x: srcCoords.x, y: Piece.CASTLED_ROOK_FILES[wing] }, board.get(rookCoords)!)
+        .set({ x: srcCoords.x, y: Piece.castledRookFiles[wing] }, board.get(rookCoords)!)
         .unset(rookCoords);
     }
   }
@@ -216,7 +222,7 @@ export default class Position implements PositionInfo {
       halfMoveClock: (isCaptureOrPawnMove) ? 0 : this.halfMoveClock + 1,
       fullMoveNumber: (updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
         ? this.fullMoveNumber + 1
-        : this.fullMoveNumber,
+        : this.fullMoveNumber
     });
   }
 
@@ -230,7 +236,7 @@ export default class Position implements PositionInfo {
       colorToMove: this.colorToMove,
       enPassantFile: this.enPassantFile,
       halfMoveClock: this.halfMoveClock,
-      fullMoveNumber: this.fullMoveNumber,
+      fullMoveNumber: this.fullMoveNumber
     });
   }
 
@@ -240,7 +246,7 @@ export default class Position implements PositionInfo {
       (this.colorToMove === Color.WHITE) ? "w" : "b",
       this.castlingRights.toString(),
       (this.enPassantFile === -1) ? "-" : coordsToNotation({
-        x: Piece.MIDDLE_RANKS[this.colorToMove] + this.colorToMove,
+        x: Piece.middleRanks[this.colorToMove] + this.colorToMove,
         y: this.enPassantFile,
       }),
       String(this.halfMoveClock),

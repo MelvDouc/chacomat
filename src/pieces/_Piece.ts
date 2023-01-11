@@ -9,13 +9,17 @@ import type {
   CoordsGenerator,
   PieceInitial,
   Position,
-  WhitePieceInitial,
+  WhitePieceInitial
 } from "../types.js";
 
-abstract class Piece {
-  public static readonly INITIAL_PIECE_RANKS: BlackAndWhite<ChessRank> = {
+export default abstract class Piece {
+  public static readonly offsets: { x: number[]; y: number[]; };
+  public static readonly initial: WhitePieceInitial;
+  public static readonly constructors = new Map<WhitePieceInitial, typeof Piece>();
+
+  public static readonly initialPieceRanks: BlackAndWhite<ChessRank> = {
     [Color.WHITE]: 7,
-    [Color.BLACK]: 0,
+    [Color.BLACK]: 0
   };
 
   public static readonly initialPawnRanks = {
@@ -23,24 +27,21 @@ abstract class Piece {
     [Color.BLACK]: 1
   };
 
-  public static readonly CASTLED_ROOK_FILES = {
+  public static readonly castledRookFiles = {
     [Wing.QUEEN_SIDE]: 3,
-    [Wing.KING_SIDE]: 5,
+    [Wing.KING_SIDE]: 5
   };
 
-  public static readonly MIDDLE_RANKS: BlackAndWhite<ChessRank> = {
+  public static readonly middleRanks: BlackAndWhite<ChessRank> = {
     [Color.WHITE]: 4,
-    [Color.BLACK]: 3,
+    [Color.BLACK]: 3
   };
-
-  public static readonly offsets: { x: number[]; y: number[]; };
-  public static readonly initial: WhitePieceInitial;
-  public static readonly constructors = new Map<WhitePieceInitial, typeof Piece>();
 
   public static fromInitial(initial: PieceInitial): Piece {
+    const whiteInitial = initial.toUpperCase() as WhitePieceInitial;
     return Reflect.construct(
-      this.constructors.get(initial.toUpperCase() as WhitePieceInitial)!,
-      [initial === initial.toUpperCase() ? Color.WHITE : Color.BLACK]
+      this.constructors.get(whiteInitial)!,
+      [initial === whiteInitial ? Color.WHITE : Color.BLACK]
     );
   }
 
@@ -85,5 +86,3 @@ abstract class Piece {
     return Reflect.construct(this.constructor, [this.color]);
   }
 }
-
-export default Piece;

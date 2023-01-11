@@ -7,7 +7,7 @@ export default class Pawn extends Piece {
 
   private static pawnXOffsets = {
     [Color.WHITE]: [-Color.WHITE, -Color.WHITE],
-    [Color.BLACK]: [-Color.BLACK, -Color.BLACK],
+    [Color.BLACK]: [-Color.BLACK, -Color.BLACK]
   };
 
   private static pawnYOffsets = [-1, 1];
@@ -15,7 +15,7 @@ export default class Pawn extends Piece {
   private *forwardMoves(srcCoords: Coords, board: Board) {
     const coords1 = {
       x: srcCoords.x - this.color,
-      y: srcCoords.y,
+      y: srcCoords.y
     };
 
     if (!board.get(coords1)) {
@@ -24,7 +24,7 @@ export default class Pawn extends Piece {
       if (srcCoords.x === Piece.initialPawnRanks[this.color]) {
         const coords2 = {
           x: coords1.x - this.color,
-          y: coords1.y,
+          y: coords1.y
         };
 
         if (!board.get(coords2))
@@ -37,7 +37,7 @@ export default class Pawn extends Piece {
     for (const destCoords of this.attackedCoords(srcCoords, board))
       if (
         board.get(destCoords)?.color === this.oppositeColor
-        || destCoords.y === enPassantFile && srcCoords.x === Piece.MIDDLE_RANKS[this.oppositeColor]
+        || destCoords.y === enPassantFile && srcCoords.x === Piece.middleRanks[this.oppositeColor]
       )
         yield destCoords;
   }

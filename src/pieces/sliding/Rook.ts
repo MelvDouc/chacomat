@@ -12,7 +12,7 @@ export default class Rook extends SlidingPiece {
   };
 
   public isOnInitialSquare({ x, y }: Coords): boolean {
-    return x === (this.constructor as typeof Piece).INITIAL_PIECE_RANKS[this.color]
+    return x === (this.constructor as typeof Piece).initialPieceRanks[this.color]
       && (y === Wing.QUEEN_SIDE || y === Wing.KING_SIDE);
   }
 }
