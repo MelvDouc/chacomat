@@ -33,20 +33,26 @@ export default class ChessGame {
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
    * @returns The current instance of a game containing the position after the move.
    */
-  public move(srcCoords: Coords, destCoords: Coords, promotionType: Promotable = "Q"): this {
+  public move(
+    srcCoords: { x: number; y: number; },
+    destCoords: { x: number; y: number; },
+    promotionType: Promotable = "Q"
+  ): this {
     if (this.currentPosition.status !== GameStatus.ACTIVE)
       throw new Error(`Position is inactive: ${this.currentPosition.status}`);
 
+    srcCoords = Coords.get(srcCoords.x, srcCoords.y)!;
+    destCoords = Coords.get(destCoords.x, destCoords.y)!;
     const { legalMoves } = this.currentPosition;
 
     if (!legalMoves.some(([srcCoords2, destCoords2]) =>
       srcCoords2 === srcCoords && destCoords2 === destCoords
     ))
-      throw new Error(`Ilegal move: ${srcCoords.notation}-${destCoords.notation}`);
+      throw new Error(`Ilegal move: ${(srcCoords as Coords).notation}-${(destCoords as Coords).notation}`);
 
     const nextPosition = this.currentPosition.getPositionFromMove(
-      srcCoords,
-      destCoords,
+      srcCoords as Coords,
+      destCoords as Coords,
       promotionType,
       true
     );
