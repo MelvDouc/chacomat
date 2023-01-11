@@ -1,6 +1,5 @@
 import Wing from "../constants/Wing.js";
 import {
-  AttackedCoordsSet,
   Board,
   CastlingRights,
   CoordsGenerator,
@@ -24,7 +23,7 @@ export default class King extends Piece {
     wing: Wing;
     kingCoords: Coords;
     castlingRights: CastlingRights;
-    attackedCoords: AttackedCoordsSet;
+    attackedCoords: Set<Coords>;
     board: Board;
   }): boolean {
     if (!castlingRights[this.color][wing])
@@ -50,7 +49,7 @@ export default class King extends Piece {
     return true;
   }
 
-  public *castlingCoords(kingCoords: Coords, attackedCoords: AttackedCoordsSet, position: Position): CoordsGenerator {
+  public *castlingCoords(kingCoords: Coords, attackedCoords: Set<Coords>, position: Position): CoordsGenerator {
     for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
       if (
         this.canCastleToWing({

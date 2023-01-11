@@ -4,7 +4,6 @@ import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
-  AttackedCoordsSet as AttackedCoordsSet,
   Coords,
   FenString,
   King,
@@ -62,7 +61,7 @@ export default class Position implements PositionInfo {
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
   private _legalMoves: Move[];
-  private _attackedCoordsSet: AttackedCoordsSet;
+  private _attackedCoordsSet: Set<Coords>;
   public prev: Position | null = null;
   public next: Position[] = [];
 
@@ -98,7 +97,7 @@ export default class Position implements PositionInfo {
     );
   }
 
-  private get attackedCoordsSet(): AttackedCoordsSet {
+  private get attackedCoordsSet(): Set<Coords> {
     this._attackedCoordsSet ??= this.board.getCoordsAttackedByColor(-this.colorToMove as Color);
     return this._attackedCoordsSet;
   }

@@ -2,7 +2,6 @@ import Color from "../constants/Color.js";
 import Coords from "./Coords.js";
 import Piece from "../pieces/Piece.js";
 import type {
-  AttackedCoordsSet,
   BlackAndWhite,
   PieceInitial
 } from "../types.js";
@@ -57,8 +56,8 @@ export default class Board {
     this.squares.delete(coords);
   }
 
-  public getCoordsAttackedByColor(color: Color): AttackedCoordsSet {
-    const set: AttackedCoordsSet = new Set();
+  public getCoordsAttackedByColor(color: Color): Set<Coords> {
+    const set = new Set<Coords>();
 
     for (const [srcCoords, piece] of this.squares)
       if (piece.color === color)
