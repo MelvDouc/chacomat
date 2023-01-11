@@ -1,4 +1,4 @@
-import Coords from "../constants/Coords.js";
+import Coords from "./Coords.js";
 import ChessGame from "./ChessGame.js";
 import Position from "./Position.js";
 

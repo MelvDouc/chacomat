@@ -1,4 +1,4 @@
-import Coords from "../constants/Coords.js";
+import Coords from "./Coords.js";
 import GameStatus from "../constants/GameStatus.js";
 import type {
   AlgebraicSquareNotation,

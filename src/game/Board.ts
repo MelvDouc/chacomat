@@ -1,5 +1,5 @@
 import Color from "../constants/Color.js";
-import Coords from "../constants/Coords.js";
+import Coords from "./Coords.js";
 import Piece from "../pieces/Piece.js";
 import type {
   AttackedCoordsSet,

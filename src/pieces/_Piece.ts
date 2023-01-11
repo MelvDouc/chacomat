@@ -1,11 +1,11 @@
 import Color from "../constants/Color.js";
-import Coords from "../constants/Coords.js";
 import Wing from "../constants/Wing.js";
 import type {
   BlackAndWhite,
   BlackPieceInitial,
   Board,
   ChessRank,
+  Coords,
   CoordsGenerator,
   PieceInitial,
   Position,

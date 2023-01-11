@@ -34,7 +34,7 @@ export type BlackAndWhite<T> = {
   [K in Color]: T;
 };
 
-export type Coords = import("./constants/Coords.js").default;
+export type Coords = import("./game/Coords.js").default;
 
 export interface PositionInfo {
   board: Board;

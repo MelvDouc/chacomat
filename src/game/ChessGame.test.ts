@@ -1,4 +1,3 @@
-import Coords from "../constants/Coords.js";
 import ChessGame from "./ChessGame.js";
 
 describe("Checkmate", () => {
@@ -23,7 +22,7 @@ describe("en passant", () => {
     .moveWithNotations("e4", "d5")
     .moveWithNotations("e7", "e5");
   it("#1", () => {
-    expect(game1.currentPosition.enPassantFile).toBe(Coords.fromNotation("e6")!.y);
+    expect(game1.currentPosition.enPassantFile).toBe(game1.currentPosition.board.Coords.fromNotation("e6")!.y);
   });
 
   it("#2", () => {
