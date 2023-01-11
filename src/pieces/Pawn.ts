@@ -7,9 +7,9 @@ import {
   Position,
   Promotable,
   Queen,
+  Coords,
   Rook
 } from "../types.js";
-import Coords from "../constants/Coords.js";
 
 export default class Pawn extends Piece {
   public static readonly initial = "P";
@@ -22,13 +22,13 @@ export default class Pawn extends Piece {
   private static pawnYOffsets = [-1, 1];
 
   private *forwardMoves(srcCoords: Coords, board: Board) {
-    const coords1 = Coords.get(srcCoords.x - this.color, srcCoords.y)!;
+    const coords1 = board.Coords.get(srcCoords.x - this.color, srcCoords.y)!;
 
     if (!board.get(coords1)) {
       yield coords1;
 
       if (srcCoords.x === Piece.initialPawnRanks[this.color]) {
-        const coords2 = Coords.get(coords1.x - this.color, coords1.y)!;
+        const coords2 = board.Coords.get(coords1.x - this.color, coords1.y)!;
 
         if (!board.get(coords2))
           yield coords2;
@@ -47,9 +47,8 @@ export default class Pawn extends Piece {
 
   public *attackedCoords(srcCoords: Coords, _board: Board) {
     for (const xOffset of Pawn.pawnXOffsets[this.color]) {
-      const x = srcCoords.x + xOffset;
       for (const yOffset of Pawn.pawnYOffsets) {
-        const coords = Coords.get(x, srcCoords.y + yOffset);
+        const coords = srcCoords.getPeer({ xOffset, yOffset });
         if (coords)
           yield coords;
       }

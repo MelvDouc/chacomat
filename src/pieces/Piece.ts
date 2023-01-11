@@ -14,7 +14,6 @@ Queen.offsets = {
 // @ts-ignore
 King.offsets = Queen.offsets;
 
-
 Piece.constructors
   .set(King.initial, King)
   .set(Pawn.initial, Pawn)

@@ -1,7 +1,11 @@
 import Color from "../constants/Color.js";
 import Coords from "../constants/Coords.js";
 import Piece from "../pieces/Piece.js";
-import type { AttackedCoordsRecord as AttackedCoordsSet, BlackAndWhite, PieceInitial } from "../types.js";
+import type {
+  AttackedCoordsSet,
+  BlackAndWhite,
+  PieceInitial
+} from "../types.js";
 
 export default class Board {
   private static readonly nullPiece = "0";
@@ -32,7 +36,9 @@ export default class Board {
   }
 
   private readonly squares: Map<Coords, Piece> = new Map();
-  public readonly kingCoords: BlackAndWhite<Coords> = {} as BlackAndWhite<Coords>;
+  public readonly kingCoords = {} as BlackAndWhite<Coords>;
+  public readonly Coords = Coords;
+
 
   public get pieceCount(): number {
     return this.squares.size;
@@ -68,7 +74,7 @@ export default class Board {
   public clone(): Board {
     const clone = new Board();
     for (const [coords, piece] of this.squares)
-      clone.set(coords, piece);
+      clone.set(coords, piece.clone());
     clone.kingCoords[Color.WHITE] = this.kingCoords[Color.WHITE];
     clone.kingCoords[Color.BLACK] = this.kingCoords[Color.BLACK];
     return clone;

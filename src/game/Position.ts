@@ -1,18 +1,18 @@
 import Color from "../constants/Color.js";
-import Coords from "../constants/Coords.js";
 import GameStatus from "../constants/GameStatus.js";
 import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
-  AttackedCoordsRecord as AttackedCoordsSet,
+  AttackedCoordsSet as AttackedCoordsSet,
+  Coords,
   FenString,
   King,
   Move,
   Pawn,
   PositionInfo,
   Promotable,
-  Rook,
+  Rook
 } from "../types.js";
 import Board from "./Board.js";
 import CastlingRights from "./CastlingRights.js";
@@ -35,13 +35,14 @@ export default class Position implements PositionInfo {
       halfMoveClock,
       fullMoveNumber,
     ] = fenString.split(" ");
+    const board = Board.fromPieceString(pieceString);
     return new Position({
-      board: Board.fromPieceString(pieceString),
+      board,
       castlingRights: CastlingRights.fromString(castlingString),
       colorToMove: (color === "w") ? Color.WHITE : Color.BLACK,
       enPassantFile: (enPassant === "-")
         ? -1
-        : Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
+        : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
       halfMoveClock: +halfMoveClock,
       fullMoveNumber: +fullMoveNumber,
     });
@@ -51,17 +52,17 @@ export default class Position implements PositionInfo {
     return (file < 4) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
   }
 
-  public readonly board!: Board;
-  public readonly castlingRights!: CastlingRights;
-  public readonly colorToMove!: Color;
+  public readonly board: Board;
+  public readonly castlingRights: CastlingRights;
+  public readonly colorToMove: Color;
   /**
    * The empty square index where an en passant capture can be played.
    */
-  public readonly enPassantFile!: number;
-  public readonly halfMoveClock!: number;
-  public readonly fullMoveNumber!: number;
-  private _legalMoves!: Move[];
-  private _attackedCoordsSet!: AttackedCoordsSet;
+  public readonly enPassantFile: number;
+  public readonly halfMoveClock: number;
+  public readonly fullMoveNumber: number;
+  private _legalMoves: Move[];
+  private _attackedCoordsSet: AttackedCoordsSet;
   public prev: Position | null = null;
   public next: Position[] = [];
 
@@ -139,7 +140,7 @@ export default class Position implements PositionInfo {
   private *pseudoLegalMoves(): Generator<Move, void, unknown> {
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
-        const srcCoords = Coords.get(x, y)!;
+        const srcCoords = this.board.Coords.get(x, y)!;
         if (this.board.get(srcCoords)?.color === this.colorToMove)
           for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves(srcCoords, this))
             yield [srcCoords, destCoords] as Move;
@@ -152,7 +153,7 @@ export default class Position implements PositionInfo {
       destCoords.y === this.enPassantFile
       && srcCoords.x === Piece.middleRanks[srcPiece.oppositeColor]
     ) {
-      board.unset(Coords.get(srcCoords.x, destCoords.y)!);
+      board.unset(board.Coords.get(srcCoords.x, destCoords.y)!);
       return srcPiece;
     }
 
@@ -169,9 +170,9 @@ export default class Position implements PositionInfo {
 
     if (Math.abs(destCoords.y - srcCoords.y) > 1) {
       const wing = Position.getWing(destCoords.y);
-      const rookCoords = Coords.get(srcCoords.x, wing)!;
+      const rookCoords = board.Coords.get(srcCoords.x, wing)!;
       board
-        .set(Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!, board.get(rookCoords)!)
+        .set(board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!, board.get(rookCoords)!)
         .unset(rookCoords);
     }
   }
@@ -248,7 +249,7 @@ export default class Position implements PositionInfo {
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
         ? "-"
-        : Coords.get(Piece.middleRanks[this.colorToMove] + this.colorToMove, this.enPassantFile)!.notation,
+        : this.board.Coords.get(Piece.middleRanks[this.colorToMove] + this.colorToMove, this.enPassantFile)!.notation,
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
     ].join(" ");

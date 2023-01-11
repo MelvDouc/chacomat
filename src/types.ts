@@ -26,7 +26,7 @@ export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
 export type Board = import("./game/Board.js").default;
 export type CastlingRights = import("./game/CastlingRights.js").default;
-export type AttackedCoordsRecord = Set<Coords>;
+export type AttackedCoordsSet = Set<Coords>;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
 

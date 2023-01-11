@@ -1,10 +1,10 @@
-import Coords from "../constants/Coords.js";
 import Wing from "../constants/Wing.js";
 import {
-  AttackedCoordsRecord,
+  AttackedCoordsSet,
   Board,
   CastlingRights,
   CoordsGenerator,
+  Coords,
   Position
 } from "../types.js";
 import Piece from "./_Piece.js";
@@ -24,7 +24,7 @@ export default class King extends Piece {
     wing: Wing;
     kingCoords: Coords;
     castlingRights: CastlingRights;
-    attackedCoords: AttackedCoordsRecord;
+    attackedCoords: AttackedCoordsSet;
     board: Board;
   }): boolean {
     if (!castlingRights[this.color][wing])
@@ -36,7 +36,7 @@ export default class King extends Piece {
       file !== wing;
       file += direction
     ) {
-      const castlingCoords = Coords.get(kingCoords.x, file)!;
+      const castlingCoords = board.Coords.get(kingCoords.x, file)!;
       if (board.get(castlingCoords) !== null)
         return false;
       // If a square traversed by the king is controlled by the enemy color.
@@ -50,7 +50,7 @@ export default class King extends Piece {
     return true;
   }
 
-  public *castlingCoords(kingCoords: Coords, attackedCoords: AttackedCoordsRecord, position: Position): CoordsGenerator {
+  public *castlingCoords(kingCoords: Coords, attackedCoords: AttackedCoordsSet, position: Position): CoordsGenerator {
     for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
       if (
         this.canCastleToWing({
@@ -61,6 +61,6 @@ export default class King extends Piece {
           board: position.board
         })
       )
-        yield Coords.get(kingCoords.x, King.castledFiles[wing])!;
+        yield position.board.Coords.get(kingCoords.x, King.castledFiles[wing])!;
   }
 }
