@@ -14,13 +14,13 @@ export type ChessFileName = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
 export type ChessRankName = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 export type AlgebraicSquareNotation = `${ChessFileName}${ChessRankName}`;
 
-export type Piece = import("./pieces/_Piece.js").default;
-export type Pawn = import("./pieces/Pawn.js").default;
-export type King = import("./pieces/King.js").default;
-export type Knight = import("./pieces/Knight.js").default;
-export type Bishop = import("./pieces/sliding/Bishop.js").default;
-export type Rook = import("./pieces/sliding/Rook.js").default;
-export type Queen = import("./pieces/sliding/Queen.js").default;
+export type Piece = import("./pieces/Piece.js").default;
+export type Pawn = import("./pieces/Piece.js").Pawn;
+export type King = import("./pieces/Piece.js").King;
+export type Knight = import("./pieces/Piece.js").Knight;
+export type Bishop = import("./pieces/Piece.js").Bishop;
+export type Rook = import("./pieces/Piece.js").Rook;
+export type Queen = import("./pieces/Piece.js").Queen;
 
 export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
