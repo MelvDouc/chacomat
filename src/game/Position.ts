@@ -81,9 +81,8 @@ export default class Position implements PositionInfo {
         this._legalMoves.push(move);
 
     if (!this.isCheck()) {
-      const kingCoords = this.board.kingCoords[this.colorToMove],
-        king = this.board.get(kingCoords) as King;
-      for (const destCoords of king.castlingCoords(kingCoords, this.attackedCoordsSet, this))
+      const kingCoords = this.board.kingCoords[this.colorToMove];
+      for (const destCoords of (this.board.get(kingCoords) as King).castlingCoords(kingCoords, this.attackedCoordsSet, this))
         this._legalMoves.push([kingCoords, destCoords]);
     }
 
@@ -186,7 +185,8 @@ export default class Position implements PositionInfo {
     promotionType: Promotable = "Q",
     updateColorAndMoveNumber = false,
   ): Position {
-    const { board, castlingRights } = this.clone();
+    const board = this.board.clone(),
+      castlingRights = this.castlingRights.clone();
 
     let srcPiece = board.get(srcCoords) as Piece,
       destPiece = board.get(destCoords);
@@ -225,20 +225,6 @@ export default class Position implements PositionInfo {
       fullMoveNumber: (updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
         ? this.fullMoveNumber + 1
         : this.fullMoveNumber
-    });
-  }
-
-  /**
-   * @returns A deep clone of this position.
-   */
-  public clone(): Position {
-    return new Position({
-      board: this.board.clone(),
-      castlingRights: this.castlingRights.clone(),
-      colorToMove: this.colorToMove,
-      enPassantFile: this.enPassantFile,
-      halfMoveClock: this.halfMoveClock,
-      fullMoveNumber: this.fullMoveNumber
     });
   }
 
