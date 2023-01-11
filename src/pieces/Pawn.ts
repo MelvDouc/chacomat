@@ -1,6 +1,6 @@
 import Piece from "./_Piece.js";
 import Color from "../constants/Color.js";
-import { Board, Coords, Position, Promotable } from "../types.js";
+import { Bishop, Board, Coords, Knight, Position, Promotable, Queen, Rook } from "../types.js";
 
 export default class Pawn extends Piece {
   public static readonly initial = "P";
@@ -59,7 +59,7 @@ export default class Pawn extends Piece {
     yield* this.captures(srcCoords, board, enPassantFile);
   }
 
-  public promote(type: Promotable): Piece {
+  public promote(type: Promotable): Queen | Rook | Bishop | Knight {
     return Reflect.construct(Piece.constructors.get(type)!, [this.color]);
   }
 }

@@ -3,17 +3,14 @@ import {
   AttackedCoordsRecord,
   Board,
   CastlingRights,
-  Color,
   Coords,
   CoordsGenerator,
   Position
 } from "../types.js";
 import Piece from "./_Piece.js";
-import Queen from "./sliding/Queen.js";
 
 export default class King extends Piece {
   public static readonly initial = "K";
-  public static readonly offsets = Queen.offsets;
   private static initialFile = 4;
   private static readonly castledFiles = {
     [Wing.QUEEN_SIDE]: 2,

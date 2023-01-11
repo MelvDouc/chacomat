@@ -22,7 +22,7 @@ export default class Board {
               return;
             const piece = Piece.fromInitial(item as PieceInitial);
             acc.set({ x, y }, piece);
-            if ((piece.constructor as typeof Piece).initial === "K")
+            if (piece.whiteInitial === "K")
               acc.kingCoords[piece.color] = { x, y };
           });
         return acc;

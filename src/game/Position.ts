@@ -150,7 +150,10 @@ export default class Position implements PositionInfo {
   }
 
   private handlePawnMove(srcPiece: Pawn, srcCoords: Coords, destCoords: Coords, board: Board, promotionType: Promotable = "Q"): Piece {
-    if (destCoords.y === this.enPassantFile) {
+    if (
+      destCoords.y === this.enPassantFile
+      && srcCoords.x === Piece.middleRanks[srcPiece.oppositeColor]
+    ) {
       board.unset({ x: srcCoords.x, y: destCoords.y });
       return srcPiece;
     }

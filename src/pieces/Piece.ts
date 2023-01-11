@@ -6,6 +6,15 @@ import Bishop from "./sliding/Bishop.js";
 import Queen from "./sliding/Queen.js";
 import Rook from "./sliding/Rook.js";
 
+// @ts-ignore
+Queen.offsets = {
+  x: Rook.offsets.x.concat(Bishop.offsets.x),
+  y: Rook.offsets.y.concat(Bishop.offsets.y)
+};
+// @ts-ignore
+King.offsets = Queen.offsets;
+
+
 Piece.constructors
   .set(King.initial, King)
   .set(Pawn.initial, Pawn)

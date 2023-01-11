@@ -1,6 +1,5 @@
 import Wing from "../../constants/Wing.js";
 import { Coords } from "../../types.js";
-import Piece from "../_Piece.js";
 import SlidingPiece from "./SlidingPiece.js";
 
 export default class Rook extends SlidingPiece {
@@ -12,7 +11,7 @@ export default class Rook extends SlidingPiece {
   };
 
   public isOnInitialSquare({ x, y }: Coords): boolean {
-    return x === (this.constructor as typeof Piece).initialPieceRanks[this.color]
+    return x === Rook.initialPieceRanks[this.color]
       && (y === Wing.QUEEN_SIDE || y === Wing.KING_SIDE);
   }
 }
