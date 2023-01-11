@@ -97,12 +97,14 @@ export default class Position implements PositionInfo {
    * Determine whether the position is active, checkmate or a draw and what kind of draw.
    */
   public get status(): GameStatus {
+    if (!this.legalMoves.length)
+      return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
     if (this.board.pieceCount < 3)
       return GameStatus.INSUFFICIENT_MATERIAL;
     if (this.halfMoveClock > 50)
       return GameStatus.FIFTY_MOVE_DRAW;
-    if (!this.legalMoves.length)
-      return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
+    if (this.isTripleRepetition())
+      return GameStatus.TRIPLE_REPETITION;
     return GameStatus.ACTIVE;
   }
 
@@ -112,6 +114,17 @@ export default class Position implements PositionInfo {
     return x in attackedCoords && attackedCoords[x][y] === true;
   }
 
+  private isTripleRepetition(): boolean {
+    const pieceStr = this.board.toString();
+    let repetitionCount = 0;
+
+    for (let current = this.prev; current && repetitionCount < 3; current = current.prev)
+      if (current.colorToMove === this.colorToMove && current.board.toString() === pieceStr)
+        repetitionCount++;
+
+    return repetitionCount === 3;
+  }
+
   /**
    * Generates the moves that could be played without regard for whether it puts the current player in check.
    */
@@ -119,10 +132,9 @@ export default class Position implements PositionInfo {
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
         const srcCoords = { x, y };
-        if (this.board.get(srcCoords)?.color !== this.colorToMove)
-          continue;
-        for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves(srcCoords, this))
-          yield [srcCoords, destCoords] as Move;
+        if (this.board.get(srcCoords)?.color === this.colorToMove)
+          for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves(srcCoords, this))
+            yield [srcCoords, destCoords] as Move;
       }
     }
   }
@@ -168,8 +180,8 @@ export default class Position implements PositionInfo {
     const srcPiece = board.get(srcCoords) as Piece,
       destPiece = board.get(destCoords);
 
-    const isSrcPiecePawn = srcPiece.type === Piece.Types.PAWN;
-    const isCaptureOrPawnMove = !!destPiece || isSrcPiecePawn;
+    const isSrcPiecePawn = srcPiece.type === Piece.Types.PAWN,
+      isCaptureOrPawnMove = !!destPiece || isSrcPiecePawn;
 
     switch (srcPiece.type) {
       case Piece.Types.PAWN:
@@ -183,7 +195,7 @@ export default class Position implements PositionInfo {
           castlingRights[srcPiece.color][srcCoords.y as Wing] = false;
     }
 
-    if (destPiece?.type === Piece.Types.ROOK && this.isInitialRookSquare(destCoords, destPiece!.color))
+    if (destPiece?.type === Piece.Types.ROOK && this.isInitialRookSquare(destCoords, destPiece.color))
       castlingRights[destPiece.color][destCoords.y as Wing] = false;
 
     board.set(destCoords, srcPiece).unset(srcCoords);
@@ -224,8 +236,8 @@ export default class Position implements PositionInfo {
       (this.colorToMove === Color.WHITE) ? "w" : "b",
       this.castlingRights.toString(),
       (this.enPassantFile === -1) ? "-" : coordsToNotation({
-        y: this.enPassantFile,
         x: Piece.MIDDLE_RANKS[this.colorToMove] + this.colorToMove,
+        y: this.enPassantFile,
       }),
       String(this.halfMoveClock),
       String(this.fullMoveNumber)

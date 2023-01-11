@@ -6,4 +6,4 @@ A chess application built for NodeJS.
 
 - [ ] Parse PGN
 - [ ] Check for triple repetition
-- [ ] Check for 50-move draw
+- [x] Check for 50-move draw
