@@ -4,7 +4,6 @@ import type {
   BlackAndWhite,
   BlackPieceInitial,
   Board,
-  ChessRank,
   Coords,
   CoordsGenerator,
   PieceInitial,
@@ -17,7 +16,7 @@ export default abstract class Piece {
   public static readonly initial: WhitePieceInitial;
   public static readonly constructors = new Map<WhitePieceInitial, typeof Piece>();
 
-  public static readonly initialPieceRanks: BlackAndWhite<ChessRank> = {
+  public static readonly initialPieceRanks: BlackAndWhite<number> = {
     [Color.WHITE]: 7,
     [Color.BLACK]: 0
   };
@@ -32,7 +31,7 @@ export default abstract class Piece {
     [Wing.KING_SIDE]: 5
   };
 
-  public static readonly middleRanks: BlackAndWhite<ChessRank> = {
+  public static readonly middleRanks: BlackAndWhite<number> = {
     [Color.WHITE]: 4,
     [Color.BLACK]: 3
   };

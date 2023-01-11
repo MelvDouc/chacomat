@@ -2,8 +2,6 @@ import Color from "./constants/Color.js";
 import GameStatus from "./constants/GameStatus.js";
 
 export type { Color, GameStatus };
-export type ChessRank = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
-export type ChessFile = ChessRank;
 
 export type FenString = string;
 export type WhitePieceInitial = "N" | "B" | "R" | "Q" | "K" | "P";
