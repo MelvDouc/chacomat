@@ -80,6 +80,18 @@ export default class Board {
   }
 
   /**
+   * Get an bidimensional array representing the placement of each piece.
+   * Empty squares are null.
+   */
+  public getPieceArray(): (Piece | null)[][] {
+    return Array.from({ length: 8 }, (_, x) => {
+      return Array.from({ length: 8 }, (_, y) => {
+        return this.squares.get(Coords.get(x, y)!) ?? null;
+      });
+    });
+  }
+
+  /**
    * The board portion of an FEN string.
    */
   public toString(): string {
