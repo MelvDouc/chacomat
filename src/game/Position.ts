@@ -2,6 +2,8 @@ import GameStatus from "../constants/GameStatus.js";
 import Color from "../constants/Color.js";
 import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
+import Board from "./Board.js";
+import CastlingRights from "./CastlingRights.js";
 import type {
   AlgebraicSquareNotation,
   Coords,
@@ -13,8 +15,6 @@ import type {
   Promotable,
   Rook
 } from "../types.js";
-import Board from "./Board.js";
-import CastlingRights from "./CastlingRights.js";
 
 /**
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.

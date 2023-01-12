@@ -1,6 +1,6 @@
 import Wing from "../constants/Wing.js";
 import Color from "../constants/Color.js";
-import { BlackAndWhite } from "../types.js";
+import type { BlackAndWhite } from "../types.js";
 
 /**
  * @classdesc Create an object that represents the castling rights in a position.

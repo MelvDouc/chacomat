@@ -1,5 +1,5 @@
-import { Board, Coords } from "../../types.js";
 import Piece from "../_Piece.js";
+import type { Board, Coords } from "../../types.js";
 
 export default abstract class SlidingPiece extends Piece {
   public *attackedCoords(srcCoords: Coords, board: Board) {

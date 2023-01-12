@@ -1,5 +1,5 @@
 import Piece from "./_Piece.js";
-import {
+import type {
   Bishop,
   Board,
   Coords,

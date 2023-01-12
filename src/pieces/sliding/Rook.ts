@@ -1,5 +1,3 @@
-import Wing from "../../constants/Wing.js";
-import { Coords } from "../../types.js";
 import SlidingPiece from "./SlidingPiece.js";
 
 export default class Rook extends SlidingPiece {

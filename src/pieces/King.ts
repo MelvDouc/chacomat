@@ -1,12 +1,12 @@
 import Wing from "../constants/Wing.js";
-import {
+import Piece from "./_Piece.js";
+import type {
   Board,
   CastlingRights,
   CoordsGenerator,
   Coords,
   Position
 } from "../types.js";
-import Piece from "./_Piece.js";
 
 export default class King extends Piece {
   public static readonly initial = "K";
