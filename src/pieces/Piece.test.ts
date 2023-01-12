@@ -17,7 +17,7 @@ describe("Piece", () => {
   });
 
   it("Q should produce a queen", () => {
-    const pawn = new Pawn(Color.WHITE);
+    const pawn = new Pawn({ color: Color.WHITE });
 
     expect(pawn.promote("Q") instanceof Queen).toBe(true);
   });

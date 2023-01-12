@@ -60,6 +60,6 @@ export default class Pawn extends Piece {
   }
 
   public promote(type: Promotable): Queen | Rook | Bishop | Knight {
-    return Reflect.construct(Piece.constructors.get(type)!, [this.color]);
+    return Reflect.construct(Piece.constructors.get(type)!, [{ color: this.color }]);
   }
 }

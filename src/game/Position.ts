@@ -177,9 +177,11 @@ export default class Position implements PositionInfo {
 
     if (Math.abs(destCoords.y - srcCoords.y) > 1) {
       const wing = Position.getWing(destCoords.y);
-      const rookCoords = board.Coords.get(srcCoords.x, Piece.startRookFiles[wing])!;
-      if (board.get(rookCoords)!.whiteInitial !== "R")
+      const rookCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing])!;
+      if (board.get(rookCoords)!.whiteInitial !== "R") {
+        console.log("here____", rookCoords);
         throw new Error(`INVALID ROOK: ${JSON.stringify(rookCoords)}`);
+      }
       board
         .set(board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!, board.get(rookCoords)!)
         .unset(rookCoords);
@@ -213,11 +215,11 @@ export default class Position implements PositionInfo {
         this.handleKingMove(srcCoords, destCoords, board, castlingRights, srcPiece.color);
         break;
       case "R":
-        if ((srcPiece as Rook).isOnInitialSquare(srcCoords))
+        if ((srcPiece as Rook).isOnInitialSquare(srcCoords, board))
           castlingRights[srcPiece.color][srcCoords.y as Wing] = false;
     }
 
-    if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare(destCoords))
+    if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare(destCoords, board))
       castlingRights[destPiece.color][destCoords.y as Wing] = false;
 
     board.set(destCoords, srcPiece).unset(srcCoords);

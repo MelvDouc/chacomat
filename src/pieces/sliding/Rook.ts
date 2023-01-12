@@ -1,6 +1,6 @@
 import SlidingPiece from "./SlidingPiece.js";
 import Wing from "../../constants/Wing.js";
-import type { Coords } from "../../types.js";
+import type { Board, Coords } from "../../types.js";
 
 export default class Rook extends SlidingPiece {
   public static readonly whiteInitial = "R";
@@ -10,11 +10,11 @@ export default class Rook extends SlidingPiece {
     y: [-1, 0, 0, 1]
   };
 
-  public isOnInitialSquare({ x, y }: Coords): boolean {
+  public isOnInitialSquare({ x, y }: Coords, board: Board): boolean {
     return x === Rook.startPieceRanks[this.color]
       && (
-        y === Rook.startRookFiles[Wing.QUEEN_SIDE]
-        || y === Rook.startRookFiles[Wing.KING_SIDE]
+        y === board.startRookFiles[Wing.QUEEN_SIDE]
+        || y === board.startRookFiles[Wing.KING_SIDE]
       );
   }
 }

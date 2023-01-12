@@ -1,4 +1,5 @@
 import Color from "./constants/Color.js";
+import Wing from "./constants/Wing.js";
 import GameStatus from "./constants/GameStatus.js";
 
 export type { GameStatus, Color };
@@ -29,6 +30,10 @@ export type Move = [Coords, Coords];
 
 export type BlackAndWhite<T> = {
   [K in Color]: T;
+};
+
+export type Wings<T> = {
+  [W in Wing]: T;
 };
 
 export type Coords = import("./game/Coords.js").default;

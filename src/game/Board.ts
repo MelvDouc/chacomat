@@ -1,9 +1,11 @@
 import Coords from "./Coords.js";
 import Color from "../constants/Color.js";
+import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
   BlackAndWhite,
-  PieceInitial
+  PieceInitial,
+  Wings
 } from "../types.js";
 
 export default class Board {
@@ -35,12 +37,26 @@ export default class Board {
   }
 
   private readonly squares: Map<Coords, Piece> = new Map();
-  public readonly kingCoords = {} as BlackAndWhite<Coords>;
   public readonly Coords = Coords;
-
+  public readonly kingCoords = {} as BlackAndWhite<Coords>;
+  public startRookFiles: Wings<number> = {
+    [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
+    [Wing.KING_SIDE]: Wing.KING_SIDE
+  };
 
   public get pieceCount(): number {
     return this.squares.size;
+  }
+
+  public get rookFiles(): { [W in Wing]: number } {
+    const rookFiles: number[] = [];
+    for (let y = 0; y < 8; y++)
+      if (this.squares.get(Coords.get(7, y)!)?.whiteInitial === "R")
+        rookFiles.push(y);
+    return {
+      [Wing.QUEEN_SIDE]: Math.min(...rookFiles),
+      [Wing.KING_SIDE]: Math.max(...rookFiles)
+    };
   }
 
   public get(coords: Coords): Piece | null {
@@ -76,6 +92,7 @@ export default class Board {
       clone.set(coords, piece.clone());
     clone.kingCoords[Color.WHITE] = this.kingCoords[Color.WHITE];
     clone.kingCoords[Color.BLACK] = this.kingCoords[Color.BLACK];
+    clone.startRookFiles = this.startRookFiles;
     return clone;
   }
 

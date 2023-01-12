@@ -8,7 +8,8 @@ import type {
   CoordsGenerator,
   PieceInitial,
   Position,
-  WhitePieceInitial
+  WhitePieceInitial,
+  Wings
 } from "../types.js";
 
 export default abstract class Piece {
@@ -31,7 +32,12 @@ export default abstract class Piece {
     [Color.BLACK]: 1
   };
 
-  public static readonly castledRookFiles: { [W in Wing]: number } = {
+  public static readonly castledKingFiles: Wings<number> = {
+    [Wing.QUEEN_SIDE]: 2,
+    [Wing.KING_SIDE]: 6
+  };
+
+  public static readonly castledRookFiles: Wings<number> = {
     [Wing.QUEEN_SIDE]: 3,
     [Wing.KING_SIDE]: 5
   };
@@ -41,22 +47,17 @@ export default abstract class Piece {
     [Color.BLACK]: 3
   };
 
-  public static readonly startRookFiles: { [W in Wing]: number } = {
-    [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
-    [Wing.KING_SIDE]: Wing.KING_SIDE
-  };
-
   public static fromInitial(initial: PieceInitial): Piece {
     const whiteInitial = initial.toUpperCase() as WhitePieceInitial;
     return Reflect.construct(
       this.constructors.get(whiteInitial)!,
-      [initial === whiteInitial ? Color.WHITE : Color.BLACK]
+      [{ color: initial === whiteInitial ? Color.WHITE : Color.BLACK }]
     );
   }
 
   public readonly color: Color;
 
-  constructor(color: Color) {
+  constructor({ color }: { color: Color; }) {
     this.color = color;
   }
 
@@ -91,6 +92,6 @@ export default abstract class Piece {
   }
 
   public clone(): Piece {
-    return Reflect.construct(this.constructor, [this.color]);
+    return Reflect.construct(this.constructor, [{ color: this.color }]);
   }
 }

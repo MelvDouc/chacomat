@@ -1,12 +1,12 @@
 import Coords from "./Coords.js";
 import GameStatus from "../constants/GameStatus.js";
+import Position from "./Position.js";
 import type {
   AlgebraicSquareNotation,
   FenString,
   PositionInfo,
   Promotable,
 } from "../types.js";
-import Position from "./Position.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -16,10 +16,16 @@ export default class ChessGame {
 
   public currentPosition: Position;
 
-  constructor(fenStringOrPositionInfo: FenString | PositionInfo = Position.startFenString) {
-    this.currentPosition = (typeof fenStringOrPositionInfo === "string")
-      ? Position.fromFenString(fenStringOrPositionInfo)
-      : new Position(fenStringOrPositionInfo);
+  constructor({ fenString, positionInfo, isChess960 }: {
+    fenString?: FenString;
+    positionInfo?: PositionInfo;
+    isChess960?: boolean;
+  } = {}) {
+    this.currentPosition = positionInfo
+      ? new Position(positionInfo)
+      : Position.fromFenString(fenString ?? Position.startFenString);
+    if (isChess960)
+      this.currentPosition.board.startRookFiles = this.currentPosition.board.rookFiles;
   }
 
   public get status(): GameStatus {

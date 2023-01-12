@@ -7,12 +7,12 @@ describe("A board", () => {
   it("should be serializable", () => {
     const board = new Board();
 
-    board.set(board.Coords.get(0, 0)!, new King(Color.BLACK));
-    board.set(board.Coords.get(7, 7)!, new King(Color.WHITE));
+    board.set(board.Coords.get(0, 0)!, new King({ color: Color.BLACK }));
+    board.set(board.Coords.get(7, 7)!, new King({ color: Color.WHITE }));
 
     for (let y = 0; y < 8; y++) {
-      board.set(board.Coords.get(1, y)!, new Pawn(Color.BLACK));
-      board.set(board.Coords.get(6, y)!, new Pawn(Color.WHITE));
+      board.set(board.Coords.get(1, y)!, new Pawn({ color: Color.BLACK }));
+      board.set(board.Coords.get(6, y)!, new Pawn({ color: Color.WHITE }));
     }
 
     expect("k7/pppppppp/8/8/8/8/PPPPPPPP/7K").toBe(board.toString());

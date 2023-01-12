@@ -5,16 +5,12 @@ import type {
   CastlingRights,
   CoordsGenerator,
   Coords,
-  Position
+  Position,
+  Wings
 } from "../types.js";
 
 export default class King extends Piece {
   public static readonly whiteInitial = "K";
-  public static startFiles = [4];
-  private static readonly castledFiles = {
-    [Wing.QUEEN_SIDE]: 2,
-    [Wing.KING_SIDE]: 6
-  };
 
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
@@ -30,20 +26,20 @@ export default class King extends Piece {
       return false;
 
     const { x: X, y: Y } = kingCoords;
-    const rookCoords = board.Coords.get(
-      X,
-      Piece.startRookFiles[wing]
-    )!;
+    const rookCoords = board.Coords.get(X, board.startRookFiles[wing])!;
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
-    const kingDirection = Math.sign(wing - Y);
+    const kingDirection = Math.sign(King.castledKingFiles[wing] - Y);
 
     for (let y = Y + kingDirection; ; y += kingDirection) {
       const destCoords = board.Coords.get(X, y)!;
-      if ((attackedCoords.has(destCoords) || !!board.get(destCoords)) && destCoords !== rookCoords)
+      if (
+        (attackedCoords.has(destCoords) || !!board.get(destCoords))
+        && destCoords !== rookCoords
+      )
         return false;
-      if (y === King.castledFiles[wing])
+      if (y === King.castledKingFiles[wing])
         break;
     }
 
@@ -72,6 +68,6 @@ export default class King extends Piece {
           board: position.board
         })
       )
-        yield position.board.Coords.get(kingCoords.x, King.castledFiles[wing])!;
+        yield position.board.Coords.get(kingCoords.x, King.castledKingFiles[wing])!;
   }
 }

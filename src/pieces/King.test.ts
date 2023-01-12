@@ -1,9 +1,9 @@
 import Color from "../constants/Color.js";
 import Wing from "../constants/Wing.js";
+import ChessGame from "../game/ChessGame.js";
 import Coords from "../game/Coords.js";
 import Position from "../game/Position.js";
 import King from "./King.js";
-import Piece from "./Piece.js";
 
 const c1 = Coords.fromNotation("c1")!;
 const d1 = Coords.fromNotation("d1")!;
@@ -32,23 +32,28 @@ describe("A king", () => {
 
 describe("Chess960", () => {
   it("should implement castling", () => {
-    const pos = Position.fromFenString("nbbqrkrn/8/8/8/8/8/8/NB2RKR1 w KQkq - 0 1");
-    Piece.startRookFiles[Wing.QUEEN_SIDE] = 4;
-    Piece.startRookFiles[Wing.KING_SIDE] = 6;
-    const whiteKingCoords = pos.board.kingCoords[Color.WHITE],
-      whiteKing = pos.board.get(whiteKingCoords) as King;
+    const game = new ChessGame({
+      fenString: "nbbqrkrn/pppppppp/8/8/8/8/8/NB2RKR1 w KQkq - 0 1",
+      isChess960: true
+    });
+    const pos = game.currentPosition,
+      { board } = pos;
+    const whiteKingCoords = board.kingCoords[Color.WHITE],
+      whiteKing = board.get(whiteKingCoords) as King;
     const castlingCoords = [
       ...whiteKing.castlingCoords(whiteKingCoords, pos.attackedCoordsSet, pos)
     ];
 
     expect(castlingCoords).toContain(c1);
     expect(castlingCoords).toContain(g1);
-    Piece.startRookFiles[Wing.QUEEN_SIDE] = 0;
-    Piece.startRookFiles[Wing.KING_SIDE] = 7;
   });
   it(" - king and rook should placed correctly after castling", () => {
-    const posBefore = Position.fromFenString("nbbqrkrn/8/8/8/8/8/8/NB2RKR1 w KQkq - 0 1");
-    const posAfter = posBefore.getPositionFromMove(Coords.get(7, 5)!, c1);
+    const game = new ChessGame({
+      fenString: "nbbqrkrn/pppppppp/8/8/8/8/8/NB2RKR1 w KQkq - 0 1",
+      isChess960: true
+    });
+    const kingCoords = game.currentPosition.board.kingCoords[Color.WHITE];
+    const posAfter = game.move(kingCoords, c1).currentPosition;
 
     expect(posAfter.board.get(c1)!.whiteInitial).toBe(King.whiteInitial);
     expect(posAfter.board.get(d1)!.whiteInitial).toBe("R");
