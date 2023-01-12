@@ -219,8 +219,8 @@ export default class Position implements PositionInfo {
       case "R":
         if ((srcPiece as Rook).isOnInitialSquare(srcCoords, board))
           castlingRights[srcPiece.color][srcCoords.y as Wing] = false;
+        board.set(destCoords, srcPiece).unset(srcCoords);
         break;
-      case "R":
       default:
         board.set(destCoords, srcPiece).unset(srcCoords);
     }

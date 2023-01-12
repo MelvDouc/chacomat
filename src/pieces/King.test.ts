@@ -1,7 +1,6 @@
 import Color from "../constants/Color.js";
 import ChessGame from "../game/ChessGame.js";
 import Coords from "../game/Coords.js";
-import Position from "../game/Position.js";
 import King from "./King.js";
 
 const c1 = Coords.fromNotation("c1")!;
