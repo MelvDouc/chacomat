@@ -29,21 +29,30 @@ export default class King extends Piece {
     if (!castlingRights[this.color][wing])
       return false;
 
-    const direction = Math.sign(wing - King.startFiles[0]);
-    for (
-      let file = King.startFiles[0] + direction;
-      file !== wing;
-      file += direction
-    ) {
-      const castlingCoords = board.Coords.get(kingCoords.x, file)!;
-      if (board.get(castlingCoords) !== null)
+    const { x: X, y: Y } = kingCoords;
+
+    // Check if squares between king and rook are empty.
+    const dirToRook = Math.sign(wing - X);
+
+    for (let y = Y + dirToRook; y !== wing; y += dirToRook) {
+      const destCoords = board.Coords.get(X, y)!,
+        piece = board.get(destCoords);
+      if (piece?.whiteInitial === "R" && piece.color === this.color)
+        break;
+      if (piece)
         return false;
-      // If a square traversed by the king is controlled by the enemy color.
-      if (
-        King.castledFiles[wing] - file !== -direction
-        && attackedCoords.has(castlingCoords)
-      )
+    }
+
+    // Check if no square traversed by the king is attacked by the other color.
+    const castledKingFile = King.castledFiles[wing];
+    const castlingDir = Math.sign(castledKingFile - X);
+
+    for (let y = Y + castlingDir; ; y += castlingDir) {
+      const destCoords = board.Coords.get(X, y)!;
+      if (attackedCoords.has(destCoords))
         return false;
+      if (y === castledKingFile)
+        break;
     }
 
     return true;

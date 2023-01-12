@@ -24,12 +24,12 @@ export default class CastlingRights {
   /**
    * Create an `CastlingRights` object from the castling portion of an FEN string.
    */
-  public static fromString(string: string): CastlingRights {
+  public static fromString(str: string): CastlingRights {
     const castlingRights = new CastlingRights();
 
     for (const color of [Color.WHITE, Color.BLACK])
       for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
-        castlingRights[color][wing] = string.includes(CastlingRights.initials[color][wing]);
+        castlingRights[color][wing] = str.includes(CastlingRights.initials[color][wing]);
 
     return castlingRights;
   }
