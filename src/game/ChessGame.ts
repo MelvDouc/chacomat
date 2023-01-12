@@ -15,6 +15,7 @@ export default class ChessGame {
   public static readonly Statuses = GameStatus;
 
   public currentPosition: Position;
+  public readonly isChess960: boolean;
 
   constructor({ fenString, positionInfo, isChess960 }: {
     fenString?: FenString;
@@ -26,6 +27,8 @@ export default class ChessGame {
       : Position.fromFenString(fenString ?? Position.startFenString);
     if (isChess960)
       this.currentPosition.board.startRookFiles = this.currentPosition.board.rookFiles;
+    this.currentPosition.game = this;
+    this.isChess960 = !!isChess960;
   }
 
   public get status(): GameStatus {
@@ -54,7 +57,7 @@ export default class ChessGame {
     if (!legalMoves.some(([srcCoords2, destCoords2]) =>
       srcCoords2 === srcCoords && destCoords2 === destCoords
     ))
-      throw new Error(`Ilegal move: ${(srcCoords as Coords).notation}-${(destCoords as Coords).notation}`);
+      throw new Error(`Illegal move: ${(srcCoords as Coords).notation}-${(destCoords as Coords).notation}`);
 
     const nextPosition = this.currentPosition.getPositionFromMove(
       srcCoords as Coords,
@@ -62,6 +65,7 @@ export default class ChessGame {
       promotionType,
       true
     );
+    nextPosition.game = this;
     nextPosition.prev = this.currentPosition;
     this.currentPosition.next.push(nextPosition);
     this.currentPosition = nextPosition;

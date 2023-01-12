@@ -58,7 +58,7 @@ export default class King extends Piece {
   }
 
   public *castlingCoords(kingCoords: Coords, attackedCoords: Set<Coords>, position: Position): CoordsGenerator {
-    for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
+    for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
       if (
         this.canCastleToWing({
           wing,
@@ -67,7 +67,12 @@ export default class King extends Piece {
           castlingRights: position.castlingRights,
           board: position.board
         })
-      )
-        yield position.board.Coords.get(kingCoords.x, King.castledKingFiles[wing])!;
+      ) {
+        const y = (position.game.isChess960)
+          ? position.board.startRookFiles[wing]
+          : King.castledKingFiles[wing];
+        yield position.board.Coords.get(kingCoords.x, y)!;
+      }
+    }
   }
 }

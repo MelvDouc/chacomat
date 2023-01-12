@@ -6,6 +6,7 @@ import Board from "./Board.js";
 import CastlingRights from "./CastlingRights.js";
 import type {
   AlgebraicSquareNotation,
+  ChessGame,
   Coords,
   FenString,
   King,
@@ -52,16 +53,9 @@ export default class Position implements PositionInfo {
     });
   }
 
-  private static getWing(file: number): Wing {
-    return (file < 4) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
-  }
-
   public readonly board: Board;
   public readonly castlingRights: CastlingRights;
   public readonly colorToMove: Color;
-  /**
-   * The empty square index where an en passant capture can be played.
-   */
   public readonly enPassantFile: number;
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
@@ -69,9 +63,11 @@ export default class Position implements PositionInfo {
   private _attackedCoordsSet: Set<Coords>;
   public prev: Position | null = null;
   public next: Position[] = [];
+  public game: ChessGame;
 
   constructor(positionInfo: PositionInfo) {
     Object.assign(this, positionInfo);
+    this.board.position = this;
   }
 
   public get inactiveColor(): Color {
@@ -155,37 +151,43 @@ export default class Position implements PositionInfo {
     }
   }
 
-  private handlePawnMove(srcPiece: Pawn, srcCoords: Coords, destCoords: Coords, board: Board, promotionType: Promotable = "Q"): Piece {
+  private handlePawnMove(srcPiece: Pawn, srcCoords: Coords, destCoords: Coords, board: Board, promotionType: Promotable = "Q"): void {
     if (
       destCoords.y === this.enPassantFile
       && srcCoords.x === Piece.middleRanks[srcPiece.oppositeColor]
     ) {
       board.unset(board.Coords.get(srcCoords.x, destCoords.y)!);
-      return srcPiece;
+      board.set(destCoords, srcPiece);
+      return;
     }
 
-    if (destCoords.y === Piece.startPieceRanks[this.inactiveColor])
-      return srcPiece.promote(promotionType);
+    const piece = (destCoords.y === Piece.startPieceRanks[this.inactiveColor])
+      ? srcPiece.promote(promotionType)
+      : srcPiece;
 
-    return srcPiece;
+    board.set(destCoords, piece).unset(srcCoords);
   }
 
   private handleKingMove(srcCoords: Coords, destCoords: Coords, board: Board, castlingRights: CastlingRights, srcColor: Color): void {
     castlingRights[srcColor][Wing.QUEEN_SIDE] = false;
     castlingRights[srcColor][Wing.KING_SIDE] = false;
-    board.kingCoords[srcColor] = destCoords;
 
-    if (Math.abs(destCoords.y - srcCoords.y) > 1) {
-      const wing = Position.getWing(destCoords.y);
-      const rookCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing])!;
-      if (board.get(rookCoords)!.whiteInitial !== "R") {
-        console.log("here____", rookCoords);
-        throw new Error(`INVALID ROOK: ${JSON.stringify(rookCoords)}`);
-      }
-      board
-        .set(board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!, board.get(rookCoords)!)
-        .unset(rookCoords);
+    if (
+      Math.abs(destCoords.y - srcCoords.y) <= 1
+      && (!this.game.isChess960 || this.board.get(destCoords)?.whiteInitial !== "R")
+    ) {
+      board.kingCoords[srcColor] = destCoords;
+      board.set(destCoords, board.get(srcCoords)!).unset(srcCoords);
+      return;
     }
+
+    const wing = destCoords.y < srcCoords.y ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
+    const destKingCoords = board.Coords.get(srcCoords.x, Piece.castledKingFiles[wing])!;
+    const rookSrcCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing])!;
+    const rookDestCoords = board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!;
+    board.kingCoords[srcColor] = destKingCoords;
+    board.set(destKingCoords, board.get(srcCoords)!).unset(srcCoords);
+    board.set(rookDestCoords, board.get(rookSrcCoords)!).unset(rookSrcCoords);
   }
 
   /**
@@ -200,7 +202,7 @@ export default class Position implements PositionInfo {
     const board = this.board.clone(),
       castlingRights = this.castlingRights.clone();
 
-    let srcPiece = board.get(srcCoords) as Piece,
+    const srcPiece = board.get(srcCoords) as Piece,
       destPiece = board.get(destCoords);
 
     const srcInitial = srcPiece.whiteInitial,
@@ -208,21 +210,23 @@ export default class Position implements PositionInfo {
       isCaptureOrPawnMove = !!destPiece || isSrcPiecePawn;
 
     switch (srcInitial) {
-      case "P":
-        srcPiece = this.handlePawnMove(srcPiece as Pawn, srcCoords, destCoords, board, promotionType);
-        break;
       case "K":
         this.handleKingMove(srcCoords, destCoords, board, castlingRights, srcPiece.color);
+        break;
+      case "P":
+        this.handlePawnMove(srcPiece as Pawn, srcCoords, destCoords, board, promotionType);
         break;
       case "R":
         if ((srcPiece as Rook).isOnInitialSquare(srcCoords, board))
           castlingRights[srcPiece.color][srcCoords.y as Wing] = false;
+        break;
+      case "R":
+      default:
+        board.set(destCoords, srcPiece).unset(srcCoords);
     }
 
     if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare(destCoords, board))
       castlingRights[destPiece.color][destCoords.y as Wing] = false;
-
-    board.set(destCoords, srcPiece).unset(srcCoords);
 
     return new Position({
       board,

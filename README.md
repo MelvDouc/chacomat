@@ -7,3 +7,4 @@ A chess application built for NodeJS.
 - [ ] Parse PGN
 - [x] Check for triple repetition
 - [x] Check for 50-move draw
+- [ ] Put coordinates in pieces

@@ -5,6 +5,7 @@ import Piece from "../pieces/Piece.js";
 import type {
   BlackAndWhite,
   PieceInitial,
+  Position,
   Wings
 } from "../types.js";
 
@@ -38,6 +39,7 @@ export default class Board {
 
   private readonly squares: Map<Coords, Piece> = new Map();
   public readonly Coords = Coords;
+  public position: Position;
   public readonly kingCoords = {} as BlackAndWhite<Coords>;
   public startRookFiles: Wings<number> = {
     [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
