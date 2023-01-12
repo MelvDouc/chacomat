@@ -106,7 +106,7 @@ export default class Position implements PositionInfo {
     );
   }
 
-  private get attackedCoordsSet(): Set<Coords> {
+  public get attackedCoordsSet(): Set<Coords> {
     this._attackedCoordsSet ??= this.board.getCoordsAttackedByColor(this.inactiveColor);
     return this._attackedCoordsSet;
   }
@@ -177,7 +177,9 @@ export default class Position implements PositionInfo {
 
     if (Math.abs(destCoords.y - srcCoords.y) > 1) {
       const wing = Position.getWing(destCoords.y);
-      const rookCoords = board.Coords.get(srcCoords.x, wing)!;
+      const rookCoords = board.Coords.get(srcCoords.x, Piece.startRookFiles[wing])!;
+      if (board.get(rookCoords)!.whiteInitial !== "R")
+        throw new Error(`INVALID ROOK: ${JSON.stringify(rookCoords)}`);
       board
         .set(board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!, board.get(rookCoords)!)
         .unset(rookCoords);
@@ -191,7 +193,7 @@ export default class Position implements PositionInfo {
     srcCoords: Coords,
     destCoords: Coords,
     promotionType: Promotable = "Q",
-    updateColorAndMoveNumber = false,
+    updateColorAndMoveNumber = false
   ): Position {
     const board = this.board.clone(),
       castlingRights = this.castlingRights.clone();

@@ -30,28 +30,31 @@ export default class King extends Piece {
       return false;
 
     const { x: X, y: Y } = kingCoords;
+    const rookCoords = board.Coords.get(
+      X,
+      Piece.startRookFiles[wing]
+    )!;
 
-    // Check if squares between king and rook are empty.
-    const dirToRook = Math.sign(wing - X);
+    // The squares traversed by the king must not be attacked,
+    // and they must be either empty or occupied by the castling rook.
+    const kingDirection = Math.sign(wing - Y);
 
-    for (let y = Y + dirToRook; y !== wing; y += dirToRook) {
-      const destCoords = board.Coords.get(X, y)!,
-        piece = board.get(destCoords);
-      if (piece?.whiteInitial === "R" && piece.color === this.color)
-        break;
-      if (piece)
+    for (let y = Y + kingDirection; ; y += kingDirection) {
+      const destCoords = board.Coords.get(X, y)!;
+      if ((attackedCoords.has(destCoords) || !!board.get(destCoords)) && destCoords !== rookCoords)
         return false;
+      if (y === King.castledFiles[wing])
+        break;
     }
 
-    // Check if no square traversed by the king is attacked by the other color.
-    const castledKingFile = King.castledFiles[wing];
-    const castlingDir = Math.sign(castledKingFile - X);
+    // The squares traversed by the rook must be empty or occupied the king.
+    const rookDirection = Math.sign(Piece.castledRookFiles[wing] - rookCoords.y);
 
-    for (let y = Y + castlingDir; ; y += castlingDir) {
+    for (let y = rookCoords.y + rookDirection; ; y += rookDirection) {
       const destCoords = board.Coords.get(X, y)!;
-      if (attackedCoords.has(destCoords))
+      if (!!board.get(destCoords) && destCoords !== kingCoords)
         return false;
-      if (y === castledKingFile)
+      if (y === Piece.castledRookFiles[wing])
         break;
     }
 

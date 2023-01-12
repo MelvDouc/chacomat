@@ -15,7 +15,6 @@ export default abstract class Piece {
   public static readonly constructors = new Map<WhitePieceInitial, typeof Piece>();
   public static readonly offsets: { x: number[]; y: number[]; };
   public static readonly whiteInitial: WhitePieceInitial;
-  public static startFiles: number[];
 
   public static readonly directions: BlackAndWhite<number> = {
     [Color.WHITE]: -1,
@@ -40,6 +39,11 @@ export default abstract class Piece {
   public static readonly middleRanks: BlackAndWhite<number> = {
     [Color.WHITE]: 4,
     [Color.BLACK]: 3
+  };
+
+  public static readonly startRookFiles: { [W in Wing]: number } = {
+    [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
+    [Wing.KING_SIDE]: Wing.KING_SIDE
   };
 
   public static fromInitial(initial: PieceInitial): Piece {
@@ -68,11 +72,6 @@ export default abstract class Piece {
 
   public get oppositeColor(): Color {
     return (this.color === Color.WHITE) ? Color.BLACK : Color.WHITE;
-  }
-
-  public isOnInitialSquare({ x, y }: Coords): boolean {
-    const { startPieceRanks, startFiles } = this.constructor as typeof Piece;
-    return x === startPieceRanks[this.color] && startFiles.includes(y);
   }
 
   public *attackedCoords(srcCoords: Coords, board: Board): CoordsGenerator {
