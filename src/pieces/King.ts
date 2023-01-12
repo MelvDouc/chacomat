@@ -9,7 +9,7 @@ import type {
 } from "../types.js";
 
 export default class King extends Piece {
-  public static readonly initial = "K";
+  public static readonly whiteInitial = "K";
   public static startFiles = [4];
   private static readonly castledFiles = {
     [Wing.QUEEN_SIDE]: 2,

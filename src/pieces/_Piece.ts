@@ -12,9 +12,9 @@ import type {
 } from "../types.js";
 
 export default abstract class Piece {
-  public static readonly offsets: { x: number[]; y: number[]; };
-  public static readonly initial: WhitePieceInitial;
   public static readonly constructors = new Map<WhitePieceInitial, typeof Piece>();
+  public static readonly offsets: { x: number[]; y: number[]; };
+  public static readonly whiteInitial: WhitePieceInitial;
   public static startFiles: number[];
 
   public static readonly directions: BlackAndWhite<number> = {
@@ -27,12 +27,12 @@ export default abstract class Piece {
     [Color.BLACK]: 0
   };
 
-  public static readonly startPawnRanks = {
+  public static readonly startPawnRanks: BlackAndWhite<number> = {
     [Color.WHITE]: 6,
     [Color.BLACK]: 1
   };
 
-  public static readonly castledRookFiles = {
+  public static readonly castledRookFiles: { [W in Wing]: number } = {
     [Wing.QUEEN_SIDE]: 3,
     [Wing.KING_SIDE]: 5
   };
@@ -57,7 +57,7 @@ export default abstract class Piece {
   }
 
   public get whiteInitial(): WhitePieceInitial {
-    return (this.constructor as typeof Piece).initial;
+    return (this.constructor as typeof Piece).whiteInitial;
   }
 
   public get initial(): PieceInitial {
@@ -79,7 +79,7 @@ export default abstract class Piece {
     const { x: xOffsets, y: yOffsets } = (this.constructor as typeof Piece).offsets;
 
     for (let i = 0; i < xOffsets.length; i++) {
-      const destCoords = srcCoords.getPeer({ xOffset: xOffsets[i], yOffset: yOffsets[i] });
+      const destCoords = srcCoords.getPeer(xOffsets[i], yOffsets[i]);
       if (destCoords)
         yield destCoords;
     }

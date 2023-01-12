@@ -15,12 +15,12 @@ Queen.offsets = {
 King.offsets = Queen.offsets;
 
 Piece.constructors
-  .set(King.initial, King)
-  .set(Pawn.initial, Pawn)
-  .set(Knight.initial, Knight)
-  .set(Bishop.initial, Bishop)
-  .set(Rook.initial, Rook)
-  .set(Queen.initial, Queen);
+  .set(King.whiteInitial, King)
+  .set(Pawn.whiteInitial, Pawn)
+  .set(Knight.whiteInitial, Knight)
+  .set(Bishop.whiteInitial, Bishop)
+  .set(Rook.whiteInitial, Rook)
+  .set(Queen.whiteInitial, Queen);
 
 export {
   Pawn,

@@ -40,10 +40,7 @@ export default class Coords {
     return Coords.notations.get(this)!;
   }
 
-  public getPeer({ xOffset, yOffset }: {
-    xOffset: number;
-    yOffset: number;
-  }): Coords | null {
+  public getPeer(xOffset: number, yOffset: number): Coords | null {
     return Coords.get(this.x + xOffset, this.y + yOffset);
   }
 }
