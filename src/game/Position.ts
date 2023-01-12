@@ -41,7 +41,7 @@ export default class Position implements PositionInfo {
       fullMoveNumber,
     ] = fenString.split(" ");
     const board = Board.fromPieceString(pieceString);
-    return new Position({
+    const position = new Position({
       board,
       castlingRights: CastlingRights.fromString(castlingString),
       colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations],
@@ -51,6 +51,8 @@ export default class Position implements PositionInfo {
       halfMoveClock: +halfMoveClock,
       fullMoveNumber: +fullMoveNumber,
     });
+    board.position = position;
+    return position;
   }
 
   public readonly board: Board;
@@ -85,9 +87,9 @@ export default class Position implements PositionInfo {
         this._legalMoves.push(move);
 
     if (!this.isCheck()) {
-      const kingCoords = this.board.kingCoords[this.colorToMove];
-      for (const destCoords of (this.board.get(kingCoords) as King).castlingCoords(kingCoords, this.attackedCoordsSet, this))
-        this._legalMoves.push([kingCoords, destCoords]);
+      const king = this.board.kings[this.colorToMove];
+      for (const destCoords of king.castlingCoords(this.attackedCoordsSet, this))
+        this._legalMoves.push([king.coords, destCoords]);
     }
 
     return this._legalMoves;
@@ -123,7 +125,7 @@ export default class Position implements PositionInfo {
   }
 
   public isCheck(): boolean {
-    return this.attackedCoordsSet.has(this.board.kingCoords[this.colorToMove]);
+    return this.attackedCoordsSet.has(this.board.kings[this.colorToMove].coords);
   }
 
   private isTripleRepetition(): boolean {
@@ -145,19 +147,20 @@ export default class Position implements PositionInfo {
       for (let y = 0; y < 8; y++) {
         const srcCoords = this.board.Coords.get(x, y)!;
         if (this.board.get(srcCoords)?.color === this.colorToMove)
-          for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves(srcCoords, this))
+          for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves(this))
             yield [srcCoords, destCoords] as Move;
       }
     }
   }
 
-  private handlePawnMove(srcPiece: Pawn, srcCoords: Coords, destCoords: Coords, board: Board, promotionType: Promotable = "Q"): void {
+  private handlePawnMove(srcPiece: Pawn, destCoords: Coords, board: Board, promotionType: Promotable = "Q"): void {
     if (
       destCoords.y === this.enPassantFile
-      && srcCoords.x === Piece.middleRanks[srcPiece.oppositeColor]
+      && srcPiece.coords.x === Piece.middleRanks[srcPiece.oppositeColor]
     ) {
-      board.unset(board.Coords.get(srcCoords.x, destCoords.y)!);
+      board.unset(board.Coords.get(srcPiece.coords.x, destCoords.y)!);
       board.set(destCoords, srcPiece);
+      srcPiece.coords = destCoords;
       return;
     }
 
@@ -165,29 +168,35 @@ export default class Position implements PositionInfo {
       ? srcPiece.promote(promotionType)
       : srcPiece;
 
-    board.set(destCoords, piece).unset(srcCoords);
+    board.set(destCoords, piece).unset(srcPiece.coords);
+    piece.coords = destCoords;
   }
 
-  private handleKingMove(srcCoords: Coords, destCoords: Coords, board: Board, castlingRights: CastlingRights, srcColor: Color): void {
-    castlingRights[srcColor][Wing.QUEEN_SIDE] = false;
-    castlingRights[srcColor][Wing.KING_SIDE] = false;
+  private handleKingMove(king: King, destCoords: Coords, board: Board, castlingRights: CastlingRights): void {
+    castlingRights[king.color][Wing.QUEEN_SIDE] = false;
+    castlingRights[king.color][Wing.KING_SIDE] = false;
 
-    if (
-      Math.abs(destCoords.y - srcCoords.y) <= 1
-      && (!this.game.isChess960 || this.board.get(destCoords)?.whiteInitial !== "R")
-    ) {
-      board.kingCoords[srcColor] = destCoords;
-      board.set(destCoords, board.get(srcCoords)!).unset(srcCoords);
+    const srcCoords = king.coords;
+    const isCastling = Math.abs(destCoords.y - srcCoords.y) > 1
+      || this.game.isChess960
+      && board.get(destCoords)?.whiteInitial === "R"
+      && board.get(destCoords)!.color === king.color;
+
+    if (!isCastling) {
+      king.coords = destCoords;
+      board.set(destCoords, king).unset(srcCoords);
       return;
     }
 
-    const wing = destCoords.y < srcCoords.y ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
+    const wing = (destCoords.y < srcCoords.y) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
     const destKingCoords = board.Coords.get(srcCoords.x, Piece.castledKingFiles[wing])!;
     const rookSrcCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing])!;
     const rookDestCoords = board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!;
-    board.kingCoords[srcColor] = destKingCoords;
+    const rook = board.get(rookSrcCoords)!;
+    king.coords = destKingCoords;
     board.set(destKingCoords, board.get(srcCoords)!).unset(srcCoords);
-    board.set(rookDestCoords, board.get(rookSrcCoords)!).unset(rookSrcCoords);
+    rook.coords = rookDestCoords;
+    board.set(rookDestCoords, rook).unset(rookSrcCoords);
   }
 
   /**
@@ -211,21 +220,23 @@ export default class Position implements PositionInfo {
 
     switch (srcInitial) {
       case "K":
-        this.handleKingMove(srcCoords, destCoords, board, castlingRights, srcPiece.color);
+        this.handleKingMove(srcPiece as King, destCoords, board, castlingRights);
         break;
       case "P":
-        this.handlePawnMove(srcPiece as Pawn, srcCoords, destCoords, board, promotionType);
+        this.handlePawnMove(srcPiece as Pawn, destCoords, board, promotionType);
         break;
       case "R":
-        if ((srcPiece as Rook).isOnInitialSquare(srcCoords, board))
+        if ((srcPiece as Rook).isOnInitialSquare(board))
           castlingRights[srcPiece.color][srcCoords.y as Wing] = false;
         board.set(destCoords, srcPiece).unset(srcCoords);
+        srcPiece.coords = destCoords;
         break;
       default:
         board.set(destCoords, srcPiece).unset(srcCoords);
+        srcPiece.coords = destCoords;
     }
 
-    if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare(destCoords, board))
+    if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare(board))
       castlingRights[destPiece.color][destCoords.y as Wing] = false;
 
     return new Position({

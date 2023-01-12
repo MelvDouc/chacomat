@@ -46,3 +46,8 @@ export interface PositionInfo {
   halfMoveClock: number;
   fullMoveNumber: number;
 }
+
+export interface PieceInfo {
+  color: Color;
+  coords?: Coords;
+}

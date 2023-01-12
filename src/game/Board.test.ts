@@ -2,17 +2,20 @@ import Board from "./Board.js";
 import { King, Pawn } from "../pieces/Piece.js";
 import Position from "./Position.js";
 import Color from "../constants/Color.js";
+import ChessGame from "./ChessGame.js";
 
 describe("A board", () => {
   it("should be serializable", () => {
-    const board = new Board();
-
-    board.set(board.Coords.get(0, 0)!, new King({ color: Color.BLACK }));
-    board.set(board.Coords.get(7, 7)!, new King({ color: Color.WHITE }));
+    const game = new ChessGame({
+      fenString: "k7/8/8/8/8/8/8/7K w - - 0 1"
+    }),
+      board = game.currentPosition.board;
 
     for (let y = 0; y < 8; y++) {
-      board.set(board.Coords.get(1, y)!, new Pawn({ color: Color.BLACK }));
-      board.set(board.Coords.get(6, y)!, new Pawn({ color: Color.WHITE }));
+      const c = board.Coords.get(1, y)!;
+      board.set(c, new Pawn({ color: Color.BLACK, coords: c }));
+      const c2 = board.Coords.get(6, y)!;
+      board.set(c2, new Pawn({ color: Color.WHITE, coords: c2 }));
     }
 
     expect("k7/pppppppp/8/8/8/8/PPPPPPPP/7K").toBe(board.toString());

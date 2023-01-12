@@ -4,6 +4,7 @@ import type {
   Board,
   Coords,
   Knight,
+  PieceInfo,
   Position,
   Promotable,
   Queen,
@@ -20,13 +21,13 @@ export default class Pawn extends Piece {
 
   private static pawnYOffsets = [-1, 1];
 
-  private *forwardMoves(srcCoords: Coords, board: Board) {
-    const coords1 = srcCoords.getPeer(Pawn.directions[this.color], 0)!;
+  private *forwardMoves(board: Board) {
+    const coords1 = this.coords.getPeer(Pawn.directions[this.color], 0)!;
 
     if (!board.get(coords1)) {
       yield coords1;
 
-      if (srcCoords.x === Piece.startPawnRanks[this.color]) {
+      if (this.coords.x === Piece.startPawnRanks[this.color]) {
         const coords2 = coords1.getPeer(Pawn.directions[this.color], 0)!;
 
         if (!board.get(coords2))
@@ -35,31 +36,33 @@ export default class Pawn extends Piece {
     }
   }
 
-  private *captures(srcCoords: Coords, board: Board, enPassantFile: number) {
-    for (const destCoords of this.attackedCoords(srcCoords, board))
+  private *captures(board: Board, enPassantFile: number) {
+    for (const destCoords of this.attackedCoords(board))
       if (
         board.get(destCoords)?.color === this.oppositeColor
-        || destCoords.y === enPassantFile && srcCoords.x === Piece.middleRanks[this.oppositeColor]
+        || destCoords.y === enPassantFile && this.coords.x === Piece.middleRanks[this.oppositeColor]
       )
         yield destCoords;
   }
 
-  public *attackedCoords(srcCoords: Coords, _board: Board) {
+  public *attackedCoords(_board: Board) {
     for (const xOffset of Pawn.pawnXOffsets[this.color]) {
       for (const yOffset of Pawn.pawnYOffsets) {
-        const coords = srcCoords.getPeer(xOffset, yOffset);
+        const coords = this.coords.getPeer(xOffset, yOffset);
         if (coords)
           yield coords;
       }
     }
   }
 
-  public *pseudoLegalMoves(srcCoords: Coords, { board, enPassantFile }: Position) {
-    yield* this.forwardMoves(srcCoords, board);
-    yield* this.captures(srcCoords, board, enPassantFile);
+  public *pseudoLegalMoves({ board, enPassantFile }: Position) {
+    yield* this.forwardMoves(board);
+    yield* this.captures(board, enPassantFile);
   }
 
   public promote(type: Promotable): Queen | Rook | Bishop | Knight {
-    return Reflect.construct(Piece.constructors.get(type)!, [{ color: this.color }]);
+    return Reflect.construct(Piece.constructors.get(type)!, [{
+      color: this.color
+    } as PieceInfo]);
   }
 }

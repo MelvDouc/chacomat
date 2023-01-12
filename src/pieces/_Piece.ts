@@ -6,6 +6,7 @@ import type {
   Board,
   Coords,
   CoordsGenerator,
+  PieceInfo,
   PieceInitial,
   Position,
   WhitePieceInitial,
@@ -51,14 +52,18 @@ export default abstract class Piece {
     const whiteInitial = initial.toUpperCase() as WhitePieceInitial;
     return Reflect.construct(
       this.constructors.get(whiteInitial)!,
-      [{ color: initial === whiteInitial ? Color.WHITE : Color.BLACK }]
+      [{
+        color: initial === whiteInitial ? Color.WHITE : Color.BLACK
+      } as PieceInfo]
     );
   }
 
   public readonly color: Color;
+  public coords: Coords;
 
-  constructor({ color }: { color: Color; }) {
+  constructor({ color, coords }: PieceInfo) {
     this.color = color;
+    coords && (this.coords = coords);
   }
 
   public get whiteInitial(): WhitePieceInitial {
@@ -75,23 +80,26 @@ export default abstract class Piece {
     return (this.color === Color.WHITE) ? Color.BLACK : Color.WHITE;
   }
 
-  public *attackedCoords(srcCoords: Coords, board: Board): CoordsGenerator {
+  public *attackedCoords(board: Board): CoordsGenerator {
     const { x: xOffsets, y: yOffsets } = (this.constructor as typeof Piece).offsets;
 
     for (let i = 0; i < xOffsets.length; i++) {
-      const destCoords = srcCoords.getPeer(xOffsets[i], yOffsets[i]);
+      const destCoords = this.coords.getPeer(xOffsets[i], yOffsets[i]);
       if (destCoords)
         yield destCoords;
     }
   }
 
-  public *pseudoLegalMoves(srcCoords: Coords, position: Position): CoordsGenerator {
-    for (const targetCoords of this.attackedCoords(srcCoords, position.board))
+  public *pseudoLegalMoves(position: Position): CoordsGenerator {
+    for (const targetCoords of this.attackedCoords(position.board))
       if (position.board.get(targetCoords)?.color !== this.color)
         yield targetCoords;
   }
 
   public clone(): Piece {
-    return Reflect.construct(this.constructor, [{ color: this.color }]);
+    return Reflect.construct(this.constructor as typeof Piece, [{
+      color: this.color,
+      coords: this.coords
+    } as PieceInfo]);
   }
 }

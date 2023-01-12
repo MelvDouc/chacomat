@@ -4,6 +4,7 @@ import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
   BlackAndWhite,
+  King,
   PieceInitial,
   Position,
   Wings
@@ -29,9 +30,10 @@ export default class Board {
               return;
             const piece = Piece.fromInitial(item as PieceInitial),
               coords = Coords.get(x, y)!;
+            piece.coords = coords;
             acc.set(coords, piece);
             if (piece.whiteInitial === "K")
-              acc.kingCoords[piece.color] = coords;
+              acc.kings[piece.color] = piece as King;
           });
         return acc;
       }, new Board());
@@ -40,7 +42,7 @@ export default class Board {
   private readonly squares: Map<Coords, Piece> = new Map();
   public readonly Coords = Coords;
   public position: Position;
-  public readonly kingCoords = {} as BlackAndWhite<Coords>;
+  public readonly kings = {} as BlackAndWhite<King>;
   public startRookFiles: Wings<number> = {
     [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
     [Wing.KING_SIDE]: Wing.KING_SIDE
@@ -77,9 +79,9 @@ export default class Board {
   public getCoordsAttackedByColor(color: Color): Set<Coords> {
     const set = new Set<Coords>();
 
-    for (const [srcCoords, piece] of this.squares)
+    for (const piece of this.squares.values())
       if (piece.color === color)
-        for (const destCoords of piece.attackedCoords(srcCoords, this))
+        for (const destCoords of piece.attackedCoords(this))
           set.add(destCoords);
 
     return set;
@@ -90,10 +92,11 @@ export default class Board {
    */
   public clone(): Board {
     const clone = new Board();
-    for (const [coords, piece] of this.squares)
+    for (const [coords, piece] of this.squares) {
       clone.set(coords, piece.clone());
-    clone.kingCoords[Color.WHITE] = this.kingCoords[Color.WHITE];
-    clone.kingCoords[Color.BLACK] = this.kingCoords[Color.BLACK];
+      if (piece.whiteInitial === "K")
+        clone.kings[piece.color] = piece as King;
+    }
     clone.startRookFiles = this.startRookFiles;
     return clone;
   }

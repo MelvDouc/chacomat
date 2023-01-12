@@ -25,9 +25,9 @@ export default class ChessGame {
     this.currentPosition = positionInfo
       ? new Position(positionInfo)
       : Position.fromFenString(fenString ?? Position.startFenString);
+    this.currentPosition.game = this;
     if (isChess960)
       this.currentPosition.board.startRookFiles = this.currentPosition.board.rookFiles;
-    this.currentPosition.game = this;
     this.isChess960 = !!isChess960;
   }
 
