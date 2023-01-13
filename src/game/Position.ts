@@ -183,8 +183,8 @@ export default class Position implements PositionInfo {
       && board.get(destCoords)!.color === king.color;
 
     if (!isCastling) {
-      king.coords = destCoords;
       board.set(destCoords, king).unset(srcCoords);
+      king.coords = destCoords;
       return;
     }
 
@@ -193,10 +193,10 @@ export default class Position implements PositionInfo {
     const rookSrcCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing])!;
     const rookDestCoords = board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!;
     const rook = board.get(rookSrcCoords)!;
-    king.coords = destKingCoords;
     board.set(destKingCoords, board.get(srcCoords)!).unset(srcCoords);
-    rook.coords = rookDestCoords;
+    king.coords = destKingCoords;
     board.set(rookDestCoords, rook).unset(rookSrcCoords);
+    rook.coords = rookDestCoords;
   }
 
   /**

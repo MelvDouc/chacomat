@@ -43,12 +43,12 @@ describe("A triple repetition", () => {
   });
 });
 
-// describe("A board with only kings", () => {
-//   it("should be insufficient material", () => {
-//     const game = new ChessGame({
-//       fenString: "k7/8/8/8/8/8/8/7K w - - 0 1"
-//     });
+describe("A board with only kings", () => {
+  it("should be insufficient material", () => {
+    const game = new ChessGame({
+      fenString: "k7/8/8/8/8/8/8/7K w - - 0 1"
+    });
 
-//     expect(game.currentPosition.status).toBe(ChessGame.Statuses.INSUFFICIENT_MATERIAL);
-//   });
-// });
+    expect(game.currentPosition.status).toBe(ChessGame.Statuses.INSUFFICIENT_MATERIAL);
+  });
+});

@@ -1,15 +1,23 @@
+import Color from "../constants/Color.js";
 import ChessGame from "./ChessGame.js";
 
-describe("Checkmate", () => {
-  it("Fool's Mate", () => {
-    const game = new ChessGame();
-    game
-      .moveWithNotations("f2", "f3")
-      .moveWithNotations("e7", "e6")
-      .moveWithNotations("g2", "g4")
-      .moveWithNotations("d8", "h4");
-
+describe("Fool's Mate", () => {
+  const game = new ChessGame();
+  game
+    .moveWithNotations("f2", "f3")
+    .moveWithNotations("e7", "e6")
+    .moveWithNotations("g2", "g4")
+    .moveWithNotations("d8", "h4");
+  it("should be check", () => {
     expect(game.currentPosition.isCheck()).toBe(true);
+  });
+  it("should be checkmate", () => {
+    const e1 = game.currentPosition.board.Coords.get(7, 4)!;
+    const f2 = game.currentPosition.board.Coords.get(6, 5)!;
+    console.log(
+      "HERE",
+      game.currentPosition.getPositionFromMove(e1, f2).board.kings[Color.WHITE].coords === f2
+    );
     expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
   });
 });

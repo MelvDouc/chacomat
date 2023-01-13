@@ -14,6 +14,7 @@ export default class Board {
   private static readonly nullPiece = "0";
   private static readonly nullPieceRegex = /0+/g;
 
+
   /**
    * @param {string} pieceStr The portion of an FEN string representing the board.
    * @returns A new instance of this.
@@ -40,7 +41,6 @@ export default class Board {
   }
 
   private readonly squares: Map<Coords, Piece> = new Map();
-  public readonly Coords = Coords;
   public position: Position;
   public readonly kings = {} as BlackAndWhite<King>;
   public startRookFiles: Wings<number> = {
@@ -50,6 +50,10 @@ export default class Board {
 
   public get pieceCount(): number {
     return this.squares.size;
+  }
+
+  public get Coords(): typeof Coords {
+    return Coords;
   }
 
   public get rookFiles(): { [W in Wing]: number } {
@@ -95,7 +99,7 @@ export default class Board {
     for (const [coords, piece] of this.squares) {
       clone.set(coords, piece.clone());
       if (piece.whiteInitial === "K")
-        clone.kings[piece.color] = piece as King;
+        clone.kings[piece.color] = clone.get(coords) as King;
     }
     clone.startRookFiles = this.startRookFiles;
     return clone;
