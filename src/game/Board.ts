@@ -29,7 +29,7 @@ export default class Board extends Map<Coords, Piece> {
           .forEach((item, y) => {
             if (item === Board.nullPiece)
               return;
-            const coords = Coords.get(x, y)!;
+            const coords = Coords.get(x, y);
             const piece = Piece.fromInitial(item as PieceInitial, acc);
             piece.coords = coords;
             acc.set(coords, piece);
@@ -54,7 +54,7 @@ export default class Board extends Map<Coords, Piece> {
   private findRookFiles(): { [W in Wing]: number } {
     const rookFiles: number[] = [];
     for (let y = 0; y < 8; y++)
-      if (this.get(Coords.get(7, y)!)?.isRook())
+      if (this.get(Coords.get(7, y))?.isRook())
         rookFiles.push(y);
     return {
       [Wing.QUEEN_SIDE]: Math.min(...rookFiles),
@@ -73,7 +73,7 @@ export default class Board extends Map<Coords, Piece> {
     for (color in Piece.startPieceRanks)
       // @ts-ignore
       for (wing in startRookFiles) {
-        const piece = this.get(Coords.get(Piece.startPawnRanks[color], this.startRookFiles[wing])!);
+        const piece = this.get(Coords.get(Piece.startPawnRanks[color], this.startRookFiles[wing]));
         if (piece?.isRook() && piece.color === color)
           (piece as Rook).wing = wing;
       }
@@ -119,7 +119,7 @@ export default class Board extends Map<Coords, Piece> {
   public getPieceArray(): (Piece | null)[][] {
     return Array.from({ length: 8 }, (_, x) => {
       return Array.from({ length: 8 }, (_, y) => {
-        return this.get(Coords.get(x, y)!) ?? null;
+        return this.get(Coords.get(x, y)) ?? null;
       });
     });
   }
@@ -131,7 +131,7 @@ export default class Board extends Map<Coords, Piece> {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array
-          .from({ length: 8 }, (_, y) => this.get(Coords.get(x, y)!)?.initial ?? Board.nullPiece)
+          .from({ length: 8 }, (_, y) => this.get(Coords.get(x, y))?.initial ?? Board.nullPiece)
           .join("")
           .replace(Board.nullPieceRegex, (zeros) => String(zeros.length));
       })

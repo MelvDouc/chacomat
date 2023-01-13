@@ -19,14 +19,14 @@ export default class King extends Piece {
       return false;
 
     const { x: X, y: Y } = this.coords;
-    const rookCoords = this.board.Coords.get(X, this.board.getStartRookFiles()[wing])!;
+    const rookCoords = this.board.Coords.get(X, this.board.getStartRookFiles()[wing]);
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
     const kingDirection = Math.sign(King.castledKingFiles[wing] - Y);
 
     for (let y = Y + kingDirection; ; y += kingDirection) {
-      const destCoords = this.board.Coords.get(X, y)!;
+      const destCoords = this.board.Coords.get(X, y);
       if (
         (this.board.position.attackedCoordsSet.has(destCoords) || this.board.has(destCoords))
         && destCoords !== rookCoords
@@ -40,7 +40,7 @@ export default class King extends Piece {
     const rookDirection = Math.sign(Piece.castledRookFiles[wing] - rookCoords.y);
 
     for (let y = rookCoords.y + rookDirection; ; y += rookDirection) {
-      const destCoords = this.board.Coords.get(X, y)!;
+      const destCoords = this.board.Coords.get(X, y);
       if (this.board.has(destCoords) && destCoords !== this.coords)
         return false;
       if (y === Piece.castledRookFiles[wing])
@@ -56,7 +56,7 @@ export default class King extends Piece {
         const y = (this.board.position.game.isChess960)
           ? this.board.getStartRookFiles()[wing]
           : King.castledKingFiles[wing];
-        yield this.board.Coords.get(this.coords.x, y)!;
+        yield this.board.Coords.get(this.coords.x, y);
       }
     }
   }

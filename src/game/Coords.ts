@@ -9,10 +9,12 @@ export default class Coords {
     return Coords.coordsByNotation.get(notation) ?? null;
   }
 
-  public static get(x: number, y: number): Coords | null {
-    if (x in Coords.all && y in Coords.all[x])
-      return Coords.all[x][y];
-    return null;
+  public static get(x: number, y: number): Coords {
+    return Coords.all[x][y];
+  }
+
+  public static isSafe(coordinate: number): boolean {
+    return coordinate >= 0 && coordinate < 8;
   }
 
   public static isValidCoords(arg: any): arg is Coords {
@@ -47,6 +49,10 @@ export default class Coords {
   }
 
   public getPeer(xOffset: number, yOffset: number): Coords | null {
-    return Coords.get(this.x + xOffset, this.y + yOffset);
+    const x = this.x + xOffset,
+      y = this.y + yOffset;
+    if (Coords.isSafe(x) && Coords.isSafe(y))
+      return Coords.all[x][y];
+    return null;
   }
 }

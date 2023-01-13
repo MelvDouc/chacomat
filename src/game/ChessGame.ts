@@ -87,8 +87,8 @@ export default class ChessGame {
       throw new ChessGame.IllegalMoveError(srcCoords, destCoords);
 
     const nextPosition = this.currentPosition.getPositionFromMove(
-      Coords.get(srcCoords.x, srcCoords.y)!,
-      Coords.get(destCoords.x, destCoords.y)!,
+      Coords.get(srcCoords.x, srcCoords.y),
+      Coords.get(destCoords.x, destCoords.y),
       promotionType,
       true
     );

@@ -8,6 +8,6 @@ describe("notationToCoords", () => {
 
 describe("coordsToNotation", () => {
   it("{x: 4, y: 4} should be e4", () => {
-    expect(Coords.get(4, 4)?.notation).toBe("e4");
+    expect(Coords.get(4, 4).notation).toBe("e4");
   });
 });

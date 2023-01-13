@@ -145,9 +145,10 @@ export default class Position implements PositionInfo {
    * Generates the moves that could be played without regard for whether it puts the current player in check.
    */
   private *pseudoLegalMoves(): Generator<[Coords, Coords], void, unknown> {
+    // TODO: iterate over board
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
-        const srcCoords = this.board.Coords.get(x, y)!;
+        const srcCoords = this.board.Coords.get(x, y);
         if (this.board.get(srcCoords)?.color === this.colorToMove)
           for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves())
             yield [srcCoords, destCoords];
@@ -160,7 +161,7 @@ export default class Position implements PositionInfo {
       destCoords.y === this.enPassantFile
       && pawn.coords.x === Piece.middleRanks[pawn.oppositeColor]
     ) {
-      pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y)!);
+      pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y));
       pawn.board.set(destCoords, pawn);
       pawn.coords = destCoords;
       return;
@@ -190,9 +191,9 @@ export default class Position implements PositionInfo {
     }
 
     const wing = (destCoords.y < srcCoords.y) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
-    const destKingCoords = board.Coords.get(srcCoords.x, Piece.castledKingFiles[wing])!,
-      rookSrcCoords = board.Coords.get(srcCoords.x, board.getStartRookFiles()[wing])!,
-      rookDestCoords = board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!;
+    const destKingCoords = board.Coords.get(srcCoords.x, Piece.castledKingFiles[wing]),
+      rookSrcCoords = board.Coords.get(srcCoords.x, board.getStartRookFiles()[wing]),
+      rookDestCoords = board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing]);
     board
       .transfer(srcCoords, destKingCoords)
       .transfer(rookSrcCoords, rookDestCoords);
@@ -254,7 +255,7 @@ export default class Position implements PositionInfo {
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
         ? "-"
-        : this.board.Coords.get(Piece.middleRanks[this.colorToMove] - Piece.directions[this.colorToMove], this.enPassantFile)!.notation,
+        : this.board.Coords.get(Piece.middleRanks[this.colorToMove] - Piece.directions[this.colorToMove], this.enPassantFile).notation,
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
     ].join(" ");

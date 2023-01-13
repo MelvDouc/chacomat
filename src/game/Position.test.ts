@@ -14,8 +14,8 @@ describe("FEN string", () => {
     });
     const pos1 = game.currentPosition;
     const pos2 = pos1.getPositionFromMove(
-      pos1.board.Coords.get(2, 1)!,
-      pos1.board.Coords.get(3, 0)!,
+      pos1.board.Coords.get(2, 1),
+      pos1.board.Coords.get(3, 0),
       "Q",
       true,
     );
