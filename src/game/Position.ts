@@ -25,7 +25,9 @@ export default class Position implements PositionInfo {
 
   private static readonly colorAbbreviations = {
     w: Color.WHITE,
-    b: Color.BLACK
+    b: Color.BLACK,
+    [Color.WHITE]: "w",
+    [Color.BLACK]: "b",
   };
 
   /**
@@ -44,7 +46,7 @@ export default class Position implements PositionInfo {
     const position = new Position({
       board,
       castlingRights: CastlingRights.fromString(castlingString),
-      colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations],
+      colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations] as Color,
       enPassantFile: (enPassant === "-")
         ? -1
         : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
@@ -200,7 +202,8 @@ export default class Position implements PositionInfo {
   }
 
   /**
-   * The color to move isn't updated just yet as this position will be used to verify if a move has put the currently active color in check.
+   * The color to move isn't updated just yet as this position will be used
+   * to verify if a move has put the currently active color in check.
    */
   public getPositionFromMove(
     srcCoords: Coords,
@@ -259,7 +262,7 @@ export default class Position implements PositionInfo {
   public toString(): FenString {
     return [
       this.board.toString(),
-      (this.colorToMove === Color.WHITE) ? "w" : "b",
+      Position.colorAbbreviations[this.colorToMove],
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
         ? "-"
