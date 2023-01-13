@@ -145,15 +145,10 @@ export default class Position implements PositionInfo {
    * Generates the moves that could be played without regard for whether it puts the current player in check.
    */
   private *pseudoLegalMoves(): Generator<[Coords, Coords], void, unknown> {
-    // TODO: iterate over board
-    for (let x = 0; x < 8; x++) {
-      for (let y = 0; y < 8; y++) {
-        const srcCoords = this.board.Coords.get(x, y);
-        if (this.board.get(srcCoords)?.color === this.colorToMove)
-          for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves())
-            yield [srcCoords, destCoords];
-      }
-    }
+    for (const [srcCoords, piece] of this.board)
+      if (piece?.color === this.colorToMove)
+        for (const destCoords of piece.pseudoLegalMoves())
+          yield [srcCoords, destCoords];
   }
 
   private handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = "Q"): void {
