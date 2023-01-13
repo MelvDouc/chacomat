@@ -1,5 +1,5 @@
 import SlidingPiece from "./SlidingPiece.js";
-import Wing from "../../constants/Wing.js";
+import { Wing } from "../../utils/constants.js";
 
 export default class Rook extends SlidingPiece {
   public static readonly whiteInitial = "R";

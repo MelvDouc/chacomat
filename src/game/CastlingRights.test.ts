@@ -1,5 +1,4 @@
-import Color from "../constants/Color.js";
-import Wing from "../constants/Wing.js";
+import { Color, Wing } from "../utils/constants.js";
 import CastlingRights from "./CastlingRights.js";
 import ChessGame from "./ChessGame.js";
 

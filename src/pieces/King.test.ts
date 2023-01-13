@@ -1,4 +1,3 @@
-import Color from "../constants/Color.js";
 import ChessGame from "../game/ChessGame.js";
 import Coords from "../game/Coords.js";
 import King from "./King.js";
@@ -23,7 +22,7 @@ describe("A king", () => {
     const game = new ChessGame({
       fenString: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
     });
-    const whiteKing = game.currentPosition.board.kings[Color.WHITE];
+    const whiteKing = game.currentPosition.board.kings[ChessGame.Colors.WHITE];
     const castlingCoords = [
       ...whiteKing.castlingCoords()
     ];
@@ -38,7 +37,7 @@ describe("Chess960", () => {
       fenString: "nbbqrkrn/pppppppp/8/8/8/8/8/NB2RKR1 w KQkq - 0 1",
       isChess960: true
     });
-    const whiteKing = game.currentPosition.board.kings[Color.WHITE];
+    const whiteKing = game.currentPosition.board.kings[ChessGame.Colors.WHITE];
     const castlingCoords = [
       ...whiteKing.castlingCoords()
     ];
@@ -51,7 +50,7 @@ describe("Chess960", () => {
       fenString: "nbbqrkrn/pppppppp/8/8/8/8/8/NB2RKR1 w KQkq - 0 1",
       isChess960: true
     });
-    const kingCoords = game.currentPosition.board.kings[Color.WHITE].coords;
+    const kingCoords = game.currentPosition.board.kings[ChessGame.Colors.WHITE].coords;
     const posAfter = game.move(kingCoords, Coords.fromNotation("e1")!).currentPosition;
 
     expect(posAfter.board.get(c1)!.whiteInitial).toBe(King.whiteInitial);

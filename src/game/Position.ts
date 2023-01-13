@@ -1,6 +1,4 @@
-import GameStatus from "../constants/GameStatus.js";
-import Color from "../constants/Color.js";
-import Wing from "../constants/Wing.js";
+import { Color, GameStatus, Wing } from "../utils/constants.js";
 import Piece from "../pieces/Piece.js";
 import Board from "./Board.js";
 import CastlingRights from "./CastlingRights.js";
@@ -250,7 +248,10 @@ export default class Position implements PositionInfo {
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
         ? "-"
-        : this.board.Coords.get(Piece.middleRanks[this.colorToMove] - Piece.directions[this.colorToMove], this.enPassantFile).notation,
+        : this.board.Coords.get(
+          Piece.middleRanks[this.colorToMove] - Piece.directions[this.colorToMove],
+          this.enPassantFile
+        ).notation,
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
     ].join(" ");

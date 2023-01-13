@@ -1,4 +1,4 @@
-import Color from "../constants/Color.js";
+import { Color } from "../utils/constants.js";
 import Piece, { Knight, Pawn, Queen } from "./Piece.js";
 
 describe("Piece", () => {

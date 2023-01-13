@@ -1,8 +1,6 @@
-import Color from "./constants/Color.js";
-import Wing from "./constants/Wing.js";
-import GameStatus from "./constants/GameStatus.js";
+import { Color, GameStatus, Wing } from "./utils/constants.js";
 
-export type { GameStatus, Color };
+export type { Color, GameStatus, Wing };
 
 export type FenString = string;
 export type WhitePieceInitial = "N" | "B" | "R" | "Q" | "K" | "P";

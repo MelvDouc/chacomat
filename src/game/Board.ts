@@ -1,5 +1,5 @@
 import Coords from "./Coords.js";
-import Wing from "../constants/Wing.js";
+import { Wing } from "../utils/constants.js";
 import Piece from "../pieces/Piece.js";
 import type {
   BlackAndWhite,

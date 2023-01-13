@@ -1,7 +1,5 @@
 import Coords from "./Coords.js";
-import Color from "../constants/Color.js";
-import Wing from "../constants/Wing.js";
-import GameStatus from "../constants/GameStatus.js";
+import { Color, GameStatus, Wing } from "../utils/constants.js";
 import Position from "./Position.js";
 import { getRandomChessWhitePieceRank } from "../utils/fischer-random.js";
 import { viewBoard } from "../utils/log.js";

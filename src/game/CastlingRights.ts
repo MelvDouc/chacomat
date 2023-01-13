@@ -1,5 +1,4 @@
-import Wing from "../constants/Wing.js";
-import Color from "../constants/Color.js";
+import { Color, Wing } from "../utils/constants.js";
 import type { BlackAndWhite, Wings } from "../types.js";
 
 /**

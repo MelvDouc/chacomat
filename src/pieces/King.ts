@@ -1,5 +1,5 @@
-import Wing from "../constants/Wing.js";
 import Piece from "./_Piece.js";
+import { Wing } from "../utils/constants.js";
 import type {
   CoordsGenerator
 } from "../types.js";

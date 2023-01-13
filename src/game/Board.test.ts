@@ -1,7 +1,6 @@
-import Board from "./Board.js";
-import { King, Pawn } from "../pieces/Piece.js";
+import { Pawn } from "../pieces/Piece.js";
 import Position from "./Position.js";
-import Color from "../constants/Color.js";
+import { Color } from "../utils/constants.js";
 import ChessGame from "./ChessGame.js";
 
 describe("A board", () => {
