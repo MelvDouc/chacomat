@@ -7,12 +7,21 @@ import type {
   PositionInfo,
   Promotable,
 } from "../types.js";
+import { getRandomChessWhitePieceRank } from "../utils/fischer-random.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
  */
 export default class ChessGame {
   public static readonly Statuses = GameStatus;
+
+  public static getChess960Game(): ChessGame {
+    const pieceRank = getRandomChessWhitePieceRank();
+    return new ChessGame({
+      isChess960: true,
+      fenString: `${pieceRank.toLowerCase()}/${"p".repeat(8)}${"/8".repeat(4)}/${"P".repeat(8)}/${pieceRank} w KQkq - 0 1`
+    });
+  }
 
   public currentPosition: Position;
   public readonly isChess960: boolean;
