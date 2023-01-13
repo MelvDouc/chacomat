@@ -1,7 +1,6 @@
 **/node_modules
 **/.vscode
 **/__old*
-dist
 
-# Bundles
-**/*.bundle.js
+dist
+test

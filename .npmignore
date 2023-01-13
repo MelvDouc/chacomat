@@ -1,7 +1,10 @@
 **/node_modules
 **/.vscode
-src
 dist/**/*.test.js
+
+src
+test
+
 tsconfig.json
 jest.config.js
 .gitignore
