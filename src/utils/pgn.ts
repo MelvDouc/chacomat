@@ -22,9 +22,9 @@ function playMovesFromPgn(pgnStr: string, game: ChessGame) {
     const { legalMoves } = game.currentPosition;
 
     if (halfMoveRegexes.PAWN_MOVE.test(whiteMove)) {
-      const move = legalMoves.find(([src, dest]) => {
+      // const move = legalMoves.find(([src, dest]) => {
 
-      });
+      // });
     }
 
     // let key: keyof typeof halfMoveRegexes;

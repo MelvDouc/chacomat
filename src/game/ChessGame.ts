@@ -78,13 +78,11 @@ export default class ChessGame {
     if (!Coords.isValidCoords(destCoords))
       throw new ChessGame.InvalidCoordsError(destCoords);
 
-    const { legalMoves } = this.currentPosition;
-
-    if (!legalMoves.some(([srcCoords2, destCoords2]) =>
-      srcCoords.x === srcCoords2.x
-      && srcCoords.y === srcCoords2.y
-      && destCoords.x === destCoords2.x
-      && destCoords.y === destCoords2.y
+    if (!this.currentPosition.legalMoves.some(([src, dest]) =>
+      src.x === srcCoords.x
+      && src.y === srcCoords.y
+      && dest.x === destCoords.x
+      && dest.y === destCoords.y
     ))
       throw new ChessGame.IllegalMoveError(srcCoords, destCoords);
 

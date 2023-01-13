@@ -82,28 +82,28 @@ export default class Position implements PositionInfo {
     if (this._legalMoves)
       return this._legalMoves;
 
-    this._legalMoves = [];
+    const legalMoves: Move[] = [];
 
     for (const move of this.pseudoLegalMoves())
       if (!this.getPositionFromMove(move[0], move[1]).isCheck())
-        this._legalMoves.push(move);
+        legalMoves.push(move);
 
     if (!this.isCheck()) {
       const king = this.board.kings[this.colorToMove];
-      for (const destCoords of king.castlingCoords())
-        this._legalMoves.push([king.coords, destCoords]);
+      for (const halfMove of king.castlingCoords())
+        legalMoves.push([king.coords, halfMove]);
     }
 
-    return this._legalMoves;
+    return (this._legalMoves = legalMoves);
   }
 
   /**
    * @returns A human-readable array of moves as strings following the pattern `e2-e4`.
    */
   public get legalMovesAsNotation(): string[] {
-    return this.legalMoves.map(([srcCoords, destCoords]) =>
-      `${srcCoords.notation}-${destCoords.notation}`
-    );
+    return this.legalMoves.map(([srcCoords, destCoords]) => {
+      return `${srcCoords.notation}-${destCoords.notation}`;
+    });
   }
 
   public get attackedCoordsSet(): Set<Coords> {
@@ -134,8 +134,8 @@ export default class Position implements PositionInfo {
     const pieceStr = this.board.toString();
     let repetitionCount = 0;
 
-    for (let current = this.prev; current && repetitionCount < 3; current = current.prev)
-      if (current.colorToMove === this.colorToMove && current.board.toString() === pieceStr)
+    for (let pos = this.prev; pos && repetitionCount < 3; pos = pos.prev)
+      if (pos.colorToMove === this.colorToMove && pos.board.toString() === pieceStr)
         repetitionCount++;
 
     return repetitionCount === 3;
@@ -144,13 +144,13 @@ export default class Position implements PositionInfo {
   /**
    * Generates the moves that could be played without regard for whether it puts the current player in check.
    */
-  private *pseudoLegalMoves(): Generator<Move, void, unknown> {
+  private *pseudoLegalMoves(): Generator<[Coords, Coords], void, unknown> {
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
         const srcCoords = this.board.Coords.get(x, y)!;
         if (this.board.get(srcCoords)?.color === this.colorToMove)
           for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves())
-            yield [srcCoords, destCoords] as Move;
+            yield [srcCoords, destCoords];
       }
     }
   }
@@ -221,17 +221,17 @@ export default class Position implements PositionInfo {
     const isSrcPiecePawn = srcPiece.isPawn(),
       isCaptureOrPawnMove = !!destPiece || isSrcPiecePawn;
 
-    if (srcPiece.isKing())
-      this.handleKingMove(srcPiece, destCoords, castlingRights);
-    else if (isSrcPiecePawn)
+    if (isSrcPiecePawn)
       this.handlePawnMove(srcPiece, destCoords, promotionType);
+    else if (srcPiece.isKing())
+      this.handleKingMove(srcPiece, destCoords, castlingRights);
     else if (srcPiece.isRook())
-      this.handleRookMove(srcPiece as Rook, destCoords, castlingRights);
+      this.handleRookMove(srcPiece, destCoords, castlingRights);
     else
       board.transfer(srcCoords, destCoords);
 
-    if (destPiece?.isRook() && (destPiece as Rook).isOnInitialSquare())
-      castlingRights[destPiece.color][(destPiece as Rook).wing!] = false;
+    if (destPiece?.isRook() && destPiece.isOnInitialSquare())
+      castlingRights[destPiece.color][destPiece.wing!] = false;
 
     return new Position({
       board,
