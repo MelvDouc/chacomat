@@ -1,4 +1,6 @@
 import Coords from "./Coords.js";
+import Color from "../constants/Color.js";
+import Wing from "../constants/Wing.js";
 import GameStatus from "../constants/GameStatus.js";
 import Position from "./Position.js";
 import { getRandomChessWhitePieceRank } from "../utils/fischer-random.js";
@@ -13,13 +15,15 @@ import type {
   AlgebraicSquareNotation,
   ChessGameMetaInfo,
   ChessGameParameters,
-  Promotable,
+  PromotedPieceInitial,
 } from "../types.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
  */
 export default class ChessGame {
+  public static readonly Colors = Color;
+  public static readonly Wings = Wing;
   public static readonly Statuses = GameStatus;
   public static readonly IllegalMoveError = IllegalMoveError;
   public static readonly InactiveGameError = InactiveGameError;
@@ -63,7 +67,7 @@ export default class ChessGame {
   public move(
     srcCoords: { x: number; y: number; },
     destCoords: { x: number; y: number; },
-    promotionType: Promotable = "Q"
+    promotionType: PromotedPieceInitial = "Q"
   ): this {
     if (this.currentPosition.status !== GameStatus.ACTIVE)
       throw new ChessGame.InactiveGameError(this.currentPosition.status);
@@ -101,7 +105,7 @@ export default class ChessGame {
   public moveWithNotations(
     srcNotation: AlgebraicSquareNotation,
     destNotation: AlgebraicSquareNotation,
-    promotionType: Promotable = "Q"
+    promotionType: PromotedPieceInitial = "Q"
   ): this {
     return this.move(
       Coords.fromNotation(srcNotation)!,

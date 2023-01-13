@@ -1,15 +1,15 @@
 import Wing from "../constants/Wing.js";
 import Piece from "./_Piece.js";
 import type {
-  Board,
-  CastlingRights,
-  CoordsGenerator,
-  Coords,
-  Position
+  CoordsGenerator
 } from "../types.js";
 
 export default class King extends Piece {
   public static readonly whiteInitial = "K";
+
+  public isKing(): this is King {
+    return true;
+  }
 
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
@@ -52,9 +52,7 @@ export default class King extends Piece {
 
   public *castlingCoords(): CoordsGenerator {
     for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
-      if (
-        this.canCastleToWing(wing)
-      ) {
+      if (this.canCastleToWing(wing)) {
         const y = (this.board.position.game.isChess960)
           ? this.board.getStartRookFiles()[wing]
           : King.castledKingFiles[wing];

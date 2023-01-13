@@ -13,7 +13,7 @@ import type {
   Move,
   Pawn,
   PositionInfo,
-  Promotable,
+  PromotedPieceInitial,
   Rook
 } from "../types.js";
 
@@ -155,7 +155,7 @@ export default class Position implements PositionInfo {
     }
   }
 
-  private handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: Promotable = "Q"): void {
+  private handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = "Q"): void {
     if (
       destCoords.y === this.enPassantFile
       && pawn.coords.x === Piece.middleRanks[pawn.oppositeColor]
@@ -181,7 +181,7 @@ export default class Position implements PositionInfo {
     const { coords: srcCoords, board } = king;
     const isCastling = Math.abs(destCoords.y - srcCoords.y) > 1
       || this.game.isChess960
-      && board.get(destCoords)?.whiteInitial === "R"
+      && board.get(destCoords)?.isRook()
       && board.get(destCoords)!.color === king.color;
 
     if (!isCastling) {
@@ -211,34 +211,26 @@ export default class Position implements PositionInfo {
   public getPositionFromMove(
     srcCoords: Coords,
     destCoords: Coords,
-    promotionType: Promotable = "Q",
+    promotionType: PromotedPieceInitial = "Q",
     updateColorAndMoveNumber = false
   ): Position {
     const board = this.board.clone(),
       castlingRights = this.castlingRights.clone();
-
     const srcPiece = board.get(srcCoords) as Piece,
       destPiece = board.get(destCoords);
-
-    const srcInitial = srcPiece.whiteInitial,
-      isSrcPiecePawn = srcInitial === "P",
+    const isSrcPiecePawn = srcPiece.isPawn(),
       isCaptureOrPawnMove = !!destPiece || isSrcPiecePawn;
 
-    switch (srcInitial) {
-      case "K":
-        this.handleKingMove(srcPiece as King, destCoords, castlingRights);
-        break;
-      case "P":
-        this.handlePawnMove(srcPiece as Pawn, destCoords, promotionType);
-        break;
-      case "R":
-        this.handleRookMove(srcPiece as Rook, destCoords, castlingRights);
-        break;
-      default:
-        board.transfer(srcCoords, destCoords);
-    }
+    if (srcPiece.isKing())
+      this.handleKingMove(srcPiece, destCoords, castlingRights);
+    else if (isSrcPiecePawn)
+      this.handlePawnMove(srcPiece, destCoords, promotionType);
+    else if (srcPiece.isRook())
+      this.handleRookMove(srcPiece as Rook, destCoords, castlingRights);
+    else
+      board.transfer(srcCoords, destCoords);
 
-    if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare())
+    if (destPiece?.isRook() && (destPiece as Rook).isOnInitialSquare())
       castlingRights[destPiece.color][(destPiece as Rook).wing!] = false;
 
     return new Position({

@@ -11,6 +11,10 @@ export default class Rook extends SlidingPiece {
 
   public wing: Wing | null = null;
 
+  public isRook(): this is Rook {
+    return true;
+  }
+
   public isOnInitialSquare(): boolean {
     return this.coords.x === Rook.startPieceRanks[this.color]
       && (

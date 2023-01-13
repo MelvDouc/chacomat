@@ -1,7 +1,8 @@
 import Piece from "../_Piece.js";
+import { CoordsGenerator } from "../../types.js";
 
 export default abstract class SlidingPiece extends Piece {
-  public *attackedCoords() {
+  public *attackedCoords(): CoordsGenerator {
     const { x: xOffsets, y: yOffsets } = (this.constructor as typeof Piece).offsets;
 
     for (let i = 0; i < xOffsets.length; i++) {

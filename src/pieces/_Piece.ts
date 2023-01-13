@@ -1,14 +1,19 @@
 import Color from "../constants/Color.js";
 import Wing from "../constants/Wing.js";
 import type {
+  Bishop,
   BlackAndWhite,
   BlackPieceInitial,
   Board,
   Coords,
   CoordsGenerator,
+  King,
+  Knight,
+  Pawn,
   PieceInfo,
   PieceInitial,
-  Position,
+  Queen,
+  Rook,
   WhitePieceInitial,
   Wings
 } from "../types.js";
@@ -106,4 +111,11 @@ export default abstract class Piece {
       coords: this.coords
     } as PieceInfo]);
   }
+
+  public isKing(): this is King { return false; }
+  public isQueen(): this is Queen { return false; }
+  public isRook(): this is Rook { return false; }
+  public isBishop(): this is Bishop { return false; }
+  public isKnight(): this is Knight { return false; }
+  public isPawn(): this is Pawn { return false; }
 }

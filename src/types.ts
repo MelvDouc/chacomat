@@ -8,7 +8,7 @@ export type FenString = string;
 export type WhitePieceInitial = "N" | "B" | "R" | "Q" | "K" | "P";
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
 export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
-export type Promotable = Exclude<WhitePieceInitial, "K" | "P">;
+export type PromotedPieceInitial = Exclude<WhitePieceInitial, "K" | "P">;
 export type ChessFileName = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
 export type ChessRankName = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 export type AlgebraicSquareNotation = `${ChessFileName}${ChessRankName}`;
@@ -25,6 +25,7 @@ export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
 export type Board = import("./game/Board.js").default;
 export type CastlingRights = import("./game/CastlingRights.js").default;
+export type Coords = import("./game/Coords.js").default;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
 
@@ -35,8 +36,6 @@ export type BlackAndWhite<T> = {
 export type Wings<T> = {
   [W in Wing]: T;
 };
-
-export type Coords = import("./game/Coords.js").default;
 
 export interface ChessGameParameters {
   fenString?: FenString;

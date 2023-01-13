@@ -7,4 +7,8 @@ export default class Knight extends Piece {
     x: [-2, -2, -1, -1, 1, 1, 2, 2],
     y: [-1, 1, -2, 2, -2, 2, -1, 1]
   };
+
+  public isKnight(): this is Knight {
+    return true;
+  }
 }

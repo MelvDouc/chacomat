@@ -1,9 +1,9 @@
 import Coords from "./Coords.js";
-import Color from "../constants/Color.js";
 import Wing from "../constants/Wing.js";
 import Piece from "../pieces/Piece.js";
 import type {
   BlackAndWhite,
+  Color,
   King,
   PieceInitial,
   Position,
@@ -33,7 +33,7 @@ export default class Board extends Map<Coords, Piece> {
             const piece = Piece.fromInitial(item as PieceInitial, acc);
             piece.coords = coords;
             acc.set(coords, piece);
-            if (piece.whiteInitial === "K")
+            if (piece.isKing())
               acc.kings[piece.color] = piece as King;
           });
         return acc;
@@ -54,7 +54,7 @@ export default class Board extends Map<Coords, Piece> {
   private findRookFiles(): { [W in Wing]: number } {
     const rookFiles: number[] = [];
     for (let y = 0; y < 8; y++)
-      if (this.get(Coords.get(7, y)!)?.whiteInitial === "R")
+      if (this.get(Coords.get(7, y)!)?.isRook())
         rookFiles.push(y);
     return {
       [Wing.QUEEN_SIDE]: Math.min(...rookFiles),
@@ -74,7 +74,7 @@ export default class Board extends Map<Coords, Piece> {
       // @ts-ignore
       for (wing in startRookFiles) {
         const piece = this.get(Coords.get(Piece.startPawnRanks[color], this.startRookFiles[wing])!);
-        if (piece?.whiteInitial === "R" && piece.color === color)
+        if (piece?.isRook() && piece.color === color)
           (piece as Rook).wing = wing;
       }
     return this;
@@ -105,7 +105,7 @@ export default class Board extends Map<Coords, Piece> {
     const boardClone = new Board();
     for (const [coords, piece] of this) {
       boardClone.set(coords, piece.clone(boardClone));
-      if (piece.whiteInitial === "K")
+      if (piece.isKing())
         boardClone.kings[piece.color] = boardClone.get(coords) as King;
     }
     boardClone.setStartRookFiles(this.startRookFiles);

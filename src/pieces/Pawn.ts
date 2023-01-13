@@ -1,11 +1,10 @@
 import Piece from "./_Piece.js";
 import type {
   Bishop,
-  Board,
+  CoordsGenerator,
   Knight,
   PieceInfo,
-  Position,
-  Promotable,
+  PromotedPieceInitial,
   Queen,
   Rook
 } from "../types.js";
@@ -20,7 +19,7 @@ export default class Pawn extends Piece {
 
   private static pawnYOffsets = [-1, 1];
 
-  private *forwardMoves() {
+  private *forwardMoves(): CoordsGenerator {
     const coords1 = this.coords.getPeer(Pawn.directions[this.color], 0)!;
 
     if (!this.board.get(coords1)) {
@@ -35,7 +34,11 @@ export default class Pawn extends Piece {
     }
   }
 
-  private *captures() {
+  public isPawn(): this is Pawn {
+    return true;
+  }
+
+  private *captures(): CoordsGenerator {
     for (const destCoords of this.attackedCoords())
       if (
         this.board.get(destCoords)?.color === this.oppositeColor
@@ -45,7 +48,7 @@ export default class Pawn extends Piece {
         yield destCoords;
   }
 
-  public *attackedCoords() {
+  public *attackedCoords(): CoordsGenerator {
     for (const xOffset of Pawn.pawnXOffsets[this.color]) {
       for (const yOffset of Pawn.pawnYOffsets) {
         const coords = this.coords.getPeer(xOffset, yOffset);
@@ -55,12 +58,12 @@ export default class Pawn extends Piece {
     }
   }
 
-  public *pseudoLegalMoves() {
+  public *pseudoLegalMoves(): CoordsGenerator {
     yield* this.forwardMoves();
     yield* this.captures();
   }
 
-  public promote(type: Promotable): Queen | Rook | Bishop | Knight {
+  public promote(type: PromotedPieceInitial): Queen | Rook | Bishop | Knight {
     return Reflect.construct(Piece.constructors.get(type)!, [{
       color: this.color,
       board: this.board
