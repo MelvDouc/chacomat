@@ -51,7 +51,7 @@ export default class Position implements PositionInfo {
         ? -1
         : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
       halfMoveClock: +halfMoveClock,
-      fullMoveNumber: +fullMoveNumber,
+      fullMoveNumber: +fullMoveNumber
     });
     board.position = position;
     return position;
@@ -198,6 +198,16 @@ export default class Position implements PositionInfo {
       .transfer(rookSrcCoords, rookDestCoords);
   }
 
+  private handleRookMove(rook: Rook, destCoords: Coords, board: Board, castlingRights: CastlingRights): void {
+    if (rook.isOnInitialSquare(board)) {
+      const wing = (rook.coords.y === board.startRookFiles[Wing.QUEEN_SIDE])
+        ? Wing.QUEEN_SIDE
+        : Wing.KING_SIDE;
+      castlingRights[rook.color][wing] = false;
+    }
+    board.transfer(rook.coords, destCoords);
+  }
+
   /**
    * The color to move isn't updated just yet as this position will be used
    * to verify if a move has put the currently active color in check.
@@ -226,13 +236,7 @@ export default class Position implements PositionInfo {
         this.handlePawnMove(srcPiece as Pawn, destCoords, board, promotionType);
         break;
       case "R":
-        if ((srcPiece as Rook).isOnInitialSquare(board)) {
-          const wing = (srcCoords.y === board.startRookFiles[Wing.QUEEN_SIDE])
-            ? Wing.QUEEN_SIDE
-            : Wing.KING_SIDE;
-          castlingRights[srcPiece.color][wing] = false;
-        }
-        board.transfer(srcCoords, destCoords);
+        this.handleRookMove(srcPiece as Rook, destCoords, board, castlingRights);
         break;
       default:
         board.transfer(srcCoords, destCoords);
@@ -247,9 +251,7 @@ export default class Position implements PositionInfo {
       enPassantFile: (isSrcPiecePawn && Math.abs(destCoords.x - srcCoords.x) > 1)
         ? srcCoords.y
         : -1,
-      colorToMove: (updateColorAndMoveNumber)
-        ? this.inactiveColor
-        : this.colorToMove,
+      colorToMove: (updateColorAndMoveNumber) ? this.inactiveColor : this.colorToMove,
       halfMoveClock: (isCaptureOrPawnMove) ? 0 : this.halfMoveClock + 1,
       fullMoveNumber: (updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
         ? this.fullMoveNumber + 1
