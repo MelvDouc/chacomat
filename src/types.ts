@@ -38,6 +38,23 @@ export type Wings<T> = {
 
 export type Coords = import("./game/Coords.js").default;
 
+export interface ChessGameParameters {
+  fenString?: FenString;
+  positionInfo?: PositionInfo;
+  isChess960?: boolean;
+  metaInfo?: Partial<ChessGameMetaInfo>;
+}
+
+export interface ChessGameMetaInfo {
+  whitePlayer: string;
+  blackPlayer: string;
+  /**
+   * Should be in the format `YYYY.MM.DD`.
+   */
+  date: string;
+  event: string;
+}
+
 export interface PositionInfo {
   board: Board;
   castlingRights: CastlingRights;

@@ -6,12 +6,13 @@ import { viewBoard } from "../utils/log.js";
 import {
   IllegalMoveError,
   InactiveGameError,
-  InvalidCoordsError
+  InvalidCoordsError,
+  InvalidFenError
 } from "../utils/errors.js";
 import type {
   AlgebraicSquareNotation,
-  FenString,
-  PositionInfo,
+  ChessGameMetaInfo,
+  ChessGameParameters,
   Promotable,
 } from "../types.js";
 
@@ -23,6 +24,7 @@ export default class ChessGame {
   public static readonly IllegalMoveError = IllegalMoveError;
   public static readonly InactiveGameError = InactiveGameError;
   public static readonly InvalidCoordsError = InvalidCoordsError;
+  public static readonly InvalidFenError = InvalidFenError;
 
   public static getChess960Game(): ChessGame {
     const pieceRank = getRandomChessWhitePieceRank();
@@ -34,12 +36,9 @@ export default class ChessGame {
 
   public currentPosition: Position;
   public readonly isChess960: boolean;
+  public readonly metaInfo: Partial<ChessGameMetaInfo>;
 
-  constructor({ fenString, positionInfo, isChess960 }: {
-    fenString?: FenString;
-    positionInfo?: PositionInfo;
-    isChess960?: boolean;
-  } = {}) {
+  constructor({ fenString, positionInfo, isChess960, metaInfo }: ChessGameParameters = {}) {
     this.currentPosition = positionInfo
       ? new Position(positionInfo)
       : Position.fromFenString(fenString ?? Position.startFenString);
@@ -47,6 +46,7 @@ export default class ChessGame {
     if (isChess960)
       this.currentPosition.board.setStartRookFiles();
     this.isChess960 = !!isChess960;
+    this.metaInfo = metaInfo ?? {};
   }
 
   public get status(): GameStatus {

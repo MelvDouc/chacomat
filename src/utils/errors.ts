@@ -17,3 +17,9 @@ export class InactiveGameError extends Error {
     super(`Game is inactive: ${status}`);
   }
 }
+
+export class InvalidFenError extends Error {
+  constructor(moveStr: string) {
+    super(`Invalid FEN string at: "${moveStr}"`);
+  }
+}
