@@ -1,6 +1,6 @@
 import Coords from "./Coords.js";
-import { Color, GameStatus, Wing } from "../utils/constants.js";
 import Position from "./Position.js";
+import { Color, GameStatus, Wing } from "../utils/constants.js";
 import { getRandomChessWhitePieceRank } from "../utils/fischer-random.js";
 import { viewBoard } from "../utils/log.js";
 import {
@@ -56,7 +56,7 @@ export default class ChessGame {
   }
 
   /**
-   * Assumes an indexed 64-square board where a8 is 0 and h1 is 63.
+   * Play a move using coordinates such that a8 is {x: 0, y: 0} and h1 is {x: 7, y: 7}.
    * @param srcCoords The coords of the source square. Must contain a piece which can legally move in the current position.
    * @param destCoords The coords of the square the source piece will move to.
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
@@ -98,6 +98,13 @@ export default class ChessGame {
     return this;
   }
 
+  /**
+   * Play a move using algebraic square notations.
+   * @param srcNotation The notation of the source square. Must contain a piece which can legally move in the current position.
+   * @param destNotation The notation of the square the source piece will move to.
+   * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
+   * @returns The current instance of a game containing the position after the move.
+   */
   public moveWithNotations(
     srcNotation: AlgebraicSquareNotation,
     destNotation: AlgebraicSquareNotation,

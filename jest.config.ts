@@ -1,5 +1,6 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
-export default {
+import { JestConfigWithTsJest } from "ts-jest";
+
+const config: JestConfigWithTsJest = {
   extensionsToTreatAsEsm: [".ts"],
   testPathIgnorePatterns: ["/node_modules"],
   moduleNameMapper: {
@@ -16,3 +17,5 @@ export default {
     ],
   },
 };
+
+export default config;
