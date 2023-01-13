@@ -10,10 +10,9 @@ import type {
   Wings
 } from "../types.js";
 
-export default class Board {
+export default class Board extends Map<Coords, Piece> {
   private static readonly nullPiece = "0";
   private static readonly nullPieceRegex = /0+/g;
-
 
   /**
    * @param {string} pieceStr The portion of an FEN string representing the board.
@@ -40,17 +39,12 @@ export default class Board {
       }, new Board());
   }
 
-  private readonly squares: Map<Coords, Piece> = new Map();
   public position: Position;
   public readonly kings = {} as BlackAndWhite<King>;
   public startRookFiles: Wings<number> = {
     [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
     [Wing.KING_SIDE]: Wing.KING_SIDE
   };
-
-  public get pieceCount(): number {
-    return this.squares.size;
-  }
 
   public get Coords(): typeof Coords {
     return Coords;
@@ -59,7 +53,7 @@ export default class Board {
   public get rookFiles(): { [W in Wing]: number } {
     const rookFiles: number[] = [];
     for (let y = 0; y < 8; y++)
-      if (this.squares.get(Coords.get(7, y)!)?.whiteInitial === "R")
+      if (this.get(Coords.get(7, y)!)?.whiteInitial === "R")
         rookFiles.push(y);
     return {
       [Wing.QUEEN_SIDE]: Math.min(...rookFiles),
@@ -67,22 +61,9 @@ export default class Board {
     };
   }
 
-  public get(coords: Coords): Piece | null {
-    return this.squares.get(coords) ?? null;
-  }
-
-  public set(coords: Coords, value: Piece): this {
-    this.squares.set(coords, value);
-    return this;
-  }
-
-  public unset(coords: Coords): void {
-    this.squares.delete(coords);
-  }
-
   public transfer(srcCoords: Coords, destCoords: Coords): this {
     const srcPiece = this.get(srcCoords)!;
-    this.set(destCoords, srcPiece).unset(srcCoords);
+    this.set(destCoords, srcPiece).delete(srcCoords);
     srcPiece.coords = destCoords;
     return this;
   }
@@ -90,7 +71,7 @@ export default class Board {
   public getCoordsAttackedByColor(color: Color): Set<Coords> {
     const set = new Set<Coords>();
 
-    for (const piece of this.squares.values())
+    for (const piece of this.values())
       if (piece.color === color)
         for (const destCoords of piece.attackedCoords(this))
           set.add(destCoords);
@@ -103,7 +84,7 @@ export default class Board {
    */
   public clone(): Board {
     const clone = new Board();
-    for (const [coords, piece] of this.squares) {
+    for (const [coords, piece] of this) {
       clone.set(coords, piece.clone());
       if (piece.whiteInitial === "K")
         clone.kings[piece.color] = clone.get(coords) as King;
@@ -119,7 +100,7 @@ export default class Board {
   public getPieceArray(): (Piece | null)[][] {
     return Array.from({ length: 8 }, (_, x) => {
       return Array.from({ length: 8 }, (_, y) => {
-        return this.squares.get(Coords.get(x, y)!) ?? null;
+        return this.get(Coords.get(x, y)!) ?? null;
       });
     });
   }
@@ -131,7 +112,7 @@ export default class Board {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array
-          .from({ length: 8 }, (_, y) => this.squares.get(Coords.get(x, y)!)?.initial ?? Board.nullPiece)
+          .from({ length: 8 }, (_, y) => this.get(Coords.get(x, y)!)?.initial ?? Board.nullPiece)
           .join("")
           .replace(Board.nullPieceRegex, (zeros) => String(zeros.length));
       })
@@ -142,7 +123,7 @@ export default class Board {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array
-          .from({ length: 8 }, (_, y) => this.squares.get(Coords.get(x, y)!)?.initial ?? "-")
+          .from({ length: 8 }, (_, y) => this.get(Coords.get(x, y)!)?.initial ?? "-")
           .join(" ");
       })
       .join("\n");

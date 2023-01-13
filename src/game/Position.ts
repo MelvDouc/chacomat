@@ -117,7 +117,7 @@ export default class Position implements PositionInfo {
   public get status(): GameStatus {
     if (!this.legalMoves.length)
       return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
-    if (this.board.pieceCount < 3)
+    if (this.board.size < 3)
       return GameStatus.INSUFFICIENT_MATERIAL;
     if (this.halfMoveClock > 50)
       return GameStatus.FIFTY_MOVE_DRAW;
@@ -160,7 +160,7 @@ export default class Position implements PositionInfo {
       destCoords.y === this.enPassantFile
       && srcPiece.coords.x === Piece.middleRanks[srcPiece.oppositeColor]
     ) {
-      board.unset(board.Coords.get(srcPiece.coords.x, destCoords.y)!);
+      board.delete(board.Coords.get(srcPiece.coords.x, destCoords.y)!);
       board.set(destCoords, srcPiece);
       srcPiece.coords = destCoords;
       return;
@@ -170,7 +170,7 @@ export default class Position implements PositionInfo {
       ? srcPiece.promote(promotionType)
       : srcPiece;
 
-    board.set(destCoords, piece).unset(srcPiece.coords);
+    board.set(destCoords, piece).delete(srcPiece.coords);
     piece.coords = destCoords;
   }
 

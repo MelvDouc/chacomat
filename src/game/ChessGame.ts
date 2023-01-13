@@ -81,7 +81,7 @@ export default class ChessGame {
     return this.move(
       Coords.fromNotation(srcNotation)!,
       Coords.fromNotation(destNotation)!,
-      promotionType,
+      promotionType
     );
   }
 }

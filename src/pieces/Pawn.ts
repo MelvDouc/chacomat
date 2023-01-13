@@ -2,7 +2,6 @@ import Piece from "./_Piece.js";
 import type {
   Bishop,
   Board,
-  Coords,
   Knight,
   PieceInfo,
   Position,
