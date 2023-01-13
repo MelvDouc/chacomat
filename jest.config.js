@@ -1,6 +1,7 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-module.exports = {
+export default {
   extensionsToTreatAsEsm: [".ts"],
+  testPathIgnorePatterns: ["/node_modules"],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1"
   },

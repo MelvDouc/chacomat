@@ -110,6 +110,9 @@ export default class ChessGame {
     );
   }
 
+  /**
+   * Pretty print this game's current board to the console.
+   */
   public logBoard(): void {
     viewBoard(this.currentPosition.board);
   }

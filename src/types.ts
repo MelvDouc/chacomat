@@ -2,6 +2,9 @@ import { Color, GameStatus, Wing } from "./utils/constants.js";
 
 export type { Color, GameStatus, Wing };
 
+/**
+ * https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation for more info.
+ */
 export type FenString = string;
 export type WhitePieceInitial = "N" | "B" | "R" | "Q" | "K" | "P";
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
@@ -19,7 +22,7 @@ export type Bishop = import("./pieces/Piece.js").Bishop;
 export type Rook = import("./pieces/Piece.js").Rook;
 export type Queen = import("./pieces/Piece.js").Queen;
 
-export type ChessGameType = import("./game/ChessGame.js").default;
+export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
 export type Board = import("./game/Board.js").default;
 export type CastlingRights = import("./game/CastlingRights.js").default;
@@ -41,7 +44,9 @@ export interface ChessGameParameters {
   isChess960?: boolean;
   metaInfo?: Partial<ChessGameMetaInfo>;
 }
-
+/**
+ * Various info that would typically be found in a PGN file.
+ */
 export interface ChessGameMetaInfo {
   whitePlayer: string;
   blackPlayer: string;
@@ -52,6 +57,9 @@ export interface ChessGameMetaInfo {
   event: string;
 }
 
+/**
+ * The six items of information found in an FEN string.
+ */
 export interface PositionInfo {
   board: Board;
   castlingRights: CastlingRights;

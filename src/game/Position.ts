@@ -4,7 +4,7 @@ import Board from "./Board.js";
 import CastlingRights from "./CastlingRights.js";
 import type {
   AlgebraicSquareNotation,
-  ChessGameType,
+  ChessGame,
   Coords,
   FenString,
   King,
@@ -65,7 +65,7 @@ export default class Position implements PositionInfo {
   private _attackedCoordsSet: Set<Coords>;
   public prev: Position | null = null;
   public next: Position[] = [];
-  public game: ChessGameType;
+  public game: ChessGame;
 
   constructor(positionInfo: PositionInfo) {
     Object.assign(this, positionInfo);
