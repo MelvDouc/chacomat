@@ -1,4 +1,4 @@
-import { ChessGame } from "../types.js";
+import { ChessGameType } from "../types.js";
 
 const halfMoveRegexes = {
   PAWN_MOVE: /^P?[a-h][1-8](=?[NBRQ])?(\+{1,2}|#)?$/,
@@ -14,7 +14,7 @@ const pawnMoveRegex = /[a-h](x[a-h])?[1-8](=?[NBRQ])?/,
   halfMoveAndCheckRegex = halfMove + checkRegex.source;
 const moveRegex = new RegExp(`(?<=\\d+\\.\\s*)${halfMoveAndCheckRegex}(\\s+${halfMoveAndCheckRegex})?`, "g");
 
-function playMovesFromPgn(pgnStr: string, game: ChessGame) {
+function playMovesFromPgn(pgnStr: string, game: ChessGameType) {
   const movePairs = pgnStr.match(moveRegex) as string[];
 
   movePairs.forEach((pair) => {

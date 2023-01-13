@@ -19,7 +19,7 @@ export type Bishop = import("./pieces/Piece.js").Bishop;
 export type Rook = import("./pieces/Piece.js").Rook;
 export type Queen = import("./pieces/Piece.js").Queen;
 
-export type ChessGame = import("./game/ChessGame.js").default;
+export type ChessGameType = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
 export type Board = import("./game/Board.js").default;
 export type CastlingRights = import("./game/CastlingRights.js").default;

@@ -110,7 +110,7 @@ export default class ChessGame {
     );
   }
 
-  public viewBoard(): void {
+  public logBoard(): void {
     viewBoard(this.currentPosition.board);
   }
 }

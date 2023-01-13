@@ -11,7 +11,7 @@ export function viewBoard(board: Board): void {
       .from({ length: 8 }, (_, x) => {
         let row = "";
         for (let y = 0; y < 8; y++) {
-          const char = board.get(board.Coords.get(x, y))?.initial ?? "-";
+          const char = board.get(board.Coords.get(x, y))?.initial ?? " ";
           const bgColor = (x % 2 === y % 2) ? BgWhite : BgGreen;
           row += `${bgColor + FgBlack} ${char} ${Reset}`;
         }
