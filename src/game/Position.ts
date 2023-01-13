@@ -185,20 +185,17 @@ export default class Position implements PositionInfo {
       && board.get(destCoords)!.color === king.color;
 
     if (!isCastling) {
-      board.set(destCoords, king).unset(srcCoords);
-      king.coords = destCoords;
+      board.transfer(srcCoords, destCoords);
       return;
     }
 
     const wing = (destCoords.y < srcCoords.y) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
-    const destKingCoords = board.Coords.get(srcCoords.x, Piece.castledKingFiles[wing])!;
-    const rookSrcCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing])!;
-    const rookDestCoords = board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!;
-    const rook = board.get(rookSrcCoords)!;
-    board.set(destKingCoords, board.get(srcCoords)!).unset(srcCoords);
-    king.coords = destKingCoords;
-    board.set(rookDestCoords, rook).unset(rookSrcCoords);
-    rook.coords = rookDestCoords;
+    const destKingCoords = board.Coords.get(srcCoords.x, Piece.castledKingFiles[wing])!,
+      rookSrcCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing])!,
+      rookDestCoords = board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing])!;
+    board
+      .transfer(srcCoords, destKingCoords)
+      .transfer(rookSrcCoords, rookDestCoords);
   }
 
   /**
@@ -229,15 +226,16 @@ export default class Position implements PositionInfo {
         this.handlePawnMove(srcPiece as Pawn, destCoords, board, promotionType);
         break;
       case "R":
-        // TODO: work out wing
-        if ((srcPiece as Rook).isOnInitialSquare(board))
-          castlingRights[srcPiece.color][srcCoords.y as Wing] = false;
-        board.set(destCoords, srcPiece).unset(srcCoords);
-        srcPiece.coords = destCoords;
+        if ((srcPiece as Rook).isOnInitialSquare(board)) {
+          const wing = (srcCoords.y === board.startRookFiles[Wing.QUEEN_SIDE])
+            ? Wing.QUEEN_SIDE
+            : Wing.KING_SIDE;
+          castlingRights[srcPiece.color][wing] = false;
+        }
+        board.transfer(srcCoords, destCoords);
         break;
       default:
-        board.set(destCoords, srcPiece).unset(srcCoords);
-        srcPiece.coords = destCoords;
+        board.transfer(srcCoords, destCoords);
     }
 
     if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare(board))

@@ -80,6 +80,13 @@ export default class Board {
     this.squares.delete(coords);
   }
 
+  public transfer(srcCoords: Coords, destCoords: Coords): this {
+    const srcPiece = this.get(srcCoords)!;
+    this.set(destCoords, srcPiece).unset(srcCoords);
+    srcPiece.coords = destCoords;
+    return this;
+  }
+
   public getCoordsAttackedByColor(color: Color): Set<Coords> {
     const set = new Set<Coords>();
 
