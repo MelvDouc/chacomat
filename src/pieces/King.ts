@@ -14,26 +14,21 @@ export default class King extends Piece {
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
    */
-  private canCastleToWing({ wing, castlingRights, attackedCoords, board }: {
-    wing: Wing;
-    castlingRights: CastlingRights;
-    attackedCoords: Set<Coords>;
-    board: Board;
-  }): boolean {
-    if (!castlingRights[this.color][wing])
+  private canCastleToWing(wing: Wing): boolean {
+    if (!this.board.position.castlingRights[this.color][wing])
       return false;
 
     const { x: X, y: Y } = this.coords;
-    const rookCoords = board.Coords.get(X, board.getStartRookFiles()[wing])!;
+    const rookCoords = this.board.Coords.get(X, this.board.getStartRookFiles()[wing])!;
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
     const kingDirection = Math.sign(King.castledKingFiles[wing] - Y);
 
     for (let y = Y + kingDirection; ; y += kingDirection) {
-      const destCoords = board.Coords.get(X, y)!;
+      const destCoords = this.board.Coords.get(X, y)!;
       if (
-        (attackedCoords.has(destCoords) || board.has(destCoords))
+        (this.board.position.attackedCoordsSet.has(destCoords) || this.board.has(destCoords))
         && destCoords !== rookCoords
       )
         return false;
@@ -45,8 +40,8 @@ export default class King extends Piece {
     const rookDirection = Math.sign(Piece.castledRookFiles[wing] - rookCoords.y);
 
     for (let y = rookCoords.y + rookDirection; ; y += rookDirection) {
-      const destCoords = board.Coords.get(X, y)!;
-      if (board.has(destCoords) && destCoords !== this.coords)
+      const destCoords = this.board.Coords.get(X, y)!;
+      if (this.board.has(destCoords) && destCoords !== this.coords)
         return false;
       if (y === Piece.castledRookFiles[wing])
         break;
@@ -55,20 +50,15 @@ export default class King extends Piece {
     return true;
   }
 
-  public *castlingCoords(attackedCoords: Set<Coords>, position: Position): CoordsGenerator {
+  public *castlingCoords(): CoordsGenerator {
     for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
       if (
-        this.canCastleToWing({
-          wing,
-          attackedCoords,
-          castlingRights: position.castlingRights,
-          board: position.board
-        })
+        this.canCastleToWing(wing)
       ) {
-        const y = (position.game.isChess960)
-          ? position.board.getStartRookFiles()[wing]
+        const y = (this.board.position.game.isChess960)
+          ? this.board.getStartRookFiles()[wing]
           : King.castledKingFiles[wing];
-        yield position.board.Coords.get(this.coords.x, y)!;
+        yield this.board.Coords.get(this.coords.x, y)!;
       }
     }
   }

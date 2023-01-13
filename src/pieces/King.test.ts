@@ -7,7 +7,6 @@ const c1 = Coords.fromNotation("c1")!;
 const d1 = Coords.fromNotation("d1")!;
 const e1 = Coords.fromNotation("e1")!;
 const g1 = Coords.fromNotation("g1")!;
-const g2 = Coords.fromNotation("g2")!;
 
 describe("A king", () => {
   it("should be able to castle with no squares between it and a rook", () => {
@@ -23,11 +22,10 @@ describe("A king", () => {
   it("should not be able to castle through check", () => {
     const game = new ChessGame({
       fenString: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
-    }),
-      pos = game.currentPosition;
-    const whiteKing = pos.board.kings[Color.WHITE];
+    });
+    const whiteKing = game.currentPosition.board.kings[Color.WHITE];
     const castlingCoords = [
-      ...whiteKing.castlingCoords(pos.attackedCoordsSet, pos)
+      ...whiteKing.castlingCoords()
     ];
 
     expect(castlingCoords).not.toContain(c1);
@@ -40,11 +38,9 @@ describe("Chess960", () => {
       fenString: "nbbqrkrn/pppppppp/8/8/8/8/8/NB2RKR1 w KQkq - 0 1",
       isChess960: true
     });
-    const pos = game.currentPosition,
-      { board } = pos;
-    const whiteKing = board.kings[Color.WHITE];
+    const whiteKing = game.currentPosition.board.kings[Color.WHITE];
     const castlingCoords = [
-      ...whiteKing.castlingCoords(pos.attackedCoordsSet, pos)
+      ...whiteKing.castlingCoords()
     ];
 
     expect(castlingCoords).toContain(e1);

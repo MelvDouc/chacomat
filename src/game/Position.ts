@@ -90,7 +90,7 @@ export default class Position implements PositionInfo {
 
     if (!this.isCheck()) {
       const king = this.board.kings[this.colorToMove];
-      for (const destCoords of king.castlingCoords(this.attackedCoordsSet, this))
+      for (const destCoords of king.castlingCoords())
         this._legalMoves.push([king.coords, destCoords]);
     }
 
