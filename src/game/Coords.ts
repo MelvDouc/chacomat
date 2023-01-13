@@ -15,6 +15,12 @@ export default class Coords {
     return null;
   }
 
+  public static isValidCoords(arg: any): arg is Coords {
+    return typeof arg === "object"
+      && arg.x in Coords.all
+      && arg.y in Coords.all[arg.x];
+  }
+
   static {
     for (let x = 0; x < 8; x++) {
       Coords.all[x] = {};

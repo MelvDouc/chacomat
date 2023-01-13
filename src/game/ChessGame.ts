@@ -1,20 +1,28 @@
 import Coords from "./Coords.js";
 import GameStatus from "../constants/GameStatus.js";
 import Position from "./Position.js";
+import { getRandomChessWhitePieceRank } from "../utils/fischer-random.js";
+import { viewBoard } from "../utils/log.js";
+import {
+  IllegalMoveError,
+  InactiveGameError,
+  InvalidCoordsError
+} from "../utils/errors.js";
 import type {
   AlgebraicSquareNotation,
   FenString,
   PositionInfo,
   Promotable,
 } from "../types.js";
-import { getRandomChessWhitePieceRank } from "../utils/fischer-random.js";
-import { viewBoard } from "../utils/log.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
  */
 export default class ChessGame {
   public static readonly Statuses = GameStatus;
+  public static readonly IllegalMoveError = IllegalMoveError;
+  public static readonly InactiveGameError = InactiveGameError;
+  public static readonly InvalidCoordsError = InvalidCoordsError;
 
   public static getChess960Game(): ChessGame {
     const pieceRank = getRandomChessWhitePieceRank();
@@ -58,20 +66,27 @@ export default class ChessGame {
     promotionType: Promotable = "Q"
   ): this {
     if (this.currentPosition.status !== GameStatus.ACTIVE)
-      throw new Error(`Position is inactive: ${this.currentPosition.status}`);
+      throw new ChessGame.InactiveGameError(this.currentPosition.status);
 
-    srcCoords = Coords.get(srcCoords.x, srcCoords.y)!;
-    destCoords = Coords.get(destCoords.x, destCoords.y)!;
+    if (!Coords.isValidCoords(srcCoords))
+      throw new ChessGame.InvalidCoordsError(srcCoords);
+
+    if (!Coords.isValidCoords(destCoords))
+      throw new ChessGame.InvalidCoordsError(destCoords);
+
     const { legalMoves } = this.currentPosition;
 
     if (!legalMoves.some(([srcCoords2, destCoords2]) =>
-      srcCoords2 === srcCoords && destCoords2 === destCoords
+      srcCoords.x === srcCoords2.x
+      && srcCoords.y === srcCoords2.y
+      && destCoords.x === destCoords2.x
+      && destCoords.y === destCoords2.y
     ))
-      throw new Error(`Illegal move: ${(srcCoords as Coords).notation}-${(destCoords as Coords).notation}`);
+      throw new ChessGame.IllegalMoveError(srcCoords, destCoords);
 
     const nextPosition = this.currentPosition.getPositionFromMove(
-      srcCoords as Coords,
-      destCoords as Coords,
+      Coords.get(srcCoords.x, srcCoords.y)!,
+      Coords.get(destCoords.x, destCoords.y)!,
       promotionType,
       true
     );
