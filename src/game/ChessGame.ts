@@ -101,7 +101,7 @@ export default class ChessGame {
   public moveWithNotations(
     srcNotation: AlgebraicSquareNotation,
     destNotation: AlgebraicSquareNotation,
-    promotionType: Promotable = "Q",
+    promotionType: Promotable = "Q"
   ): this {
     return this.move(
       Coords.fromNotation(srcNotation)!,
