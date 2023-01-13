@@ -7,6 +7,7 @@ import type {
   King,
   PieceInitial,
   Position,
+  Rook,
   Wings
 } from "../types.js";
 
@@ -41,7 +42,7 @@ export default class Board extends Map<Coords, Piece> {
 
   public position: Position;
   public readonly kings = {} as BlackAndWhite<King>;
-  public startRookFiles: Wings<number> = {
+  private startRookFiles: Wings<number> = {
     [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
     [Wing.KING_SIDE]: Wing.KING_SIDE
   };
@@ -50,7 +51,7 @@ export default class Board extends Map<Coords, Piece> {
     return Coords;
   }
 
-  public get rookFiles(): { [W in Wing]: number } {
+  private findRookFiles(): { [W in Wing]: number } {
     const rookFiles: number[] = [];
     for (let y = 0; y < 8; y++)
       if (this.get(Coords.get(7, y)!)?.whiteInitial === "R")
@@ -59,6 +60,24 @@ export default class Board extends Map<Coords, Piece> {
       [Wing.QUEEN_SIDE]: Math.min(...rookFiles),
       [Wing.KING_SIDE]: Math.max(...rookFiles)
     };
+  }
+
+  public getStartRookFiles(): Wings<number> {
+    return this.startRookFiles;
+  }
+
+  public setStartRookFiles(startRookFiles?: Wings<number>): this {
+    this.startRookFiles = startRookFiles ?? this.findRookFiles();
+    let color: Color,
+      wing: Wing;
+    for (color in Piece.startPieceRanks)
+      // @ts-ignore
+      for (wing in startRookFiles) {
+        const piece = this.get(Coords.get(Piece.startPawnRanks[color], this.startRookFiles[wing])!);
+        if (piece?.whiteInitial === "R" && piece.color === color)
+          (piece as Rook).wing = wing;
+      }
+    return this;
   }
 
   public transfer(srcCoords: Coords, destCoords: Coords): this {
@@ -117,15 +136,5 @@ export default class Board extends Map<Coords, Piece> {
           .replace(Board.nullPieceRegex, (zeros) => String(zeros.length));
       })
       .join("/");
-  }
-
-  public toReadableBoardString(): string {
-    return Array
-      .from({ length: 8 }, (_, x) => {
-        return Array
-          .from({ length: 8 }, (_, y) => this.get(Coords.get(x, y)!)?.initial ?? "-")
-          .join(" ");
-      })
-      .join("\n");
   }
 }

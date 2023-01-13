@@ -86,7 +86,6 @@ describe("full games", () => {
 describe("chess960", () => {
   it("#1", () => {
     const game = ChessGame.getChess960Game();
-    console.log(game.currentPosition.board.toReadableBoardString());
     expect(game.currentPosition.board.toString().split("/")[0]).toMatch(/^[pnbrqk]{8}$/);
   });
 });

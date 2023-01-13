@@ -8,6 +8,7 @@ import type {
   Promotable,
 } from "../types.js";
 import { getRandomChessWhitePieceRank } from "../utils/fischer-random.js";
+import { viewBoard } from "../utils/log.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -36,7 +37,7 @@ export default class ChessGame {
       : Position.fromFenString(fenString ?? Position.startFenString);
     this.currentPosition.game = this;
     if (isChess960)
-      this.currentPosition.board.startRookFiles = this.currentPosition.board.rookFiles;
+      this.currentPosition.board.setStartRookFiles();
     this.isChess960 = !!isChess960;
   }
 
@@ -92,5 +93,9 @@ export default class ChessGame {
       Coords.fromNotation(destNotation)!,
       promotionType
     );
+  }
+
+  public viewBoard(): void {
+    viewBoard(this.currentPosition.board);
   }
 }
