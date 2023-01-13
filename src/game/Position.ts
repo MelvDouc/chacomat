@@ -164,7 +164,7 @@ export default class Position implements PositionInfo {
       return;
     }
 
-    const piece = (destCoords.y === Piece.startPieceRanks[this.inactiveColor])
+    const piece = (destCoords.y === Piece.startPawnRanks[srcPiece.oppositeColor])
       ? srcPiece.promote(promotionType)
       : srcPiece;
 
@@ -226,6 +226,7 @@ export default class Position implements PositionInfo {
         this.handlePawnMove(srcPiece as Pawn, destCoords, board, promotionType);
         break;
       case "R":
+        // TODO: work out wing
         if ((srcPiece as Rook).isOnInitialSquare(board))
           castlingRights[srcPiece.color][srcCoords.y as Wing] = false;
         board.set(destCoords, srcPiece).unset(srcCoords);
