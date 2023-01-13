@@ -20,31 +20,32 @@ export default class Pawn extends Piece {
 
   private static pawnYOffsets = [-1, 1];
 
-  private *forwardMoves(board: Board) {
+  private *forwardMoves() {
     const coords1 = this.coords.getPeer(Pawn.directions[this.color], 0)!;
 
-    if (!board.get(coords1)) {
+    if (!this.board.get(coords1)) {
       yield coords1;
 
       if (this.coords.x === Piece.startPawnRanks[this.color]) {
         const coords2 = coords1.getPeer(Pawn.directions[this.color], 0)!;
 
-        if (!board.get(coords2))
+        if (!this.board.get(coords2))
           yield coords2;
       }
     }
   }
 
-  private *captures(board: Board, enPassantFile: number) {
-    for (const destCoords of this.attackedCoords(board))
+  private *captures() {
+    for (const destCoords of this.attackedCoords())
       if (
-        board.get(destCoords)?.color === this.oppositeColor
-        || destCoords.y === enPassantFile && this.coords.x === Piece.middleRanks[this.oppositeColor]
+        this.board.get(destCoords)?.color === this.oppositeColor
+        || destCoords.y === this.board.position.enPassantFile
+        && this.coords.x === Piece.middleRanks[this.oppositeColor]
       )
         yield destCoords;
   }
 
-  public *attackedCoords(_board: Board) {
+  public *attackedCoords() {
     for (const xOffset of Pawn.pawnXOffsets[this.color]) {
       for (const yOffset of Pawn.pawnYOffsets) {
         const coords = this.coords.getPeer(xOffset, yOffset);
@@ -54,14 +55,15 @@ export default class Pawn extends Piece {
     }
   }
 
-  public *pseudoLegalMoves({ board, enPassantFile }: Position) {
-    yield* this.forwardMoves(board);
-    yield* this.captures(board, enPassantFile);
+  public *pseudoLegalMoves() {
+    yield* this.forwardMoves();
+    yield* this.captures();
   }
 
   public promote(type: Promotable): Queen | Rook | Bishop | Knight {
     return Reflect.construct(Piece.constructors.get(type)!, [{
-      color: this.color
+      color: this.color,
+      board: this.board
     } as PieceInfo]);
   }
 }

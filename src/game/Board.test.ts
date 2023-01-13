@@ -13,9 +13,9 @@ describe("A board", () => {
 
     for (let y = 0; y < 8; y++) {
       const c = board.Coords.get(1, y)!;
-      board.set(c, new Pawn({ color: Color.BLACK, coords: c }));
+      board.set(c, new Pawn({ color: Color.BLACK, coords: c, board }));
       const c2 = board.Coords.get(6, y)!;
-      board.set(c2, new Pawn({ color: Color.WHITE, coords: c2 }));
+      board.set(c2, new Pawn({ color: Color.WHITE, coords: c2, board }));
     }
 
     expect("k7/pppppppp/8/8/8/8/PPPPPPPP/7K").toBe(board.toString());

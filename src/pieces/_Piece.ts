@@ -48,21 +48,24 @@ export default abstract class Piece {
     [Color.BLACK]: 3
   };
 
-  public static fromInitial(initial: PieceInitial): Piece {
+  public static fromInitial(initial: PieceInitial, board?: Board): Piece {
     const whiteInitial = initial.toUpperCase() as WhitePieceInitial;
     return Reflect.construct(
       this.constructors.get(whiteInitial)!,
       [{
-        color: initial === whiteInitial ? Color.WHITE : Color.BLACK
+        color: initial === whiteInitial ? Color.WHITE : Color.BLACK,
+        board
       } as PieceInfo]
     );
   }
 
   public readonly color: Color;
+  public readonly board: Board;
   public coords: Coords;
 
-  constructor({ color, coords }: PieceInfo) {
+  constructor({ color, board, coords }: PieceInfo) {
     this.color = color;
+    board && (this.board = board);
     coords && (this.coords = coords);
   }
 
@@ -80,7 +83,7 @@ export default abstract class Piece {
     return (this.color === Color.WHITE) ? Color.BLACK : Color.WHITE;
   }
 
-  public *attackedCoords(board: Board): CoordsGenerator {
+  public *attackedCoords(): CoordsGenerator {
     const { x: xOffsets, y: yOffsets } = (this.constructor as typeof Piece).offsets;
 
     for (let i = 0; i < xOffsets.length; i++) {
@@ -90,15 +93,16 @@ export default abstract class Piece {
     }
   }
 
-  public *pseudoLegalMoves(position: Position): CoordsGenerator {
-    for (const targetCoords of this.attackedCoords(position.board))
-      if (position.board.get(targetCoords)?.color !== this.color)
+  public *pseudoLegalMoves(): CoordsGenerator {
+    for (const targetCoords of this.attackedCoords())
+      if (this.board.get(targetCoords)?.color !== this.color)
         yield targetCoords;
   }
 
-  public clone(): Piece {
+  public clone(board?: Board): Piece {
     return Reflect.construct(this.constructor as typeof Piece, [{
       color: this.color,
+      board: board ?? this.board,
       coords: this.coords
     } as PieceInfo]);
   }

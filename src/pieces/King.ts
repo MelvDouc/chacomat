@@ -33,7 +33,7 @@ export default class King extends Piece {
     for (let y = Y + kingDirection; ; y += kingDirection) {
       const destCoords = board.Coords.get(X, y)!;
       if (
-        (attackedCoords.has(destCoords) || !!board.get(destCoords))
+        (attackedCoords.has(destCoords) || board.has(destCoords))
         && destCoords !== rookCoords
       )
         return false;
@@ -46,7 +46,7 @@ export default class King extends Piece {
 
     for (let y = rookCoords.y + rookDirection; ; y += rookDirection) {
       const destCoords = board.Coords.get(X, y)!;
-      if (!!board.get(destCoords) && destCoords !== this.coords)
+      if (board.has(destCoords) && destCoords !== this.coords)
         return false;
       if (y === Piece.castledRookFiles[wing])
         break;

@@ -49,5 +49,6 @@ export interface PositionInfo {
 
 export interface PieceInfo {
   color: Color;
+  board?: Board;
   coords?: Coords;
 }

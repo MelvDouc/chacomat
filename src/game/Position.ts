@@ -149,36 +149,36 @@ export default class Position implements PositionInfo {
       for (let y = 0; y < 8; y++) {
         const srcCoords = this.board.Coords.get(x, y)!;
         if (this.board.get(srcCoords)?.color === this.colorToMove)
-          for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves(this))
+          for (const destCoords of this.board.get(srcCoords)!.pseudoLegalMoves())
             yield [srcCoords, destCoords] as Move;
       }
     }
   }
 
-  private handlePawnMove(srcPiece: Pawn, destCoords: Coords, board: Board, promotionType: Promotable = "Q"): void {
+  private handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: Promotable = "Q"): void {
     if (
       destCoords.y === this.enPassantFile
-      && srcPiece.coords.x === Piece.middleRanks[srcPiece.oppositeColor]
+      && pawn.coords.x === Piece.middleRanks[pawn.oppositeColor]
     ) {
-      board.delete(board.Coords.get(srcPiece.coords.x, destCoords.y)!);
-      board.set(destCoords, srcPiece);
-      srcPiece.coords = destCoords;
+      pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y)!);
+      pawn.board.set(destCoords, pawn);
+      pawn.coords = destCoords;
       return;
     }
 
-    const piece = (destCoords.y === Piece.startPawnRanks[srcPiece.oppositeColor])
-      ? srcPiece.promote(promotionType)
-      : srcPiece;
+    const piece = (destCoords.y === Piece.startPawnRanks[pawn.oppositeColor])
+      ? pawn.promote(promotionType)
+      : pawn;
 
-    board.set(destCoords, piece).delete(srcPiece.coords);
+    pawn.board.set(destCoords, piece).delete(pawn.coords);
     piece.coords = destCoords;
   }
 
-  private handleKingMove(king: King, destCoords: Coords, board: Board, castlingRights: CastlingRights): void {
+  private handleKingMove(king: King, destCoords: Coords, castlingRights: CastlingRights): void {
     castlingRights[king.color][Wing.QUEEN_SIDE] = false;
     castlingRights[king.color][Wing.KING_SIDE] = false;
 
-    const srcCoords = king.coords;
+    const { coords: srcCoords, board } = king;
     const isCastling = Math.abs(destCoords.y - srcCoords.y) > 1
       || this.game.isChess960
       && board.get(destCoords)?.whiteInitial === "R"
@@ -198,10 +198,10 @@ export default class Position implements PositionInfo {
       .transfer(rookSrcCoords, rookDestCoords);
   }
 
-  private handleRookMove(rook: Rook, destCoords: Coords, board: Board, castlingRights: CastlingRights): void {
-    if (rook.isOnInitialSquare(board))
+  private handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
+    if (rook.isOnInitialSquare())
       castlingRights[rook.color][rook.wing!] = false;
-    board.transfer(rook.coords, destCoords);
+    rook.board.transfer(rook.coords, destCoords);
   }
 
   /**
@@ -226,19 +226,19 @@ export default class Position implements PositionInfo {
 
     switch (srcInitial) {
       case "K":
-        this.handleKingMove(srcPiece as King, destCoords, board, castlingRights);
+        this.handleKingMove(srcPiece as King, destCoords, castlingRights);
         break;
       case "P":
-        this.handlePawnMove(srcPiece as Pawn, destCoords, board, promotionType);
+        this.handlePawnMove(srcPiece as Pawn, destCoords, promotionType);
         break;
       case "R":
-        this.handleRookMove(srcPiece as Rook, destCoords, board, castlingRights);
+        this.handleRookMove(srcPiece as Rook, destCoords, castlingRights);
         break;
       default:
         board.transfer(srcCoords, destCoords);
     }
 
-    if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare(board))
+    if (destPiece?.whiteInitial === "R" && (destPiece as Rook).isOnInitialSquare())
       castlingRights[destPiece.color][(destPiece as Rook).wing!] = false;
 
     return new Position({

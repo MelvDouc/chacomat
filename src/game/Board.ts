@@ -29,8 +29,8 @@ export default class Board extends Map<Coords, Piece> {
           .forEach((item, y) => {
             if (item === Board.nullPiece)
               return;
-            const piece = Piece.fromInitial(item as PieceInitial),
-              coords = Coords.get(x, y)!;
+            const coords = Coords.get(x, y)!;
+            const piece = Piece.fromInitial(item as PieceInitial, acc);
             piece.coords = coords;
             acc.set(coords, piece);
             if (piece.whiteInitial === "K")
@@ -92,7 +92,7 @@ export default class Board extends Map<Coords, Piece> {
 
     for (const piece of this.values())
       if (piece.color === color)
-        for (const destCoords of piece.attackedCoords(this))
+        for (const destCoords of piece.attackedCoords())
           set.add(destCoords);
 
     return set;
@@ -102,14 +102,14 @@ export default class Board extends Map<Coords, Piece> {
    * Clones this instance and every piece it contains.
    */
   public clone(): Board {
-    const clone = new Board();
+    const boardClone = new Board();
     for (const [coords, piece] of this) {
-      clone.set(coords, piece.clone());
+      boardClone.set(coords, piece.clone(boardClone));
       if (piece.whiteInitial === "K")
-        clone.kings[piece.color] = clone.get(coords) as King;
+        boardClone.kings[piece.color] = boardClone.get(coords) as King;
     }
-    clone.startRookFiles = this.startRookFiles;
-    return clone;
+    boardClone.setStartRookFiles(this.startRookFiles);
+    return boardClone;
   }
 
   /**
