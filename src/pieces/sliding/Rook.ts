@@ -9,7 +9,11 @@ export default class Rook extends SlidingPiece {
     y: [-1, 0, 0, 1]
   };
 
-  public wing: Wing | null = null;
+  public get wing(): Wing {
+    return (this.coords.y === this.board.startRookFiles[Wing.QUEEN_SIDE])
+      ? Wing.QUEEN_SIDE
+      : Wing.KING_SIDE;
+  }
 
   public isRook(): this is Rook {
     return true;
@@ -18,8 +22,8 @@ export default class Rook extends SlidingPiece {
   public isOnInitialSquare(): boolean {
     return this.coords.x === Rook.startPieceRanks[this.color]
       && (
-        this.coords.y === this.board.getStartRookFiles()[Wing.QUEEN_SIDE]
-        || this.coords.y === this.board.getStartRookFiles()[Wing.KING_SIDE]
+        this.coords.y === this.board.startRookFiles[Wing.QUEEN_SIDE]
+        || this.coords.y === this.board.startRookFiles[Wing.KING_SIDE]
       );
   }
 }

@@ -9,6 +9,7 @@ import {
   InvalidCoordsError,
   InvalidFenError
 } from "../utils/errors.js";
+import Piece from "../pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
   ChessGameMetaInfo,
@@ -45,8 +46,10 @@ export default class ChessGame {
       ? new Position(positionInfo)
       : Position.fromFenString(fenString ?? Position.startFenString);
     this.currentPosition.game = this;
-    if (isChess960)
-      this.currentPosition.board.setStartRookFiles();
+    if (isChess960) {
+      if (!this.currentPosition.board.updateStartRookFiles(this.currentPosition.castlingRights))
+        throw new ChessGame.InvalidFenError(this.currentPosition.toString());
+    }
     this.isChess960 = !!isChess960;
     this.metaInfo = metaInfo ?? {};
   }

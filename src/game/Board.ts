@@ -1,13 +1,12 @@
 import Coords from "./Coords.js";
-import { Wing } from "../utils/constants.js";
+import { Color, Wing } from "../utils/constants.js";
 import Piece from "../pieces/Piece.js";
 import type {
   BlackAndWhite,
-  Color,
+  CastlingRights,
   King,
   PieceInitial,
   Position,
-  Rook,
   Wings
 } from "../types.js";
 
@@ -42,7 +41,7 @@ export default class Board extends Map<Coords, Piece> {
 
   public position: Position;
   public readonly kings = {} as BlackAndWhite<King>;
-  private startRookFiles: Wings<number> = {
+  public startRookFiles: Wings<number> = {
     [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
     [Wing.KING_SIDE]: Wing.KING_SIDE
   };
@@ -51,33 +50,28 @@ export default class Board extends Map<Coords, Piece> {
     return Coords;
   }
 
-  private findRookFiles(): { [W in Wing]: number } {
-    const rookFiles: number[] = [];
-    for (let y = 0; y < 8; y++)
-      if (this.get(Coords.get(7, y))?.isRook())
-        rookFiles.push(y);
-    return {
-      [Wing.QUEEN_SIDE]: Math.min(...rookFiles),
-      [Wing.KING_SIDE]: Math.max(...rookFiles)
-    };
-  }
-
-  public getStartRookFiles(): Wings<number> {
-    return this.startRookFiles;
-  }
-
-  public setStartRookFiles(startRookFiles?: Wings<number>): this {
-    this.startRookFiles = startRookFiles ?? this.findRookFiles();
-    let color: Color,
-      wing: Wing;
-    for (color in Piece.startPieceRanks)
-      // @ts-ignore
-      for (wing in startRookFiles) {
-        const piece = this.get(Coords.get(Piece.startPawnRanks[color], this.startRookFiles[wing]));
-        if (piece?.isRook() && piece.color === color)
-          (piece as Rook).wing = wing;
+  /**
+   * Infer initial rook files in a Chess960 game based on castling rights.
+   * @returns Whether the placement of the rooks matches the given castling rights.
+   */
+  public updateStartRookFiles(castlingRights: CastlingRights): boolean {
+    main: for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
+      const direction = Math.sign(4 - wing);
+      for (const color of [Color.WHITE, Color.BLACK]) {
+        if (!castlingRights[color][wing])
+          continue;
+        for (let y = wing; y !== this.kings[color].coords.y; y += direction) {
+          const piece = this.get(this.Coords.get(Piece.startPieceRanks[color], y)!);
+          if (piece?.isRook() && piece.color === color) {
+            this.startRookFiles[wing] = y;
+            continue main;
+          }
+        }
+        return false;
       }
-    return this;
+    }
+
+    return true;
   }
 
   public transfer(srcCoords: Coords, destCoords: Coords): this {
@@ -108,7 +102,7 @@ export default class Board extends Map<Coords, Piece> {
       if (piece.isKing())
         boardClone.kings[piece.color] = boardClone.get(coords) as King;
     }
-    boardClone.setStartRookFiles(this.startRookFiles);
+    boardClone.startRookFiles = { ...this.startRookFiles };
     return boardClone;
   }
 

@@ -41,7 +41,6 @@ describe("Chess960", () => {
     const castlingCoords = [
       ...whiteKing.castlingCoords()
     ];
-
     expect(castlingCoords).toContain(e1);
     expect(castlingCoords).toContain(g1);
   });

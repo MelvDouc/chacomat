@@ -19,7 +19,7 @@ export default class King extends Piece {
       return false;
 
     const { x: X, y: Y } = this.coords;
-    const rookCoords = this.board.Coords.get(X, this.board.getStartRookFiles()[wing]);
+    const rookCoords = this.board.Coords.get(X, this.board.startRookFiles[wing]);
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
@@ -54,7 +54,7 @@ export default class King extends Piece {
     for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
       if (this.canCastleToWing(wing)) {
         const y = (this.board.position.game.isChess960)
-          ? this.board.getStartRookFiles()[wing]
+          ? this.board.startRookFiles[wing]
           : King.castledKingFiles[wing];
         yield this.board.Coords.get(this.coords.x, y);
       }

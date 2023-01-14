@@ -185,7 +185,7 @@ export default class Position implements PositionInfo {
 
     const wing = (destCoords.y < srcCoords.y) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
     const destKingCoords = board.Coords.get(srcCoords.x, Piece.castledKingFiles[wing]),
-      rookSrcCoords = board.Coords.get(srcCoords.x, board.getStartRookFiles()[wing]),
+      rookSrcCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing]),
       rookDestCoords = board.Coords.get(srcCoords.x, Piece.castledRookFiles[wing]);
     board
       .transfer(srcCoords, destKingCoords)
@@ -194,7 +194,7 @@ export default class Position implements PositionInfo {
 
   private handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
     if (rook.isOnInitialSquare())
-      castlingRights[rook.color][rook.wing!] = false;
+      castlingRights[rook.color][rook.wing] = false;
     rook.board.transfer(rook.coords, destCoords);
   }
 
@@ -225,7 +225,7 @@ export default class Position implements PositionInfo {
       board.transfer(srcCoords, destCoords);
 
     if (destPiece?.isRook() && destPiece.isOnInitialSquare())
-      castlingRights[destPiece.color][destPiece.wing!] = false;
+      castlingRights[destPiece.color][destPiece.wing] = false;
 
     return new Position({
       board,

@@ -1,4 +1,4 @@
-import { Coords, GameStatus } from "../types.js";
+import { Coords, FenString, GameStatus } from "../types.js";
 
 export class IllegalMoveError extends Error {
   constructor(srcCoords: Coords, destCoords: Coords) {
@@ -19,7 +19,7 @@ export class InactiveGameError extends Error {
 }
 
 export class InvalidFenError extends Error {
-  constructor(moveStr: string) {
-    super(`Invalid FEN string at: "${moveStr}"`);
+  constructor(fen: FenString) {
+    super(`Invalid FEN string: "${fen}"`);
   }
 }
