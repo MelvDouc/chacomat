@@ -4,7 +4,7 @@ import { rookOffsets } from "../../utils/sliding-offsets.js";
 
 export default class Rook extends SlidingPiece {
   public static readonly whiteInitial = "R";
-  public static readonly offsets = rookOffsets;
+  protected static readonly offsets = rookOffsets;
 
   public get wing(): Wing {
     return (this.coords.y === this.board.startRookFiles[Wing.QUEEN_SIDE])
