@@ -1,5 +1,5 @@
 import { Color, GameStatus, Wing } from "../utils/constants.js";
-import Piece from "../pieces/Piece.js";
+import Piece from "../pieces/index.js";
 import Board from "./Board.js";
 import CastlingRights from "./CastlingRights.js";
 import type {

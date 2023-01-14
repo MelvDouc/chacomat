@@ -1,6 +1,5 @@
 import ChessGame from "../game/ChessGame.js";
 import Coords from "../game/Coords.js";
-import King from "./King.js";
 
 const c1 = Coords.fromNotation("c1")!;
 const d1 = Coords.fromNotation("d1")!;
@@ -52,7 +51,7 @@ describe("Chess960", () => {
     const kingCoords = game.currentPosition.board.kings[ChessGame.Colors.WHITE].coords;
     const posAfter = game.move(kingCoords, Coords.fromNotation("e1")!).currentPosition;
 
-    expect(posAfter.board.get(c1)!.whiteInitial).toBe(King.whiteInitial);
+    expect(posAfter.board.get(c1)!.whiteInitial).toBe("K");
     expect(posAfter.board.get(d1)!.whiteInitial).toBe("R");
   });
 });

@@ -1,4 +1,4 @@
-import Piece from "./_Piece.js";
+import Piece from "./Piece.js";
 import type {
   Bishop,
   CoordsGenerator,
@@ -11,7 +11,6 @@ import type {
 
 export default class Pawn extends Piece {
   public static readonly whiteInitial = "P";
-
   private static pawnXOffsets = {
     WHITE: [-1, -1],
     BLACK: [1, 1]

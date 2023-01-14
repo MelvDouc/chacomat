@@ -1,15 +1,11 @@
-import Piece from "./_Piece.js";
+import Piece from "./Piece.js";
 import { Wing } from "../utils/constants.js";
-import type {
-  CoordsGenerator
-} from "../types.js";
+import { adjacentOffsets } from "../utils/sliding-offsets.js";
+import { CoordsGenerator } from "../types.js";
 
 export default class King extends Piece {
   public static readonly whiteInitial = "K";
-
-  public isKing(): this is King {
-    return true;
-  }
+  protected static readonly offsets = adjacentOffsets;
 
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.

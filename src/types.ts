@@ -1,17 +1,9 @@
 import { Color, GameStatus, Wing } from "./utils/constants.js";
-import Piece, { Pawn, King, Rook, Queen, Bishop, Knight } from "./pieces/Piece.js";
 
 export type {
   Color,
   GameStatus,
-  Wing,
-  Piece,
-  King,
-  Queen,
-  Rook,
-  Bishop,
-  Knight,
-  Pawn
+  Wing
 };
 
 /**
@@ -33,6 +25,14 @@ export type CastlingRights = import("./game/CastlingRights.js").default;
 export type Coords = import("./game/Coords.js").default;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
+
+export type Piece = import("./pieces/index.js").default;
+export type Pawn = import("./pieces/index.js").Pawn;
+export type Knight = import("./pieces/index.js").Knight;
+export type King = import("./pieces/index.js").King;
+export type Rook = import("./pieces/index.js").Rook;
+export type Bishop = import("./pieces/index.js").Bishop;
+export type Queen = import("./pieces/index.js").Queen;
 
 export type BlackAndWhite<T> = {
   [K in Color]: T;

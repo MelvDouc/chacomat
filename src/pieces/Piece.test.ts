@@ -1,9 +1,10 @@
 import { Color } from "../utils/constants.js";
-import Piece, { Knight, Pawn, Queen } from "./Piece.js";
+import Piece, { Knight, Queen, Pawn } from "./index.js";
 
 describe("Piece", () => {
   it("n should be a black knight", () => {
     const piece = Piece.fromInitial("n");
+    console.log(Piece.constructors);
 
     expect(piece.color).toBe(Color.BLACK);
     expect(piece instanceof Knight).toBe(true);

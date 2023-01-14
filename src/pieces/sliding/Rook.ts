@@ -1,13 +1,10 @@
 import SlidingPiece from "./SlidingPiece.js";
 import { Wing } from "../../utils/constants.js";
+import { rookOffsets } from "../../utils/sliding-offsets.js";
 
 export default class Rook extends SlidingPiece {
   public static readonly whiteInitial = "R";
-
-  public static readonly offsets = {
-    x: [0, -1, 1, 0],
-    y: [-1, 0, 0, 1]
-  };
+  public static readonly offsets = rookOffsets;
 
   public get wing(): Wing {
     return (this.coords.y === this.board.startRookFiles[Wing.QUEEN_SIDE])

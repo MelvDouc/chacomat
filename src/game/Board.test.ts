@@ -1,4 +1,4 @@
-import { Pawn } from "../pieces/Piece.js";
+import Pawn from "../pieces/Pawn.js";
 import Position from "./Position.js";
 import { Color } from "../utils/constants.js";
 import ChessGame from "./ChessGame.js";

@@ -21,6 +21,7 @@
     "**/node_modules",
     "./src/**/*.test.ts",
     "dist",
-    "test"
+    "test",
+    "jest.config.ts"
   ]
 }

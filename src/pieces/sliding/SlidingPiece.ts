@@ -1,4 +1,4 @@
-import Piece from "../_Piece.js";
+import Piece from "../Piece.js";
 import { CoordsGenerator } from "../../types.js";
 
 export default abstract class SlidingPiece extends Piece {

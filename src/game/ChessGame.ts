@@ -9,7 +9,6 @@ import {
   InvalidCoordsError,
   InvalidFenError
 } from "../utils/errors.js";
-import Piece from "../pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
   ChessGameMetaInfo,
