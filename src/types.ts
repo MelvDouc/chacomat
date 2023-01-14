@@ -1,6 +1,18 @@
 import { Color, GameStatus, Wing } from "./utils/constants.js";
+import Piece, { Pawn, King, Rook, Queen, Bishop, Knight } from "./pieces/Piece.js";
 
-export type { Color, GameStatus, Wing };
+export type {
+  Color,
+  GameStatus,
+  Wing,
+  Piece,
+  King,
+  Queen,
+  Rook,
+  Bishop,
+  Knight,
+  Pawn
+};
 
 /**
  * https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation for more info.
@@ -13,14 +25,6 @@ export type PromotedPieceInitial = Exclude<WhitePieceInitial, "K" | "P">;
 export type ChessFileName = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
 export type ChessRankName = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 export type AlgebraicSquareNotation = `${ChessFileName}${ChessRankName}`;
-
-export type Piece = import("./pieces/Piece.js").default;
-export type Pawn = import("./pieces/Piece.js").Pawn;
-export type King = import("./pieces/Piece.js").King;
-export type Knight = import("./pieces/Piece.js").Knight;
-export type Bishop = import("./pieces/Piece.js").Bishop;
-export type Rook = import("./pieces/Piece.js").Rook;
-export type Queen = import("./pieces/Piece.js").Queen;
 
 export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
