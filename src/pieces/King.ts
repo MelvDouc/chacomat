@@ -48,12 +48,12 @@ export default class King extends Piece {
 
   public *castlingCoords(): CoordsGenerator {
     for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
-      if (this.canCastleToWing(wing)) {
-        const y = (this.board.position.game.isChess960)
-          ? this.board.startRookFiles[wing]
-          : King.castledKingFiles[wing];
-        yield this.board.Coords.get(this.coords.x, y);
-      }
+      if (!this.canCastleToWing(wing))
+        continue;
+      const y = (this.board.position.game.isChess960)
+        ? this.board.startRookFiles[wing]
+        : King.castledKingFiles[wing];
+      yield this.board.Coords.get(this.coords.x, y);
     }
   }
 }
