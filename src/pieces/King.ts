@@ -4,8 +4,8 @@ import { adjacentOffsets } from "../utils/sliding-offsets.js";
 import { CoordsGenerator } from "../types.js";
 
 export default class King extends Piece {
-  public static readonly whiteInitial = "K";
-  protected static readonly offsets = adjacentOffsets;
+  public static override readonly whiteInitial = "K";
+  protected static override readonly offsets = adjacentOffsets;
 
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.

@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "A TypeScript chess game.",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
-    "test": "jest --verbose ./src",
+    "test": "jest --verbose",
     "build": "rm -rf dist && tsc",
     "build:watch": "rm -rf dist && tsc --watch"
   },

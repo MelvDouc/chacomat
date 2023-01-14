@@ -121,7 +121,7 @@ export default class Board extends Map<Coords, Piece> {
   /**
    * The board portion of an FEN string.
    */
-  public toString(): string {
+  public override toString(): string {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array

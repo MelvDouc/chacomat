@@ -10,7 +10,7 @@ import type {
 } from "../types.js";
 
 export default class Pawn extends Piece {
-  public static readonly whiteInitial = "P";
+  public static override readonly whiteInitial = "P";
   private static pawnXOffsets = {
     WHITE: [-1, -1],
     BLACK: [1, 1]
@@ -33,10 +33,6 @@ export default class Pawn extends Piece {
     }
   }
 
-  public isPawn(): this is Pawn {
-    return true;
-  }
-
   private *captures(): CoordsGenerator {
     for (const destCoords of this.attackedCoords())
       if (
@@ -47,7 +43,7 @@ export default class Pawn extends Piece {
         yield destCoords;
   }
 
-  public *attackedCoords(): CoordsGenerator {
+  public override *attackedCoords(): CoordsGenerator {
     for (const xOffset of Pawn.pawnXOffsets[this.color]) {
       for (const yOffset of Pawn.pawnYOffsets) {
         const coords = this.coords.getPeer(xOffset, yOffset);
@@ -57,7 +53,7 @@ export default class Pawn extends Piece {
     }
   }
 
-  public *pseudoLegalMoves(): CoordsGenerator {
+  public override *pseudoLegalMoves(): CoordsGenerator {
     yield* this.forwardMoves();
     yield* this.captures();
   }

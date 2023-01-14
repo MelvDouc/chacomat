@@ -12,7 +12,9 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "declaration": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true
   },
   "ts-node": {
     "esm": true
