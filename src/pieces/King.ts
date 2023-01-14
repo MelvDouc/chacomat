@@ -1,4 +1,4 @@
-import Piece from "./Piece.js";
+import Piece from "@pieces/Piece.js";
 import { Wing } from "../utils/constants.js";
 import { adjacentOffsets } from "../utils/sliding-offsets.js";
 import { CoordsGenerator } from "../types.js";
