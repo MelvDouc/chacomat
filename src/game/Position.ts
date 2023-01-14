@@ -1,7 +1,7 @@
-import { Color, GameStatus, Wing } from "../utils/constants.js";
-import Piece from "../pieces/index.js";
-import Board from "./Board.js";
-import CastlingRights from "./CastlingRights.js";
+import { Color, GameStatus, Wing } from "@utils/constants.js";
+import Piece from "@pieces/index.js";
+import Board from "@game/Board.js";
+import CastlingRights from "@game/CastlingRights.js";
 import type {
   AlgebraicSquareNotation,
   ChessGame,

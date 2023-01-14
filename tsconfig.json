@@ -9,10 +9,16 @@
     "moduleResolution": "Node16",
     "rootDir": "./src",
     "outDir": "./dist",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
+      "@game/*": [
+        "src/game/*"
+      ],
       "@pieces/*": [
         "src/pieces/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
       ]
     },
     "strict": true,

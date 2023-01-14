@@ -1,10 +1,10 @@
-import Piece from "./Piece.js";
-import Pawn from "./Pawn.js";
-import Knight from "./Knight.js";
-import King from "./King.js";
-import Bishop from "./sliding/Bishop.js";
-import Rook from "./sliding/Rook.js";
-import Queen from "./sliding/Queen.js";
+import Piece from "@pieces/Piece.js";
+import Pawn from "@pieces/Pawn.js";
+import Knight from "@pieces/Knight.js";
+import King from "@pieces/King.js";
+import Bishop from "@pieces/sliding/Bishop.js";
+import Rook from "@pieces/sliding/Rook.js";
+import Queen from "@pieces/sliding/Queen.js";
 
 Piece.constructors
   .set(Pawn.whiteInitial, Pawn)

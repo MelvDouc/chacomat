@@ -1,4 +1,4 @@
-import Piece from "./Piece.js";
+import Piece from "@pieces/Piece.js";
 
 export default class Knight extends Piece {
   public static override readonly whiteInitial = "N";

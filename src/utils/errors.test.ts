@@ -1,4 +1,4 @@
-import ChessGame from "../game/ChessGame.js";
+import ChessGame from "@game/ChessGame.js";
 
 describe("IllegalMoveError", () => {
   it("should be thrown on an illegal move", () => {

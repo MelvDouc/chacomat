@@ -1,14 +1,14 @@
-import Coords from "./Coords.js";
-import Position from "./Position.js";
-import { Color, GameStatus, Wing } from "../utils/constants.js";
-import { getRandomChessWhitePieceRank } from "../utils/fischer-random.js";
-import { viewBoard } from "../utils/log.js";
+import Coords from "@game/Coords.js";
+import Position from "@game/Position.js";
+import { Color, GameStatus, Wing } from "@utils/constants.js";
+import { getRandomChessWhitePieceRank } from "@utils/fischer-random.js";
+import { viewBoard } from "@utils/log.js";
 import {
   IllegalMoveError,
   InactiveGameError,
   InvalidCoordsError,
   InvalidFenError
-} from "../utils/errors.js";
+} from "@utils/errors.js";
 import type {
   AlgebraicSquareNotation,
   ChessGameMetaInfo,

@@ -1,6 +1,6 @@
-import SlidingPiece from "./SlidingPiece.js";
-import { Wing } from "../../utils/constants.js";
-import { rookOffsets } from "../../utils/sliding-offsets.js";
+import SlidingPiece from "@pieces/sliding/SlidingPiece.js";
+import { Wing } from "@utils/constants.js";
+import { rookOffsets } from "@utils/sliding-offsets.js";
 
 export default class Rook extends SlidingPiece {
   public static override readonly whiteInitial = "R";

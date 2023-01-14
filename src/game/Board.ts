@@ -1,6 +1,6 @@
-import Coords from "./Coords.js";
-import { Color, Wing } from "../utils/constants.js";
-import Piece from "../pieces/index.js";
+import Coords from "@game/Coords.js";
+import { Color, Wing } from "@utils/constants.js";
+import Piece from "@pieces/index.js";
 import type {
   BlackAndWhite,
   CastlingRights,

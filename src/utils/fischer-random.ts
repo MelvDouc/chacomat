@@ -1,4 +1,4 @@
-import { Wing } from "./constants.js";
+import { Wing } from "@utils/constants.js";
 import type { WhitePieceInitial, Wings } from "../types.js";
 
 function randomInt(min: number, max: number): number {

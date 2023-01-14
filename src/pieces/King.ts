@@ -1,6 +1,6 @@
 import Piece from "@pieces/Piece.js";
-import { Wing } from "../utils/constants.js";
-import { adjacentOffsets } from "../utils/sliding-offsets.js";
+import { Wing } from "@utils/constants.js";
+import { adjacentOffsets } from "@utils/sliding-offsets.js";
 import { CoordsGenerator } from "../types.js";
 
 export default class King extends Piece {
