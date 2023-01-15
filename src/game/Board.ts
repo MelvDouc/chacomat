@@ -1,5 +1,5 @@
 import Coords from "@game/Coords.js";
-import { Color, Wing } from "@utils/constants.js";
+import { Color } from "@utils/constants.js";
 import Piece from "@pieces/index.js";
 import type {
   BlackAndWhite,
@@ -15,7 +15,7 @@ export default class Board extends Map<Coords, Piece> {
 
   /**
    * @param {string} pieceStr The portion of an FEN string representing the board.
-   * @returns A new instance of this.
+   * @returns A new instance of `Board`.
    */
   public static fromPieceString(pieceStr: string): Board {
     return pieceStr
@@ -40,10 +40,6 @@ export default class Board extends Map<Coords, Piece> {
 
   public position: Position;
   public readonly kings = {} as BlackAndWhite<King>;
-  public startRookFiles: Wings<number> = {
-    [Wing.QUEEN_SIDE]: Wing.QUEEN_SIDE,
-    [Wing.KING_SIDE]: Wing.KING_SIDE
-  };
 
   public get Coords(): typeof Coords {
     return Coords;
@@ -79,7 +75,6 @@ export default class Board extends Map<Coords, Piece> {
       if (pieceClone.isKing())
         boardClone.kings[piece.color] = pieceClone;
     }
-    boardClone.startRookFiles = { ...this.startRookFiles };
     return boardClone;
   }
 

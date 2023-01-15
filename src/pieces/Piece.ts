@@ -1,4 +1,8 @@
-import { Color, WhitePieceInitial, Wing } from "@utils/constants.js";
+import {
+  Color,
+  WhitePieceInitial,
+  Wing
+} from "@utils/constants.js";
 import type {
   Bishop,
   BlackAndWhite,
@@ -22,6 +26,16 @@ export default abstract class Piece {
   protected static readonly OFFSETS: { x: number[]; y: number[]; };
   public static readonly constructors: Map<WhitePieceInitial, typeof Piece> = new Map();
 
+  public static readonly CASTLED_KING_FILES: Wings<number> = {
+    [Wing.QUEEN_SIDE]: 2,
+    [Wing.KING_SIDE]: 6
+  };
+
+  public static readonly CASTLED_ROOK_FILES: Wings<number> = {
+    [Wing.QUEEN_SIDE]: 3,
+    [Wing.KING_SIDE]: 5
+  };
+
   public static readonly DIRECTIONS: BlackAndWhite<number> = {
     [Color.WHITE]: -1,
     [Color.BLACK]: 1
@@ -37,16 +51,6 @@ export default abstract class Piece {
     [Color.BLACK]: 1
   };
 
-  public static readonly CASTLED_KING_FILES: Wings<number> = {
-    [Wing.QUEEN_SIDE]: 2,
-    [Wing.KING_SIDE]: 6
-  };
-
-  public static readonly CASTLED_ROOK_FILES: Wings<number> = {
-    [Wing.QUEEN_SIDE]: 3,
-    [Wing.KING_SIDE]: 5
-  };
-
   public static readonly MIDDLE_RANKS: BlackAndWhite<number> = {
     [Color.WHITE]: 4,
     [Color.BLACK]: 3
@@ -57,7 +61,7 @@ export default abstract class Piece {
     return Reflect.construct(
       this.constructors.get(whiteInitial)!,
       [{
-        color: initial === whiteInitial ? Color.WHITE : Color.BLACK,
+        color: (initial === whiteInitial) ? Color.WHITE : Color.BLACK,
         board
       } as PieceInfo]
     );

@@ -6,15 +6,15 @@ describe("Castling rights", () => {
   it("should be convertible from string to object", () => {
     const castlingRights = CastlingRights.fromString("KQk");
 
-    expect(castlingRights[Color.WHITE][Wing.KING_SIDE]).toBe(true);
-    expect(castlingRights[Color.WHITE][Wing.QUEEN_SIDE]).toBe(true);
-    expect(castlingRights[Color.BLACK][Wing.QUEEN_SIDE]).toBe(false);
-    expect(castlingRights[Color.BLACK][Wing.KING_SIDE]).toBe(true);
+    expect(castlingRights[Color.WHITE]).toContain(Wing.KING_SIDE);
+    expect(castlingRights[Color.WHITE]).toContain(Wing.QUEEN_SIDE);
+    expect(castlingRights[Color.BLACK]).not.toContain(Wing.QUEEN_SIDE);
+    expect(castlingRights[Color.BLACK]).toContain(Wing.KING_SIDE);
   });
 
   it("should be convertible from object to string", () => {
-    const castlingRights = new CastlingRights();
-    castlingRights[Color.WHITE][Wing.KING_SIDE] = false;
+    const castlingRights = CastlingRights.fromString("KQkq");
+    castlingRights.unset(Color.WHITE, Wing.KING_SIDE);
 
     expect(castlingRights.toString()).toBe("Qkq");
   });
@@ -27,8 +27,8 @@ describe("Castling rights", () => {
       .moveWithNotations("e1", "e2");
 
     const whiteCR = game.currentPosition.castlingRights[Color.WHITE];
-    expect(whiteCR[Wing.QUEEN_SIDE]).toBe(false);
-    expect(whiteCR[Wing.KING_SIDE]).toBe(false);
+    expect(whiteCR).not.toContain(Wing.QUEEN_SIDE);
+    expect(whiteCR).not.toContain(Wing.KING_SIDE);
   });
 
   it("should be updated on rook capture", () => {
@@ -42,7 +42,7 @@ describe("Castling rights", () => {
       .moveWithNotations("e5", "e4")
       .moveWithNotations("b6", "a8");
 
-    expect(game.currentPosition.castlingRights[Color.BLACK][Wing.QUEEN_SIDE]).toBe(false);
-    expect(game.currentPosition.castlingRights[Color.BLACK][Wing.KING_SIDE]).toBe(true);
+    expect(game.currentPosition.castlingRights[Color.BLACK]).not.toContain(Wing.QUEEN_SIDE);
+    expect(game.currentPosition.castlingRights[Color.BLACK]).toContain(Wing.KING_SIDE);
   });
 });

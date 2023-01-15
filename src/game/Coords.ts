@@ -5,6 +5,14 @@ export default class Coords {
   private static notations: Map<Coords, AlgebraicSquareNotation> = new Map();
   private static coordsByNotation: Map<AlgebraicSquareNotation, Coords> = new Map();
 
+  public static getFileNameIndex(fileName: string): number {
+    return fileName.toLowerCase().charCodeAt(0) - 97;
+  }
+
+  public static getFileName(file: number): string {
+    return String.fromCharCode(97 + file);
+  }
+
   public static fromNotation(notation: AlgebraicSquareNotation): Coords | null {
     return Coords.coordsByNotation.get(notation) ?? null;
   }
@@ -19,6 +27,7 @@ export default class Coords {
 
   public static isValidCoords(arg: any): arg is Coords {
     return typeof arg === "object"
+      && arg !== null
       && arg.x in Coords.all
       && arg.y in Coords.all[arg.x];
   }
@@ -28,7 +37,7 @@ export default class Coords {
       Coords.all[x] = {};
       for (let y = 0; y < 8; y++) {
         const coords = new Coords(x, y);
-        const notation = String.fromCharCode(97 + y) + String(8 - x) as AlgebraicSquareNotation;
+        const notation = this.getFileName(y) + String(8 - x) as AlgebraicSquareNotation;
         Coords.all[x][y] = coords;
         Coords.notations.set(coords, notation);
         Coords.coordsByNotation.set(notation, coords);

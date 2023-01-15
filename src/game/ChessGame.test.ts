@@ -27,7 +27,7 @@ describe("en passant", () => {
   });
 
   it("#2", () => {
-    expect(game1.currentPosition.legalMovesAsNotation.includes(`d5-e6`)).toBe(true);
+    expect(game1.currentPosition.legalMovesAsNotation).toContain(`d5-e6`);
   });
 });
 

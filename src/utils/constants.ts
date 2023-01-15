@@ -1,3 +1,5 @@
+import { Wings } from "../types.js";
+
 export enum Color {
   WHITE = "WHITE",
   BLACK = "BLACK"

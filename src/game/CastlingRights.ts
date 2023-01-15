@@ -1,15 +1,20 @@
 import { Color, Wing } from "@utils/constants.js";
-import type { BlackAndWhite, Wings } from "../types.js";
+import type {
+  BlackAndWhite,
+  Wings
+} from "../types.js";
 
 /**
  * @classdesc Create an object that represents the castling rights in a position.
  * It is clonable and stringifiable.
  */
 export default class CastlingRights {
+  protected static readonly nullCastlingRightsChar: string = "-";
+
   /**
    * The characters used in an FEN string to represent castling rights.
    */
-  protected static readonly initials: BlackAndWhite<Wings<string>> = {
+  private static readonly initials: BlackAndWhite<Wings<string>> = {
     [Color.BLACK]: {
       [Wing.KING_SIDE]: "k",
       [Wing.QUEEN_SIDE]: "q"
@@ -28,39 +33,34 @@ export default class CastlingRights {
 
     for (const color of [Color.WHITE, Color.BLACK])
       for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
-        castlingRights[color][wing] = str.includes(CastlingRights.initials[color][wing]);
+        if (str.includes(this.initials[color][wing]))
+          castlingRights[color].push(wing);
 
     return castlingRights;
   }
 
-  public [Color.WHITE] = {
-    [Wing.QUEEN_SIDE]: true,
-    [Wing.KING_SIDE]: true
-  };
-  public [Color.BLACK] = {
-    [Wing.QUEEN_SIDE]: true,
-    [Wing.KING_SIDE]: true
-  };
+  public readonly [Color.WHITE]: number[] = [];
+  public readonly [Color.BLACK]: number[] = [];
 
   public clone(): CastlingRights {
-    const copy = new CastlingRights();
-    copy[Color.WHITE] = { ...this[Color.WHITE] };
-    copy[Color.BLACK] = { ...this[Color.BLACK] };
-    return copy;
+    const clone = new CastlingRights();
+    clone[Color.WHITE].push(...this[Color.WHITE]);
+    clone[Color.BLACK].push(...this[Color.BLACK]);
+    return clone;
+  }
+
+  public unset(color: Color, file: number): void {
+    this[color].splice(this[color].indexOf(file), 1);
   }
 
   public toString(): string {
-    let result = "";
+    let str = "";
 
-    if (this[Color.WHITE][Wing.KING_SIDE])
-      result += CastlingRights.initials[Color.WHITE][Wing.KING_SIDE];
-    if (this[Color.WHITE][Wing.QUEEN_SIDE])
-      result += CastlingRights.initials[Color.WHITE][Wing.QUEEN_SIDE];
-    if (this[Color.BLACK][Wing.KING_SIDE])
-      result += CastlingRights.initials[Color.BLACK][Wing.KING_SIDE];
-    if (this[Color.BLACK][Wing.QUEEN_SIDE])
-      result += CastlingRights.initials[Color.BLACK][Wing.QUEEN_SIDE];
+    for (const color of [Color.WHITE, Color.BLACK])
+      for (const wing of [Wing.KING_SIDE, Wing.QUEEN_SIDE])
+        if (this[color].includes(wing))
+          str += CastlingRights.initials[color][wing];
 
-    return result || "-";
+    return str || CastlingRights.nullCastlingRightsChar;
   }
 }

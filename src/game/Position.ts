@@ -176,8 +176,8 @@ export default class Position implements PositionInfo {
   }
 
   private handleKingMove(king: King, destCoords: Coords, castlingRights: CastlingRights): void {
-    castlingRights[king.color][Wing.QUEEN_SIDE] = false;
-    castlingRights[king.color][Wing.KING_SIDE] = false;
+    castlingRights.unset(king.color, Wing.QUEEN_SIDE);
+    castlingRights.unset(king.color, Wing.KING_SIDE);
 
     const { coords: srcCoords, board } = king;
 
@@ -188,7 +188,7 @@ export default class Position implements PositionInfo {
 
     const wing = (destCoords.y < srcCoords.y) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
     const destKingCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_KING_FILES[wing]),
-      rookSrcCoords = board.Coords.get(srcCoords.x, board.startRookFiles[wing]),
+      rookSrcCoords = board.Coords.get(srcCoords.x, wing),
       rookDestCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_ROOK_FILES[wing]);
     board
       .transfer(srcCoords, destKingCoords)
@@ -197,7 +197,7 @@ export default class Position implements PositionInfo {
 
   private handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
     if (rook.isOnInitialSquare())
-      castlingRights[rook.color][rook.wing] = false;
+      castlingRights.unset(rook.color, rook.coords.y);
     rook.board.transfer(rook.coords, destCoords);
   }
 
@@ -218,6 +218,9 @@ export default class Position implements PositionInfo {
     const isSrcPiecePawn = srcPiece.isPawn(),
       isCaptureOrPawnMove = !!destPiece || isSrcPiecePawn;
 
+    if (destPiece?.isRook() && destPiece.isOnInitialSquare())
+      castlingRights.unset(destPiece.color, destPiece.coords.y);
+
     if (isSrcPiecePawn)
       this.handlePawnMove(srcPiece, destCoords, promotionType);
     else if (srcPiece.isKing())
@@ -226,9 +229,6 @@ export default class Position implements PositionInfo {
       this.handleRookMove(srcPiece, destCoords, castlingRights);
     else
       board.transfer(srcCoords, destCoords);
-
-    if (destPiece?.isRook() && destPiece.isOnInitialSquare())
-      castlingRights[destPiece.color][destPiece.wing] = false;
 
     return new Position({
       board,
