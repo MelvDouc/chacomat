@@ -50,4 +50,10 @@ export default class King extends Piece {
         yield this.board.Coords.get(this.coords.x, King.CASTLED_KING_FILES[wing]);
     }
   }
+
+  public getWing(y: number): Wing {
+    return (y < this.coords.y)
+      ? Wing.QUEEN_SIDE
+      : Wing.KING_SIDE;
+  }
 }

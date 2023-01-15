@@ -11,8 +11,6 @@ export type {
  * https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation for more info.
  */
 export type FenString = string;
-export type Chess960FenString = string;
-// export type WhitePieceInitial = "N" | "B" | "R" | "Q" | "K" | "P";
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
 export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
 export type PromotedPieceInitial = Exclude<WhitePieceInitial, "K" | "P">;
@@ -63,11 +61,17 @@ export interface ChessGameParameters {
 export interface ChessGameMetaInfo {
   whitePlayer: string;
   blackPlayer: string;
+  whiteElo: number;
+  blackElo: number;
+  whiteTeam: string;
+  blackTeam: string;
+  event: string;
+  site: string;
   /**
    * Should be in the format `YYYY.MM.DD`.
-   */
+  */
   date: string;
-  event: string;
+  ECO: string;
 }
 
 /**

@@ -98,8 +98,8 @@ export default class Position implements PositionInfo {
 
     if (!this.isCheck()) {
       const king = this.board.kings[this.colorToMove];
-      for (const halfMove of king.castlingCoords())
-        legalMoves.push([king.coords, halfMove]);
+      for (const destCoords of king.castlingCoords())
+        legalMoves.push([king.coords, destCoords]);
     }
 
     return (this._legalMoves = legalMoves);
@@ -198,7 +198,7 @@ export default class Position implements PositionInfo {
 
   protected castle(king: King, destCoords: Coords): void {
     const { board, coords: srcCoords } = king;
-    const wing = (destCoords.y < srcCoords.y) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
+    const wing = king.getWing(destCoords.y);
     const destKingCoords = board.Coords.get(srcCoords.x, board.Piece.CASTLED_KING_FILES[wing]);
     const rookSrcCoords = board.get(destCoords)?.isRook()
       ? destCoords
