@@ -33,7 +33,7 @@ export default class Board extends Map<Coords, Piece> {
             piece.coords = coords;
             acc.set(coords, piece);
             if (piece.isKing())
-              acc.kings[piece.color] = piece as King;
+              acc.kings[piece.color] = piece;
           });
         return acc;
       }, new Board());
@@ -61,7 +61,7 @@ export default class Board extends Map<Coords, Piece> {
         if (!castlingRights[color][wing])
           continue;
         for (let y = wing; y !== this.kings[color].coords.y; y += direction) {
-          const piece = this.get(this.Coords.get(Piece.startPieceRanks[color], y)!);
+          const piece = this.get(Coords.get(Piece.startPieceRanks[color], y)!);
           if (piece?.isRook() && piece.color === color) {
             this.startRookFiles[wing] = y;
             continue main;
