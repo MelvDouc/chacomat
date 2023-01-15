@@ -1,7 +1,7 @@
-import { Pawn } from "../pieces/index.js";
-import Position from "./Position.js";
-import { Color } from "../utils/constants.js";
-import ChessGame from "./ChessGame.js";
+import Position from "@game/Position.js";
+import ChessGame from "@game/ChessGame.js";
+import { Pawn } from "@pieces/index.js";
+import { Color } from "@utils/constants.js";
 
 describe("A board", () => {
   it("should be serializable", () => {

@@ -3,7 +3,6 @@ import { Color, Wing } from "@utils/constants.js";
 import Piece from "@pieces/index.js";
 import type {
   BlackAndWhite,
-  CastlingRights,
   King,
   PieceInitial,
   Position,

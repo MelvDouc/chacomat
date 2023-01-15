@@ -1,5 +1,5 @@
-import ChessGame from "../game/ChessGame.js";
-import Coords from "../game/Coords.js";
+import ChessGame from "@game/ChessGame.js";
+import Coords from "@game/Coords.js";
 
 const c1 = Coords.fromNotation("c1")!;
 const d1 = Coords.fromNotation("d1")!;
