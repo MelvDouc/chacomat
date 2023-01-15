@@ -11,6 +11,7 @@ import type {
 export default class Board extends Map<Coords, Piece> {
   private static readonly nullPiece = "0";
   private static readonly nullPieceRegex = /0+/g;
+  public static readonly Piece: typeof Piece = Piece;
 
   public position: Position;
   public readonly kings = {} as BlackAndWhite<King>;
@@ -29,7 +30,7 @@ export default class Board extends Map<Coords, Piece> {
               if (item === Board.nullPiece)
                 return;
               const coords = Coords.get(x, y);
-              const piece = Piece.fromInitial(item as PieceInitial, this);
+              const piece = (this.constructor as typeof Board).Piece.fromInitial(item as PieceInitial, this);
               piece.coords = coords;
               this.set(coords, piece);
               if (piece.isKing())
@@ -41,6 +42,10 @@ export default class Board extends Map<Coords, Piece> {
 
   public get Coords(): typeof Coords {
     return Coords;
+  }
+
+  public get Piece(): typeof Piece {
+    return (this.constructor as typeof Board).Piece;
   }
 
   public transfer(srcCoords: Coords, destCoords: Coords): this {

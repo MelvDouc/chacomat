@@ -23,6 +23,7 @@ export default class ChessGame {
   public static readonly Colors = Color;
   public static readonly Wings = Wing;
   public static readonly Statuses = GameStatus;
+  protected static readonly Position = Position;
   public static readonly IllegalMoveError = IllegalMoveError;
   public static readonly InactiveGameError = InactiveGameError;
   public static readonly InvalidCoordsError = InvalidCoordsError;
@@ -40,7 +41,8 @@ export default class ChessGame {
   public readonly metaInfo: Partial<ChessGameMetaInfo>;
 
   constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
-    this.currentPosition = positionInfo
+    const { Position } = (this.constructor as typeof ChessGame);
+    this.currentPosition = (positionInfo)
       ? new Position(positionInfo)
       : Position.fromFenString(fenString ?? Position.startFenString);
     this.currentPosition.game = this;

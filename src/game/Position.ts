@@ -1,5 +1,4 @@
 import { Color, GameStatus, Wing } from "@chacomat/utils/constants.js";
-import Piece from "@chacomat/pieces/index.js";
 import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import type {
@@ -10,6 +9,7 @@ import type {
   King,
   Move,
   Pawn,
+  Piece,
   PositionInfo,
   PromotedPieceInitial,
   Rook
@@ -20,8 +20,10 @@ import type {
  */
 export default class Position implements PositionInfo {
   public static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  public static readonly Board: typeof Board = Board;
+  public static readonly CastlingRights: typeof CastlingRights = CastlingRights;
 
-  private static readonly colorAbbreviations = {
+  protected static readonly colorAbbreviations = {
     w: Color.WHITE,
     b: Color.BLACK,
     [Color.WHITE]: "w",
@@ -40,10 +42,10 @@ export default class Position implements PositionInfo {
       halfMoveClock,
       fullMoveNumber,
     ] = fenString.split(" ");
-    const board = new Board(pieceStr);
+    const board = new (this.Board)(pieceStr);
     const position = new Position({
       board,
-      castlingRights: CastlingRights.fromString(castlingStr),
+      castlingRights: this.CastlingRights.fromString(castlingStr),
       colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations] as Color,
       enPassantFile: (enPassant === "-")
         ? -1
@@ -56,11 +58,12 @@ export default class Position implements PositionInfo {
   }
 
   /**
-   * This will overwritten in Chess960Position.
+   * A different method is used in Chess960 to determine if a move is castling.
    */
-  protected static isCastlingMove(srcCoords: Coords, destCoords: Coords): boolean {
-    return Math.abs(destCoords.y - srcCoords.y) > 1;
+  protected static isCastling(king: King, destCoords: Coords) {
+    return Math.abs(destCoords.y - king.coords.y) === 2;
   }
+
 
   public readonly board: Board;
   public readonly castlingRights: CastlingRights;
@@ -135,7 +138,7 @@ export default class Position implements PositionInfo {
     return this.attackedCoordsSet.has(this.board.kings[this.colorToMove].coords);
   }
 
-  private isTripleRepetition(): boolean {
+  protected isTripleRepetition(): boolean {
     const pieceStr = this.board.toString();
     let repetitionCount = 0;
 
@@ -149,17 +152,23 @@ export default class Position implements PositionInfo {
   /**
    * Generates the moves that could be played without regard for whether it puts the current player in check.
    */
-  private *pseudoLegalMoves(): Generator<[Coords, Coords], void, unknown> {
+  protected *pseudoLegalMoves(): Generator<[Coords, Coords], void, unknown> {
     for (const [srcCoords, piece] of this.board)
       if (piece?.color === this.colorToMove)
         for (const destCoords of piece.pseudoLegalMoves())
           yield [srcCoords, destCoords];
   }
 
-  private handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN): void {
+  protected handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
+    if (rook.isOnInitialSquare())
+      castlingRights.unset(rook.color, rook.coords.y);
+    rook.board.transfer(rook.coords, destCoords);
+  }
+
+  protected handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = Board.Piece.WHITE_PIECE_INITIALS.QUEEN): void {
     if (
       destCoords.y === this.enPassantFile
-      && pawn.coords.x === Piece.MIDDLE_RANKS[pawn.oppositeColor]
+      && pawn.coords.x === this.board.Piece.MIDDLE_RANKS[pawn.oppositeColor]
     ) {
       pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y));
       pawn.board.set(destCoords, pawn);
@@ -167,7 +176,7 @@ export default class Position implements PositionInfo {
       return;
     }
 
-    const piece = (destCoords.y === Piece.START_PAWN_RANKS[pawn.oppositeColor])
+    const piece = (destCoords.y === pawn.board.Piece.START_PAWN_RANKS[pawn.oppositeColor])
       ? pawn.promote(promotionType)
       : pawn;
 
@@ -175,30 +184,29 @@ export default class Position implements PositionInfo {
     piece.coords = destCoords;
   }
 
-  private handleKingMove(king: King, destCoords: Coords, castlingRights: CastlingRights): void {
+  protected handleKingMove(king: King, destCoords: Coords, castlingRights: CastlingRights): void {
     castlingRights.unset(king.color, Wing.QUEEN_SIDE);
     castlingRights.unset(king.color, Wing.KING_SIDE);
 
-    const { coords: srcCoords, board } = king;
-
-    if (!(this.constructor as typeof Position).isCastlingMove(srcCoords, destCoords)) {
-      board.transfer(srcCoords, destCoords);
+    if ((this.constructor as typeof Position).isCastling(king, destCoords)) {
+      this.castle(king, destCoords);
       return;
     }
 
+    king.board.transfer(king.coords, destCoords);
+  }
+
+  protected castle(king: King, destCoords: Coords): void {
+    const { board, coords: srcCoords } = king;
     const wing = (destCoords.y < srcCoords.y) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
-    const destKingCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_KING_FILES[wing]),
-      rookSrcCoords = board.Coords.get(srcCoords.x, wing),
-      rookDestCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_ROOK_FILES[wing]);
+    const destKingCoords = board.Coords.get(srcCoords.x, board.Piece.CASTLED_KING_FILES[wing]);
+    const rookSrcCoords = board.get(destCoords)?.isRook()
+      ? destCoords
+      : board.Coords.get(destCoords.x, wing);
+    const rookDestCoords = board.Coords.get(srcCoords.x, board.Piece.CASTLED_ROOK_FILES[wing]);
     board
       .transfer(srcCoords, destKingCoords)
       .transfer(rookSrcCoords, rookDestCoords);
-  }
-
-  private handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
-    if (rook.isOnInitialSquare())
-      castlingRights.unset(rook.color, rook.coords.y);
-    rook.board.transfer(rook.coords, destCoords);
   }
 
   /**
@@ -208,7 +216,7 @@ export default class Position implements PositionInfo {
   public getPositionFromMove(
     srcCoords: Coords,
     destCoords: Coords,
-    promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN,
+    promotionType: PromotedPieceInitial = Board.Piece.WHITE_PIECE_INITIALS.QUEEN,
     updateColorAndMoveNumber = false
   ): Position {
     const board = this.board.clone(),
@@ -252,7 +260,7 @@ export default class Position implements PositionInfo {
       (this.enPassantFile === -1)
         ? "-"
         : this.board.Coords.get(
-          Piece.MIDDLE_RANKS[this.colorToMove] - Piece.DIRECTIONS[this.colorToMove],
+          this.board.Piece.MIDDLE_RANKS[this.colorToMove] - this.board.Piece.DIRECTIONS[this.colorToMove],
           this.enPassantFile
         ).notation,
       String(this.halfMoveClock),

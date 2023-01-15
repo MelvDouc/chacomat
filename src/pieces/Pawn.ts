@@ -22,13 +22,13 @@ export default class Pawn extends Piece {
   private *forwardMoves(): CoordsGenerator {
     const coords1 = this.coords.getPeer(Pawn.DIRECTIONS[this.color], 0)!;
 
-    if (!this.board.get(coords1)) {
+    if (!this.board.has(coords1)) {
       yield coords1;
 
       if (this.coords.x === Piece.START_PAWN_RANKS[this.color]) {
         const coords2 = coords1.getPeer(Pawn.DIRECTIONS[this.color], 0)!;
 
-        if (!this.board.get(coords2))
+        if (!this.board.has(coords2))
           yield coords2;
       }
     }

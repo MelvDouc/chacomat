@@ -21,7 +21,7 @@ export default class Chess960CastlingRights extends CastlingRights {
   public override toString(): string {
     let str = "";
 
-    this[Color.WHITE].forEach((file) => str += Coords.getFileName(file));
+    this[Color.WHITE].forEach((file) => str += Coords.getFileName(file).toUpperCase());
     this[Color.BLACK].forEach((file) => str += Coords.getFileName(file));
 
     return str || Chess960CastlingRights.nullCastlingRightsChar;

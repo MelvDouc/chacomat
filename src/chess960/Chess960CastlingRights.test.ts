@@ -19,4 +19,16 @@ describe("Chess960CastlingRights", () => {
     expect(castlingRights[Color.BLACK]).toContain(4);
     expect(castlingRights[Color.BLACK].length).toBe(1);
   });
+
+  it("should be stringifiable #1", () => {
+    const castlingRights = new Chess960CastlingRights();
+    castlingRights[Color.WHITE].push(3, 5);
+    castlingRights[Color.BLACK].push(3, 5);
+    expect(castlingRights.toString()).toBe("DFdf");
+  });
+
+  it("should be stringifiable #2", () => {
+    const castlingRights = new Chess960CastlingRights();
+    expect(castlingRights.toString()).toBe("-");
+  });
 });
