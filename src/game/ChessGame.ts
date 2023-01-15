@@ -31,25 +31,19 @@ export default class ChessGame {
   public static getChess960Game(): ChessGame {
     const pieceRank = getRandomChessWhitePieceRank();
     return new ChessGame({
-      isChess960: true,
+      // isChess960: true,
       fenString: `${pieceRank.toLowerCase()}/${"p".repeat(8)}${"/8".repeat(4)}/${"P".repeat(8)}/${pieceRank} w KQkq - 0 1`
     });
   }
 
   public currentPosition: Position;
-  public readonly isChess960: boolean;
   public readonly metaInfo: Partial<ChessGameMetaInfo>;
 
-  constructor({ fenString, positionInfo, isChess960, metaInfo }: ChessGameParameters = {}) {
+  constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
     this.currentPosition = positionInfo
       ? new Position(positionInfo)
       : Position.fromFenString(fenString ?? Position.startFenString);
     this.currentPosition.game = this;
-    if (isChess960) {
-      if (!this.currentPosition.board.updateStartRookFiles(this.currentPosition.castlingRights))
-        throw new ChessGame.InvalidFenError(this.currentPosition.toString());
-    }
-    this.isChess960 = !!isChess960;
     this.metaInfo = metaInfo ?? {};
   }
 
@@ -67,7 +61,7 @@ export default class ChessGame {
   public move(
     srcCoords: { x: number; y: number; },
     destCoords: { x: number; y: number; },
-    promotionType: PromotedPieceInitial = "Q"
+    promotionType?: PromotedPieceInitial
   ): this {
     if (this.currentPosition.status !== GameStatus.ACTIVE)
       throw new ChessGame.InactiveGameError(this.currentPosition.status);
@@ -110,7 +104,7 @@ export default class ChessGame {
   public moveWithNotations(
     srcNotation: AlgebraicSquareNotation,
     destNotation: AlgebraicSquareNotation,
-    promotionType: PromotedPieceInitial = "Q"
+    promotionType?: PromotedPieceInitial
   ): this {
     return this.move(
       Coords.fromNotation(srcNotation)!,

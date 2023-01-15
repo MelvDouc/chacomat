@@ -19,3 +19,12 @@ export enum GameStatus {
   FIFTY_MOVE_DRAW = "draw by fifty-move rule",
   INSUFFICIENT_MATERIAL = "insufficient material"
 }
+
+export enum WhitePieceInitial {
+  PAWN = "P",
+  KNIGHT = "N",
+  BISHOP = "B",
+  ROOK = "R",
+  QUEEN = "Q",
+  KING = "K"
+}

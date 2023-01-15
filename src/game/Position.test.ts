@@ -1,3 +1,4 @@
+import { WhitePieceInitial } from "../utils/constants.js";
 import ChessGame from "./ChessGame.js";
 import Position from "./Position.js";
 
@@ -16,7 +17,7 @@ describe("FEN string", () => {
     const pos2 = pos1.getPositionFromMove(
       pos1.board.Coords.get(2, 1),
       pos1.board.Coords.get(3, 0),
-      "Q",
+      WhitePieceInitial.QUEEN,
       true,
     );
 

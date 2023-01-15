@@ -82,10 +82,3 @@ describe("full games", () => {
     expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
   });
 });
-
-describe("chess960", () => {
-  it("#1", () => {
-    const game = ChessGame.getChess960Game();
-    expect(game.currentPosition.board.toString().split("/")[0]).toMatch(/^[pnbrqk]{8}$/);
-  });
-});

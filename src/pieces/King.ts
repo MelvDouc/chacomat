@@ -4,8 +4,8 @@ import { adjacentOffsets } from "@utils/sliding-offsets.js";
 import { CoordsGenerator } from "../types.js";
 
 export default class King extends Piece {
-  public static override readonly whiteInitial = "K";
-  protected static override readonly offsets = adjacentOffsets;
+  public static override readonly WHITE_INITIAL = Piece.WHITE_PIECE_INITIALS.KING;
+  protected static override readonly OFFSETS = adjacentOffsets;
 
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
@@ -19,7 +19,7 @@ export default class King extends Piece {
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
-    const kingDirection = Math.sign(King.castledKingFiles[wing] - Y);
+    const kingDirection = Math.sign(King.CASTLED_KING_FILES[wing] - Y);
 
     for (let y = Y + kingDirection; ; y += kingDirection) {
       const destCoords = this.board.Coords.get(X, y);
@@ -28,18 +28,18 @@ export default class King extends Piece {
         && destCoords !== rookCoords
       )
         return false;
-      if (y === King.castledKingFiles[wing])
+      if (y === King.CASTLED_KING_FILES[wing])
         break;
     }
 
     // The squares traversed by the rook must be empty or occupied the king.
-    const rookDirection = Math.sign(Piece.castledRookFiles[wing] - rookCoords.y);
+    const rookDirection = Math.sign(Piece.CASTLED_ROOK_FILES[wing] - rookCoords.y);
 
     for (let y = rookCoords.y + rookDirection; ; y += rookDirection) {
       const destCoords = this.board.Coords.get(X, y);
       if (this.board.has(destCoords) && destCoords !== this.coords)
         return false;
-      if (y === Piece.castledRookFiles[wing])
+      if (y === Piece.CASTLED_ROOK_FILES[wing])
         break;
     }
 
@@ -47,13 +47,8 @@ export default class King extends Piece {
   }
 
   public *castlingCoords(): CoordsGenerator {
-    for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
-      if (!this.canCastleToWing(wing))
-        continue;
-      const y = (this.board.position.game.isChess960)
-        ? this.board.startRookFiles[wing]
-        : King.castledKingFiles[wing];
-      yield this.board.Coords.get(this.coords.x, y);
-    }
+    for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
+      if (this.canCastleToWing(wing))
+        yield this.board.Coords.get(this.coords.x, King.CASTLED_KING_FILES[wing]);
   }
 }

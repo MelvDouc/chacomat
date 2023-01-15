@@ -50,30 +50,6 @@ export default class Board extends Map<Coords, Piece> {
     return Coords;
   }
 
-  /**
-   * Infer initial rook files in a Chess960 game based on castling rights.
-   * @returns Whether the placement of the rooks matches the given castling rights.
-   */
-  public updateStartRookFiles(castlingRights: CastlingRights): boolean {
-    main: for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE]) {
-      const direction = Math.sign(4 - wing);
-      for (const color of [Color.WHITE, Color.BLACK]) {
-        if (!castlingRights[color][wing])
-          continue;
-        for (let y = wing; y !== this.kings[color].coords.y; y += direction) {
-          const piece = this.get(Coords.get(Piece.startPieceRanks[color], y)!);
-          if (piece?.isRook() && piece.color === color) {
-            this.startRookFiles[wing] = y;
-            continue main;
-          }
-        }
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   public transfer(srcCoords: Coords, destCoords: Coords): this {
     const srcPiece = this.get(srcCoords)!;
     this.set(destCoords, srcPiece).delete(srcCoords);
@@ -98,9 +74,11 @@ export default class Board extends Map<Coords, Piece> {
   public clone(): Board {
     const boardClone = new Board();
     for (const [coords, piece] of this) {
-      boardClone.set(coords, piece.clone(boardClone));
-      if (piece.isKing())
-        boardClone.kings[piece.color] = boardClone.get(coords) as King;
+      const pieceClone = piece.clone();
+      pieceClone.board = boardClone;
+      boardClone.set(coords, pieceClone);
+      if (pieceClone.isKing())
+        boardClone.kings[piece.color] = pieceClone;
     }
     boardClone.startRookFiles = { ...this.startRookFiles };
     return boardClone;

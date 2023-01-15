@@ -10,7 +10,8 @@ import type {
 } from "../types.js";
 
 export default class Pawn extends Piece {
-  public static override readonly whiteInitial = "P";
+  public static override readonly WHITE_INITIAL = Piece.WHITE_PIECE_INITIALS.PAWN;
+
   private static pawnXOffsets = {
     WHITE: [-1, -1],
     BLACK: [1, 1]
@@ -19,13 +20,13 @@ export default class Pawn extends Piece {
   private static pawnYOffsets = [-1, 1];
 
   private *forwardMoves(): CoordsGenerator {
-    const coords1 = this.coords.getPeer(Pawn.directions[this.color], 0)!;
+    const coords1 = this.coords.getPeer(Pawn.DIRECTIONS[this.color], 0)!;
 
     if (!this.board.get(coords1)) {
       yield coords1;
 
-      if (this.coords.x === Piece.startPawnRanks[this.color]) {
-        const coords2 = coords1.getPeer(Pawn.directions[this.color], 0)!;
+      if (this.coords.x === Piece.START_PAWN_RANKS[this.color]) {
+        const coords2 = coords1.getPeer(Pawn.DIRECTIONS[this.color], 0)!;
 
         if (!this.board.get(coords2))
           yield coords2;
@@ -38,7 +39,7 @@ export default class Pawn extends Piece {
       if (
         this.board.get(destCoords)?.color === this.oppositeColor
         || destCoords.y === this.board.position.enPassantFile
-        && this.coords.x === Piece.middleRanks[this.oppositeColor]
+        && this.coords.x === Piece.MIDDLE_RANKS[this.oppositeColor]
       )
         yield destCoords;
   }

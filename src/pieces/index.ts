@@ -7,12 +7,12 @@ import Rook from "@pieces/sliding/Rook.js";
 import Queen from "@pieces/sliding/Queen.js";
 
 Piece.constructors
-  .set(Pawn.whiteInitial, Pawn)
-  .set(Knight.whiteInitial, Knight)
-  .set(King.whiteInitial, King)
-  .set(Bishop.whiteInitial, Bishop)
-  .set(Rook.whiteInitial, Rook)
-  .set(Queen.whiteInitial, Queen);
+  .set(Pawn.WHITE_INITIAL, Pawn)
+  .set(Knight.WHITE_INITIAL, Knight)
+  .set(King.WHITE_INITIAL, King)
+  .set(Bishop.WHITE_INITIAL, Bishop)
+  .set(Rook.WHITE_INITIAL, Rook)
+  .set(Queen.WHITE_INITIAL, Queen);
 
 export {
   Pawn,

@@ -1,8 +1,9 @@
-import { Color, GameStatus, Wing } from "./utils/constants.js";
+import { Color, GameStatus, WhitePieceInitial, Wing } from "./utils/constants.js";
 
 export type {
   Color,
   GameStatus,
+  WhitePieceInitial,
   Wing
 };
 
@@ -10,7 +11,8 @@ export type {
  * https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation for more info.
  */
 export type FenString = string;
-export type WhitePieceInitial = "N" | "B" | "R" | "Q" | "K" | "P";
+export type Chess960FenString = string;
+// export type WhitePieceInitial = "N" | "B" | "R" | "Q" | "K" | "P";
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
 export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
 export type PromotedPieceInitial = Exclude<WhitePieceInitial, "K" | "P">;
@@ -45,7 +47,6 @@ export type Wings<T> = {
 export interface ChessGameParameters {
   fenString?: FenString;
   positionInfo?: PositionInfo;
-  isChess960?: boolean;
   metaInfo?: Partial<ChessGameMetaInfo>;
 }
 /**

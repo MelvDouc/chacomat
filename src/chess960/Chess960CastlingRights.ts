@@ -1,0 +1,1 @@
+import CastlingRights from "@game/CastlingRights.js";

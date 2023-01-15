@@ -2,7 +2,7 @@ import SlidingPiece from "@pieces/sliding/SlidingPiece.js";
 import { bishopOffsets } from "@utils/sliding-offsets.js";
 
 export default class Bishop extends SlidingPiece {
-  public static override readonly whiteInitial = "B";
-  protected static override readonly offsets = bishopOffsets;
+  public static override readonly WHITE_INITIAL = SlidingPiece.WHITE_PIECE_INITIALS.BISHOP;
+  protected static override readonly OFFSETS = bishopOffsets;
 
 }

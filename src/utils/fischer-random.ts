@@ -1,5 +1,4 @@
-import { Wing } from "@utils/constants.js";
-import type { WhitePieceInitial, Wings } from "../types.js";
+import { WhitePieceInitial } from "@utils/constants.js";
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -10,20 +9,20 @@ export function getRandomChessWhitePieceRank() {
   const files = new Set(Array.from({ length: 8 }, (_, i) => i));
 
   const kingFile = getKingFile(files),
-    rookFiles = getRookFiles(files, kingFile),
+    [rookFile1, rookFile2] = getRookFiles(files, kingFile),
     [bishopFile1, bishopFile2] = getBishopFiles(files);
   const queenFile = [...files][randomInt(0, files.size - 1)];
   files.delete(queenFile);
   const [knightFile1, knightFile2] = [...files];
 
-  pieceRank[kingFile] = "K";
-  pieceRank[rookFiles[Wing.QUEEN_SIDE]] = "R";
-  pieceRank[rookFiles[Wing.KING_SIDE]] = "R";
-  pieceRank[bishopFile1] = "B";
-  pieceRank[bishopFile2] = "B";
-  pieceRank[queenFile] = "Q";
-  pieceRank[knightFile1] = "N";
-  pieceRank[knightFile2] = "N";
+  pieceRank[kingFile] = WhitePieceInitial.KING;
+  pieceRank[rookFile1] = WhitePieceInitial.ROOK;
+  pieceRank[rookFile2] = WhitePieceInitial.ROOK;
+  pieceRank[bishopFile1] = WhitePieceInitial.BISHOP;
+  pieceRank[bishopFile2] = WhitePieceInitial.BISHOP;
+  pieceRank[queenFile] = WhitePieceInitial.QUEEN;
+  pieceRank[knightFile1] = WhitePieceInitial.KNIGHT;
+  pieceRank[knightFile2] = WhitePieceInitial.KNIGHT;
 
   return pieceRank.join("");
 }
@@ -34,13 +33,13 @@ function getKingFile(files: Set<number>): number {
   return kingFile;
 }
 
-function getRookFiles(files: Set<number>, kingFile: number): Wings<number> {
-  const rookFiles = {
-    [Wing.QUEEN_SIDE]: randomInt(0, kingFile - 1),
-    [Wing.KING_SIDE]: randomInt(kingFile + 1, 7),
-  };
-  files.delete(rookFiles[Wing.QUEEN_SIDE]);
-  files.delete(rookFiles[Wing.KING_SIDE]);
+function getRookFiles(files: Set<number>, kingFile: number): number[] {
+  const rookFiles = [
+    randomInt(0, kingFile - 1),
+    randomInt(kingFile + 1, 7),
+  ];
+  files.delete(rookFiles[0]);
+  files.delete(rookFiles[1]);
   return rookFiles;
 }
 

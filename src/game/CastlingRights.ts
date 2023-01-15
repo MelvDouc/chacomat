@@ -9,7 +9,7 @@ export default class CastlingRights {
   /**
    * The characters used in an FEN string to represent castling rights.
    */
-  private static readonly initials: BlackAndWhite<Wings<string>> = {
+  protected static readonly initials: BlackAndWhite<Wings<string>> = {
     [Color.BLACK]: {
       [Wing.KING_SIDE]: "k",
       [Wing.QUEEN_SIDE]: "q"
