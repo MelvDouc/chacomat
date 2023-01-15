@@ -1,9 +1,9 @@
 import type { AlgebraicSquareNotation } from "../types.js";
 
 export default class Coords {
-  private static all: Record<number, Record<number, Coords>> = {};
-  private static notations: Map<Coords, AlgebraicSquareNotation> = new Map();
-  private static coordsByNotation: Map<AlgebraicSquareNotation, Coords> = new Map();
+  private static readonly all: Record<number, Record<number, Coords>> = {};
+  private static readonly notations: Record<number, Record<number, AlgebraicSquareNotation>> = {};
+  private static readonly coordsByNotation = {} as Record<AlgebraicSquareNotation, Coords>;
 
   public static getFileNameIndex(fileName: string): number {
     return fileName.toLowerCase().charCodeAt(0) - 97;
@@ -14,7 +14,7 @@ export default class Coords {
   }
 
   public static fromNotation(notation: AlgebraicSquareNotation): Coords | null {
-    return Coords.coordsByNotation.get(notation) ?? null;
+    return Coords.coordsByNotation[notation] ?? null;
   }
 
   public static get(x: number, y: number): Coords {
@@ -35,12 +35,13 @@ export default class Coords {
   static {
     for (let x = 0; x < 8; x++) {
       Coords.all[x] = {};
+      Coords.notations[x] = {};
       for (let y = 0; y < 8; y++) {
         const coords = new Coords(x, y);
-        const notation = this.getFileName(y) + String(8 - x) as AlgebraicSquareNotation;
+        const notation = Coords.getFileName(y) + String(8 - x) as AlgebraicSquareNotation;
         Coords.all[x][y] = coords;
-        Coords.notations.set(coords, notation);
-        Coords.coordsByNotation.set(notation, coords);
+        Coords.notations[x][y] = notation;
+        Coords.coordsByNotation[notation] = coords;
       }
     }
   }
@@ -54,7 +55,7 @@ export default class Coords {
   }
 
   public get notation(): AlgebraicSquareNotation {
-    return Coords.notations.get(this)!;
+    return Coords.notations[this.x][this.y];
   }
 
   public getPeer(xOffset: number, yOffset: number): Coords | null {
