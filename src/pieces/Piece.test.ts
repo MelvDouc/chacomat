@@ -1,5 +1,5 @@
-import { Color } from "../utils/constants.js";
-import Piece, { Knight, Queen, Pawn } from "./index.js";
+import { Color } from "@utils/constants.js";
+import Piece, { Knight, Queen, Pawn } from "@pieces/index.js";
 
 describe("Piece", () => {
   it("n should be a black knight", () => {
