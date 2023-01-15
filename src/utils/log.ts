@@ -1,4 +1,4 @@
-import { Board } from "../types.js";
+import { Board } from "@chacomat/types.js";
 
 const Reset = "\x1b[0m";
 const FgBlack = "\x1b[30m";

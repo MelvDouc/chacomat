@@ -1,4 +1,4 @@
-import { Coords, FenString, GameStatus } from "../types.js";
+import { Coords, FenString, GameStatus } from "@chacomat/types.js";
 
 export class IllegalMoveError extends Error {
   constructor(srcCoords: Coords, destCoords: Coords) {

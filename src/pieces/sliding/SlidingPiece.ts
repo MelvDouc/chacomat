@@ -1,5 +1,5 @@
-import Piece from "@pieces/Piece.js";
-import { CoordsGenerator } from "../../types.js";
+import Piece from "@chacomat/pieces/Piece.js";
+import { CoordsGenerator } from "@chacomat/types.js";
 
 export default abstract class SlidingPiece extends Piece {
   public override *attackedCoords(): CoordsGenerator {

@@ -1,8 +1,8 @@
-import { Color, Wing } from "@utils/constants.js";
+import { Color, Wing } from "@chacomat/utils/constants.js";
 import type {
   BlackAndWhite,
   Wings
-} from "../types.js";
+} from "@chacomat/types.js";
 
 /**
  * @classdesc Create an object that represents the castling rights in a position.

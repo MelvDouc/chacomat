@@ -1,4 +1,4 @@
-import Piece from "@pieces/Piece.js";
+import Piece from "@chacomat/pieces/Piece.js";
 import type {
   Bishop,
   CoordsGenerator,
@@ -7,7 +7,7 @@ import type {
   PromotedPieceInitial,
   Queen,
   Rook
-} from "../types.js";
+} from "@chacomat/types.js";
 
 export default class Pawn extends Piece {
   public static override readonly WHITE_INITIAL = Piece.WHITE_PIECE_INITIALS.PAWN;

@@ -1,12 +1,12 @@
-import Coords from "@game/Coords.js";
-import { Color } from "@utils/constants.js";
-import Piece from "@pieces/index.js";
+import Coords from "@chacomat/game/Coords.js";
+import { Color } from "@chacomat/utils/constants.js";
+import Piece from "@chacomat/pieces/index.js";
 import type {
   BlackAndWhite,
   King,
   PieceInitial,
   Position
-} from "../types.js";
+} from "@chacomat/types.js";
 
 export default class Board extends Map<Coords, Piece> {
   private static readonly nullPiece = "0";

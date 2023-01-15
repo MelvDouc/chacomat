@@ -1,4 +1,4 @@
-import type { AlgebraicSquareNotation } from "../types.js";
+import type { AlgebraicSquareNotation } from "@chacomat/types.js";
 
 export default class Coords {
   private static readonly all: Record<number, Record<number, Coords>> = {};

@@ -1,6 +1,6 @@
-import { WhitePieceInitial } from "../utils/constants.js";
-import ChessGame from "./ChessGame.js";
-import Position from "./Position.js";
+import { WhitePieceInitial } from "@chacomat/utils/constants.js";
+import ChessGame from "@chacomat/game/ChessGame.js";
+import Position from "@chacomat/game/Position.js";
 
 describe("FEN string", () => {
   it("should be produce itself", () => {

@@ -1,4 +1,4 @@
-import ChessGame from "./ChessGame.js";
+import ChessGame from "@chacomat/game/ChessGame.js";
 
 describe("Fool's Mate", () => {
   const game = new ChessGame();

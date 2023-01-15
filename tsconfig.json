@@ -11,17 +11,8 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@chess960/*": [
-        "src/chess960/*"
-      ],
-      "@game/*": [
-        "src/game/*"
-      ],
-      "@pieces/*": [
-        "src/pieces/*"
-      ],
-      "@utils/*": [
-        "src/utils/*"
+      "@chacomat/*": [
+        "src/*"
       ]
     },
     "strict": true,

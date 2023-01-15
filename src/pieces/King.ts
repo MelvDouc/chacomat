@@ -1,7 +1,7 @@
-import Piece from "@pieces/Piece.js";
-import { Wing } from "@utils/constants.js";
-import { adjacentOffsets } from "@utils/sliding-offsets.js";
-import { CoordsGenerator } from "../types.js";
+import Piece from "@chacomat/pieces/Piece.js";
+import { Wing } from "@chacomat/utils/constants.js";
+import { adjacentOffsets } from "@chacomat/utils/sliding-offsets.js";
+import { CoordsGenerator } from "@chacomat/types.js";
 
 export default class King extends Piece {
   public static override readonly WHITE_INITIAL = Piece.WHITE_PIECE_INITIALS.KING;

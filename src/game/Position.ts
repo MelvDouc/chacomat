@@ -1,7 +1,7 @@
-import { Color, GameStatus, Wing } from "@utils/constants.js";
-import Piece from "@pieces/index.js";
-import Board from "@game/Board.js";
-import CastlingRights from "@game/CastlingRights.js";
+import { Color, GameStatus, Wing } from "@chacomat/utils/constants.js";
+import Piece from "@chacomat/pieces/index.js";
+import Board from "@chacomat/game/Board.js";
+import CastlingRights from "@chacomat/game/CastlingRights.js";
 import type {
   AlgebraicSquareNotation,
   ChessGame,
@@ -13,7 +13,7 @@ import type {
   PositionInfo,
   PromotedPieceInitial,
   Rook
-} from "../types.js";
+} from "@chacomat/types.js";
 
 /**
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.

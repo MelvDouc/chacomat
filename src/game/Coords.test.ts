@@ -1,4 +1,4 @@
-import Coords from "./Coords.js";
+import Coords from "@chacomat/game/Coords.js";
 
 describe("notationToCoords", () => {
   it("e4 should be {x: 4, y: 4}", () => {

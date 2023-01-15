@@ -2,7 +2,7 @@ import {
   Color,
   WhitePieceInitial,
   Wing
-} from "@utils/constants.js";
+} from "@chacomat/utils/constants.js";
 import type {
   Bishop,
   BlackAndWhite,
@@ -18,7 +18,7 @@ import type {
   Queen,
   Rook,
   Wings
-} from "../types.js";
+} from "@chacomat/types.js";
 
 export default abstract class Piece {
   public static readonly WHITE_PIECE_INITIALS = WhitePieceInitial;

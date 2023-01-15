@@ -1,20 +1,20 @@
-import Coords from "@game/Coords.js";
-import Position from "@game/Position.js";
-import { Color, GameStatus, Wing } from "@utils/constants.js";
-import { getChess960WhitePieceRank } from "@utils/fischer-random.js";
-import { viewBoard } from "@utils/log.js";
+import Coords from "@chacomat/game/Coords.js";
+import Position from "@chacomat/game/Position.js";
+import { Color, GameStatus, Wing } from "@chacomat/utils/constants.js";
+import { getChess960WhitePieceRank } from "@chacomat/utils/fischer-random.js";
+import { viewBoard } from "@chacomat/utils/log.js";
 import {
   IllegalMoveError,
   InactiveGameError,
   InvalidCoordsError,
   InvalidFenError
-} from "@utils/errors.js";
+} from "@chacomat/utils/errors.js";
 import type {
   AlgebraicSquareNotation,
   ChessGameMetaInfo,
   ChessGameParameters,
   PromotedPieceInitial,
-} from "../types.js";
+} from "@chacomat/types.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.

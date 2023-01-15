@@ -5,7 +5,7 @@ const config: JestConfigWithTsJest = {
   testPathIgnorePatterns: ["/node_modules"],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
-    "^@([^\\/]+)/(.+)\\.js$": "<rootDir>/src/$1/$2.ts"
+    "^@chacomat/(.+)\\.js$": "<rootDir>/src/$1.ts"
   },
   preset: "ts-jest",
   testEnvironment: "node",

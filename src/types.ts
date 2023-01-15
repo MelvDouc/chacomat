@@ -1,4 +1,4 @@
-import { Color, GameStatus, WhitePieceInitial, Wing } from "./utils/constants.js";
+import { Color, GameStatus, WhitePieceInitial, Wing } from "@chacomat/utils/constants.js";
 
 export type {
   Color,

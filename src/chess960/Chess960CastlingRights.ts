@@ -1,6 +1,6 @@
-import { Color } from "@utils/constants.js";
-import Coords from "@game/Coords.js";
-import CastlingRights from "@game/CastlingRights.js";
+import { Color } from "@chacomat/utils/constants.js";
+import Coords from "@chacomat/game/Coords.js";
+import CastlingRights from "@chacomat/game/CastlingRights.js";
 
 export default class Chess960CastlingRights extends CastlingRights {
   private static readonly allowedFiles = {

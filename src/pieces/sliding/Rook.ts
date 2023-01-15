@@ -1,7 +1,7 @@
-import SlidingPiece from "@pieces/sliding/SlidingPiece.js";
-import { Wing } from "@utils/constants.js";
-import { rookOffsets } from "@utils/sliding-offsets.js";
-import { Wings } from "../../types.js";
+import SlidingPiece from "@chacomat/pieces/sliding/SlidingPiece.js";
+import { Wing } from "@chacomat/utils/constants.js";
+import { rookOffsets } from "@chacomat/utils/sliding-offsets.js";
+import { Wings } from "@chacomat/types.js";
 
 export default class Rook extends SlidingPiece {
   public static override readonly WHITE_INITIAL = SlidingPiece.WHITE_PIECE_INITIALS.ROOK;

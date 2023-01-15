@@ -1,4 +1,4 @@
-import { ChessGame } from "../types.js";
+import { ChessGame } from "@chacomat/types.js";
 
 const halfMoveRegexes = {
   PAWN_MOVE: /^P?[a-h][1-8](=?[NBRQ])?(\+{1,2}|#)?$/,

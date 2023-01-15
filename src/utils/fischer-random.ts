@@ -1,4 +1,4 @@
-import { WhitePieceInitial } from "@utils/constants.js";
+import { WhitePieceInitial } from "@chacomat/utils/constants.js";
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;

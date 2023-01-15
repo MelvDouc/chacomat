@@ -1,4 +1,4 @@
-import Piece from "@pieces/Piece.js";
+import Piece from "@chacomat/pieces/Piece.js";
 
 export default class Knight extends Piece {
   public static override readonly WHITE_INITIAL = Piece.WHITE_PIECE_INITIALS.KNIGHT;

@@ -1,4 +1,4 @@
-import ChessGame from "@game/ChessGame.js";
+import ChessGame from "@chacomat/game/ChessGame.js";
 
 describe("IllegalMoveError", () => {
   it("should be thrown on an illegal move", () => {
@@ -28,4 +28,3 @@ describe("InvalidCoordsError", () => {
     expect(() => game.move({ x: -1, y: 4 }, { y: 4, x: 4 })).toThrow(ChessGame.InvalidCoordsError);
   });
 });
-
