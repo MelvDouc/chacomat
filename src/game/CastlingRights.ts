@@ -43,7 +43,7 @@ export default class CastlingRights {
   public readonly [Color.BLACK]: number[] = [];
 
   public clone(): CastlingRights {
-    const clone = new CastlingRights();
+    const clone = Reflect.construct(this.constructor, []);
     clone[Color.WHITE].push(...this[Color.WHITE]);
     clone[Color.BLACK].push(...this[Color.BLACK]);
     return clone;

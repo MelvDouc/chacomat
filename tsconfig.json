@@ -11,6 +11,9 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
+      "@chess960/*": [
+        "src/chess960/*"
+      ],
       "@game/*": [
         "src/game/*"
       ],

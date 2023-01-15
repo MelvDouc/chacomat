@@ -4,7 +4,7 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function getRandomChessWhitePieceRank() {
+export function getChess960WhitePieceRank(): string {
   const pieceRank: WhitePieceInitial[] = [];
   const files = new Set(Array.from({ length: 8 }, (_, i) => i));
 

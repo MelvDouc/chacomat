@@ -1,7 +1,7 @@
 import Coords from "@game/Coords.js";
 import Position from "@game/Position.js";
 import { Color, GameStatus, Wing } from "@utils/constants.js";
-import { getRandomChessWhitePieceRank } from "@utils/fischer-random.js";
+import { getChess960WhitePieceRank } from "@utils/fischer-random.js";
 import { viewBoard } from "@utils/log.js";
 import {
   IllegalMoveError,
@@ -29,7 +29,7 @@ export default class ChessGame {
   public static readonly InvalidFenError = InvalidFenError;
 
   public static getChess960Game(): ChessGame {
-    const pieceRank = getRandomChessWhitePieceRank();
+    const pieceRank = getChess960WhitePieceRank();
     return new ChessGame({
       // isChess960: true,
       fenString: `${pieceRank.toLowerCase()}/${"p".repeat(8)}${"/8".repeat(4)}/${"P".repeat(8)}/${pieceRank} w KQkq - 0 1`

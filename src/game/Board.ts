@@ -5,41 +5,39 @@ import type {
   BlackAndWhite,
   King,
   PieceInitial,
-  Position,
-  Wings
+  Position
 } from "../types.js";
 
 export default class Board extends Map<Coords, Piece> {
   private static readonly nullPiece = "0";
   private static readonly nullPieceRegex = /0+/g;
 
-  /**
-   * @param {string} pieceStr The portion of an FEN string representing the board.
-   * @returns A new instance of `Board`.
-   */
-  public static fromPieceString(pieceStr: string): Board {
-    return pieceStr
-      .split("/")
-      .reduce((acc, row, x) => {
-        row
-          .replace(/\d+/g, (num) => Board.nullPiece.repeat(+num))
-          .split("")
-          .forEach((item, y) => {
-            if (item === Board.nullPiece)
-              return;
-            const coords = Coords.get(x, y);
-            const piece = Piece.fromInitial(item as PieceInitial, acc);
-            piece.coords = coords;
-            acc.set(coords, piece);
-            if (piece.isKing())
-              acc.kings[piece.color] = piece;
-          });
-        return acc;
-      }, new Board());
-  }
-
   public position: Position;
   public readonly kings = {} as BlackAndWhite<King>;
+
+  constructor(pieceStr?: string) {
+    super();
+
+    if (pieceStr) {
+      pieceStr
+        .split("/")
+        .forEach((row, x) => {
+          row
+            .replace(/\d+/g, (num) => Board.nullPiece.repeat(+num))
+            .split("")
+            .forEach((item, y) => {
+              if (item === Board.nullPiece)
+                return;
+              const coords = Coords.get(x, y);
+              const piece = Piece.fromInitial(item as PieceInitial, this);
+              piece.coords = coords;
+              this.set(coords, piece);
+              if (piece.isKing())
+                this.kings[piece.color] = piece;
+            });
+        });
+    }
+  }
 
   public get Coords(): typeof Coords {
     return Coords;

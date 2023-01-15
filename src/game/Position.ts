@@ -33,17 +33,17 @@ export default class Position implements PositionInfo {
    */
   public static fromFenString(fenString: FenString): Position {
     const [
-      pieceString,
+      pieceStr,
       color,
-      castlingString,
+      castlingStr,
       enPassant,
       halfMoveClock,
       fullMoveNumber,
     ] = fenString.split(" ");
-    const board = Board.fromPieceString(pieceString);
+    const board = new Board(pieceStr);
     const position = new Position({
       board,
-      castlingRights: CastlingRights.fromString(castlingString),
+      castlingRights: CastlingRights.fromString(castlingStr),
       colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations] as Color,
       enPassantFile: (enPassant === "-")
         ? -1
