@@ -1,11 +1,13 @@
 import { WhitePieceInitial } from "@chacomat/utils/constants.js";
+import { FenString } from "@chacomat/types.js";
+import Coords from "@chacomat/game/Coords.js";
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function getChess960WhitePieceRank(): string {
-  const pieceRank: WhitePieceInitial[] = [];
+export function getChess960FenString(): FenString {
+  const pieces: WhitePieceInitial[] = [];
   const files = new Set(Array.from({ length: 8 }, (_, i) => i));
 
   const kingFile = getKingFile(files),
@@ -15,16 +17,26 @@ export function getChess960WhitePieceRank(): string {
   files.delete(queenFile);
   const [knightFile1, knightFile2] = [...files];
 
-  pieceRank[kingFile] = WhitePieceInitial.KING;
-  pieceRank[rookFile1] = WhitePieceInitial.ROOK;
-  pieceRank[rookFile2] = WhitePieceInitial.ROOK;
-  pieceRank[bishopFile1] = WhitePieceInitial.BISHOP;
-  pieceRank[bishopFile2] = WhitePieceInitial.BISHOP;
-  pieceRank[queenFile] = WhitePieceInitial.QUEEN;
-  pieceRank[knightFile1] = WhitePieceInitial.KNIGHT;
-  pieceRank[knightFile2] = WhitePieceInitial.KNIGHT;
+  pieces[kingFile] = WhitePieceInitial.KING;
+  pieces[rookFile1] = WhitePieceInitial.ROOK;
+  pieces[rookFile2] = WhitePieceInitial.ROOK;
+  pieces[bishopFile1] = WhitePieceInitial.BISHOP;
+  pieces[bishopFile2] = WhitePieceInitial.BISHOP;
+  pieces[queenFile] = WhitePieceInitial.QUEEN;
+  pieces[knightFile1] = WhitePieceInitial.KNIGHT;
+  pieces[knightFile2] = WhitePieceInitial.KNIGHT;
 
-  return pieceRank.join("");
+  const pieceRank = pieces.join("");
+  const rookFileName1 = Coords.getFileName(rookFile1),
+    rookFileName2 = Coords.getFileName(rookFile2);
+  const castlingStr = [
+    rookFileName1.toUpperCase(),
+    rookFileName2.toUpperCase(),
+    rookFileName1,
+    rookFileName2
+  ].join("");
+
+  return `${pieceRank.toLowerCase()}/${"p".repeat(8)}${"/8".repeat(4)}/${"P".repeat(8)}/${pieceRank} w ${castlingStr} - 0 1`;
 }
 
 function getKingFile(files: Set<number>): number {

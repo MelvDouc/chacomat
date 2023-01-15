@@ -1,7 +1,7 @@
 import Coords from "@chacomat/game/Coords.js";
 import Position from "@chacomat/game/Position.js";
 import { Color, GameStatus, Wing } from "@chacomat/utils/constants.js";
-import { getChess960WhitePieceRank } from "@chacomat/utils/fischer-random.js";
+import { getChess960FenString } from "@chacomat/utils/fischer-random.js";
 import { viewBoard } from "@chacomat/utils/log.js";
 import {
   IllegalMoveError,
@@ -28,14 +28,6 @@ export default class ChessGame {
   public static readonly InactiveGameError = InactiveGameError;
   public static readonly InvalidCoordsError = InvalidCoordsError;
   public static readonly InvalidFenError = InvalidFenError;
-
-  public static getChess960Game(): ChessGame {
-    const pieceRank = getChess960WhitePieceRank();
-    return new ChessGame({
-      // isChess960: true,
-      fenString: `${pieceRank.toLowerCase()}/${"p".repeat(8)}${"/8".repeat(4)}/${"P".repeat(8)}/${pieceRank} w KQkq - 0 1`
-    });
-  }
 
   public currentPosition: Position;
   public readonly metaInfo: Partial<ChessGameMetaInfo>;
