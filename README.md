@@ -13,7 +13,7 @@ spanishGame
   .moveWithNotations("e2", "e4")
   .moveWithNotations("e7", "e5")
   .moveWithNotations("g1", "f3")
-  .moveWithNotations("b8", "c8")
+  .moveWithNotations("b8", "c6")
   .moveWithNotations("f1", "b5");
 ```
 
