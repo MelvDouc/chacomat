@@ -1,16 +1,19 @@
-import type { AlgebraicSquareNotation } from "@chacomat/types.js";
+import type {
+  AlgebraicSquareNotation,
+  ChessFileName
+} from "@chacomat/types.js";
 
 export default class Coords {
   private static readonly all: Record<number, Record<number, Coords>> = {};
   private static readonly notations: Record<number, Record<number, AlgebraicSquareNotation>> = {};
   private static readonly coordsByNotation = {} as Record<AlgebraicSquareNotation, Coords>;
 
-  public static getFileNameIndex(fileName: string): number {
+  public static getFileNameIndex(fileName: ChessFileName | Uppercase<ChessFileName>): number {
     return fileName.toLowerCase().charCodeAt(0) - 97;
   }
 
-  public static getFileName(file: number): string {
-    return String.fromCharCode(97 + file);
+  public static getFileName(file: number): ChessFileName {
+    return String.fromCharCode(97 + file) as ChessFileName;
   }
 
   public static fromNotation(notation: AlgebraicSquareNotation): Coords | null {

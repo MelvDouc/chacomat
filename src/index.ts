@@ -8,6 +8,8 @@ export {
 
 export type {
   FenString,
+  ChessFileName,
+  ChessRankName,
   WhitePieceInitial,
   BlackPieceInitial,
   PieceInitial,
@@ -24,7 +26,6 @@ export type {
   PositionInfo,
   Chess960Position,
   Board,
-  Chess960Board,
   CastlingRights,
   Coords,
   Move,

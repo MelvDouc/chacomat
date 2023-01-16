@@ -25,7 +25,6 @@ export type Position = import("./game/Position.js").default;
 export type Chess960Position = import("./chess960/Chess960Position.js").default;
 
 export type Board = import("./game/Board.js").default;
-export type Chess960Board = import("./chess960/Chess960Board.js").default;
 
 export type CastlingRights = import("./game/CastlingRights.js").default;
 export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.js").default;

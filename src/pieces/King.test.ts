@@ -2,9 +2,6 @@ import ChessGame from "@chacomat/game/ChessGame.js";
 import Coords from "@chacomat/game/Coords.js";
 
 const c1 = Coords.fromNotation("c1")!;
-const d1 = Coords.fromNotation("d1")!;
-const e1 = Coords.fromNotation("e1")!;
-const g1 = Coords.fromNotation("g1")!;
 
 describe("A king", () => {
   it("should be able to castle with no squares between it and a rook", () => {
@@ -29,27 +26,3 @@ describe("A king", () => {
     expect(castlingCoords).not.toContain(c1);
   });
 });
-
-/* describe("Chess960", () => {
-  it("should implement castling", () => {
-    const game = new ChessGame({
-      fenString: "nbbqrkrn/pppppppp/8/8/8/8/8/NB2RKR1 w KQkq - 0 1"
-    });
-    const whiteKing = game.currentPosition.board.kings[ChessGame.Colors.WHITE];
-    const castlingCoords = [
-      ...whiteKing.castlingCoords()
-    ];
-    expect(castlingCoords).toContain(e1);
-    expect(castlingCoords).toContain(g1);
-  });
-  it(" - king and rook should placed correctly after castling", () => {
-    const game = new ChessGame({
-      fenString: "nbbqrkrn/pppppppp/8/8/8/8/8/NB2RKR1 w KQkq - 0 1"
-    });
-    const kingCoords = game.currentPosition.board.kings[ChessGame.Colors.WHITE].coords;
-    const posAfter = game.move(kingCoords, Coords.fromNotation("e1")!).currentPosition;
-
-    expect(posAfter.board.get(c1)!.whiteInitial).toBe("K");
-    expect(posAfter.board.get(d1)!.whiteInitial).toBe("R");
-  });
-}); */
