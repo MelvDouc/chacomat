@@ -66,7 +66,7 @@ export default class ChessGame {
     ))
       throw new ChessGame.errors.IllegalMoveError(srcCoords, destCoords);
 
-    const nextPosition = this.currentPosition.getPositionFromMove(
+    const nextPosition = this.currentPosition.createPositionFromMove(
       Coords.get(srcCoords.x, srcCoords.y),
       Coords.get(destCoords.x, destCoords.y),
       promotionType,

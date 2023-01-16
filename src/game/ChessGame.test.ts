@@ -36,6 +36,7 @@ describe("Stalemate", () => {
     const game = new ChessGame({
       fenString: "5bnr/4p1pq/4Qpkr/7p/7P/4P3/PPPP1PP1/RNB1KBNR b KQ - 2 10"
     });
+
     expect(game.status).toBe(ChessGame.Statuses.STALEMATE);
   });
 });

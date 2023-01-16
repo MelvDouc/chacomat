@@ -60,7 +60,7 @@ export default class Position implements PositionInfo {
   /**
    * A different method is used in Chess960 to determine if a move is castling.
    */
-  protected static isCastling(king: King, destCoords: Coords) {
+  protected static isCastling(king: King, destCoords: Coords): boolean {
     return Math.abs(destCoords.y - king.coords.y) === 2;
   }
 
@@ -91,9 +91,13 @@ export default class Position implements PositionInfo {
 
     const legalMoves: Move[] = [];
 
-    for (const move of this.pseudoLegalMoves())
-      if (!this.getPositionFromMove(move[0], move[1]).isCheck())
+    for (const move of this.pseudoLegalMoves()) {
+      const { capturedPiece } = this.tryMove(move[0], move[1]);
+      if (!this.isCheck())
         legalMoves.push(move);
+      this.board.transfer(move[1], move[0]);
+      capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
+    }
 
     if (!this.isCheck()) {
       const king = this.board.kings[this.colorToMove];
@@ -134,7 +138,9 @@ export default class Position implements PositionInfo {
   }
 
   public isCheck(): boolean {
-    return this.attackedCoordsSet.has(this.board.kings[this.colorToMove].coords);
+    return this.board.getCoordsAttackedByColor(this.inactiveColor).has(
+      this.board.kings[this.colorToMove].coords
+    );
   }
 
   protected isTripleRepetition(): boolean {
@@ -152,7 +158,9 @@ export default class Position implements PositionInfo {
    * Generates the moves that could be played without regard for whether it puts the current player in check.
    */
   protected *pseudoLegalMoves(): Generator<[Coords, Coords], void, unknown> {
-    for (const [srcCoords, piece] of this.board)
+    const entries = [...this.board.entries()];
+
+    for (const [srcCoords, piece] of entries)
       if (piece?.color === this.colorToMove)
         for (const destCoords of piece.pseudoLegalMoves())
           yield [srcCoords, destCoords];
@@ -165,22 +173,24 @@ export default class Position implements PositionInfo {
   }
 
   protected handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN): void {
-    if (
-      destCoords.y === this.enPassantFile
-      && pawn.coords.x === Piece.MIDDLE_RANKS[pawn.oppositeColor]
-    ) {
+    if (this.isEnPassantCapture(pawn.coords, destCoords)) {
       pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y));
       pawn.board.set(destCoords, pawn);
       pawn.coords = destCoords;
       return;
     }
 
-    const piece = (destCoords.y === Piece.START_PAWN_RANKS[pawn.oppositeColor])
+    const piece = (destCoords.y === Piece.START_PIECE_RANKS[pawn.oppositeColor])
       ? pawn.promote(promotionType)
       : pawn;
 
     pawn.board.set(destCoords, piece).delete(pawn.coords);
     piece.coords = destCoords;
+  }
+
+  protected isEnPassantCapture(srcCoords: Coords, destCoords: Coords): boolean {
+    return destCoords.x === this.enPassantFile
+      && srcCoords.x === Piece.MIDDLE_RANKS[this.inactiveColor];
   }
 
   protected handleKingMove(king: King, destCoords: Coords, castlingRights: CastlingRights): void {
@@ -197,6 +207,7 @@ export default class Position implements PositionInfo {
   protected castle(king: King, destCoords: Coords): void {
     const { board, coords: srcCoords } = king;
     const wing = king.getWing(destCoords.y);
+    // These are distinct from `destCoords` as the latter may point to a same-colored rook in the case of castling.
     const destKingCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_KING_FILES[wing]);
     const rookSrcCoords = board.get(destCoords)?.isRook()
       ? destCoords
@@ -208,10 +219,32 @@ export default class Position implements PositionInfo {
   }
 
   /**
+   * [X] Capture en passant pawn
+   * [ ] Handle promotion
+   * [ ] Handle castling
+   */
+  public tryMove(srcCoords: Coords, destCoords: Coords): {
+    capturedPiece: Piece | undefined;
+  } {
+    const capturedPiece = (
+      (this.board.get(srcCoords) as Piece).isPawn()
+      && this.isEnPassantCapture(srcCoords, destCoords)
+    )
+      ? this.board.get(this.board.Coords.get(srcCoords.x, destCoords.y)) as Piece
+      : this.board.get(destCoords);
+    capturedPiece && this.board.delete(capturedPiece.coords);
+    this.board.transfer(srcCoords, destCoords);
+
+    return {
+      capturedPiece
+    };
+  }
+
+  /**
    * The color to move isn't updated just yet as this position will be used
    * to verify if a move has put the currently active color in check.
    */
-  public getPositionFromMove(
+  public createPositionFromMove(
     srcCoords: Coords,
     destCoords: Coords,
     promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN,

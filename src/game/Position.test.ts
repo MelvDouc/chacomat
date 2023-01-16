@@ -14,7 +14,7 @@ describe("FEN string", () => {
       fenString: `r5k1/p3rppp/1p2pn2/PP1bN3/8/2R1PP2/4B1PP/R5K1 b - - 0 24`
     });
     const pos1 = game.currentPosition;
-    const pos2 = pos1.getPositionFromMove(
+    const pos2 = pos1.createPositionFromMove(
       pos1.board.Coords.get(2, 1),
       pos1.board.Coords.get(3, 0),
       WhitePieceInitial.QUEEN,

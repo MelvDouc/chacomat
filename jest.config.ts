@@ -2,7 +2,7 @@ import { JestConfigWithTsJest } from "ts-jest";
 
 const config: JestConfigWithTsJest = {
   extensionsToTreatAsEsm: [".ts"],
-  testPathIgnorePatterns: ["/node_modules"],
+  testPathIgnorePatterns: ["/node_modules", "/test"],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "^@chacomat/(.+)\\.js$": "<rootDir>/src/$1.ts"
