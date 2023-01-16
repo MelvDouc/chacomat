@@ -181,7 +181,7 @@ export default class Position implements PositionInfo {
       return;
     }
 
-    const piece = (destCoords.y === Piece.START_PIECE_RANKS[pawn.oppositeColor])
+    const piece = (destCoords.x === Piece.START_PIECE_RANKS[pawn.oppositeColor])
       ? pawn.promote(promotionType)
       : pawn;
 
