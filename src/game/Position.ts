@@ -1,6 +1,7 @@
-import { Color, GameStatus, Wing } from "@chacomat/utils/constants.js";
+import { Color, GameStatus } from "@chacomat/utils/constants.js";
 import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
+import Piece from "@chacomat/pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
   ChessGame,
@@ -9,7 +10,6 @@ import type {
   King,
   Move,
   Pawn,
-  Piece,
   PositionInfo,
   PromotedPieceInitial,
   Rook
@@ -20,7 +20,6 @@ import type {
  */
 export default class Position implements PositionInfo {
   public static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  public static readonly Board: typeof Board = Board;
   public static readonly CastlingRights: typeof CastlingRights = CastlingRights;
 
   protected static readonly colorAbbreviations = {
@@ -42,7 +41,7 @@ export default class Position implements PositionInfo {
       halfMoveClock,
       fullMoveNumber,
     ] = fenString.split(" ");
-    const board = new (this.Board)(pieceStr);
+    const board = new Board(pieceStr);
     const position = new Position({
       board,
       castlingRights: this.CastlingRights.fromString(castlingStr),
@@ -164,10 +163,10 @@ export default class Position implements PositionInfo {
     rook.board.transfer(rook.coords, destCoords);
   }
 
-  protected handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = Board.Piece.WHITE_PIECE_INITIALS.QUEEN): void {
+  protected handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN): void {
     if (
       destCoords.y === this.enPassantFile
-      && pawn.coords.x === this.board.Piece.MIDDLE_RANKS[pawn.oppositeColor]
+      && pawn.coords.x === Piece.MIDDLE_RANKS[pawn.oppositeColor]
     ) {
       pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y));
       pawn.board.set(destCoords, pawn);
@@ -175,7 +174,7 @@ export default class Position implements PositionInfo {
       return;
     }
 
-    const piece = (destCoords.y === pawn.board.Piece.START_PAWN_RANKS[pawn.oppositeColor])
+    const piece = (destCoords.y === Piece.START_PAWN_RANKS[pawn.oppositeColor])
       ? pawn.promote(promotionType)
       : pawn;
 
@@ -197,11 +196,11 @@ export default class Position implements PositionInfo {
   protected castle(king: King, destCoords: Coords): void {
     const { board, coords: srcCoords } = king;
     const wing = king.getWing(destCoords.y);
-    const destKingCoords = board.Coords.get(srcCoords.x, board.Piece.CASTLED_KING_FILES[wing]);
+    const destKingCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_KING_FILES[wing]);
     const rookSrcCoords = board.get(destCoords)?.isRook()
       ? destCoords
       : board.Coords.get(destCoords.x, wing);
-    const rookDestCoords = board.Coords.get(srcCoords.x, board.Piece.CASTLED_ROOK_FILES[wing]);
+    const rookDestCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_ROOK_FILES[wing]);
     board
       .transfer(srcCoords, destKingCoords)
       .transfer(rookSrcCoords, rookDestCoords);
@@ -214,7 +213,7 @@ export default class Position implements PositionInfo {
   public getPositionFromMove(
     srcCoords: Coords,
     destCoords: Coords,
-    promotionType: PromotedPieceInitial = Board.Piece.WHITE_PIECE_INITIALS.QUEEN,
+    promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN,
     updateColorAndMoveNumber = false
   ): Position {
     const board = this.board.clone(),
@@ -256,7 +255,7 @@ export default class Position implements PositionInfo {
       (this.enPassantFile === -1)
         ? "-"
         : this.board.Coords.get(
-          this.board.Piece.MIDDLE_RANKS[this.colorToMove] - this.board.Piece.DIRECTIONS[this.colorToMove],
+          Piece.MIDDLE_RANKS[this.colorToMove] - Piece.DIRECTIONS[this.colorToMove],
           this.enPassantFile
         ).notation,
       String(this.halfMoveClock),
