@@ -93,7 +93,10 @@ export default class Position implements PositionInfo {
 
     for (const move of this.pseudoLegalMoves()) {
       const { capturedPiece } = this.tryMove(move[0], move[1]);
-      if (!this.isCheck())
+      // Not using `isCheck` due to piece move.
+      if (!this.board.getCoordsAttackedByColor(this.inactiveColor).has(
+        this.board.kings[this.colorToMove].coords
+      ))
         legalMoves.push(move);
       this.board.transfer(move[1], move[0]);
       capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
@@ -138,9 +141,7 @@ export default class Position implements PositionInfo {
   }
 
   public isCheck(): boolean {
-    return this.board.getCoordsAttackedByColor(this.inactiveColor).has(
-      this.board.kings[this.colorToMove].coords
-    );
+    return this.attackedCoordsSet.has(this.board.kings[this.colorToMove].coords);
   }
 
   protected isTripleRepetition(): boolean {
