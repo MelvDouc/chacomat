@@ -21,14 +21,11 @@ describe("A Chess960 game", () => {
     expect(new Set(castlingRights[Chess960Game.Colors.BLACK]).size).toBe(2);
   });
 
-  // [ ]: fix this
+  // [X]: fix this
   it("should allow castling", () => {
     const game = new Chess960Game({
       fenString: "k7/8/8/8/8/8/8/2R3KR b CH - 0 1"
     }).moveWithNotations("a8", "b8");
-    console.log(
-      [...game.currentPosition.board.kings[Chess960Game.Colors.WHITE].castlingCoords()]
-    );
     const legalMoves = game.currentPosition.legalMovesAsNotation;
 
     expect(legalMoves).toContain("g1-c1");
