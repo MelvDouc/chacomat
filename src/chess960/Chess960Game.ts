@@ -4,7 +4,9 @@ import ChessGame from "@chacomat/game/ChessGame.js";
 import Board from "@chacomat/game/Board.js";
 import Piece from "@chacomat/pieces/index.js";
 import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
-import type { PieceInfo } from "@chacomat/types.js";
+import type {
+  PieceInfo
+} from "@chacomat/types.js";
 
 export default class Chess960Game extends ChessGame {
   protected static override readonly Position = Chess960Position;
@@ -55,6 +57,4 @@ export default class Chess960Game extends ChessGame {
       }
     });
   }
-
-  public override currentPosition: Chess960Position;
 }

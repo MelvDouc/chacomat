@@ -43,7 +43,7 @@ export default class Position implements PositionInfo {
       fullMoveNumber,
     ] = fenString.split(" ");
     const board = new Board(pieceStr);
-    const position = new Position({
+    const position = new this({
       board,
       castlingRights: this.CastlingRights.fromString(castlingStr),
       colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations] as Color,
@@ -236,7 +236,7 @@ export default class Position implements PositionInfo {
     else
       board.transfer(srcCoords, destCoords);
 
-    return new Position({
+    return new (this.constructor as typeof Position)({
       board,
       castlingRights,
       enPassantFile: (isSrcPiecePawn && Math.abs(destCoords.x - srcCoords.x) > 1)

@@ -1,4 +1,5 @@
 import Chess960Game from "@chacomat/chess960/Chess960Game.js";
+import Chess960Position from "@chacomat/chess960/Chess960Position.js";
 
 describe("A Chess960 game", () => {
   it("should detect check", () => {
@@ -26,13 +27,11 @@ describe("A Chess960 game", () => {
       fenString: "k7/pppppppp/8/8/8/8/PPPPPPPP/2R3KR b CH - 0 1"
     }).moveWithNotations("a8", "b8");
     const legalKingMoves = currentPosition.legalMovesAsNotation.filter((x) => x.startsWith("g1"));
-    console.log(
-      "__HERE",
-      legalKingMoves,
-      currentPosition.castlingRights[currentPosition.colorToMove]
-    );
 
+    expect(currentPosition).toBeInstanceOf(Chess960Position);
     expect(currentPosition.isCheck()).toBe(false);
+    expect(currentPosition.castlingRights[currentPosition.colorToMove]).toContain(2);
+    expect(currentPosition.castlingRights[currentPosition.colorToMove]).toContain(7);
     expect(legalKingMoves).toContain("g1-c1");
     expect(legalKingMoves).toContain("g1-h1");
   });

@@ -27,14 +27,14 @@ export default class ChessGame {
     InvalidFenError: InvalidFenError
   };
 
-  public currentPosition: Position;
+  public currentPosition: InstanceType<typeof ChessGame.Position>;
   public readonly metaInfo: Partial<ChessGameMetaInfo>;
 
   constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
-    const { Position } = (this.constructor as typeof ChessGame);
+    const PositionConstructor = (this.constructor as typeof ChessGame).Position;
     this.currentPosition = (positionInfo)
-      ? new Position(positionInfo)
-      : Position.fromFenString(fenString ?? Position.startFenString);
+      ? new PositionConstructor(positionInfo)
+      : PositionConstructor.fromFenString(fenString ?? Position.startFenString);
     this.currentPosition.game = this;
     this.metaInfo = metaInfo ?? {};
   }
