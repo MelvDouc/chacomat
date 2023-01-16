@@ -47,16 +47,13 @@ export default class King extends Piece {
     return true;
   }
 
-  public *castlingCoords(): CoordsGenerator {
-    for (const srcRookY of this.board.position.castlingRights[this.color]) {
-      if (!this.canCastleToFile(srcRookY))
-        continue;
-      // Yield an empty file in regular chess and the castling rook's file in Chess960.
-      const rookCoords = this.board.Coords.get(this.coords.x, srcRookY);
-      yield (this.board.has(rookCoords))
-        ? rookCoords
-        : this.board.Coords.get(this.coords.x, King.CASTLED_KING_FILES[this.getWing(srcRookY)]);
-    }
+  public *castlingCoords(useChess960Rules: boolean): CoordsGenerator {
+    for (const srcRookY of this.board.position.castlingRights[this.color])
+      if (this.canCastleToFile(srcRookY))
+        // Yield an empty file in regular chess and the castling rook's file in Chess960.
+        yield (useChess960Rules)
+          ? this.board.Coords.get(this.coords.x, srcRookY)
+          : this.board.Coords.get(this.coords.x, King.CASTLED_KING_FILES[this.getWing(srcRookY)]);
   }
 
   public getWing(y: number): Wing {

@@ -19,8 +19,9 @@ import type {
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.
  */
 export default class Position implements PositionInfo {
-  public static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  public static readonly startFenString: ChacoMat.FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   public static readonly CastlingRights: typeof CastlingRights = CastlingRights;
+  protected static readonly useChess960Castling: boolean = false;
 
   protected static readonly colorAbbreviations = {
     w: Color.WHITE,
@@ -96,7 +97,7 @@ export default class Position implements PositionInfo {
 
     if (!this.isCheck()) {
       const king = this.board.kings[this.colorToMove];
-      for (const destCoords of king.castlingCoords())
+      for (const destCoords of king.castlingCoords((this.constructor as typeof Position).useChess960Castling))
         legalMoves.push([king.coords, destCoords]);
     }
 

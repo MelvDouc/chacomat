@@ -90,3 +90,9 @@ export interface PieceInfo {
   board?: Board;
   coords?: Coords;
 }
+
+declare global {
+  namespace ChacoMat {
+    type FenString = string;
+  }
+}

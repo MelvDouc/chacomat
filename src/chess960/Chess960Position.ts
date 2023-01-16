@@ -1,13 +1,14 @@
 import Position from "@chacomat/game/Position.js";
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
 import type {
-  Chess960Game
+  Chess960Game,
+  Coords,
+  King
 } from "@chacomat/types.js";
-import Coords from "../game/Coords.js";
-import King from "../pieces/King.js";
 
 export default class Chess960Position extends Position {
   public static override CastlingRights = Chess960CastlingRights;
+  protected static override readonly useChess960Castling = true;
 
   public override readonly castlingRights: Chess960CastlingRights;
   public override game: Chess960Game;

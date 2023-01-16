@@ -1,6 +1,9 @@
 import { Color } from "@chacomat/utils/constants.js";
 import Coords from "@chacomat/game/Coords.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
+import type {
+  ChessFileName
+} from "@chacomat/types.js";
 
 export default class Chess960CastlingRights extends CastlingRights {
   private static readonly allowedFiles = {
@@ -13,7 +16,7 @@ export default class Chess960CastlingRights extends CastlingRights {
     [...str].forEach((char) => {
       for (const color of [Color.WHITE, Color.BLACK])
         if (this.allowedFiles[color].includes(char))
-          castlingRights[color].push(Coords.getFileNameIndex(char));
+          castlingRights[color].push(Coords.getFileNameIndex(char as ChessFileName | Uppercase<ChessFileName>));
     });
     return castlingRights;
   }
