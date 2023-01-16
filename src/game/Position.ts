@@ -131,7 +131,7 @@ export default class Position implements PositionInfo {
   public get status(): GameStatus {
     if (!this.legalMoves.length)
       return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
-    if (this.board.size < 3)
+    if (this.isInsufficientMaterial())
       return GameStatus.INSUFFICIENT_MATERIAL;
     if (this.halfMoveClock > 50)
       return GameStatus.FIFTY_MOVE_DRAW;
@@ -142,6 +142,22 @@ export default class Position implements PositionInfo {
 
   public isCheck(): boolean {
     return this.attackedCoordsSet.has(this.board.kings[this.colorToMove].coords);
+  }
+
+  protected isInsufficientMaterial(): boolean {
+    const pieces = this.board.getPiecesByColor();
+
+    if (pieces[Color.WHITE].length > 1 || pieces[Color.BLACK].length > 1)
+      return false;
+
+    const [whitePiece] = pieces[Color.WHITE];
+    const [blackPiece] = pieces[Color.BLACK];
+    return (!whitePiece || whitePiece.isKnight() || whitePiece.isBishop())
+      && (
+        !blackPiece
+        || blackPiece.isKnight()
+        || blackPiece.isBishop() && blackPiece.squareParity === whitePiece?.squareParity
+      );
   }
 
   protected isTripleRepetition(): boolean {

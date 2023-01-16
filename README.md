@@ -29,8 +29,6 @@ const spanishGame = new ChessGame({
     blackPlayer: "Ian Nepomniachtchi"
   }
 });
-
-spanishGame.logBoard();
 ```
 
 ## Print board to console

@@ -124,6 +124,14 @@ export default abstract class Piece {
     return this.whiteInitial === WhitePieceInitial.ROOK;
   }
 
+  public isBishop(): this is Bishop {
+    return this.whiteInitial === WhitePieceInitial.BISHOP;
+  }
+
+  public isKnight(): this is Bishop {
+    return this.whiteInitial === WhitePieceInitial.KNIGHT;
+  }
+
   public isPawn(): this is Pawn {
     return this.whiteInitial === WhitePieceInitial.PAWN;
   }

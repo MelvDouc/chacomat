@@ -77,6 +77,17 @@ export default class Board extends Map<Coords, Piece> {
     return boardClone;
   }
 
+  public getPiecesByColor(): BlackAndWhite<Exclude<Piece, King>[]> {
+    return [...this.values()].reduce((acc, piece) => {
+      if (!piece.isKing())
+        acc[piece.color].push(piece);
+      return acc;
+    }, {
+      [Color.WHITE]: [] as Exclude<Piece, King>[],
+      [Color.BLACK]: [] as Exclude<Piece, King>[],
+    });
+  }
+
   /**
    * Get an bidimensional array representing the placement of each piece.
    * Empty squares are null.
