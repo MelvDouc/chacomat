@@ -13,7 +13,7 @@ export type {
 export type FenString = string;
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
 export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
-export type PromotedPieceInitial = Exclude<WhitePieceInitial, "K" | "P">;
+export type PromotedPieceInitial = "Q" | "R" | "B" | "N";
 export type ChessFileName = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
 export type ChessRankName = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 export type AlgebraicSquareNotation = `${ChessFileName}${ChessRankName}`;

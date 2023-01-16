@@ -6,7 +6,8 @@ import type {
   PieceInfo,
   PromotedPieceInitial,
   Queen,
-  Rook
+  Rook,
+  WhitePieceInitial
 } from "@chacomat/types.js";
 
 export default class Pawn extends Piece {
@@ -59,7 +60,7 @@ export default class Pawn extends Piece {
   }
 
   public promote(type: PromotedPieceInitial): Queen | Rook | Bishop | Knight {
-    return Reflect.construct(Piece.constructors.get(type)!, [{
+    return Reflect.construct(Piece.constructors.get(type as WhitePieceInitial)!, [{
       color: this.color,
       board: this.board
     } as PieceInfo]);

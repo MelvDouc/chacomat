@@ -1,4 +1,6 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
+import Coords from "@chacomat/game/Coords.js";
+import Pawn from "@chacomat/pieces/index.js";
 
 describe("Fool's Mate", () => {
   const game = new ChessGame();
@@ -29,13 +31,38 @@ describe("en passant", () => {
   it("#2", () => {
     expect(game1.currentPosition.legalMovesAsNotation).toContain(`d5-e6`);
   });
+
+  it("the 'ep' pawn should be removed", () => {
+    const game = new ChessGame()
+      .moveWithNotations("e2", "e4")
+      .moveWithNotations("e7", "e5")
+      .moveWithNotations("d2", "d4")
+      .moveWithNotations("e5", "d4")
+      .moveWithNotations("c2", "c4")
+      .moveWithNotations("d4", "c3");
+
+    game.logBoard();
+    expect(game.currentPosition.board.get(Coords.fromNotation("c4")!)).toBeFalsy();
+    expect(game.currentPosition.board.get(Coords.fromNotation("d4")!)).toBeFalsy();
+    expect(game.currentPosition.board.get(Coords.fromNotation("c3")!)).toBeInstanceOf(Pawn);
+  });
 });
 
 describe("Stalemate", () => {
-  it("should occur in this position", () => {
+  it("should occur in this composition", () => {
     const game = new ChessGame({
       fenString: "5bnr/4p1pq/4Qpkr/7p/7P/4P3/PPPP1PP1/RNB1KBNR b KQ - 2 10"
     });
+
+    expect(game.status).toBe(ChessGame.Statuses.STALEMATE);
+  });
+
+  it("should be possible after a promotion", () => {
+    const game = new ChessGame({
+      fenString: "8/k1P5/2K5/8/8/8/8/8 w - - 0 1"
+    });
+
+    game.moveWithNotations("c7", "c8", "Q");
 
     expect(game.status).toBe(ChessGame.Statuses.STALEMATE);
   });

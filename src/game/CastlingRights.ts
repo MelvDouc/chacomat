@@ -69,7 +69,6 @@ export default class CastlingRights {
         str += CastlingRights.initials[color][Wing.QUEEN_SIDE];
     }
 
-
     return str || CastlingRights.nullCastlingRightsChar;
   }
 }

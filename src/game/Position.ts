@@ -148,16 +148,9 @@ export default class Position implements PositionInfo {
 
     const legalMoves: Move[] = [];
 
-    for (const move of this.pseudoLegalMoves()) {
-      const { capturedPiece } = this.tryMove(move[0], move[1]);
-      // Not using `isCheck` due to piece move.
-      if (!this.board.getCoordsAttackedByColor(this.inactiveColor).has(
-        this.board.kings[this.colorToMove].coords
-      ))
+    for (const move of this.pseudoLegalMoves())
+      if (!this.tryMoveForCheck(move[0], move[1]).isCheck)
         legalMoves.push(move);
-      this.board.transfer(move[1], move[0]);
-      capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
-    }
 
     if (!this.isCheck()) {
       const king = this.board.kings[this.colorToMove];
@@ -202,8 +195,7 @@ export default class Position implements PositionInfo {
   protected handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN): void {
     if (this.isEnPassantCapture(pawn.coords, destCoords)) {
       pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y));
-      pawn.board.set(destCoords, pawn);
-      pawn.coords = destCoords;
+      pawn.board.transfer(pawn.coords, destCoords);
       return;
     }
 
@@ -257,8 +249,8 @@ export default class Position implements PositionInfo {
    * [ ] Handle promotion
    * [ ] Handle castling
    */
-  public tryMove(srcCoords: Coords, destCoords: Coords): {
-    capturedPiece: Piece | undefined;
+  public tryMoveForCheck(srcCoords: Coords, destCoords: Coords): {
+    isCheck: boolean;
   } {
     const capturedPiece = (
       (this.board.get(srcCoords) as Piece).isPawn()
@@ -269,9 +261,14 @@ export default class Position implements PositionInfo {
     capturedPiece && this.board.delete(capturedPiece.coords);
     this.board.transfer(srcCoords, destCoords);
 
-    return {
-      capturedPiece
-    };
+    const isCheck = this.board.getCoordsAttackedByColor(this.inactiveColor).has(
+      this.board.kings[this.colorToMove].coords
+    );
+
+    this.board.transfer(destCoords, srcCoords);
+    capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
+
+    return { isCheck };
   }
 
   /**
