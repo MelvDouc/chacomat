@@ -38,8 +38,7 @@ export default class Pawn extends Piece {
     for (const destCoords of this.attackedCoords())
       if (
         this.board.get(destCoords)?.color === this.oppositeColor
-        || destCoords.y === this.board.position.enPassantFile
-        && this.coords.x === Piece.MIDDLE_RANKS[this.oppositeColor]
+        || this.board.position.isEnPassantCapture(this.coords, destCoords)
       )
         yield destCoords;
   }

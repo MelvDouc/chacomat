@@ -57,13 +57,6 @@ export default class Position implements PositionInfo {
     return position;
   }
 
-  /**
-   * A different method is used in Chess960 to determine if a move is castling.
-   */
-  protected static isCastling(king: King, destCoords: Coords): boolean {
-    return Math.abs(destCoords.y - king.coords.y) === 2;
-  }
-
   public readonly board: Board;
   public readonly castlingRights: CastlingRights;
   public readonly colorToMove: Color;
@@ -81,49 +74,23 @@ export default class Position implements PositionInfo {
     this.board.position = this;
   }
 
+  // ===== ===== ===== ===== =====
+  // STATE
+  // ===== ===== ===== ===== =====
+
   public get inactiveColor(): Color {
     return (this.colorToMove === Color.WHITE) ? Color.BLACK : Color.WHITE;
   }
 
-  public get legalMoves(): Move[] {
-    if (this.#legalMoves)
-      return this.#legalMoves;
-
-    const legalMoves: Move[] = [];
-
-    for (const move of this.pseudoLegalMoves()) {
-      const { capturedPiece } = this.tryMove(move[0], move[1]);
-      // Not using `isCheck` due to piece move.
-      if (!this.board.getCoordsAttackedByColor(this.inactiveColor).has(
-        this.board.kings[this.colorToMove].coords
-      ))
-        legalMoves.push(move);
-      this.board.transfer(move[1], move[0]);
-      capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
-    }
-
-    if (!this.isCheck()) {
-      const king = this.board.kings[this.colorToMove];
-      for (const destCoords of king.castlingCoords((this.constructor as typeof Position).useChess960Castling))
-        legalMoves.push([king.coords, destCoords]);
-    }
-
-    return (this.#legalMoves = legalMoves);
-  }
-
-  /**
-   * @returns A human-readable array of moves as strings following the pattern `e2-e4`.
-   */
-  public get legalMovesAsNotation(): string[] {
-    return this.legalMoves.map(([srcCoords, destCoords]) => {
-      return `${srcCoords.notation}-${destCoords.notation}`;
-    });
-  }
 
   public get attackedCoordsSet(): Set<Coords> {
     this.#attackedCoordsSet ??= this.board.getCoordsAttackedByColor(this.inactiveColor);
     return this.#attackedCoordsSet;
   }
+
+  // ===== ===== ===== ===== =====
+  // STATUS
+  // ===== ===== ===== ===== =====
 
   /**
    * Determine whether the position is active, checkmate or a draw and what kind of draw.
@@ -171,6 +138,45 @@ export default class Position implements PositionInfo {
     return repetitionCount === 3;
   }
 
+  // ===== ===== ===== ===== =====
+  // LEGAL MOVES
+  // ===== ===== ===== ===== =====
+
+  public get legalMoves(): Move[] {
+    if (this.#legalMoves)
+      return this.#legalMoves;
+
+    const legalMoves: Move[] = [];
+
+    for (const move of this.pseudoLegalMoves()) {
+      const { capturedPiece } = this.tryMove(move[0], move[1]);
+      // Not using `isCheck` due to piece move.
+      if (!this.board.getCoordsAttackedByColor(this.inactiveColor).has(
+        this.board.kings[this.colorToMove].coords
+      ))
+        legalMoves.push(move);
+      this.board.transfer(move[1], move[0]);
+      capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
+    }
+
+    if (!this.isCheck()) {
+      const king = this.board.kings[this.colorToMove];
+      for (const destCoords of king.castlingCoords((this.constructor as typeof Position).useChess960Castling))
+        legalMoves.push([king.coords, destCoords]);
+    }
+
+    return (this.#legalMoves = legalMoves);
+  }
+
+  /**
+   * @returns A human-readable array of moves as strings following the pattern `e2-e4`.
+   */
+  public get legalMovesAsNotation(): string[] {
+    return this.legalMoves.map(([srcCoords, destCoords]) => {
+      return `${srcCoords.notation}-${destCoords.notation}`;
+    });
+  }
+
   /**
    * Generates the moves that could be played without regard for whether it puts the current player in check.
    */
@@ -182,6 +188,10 @@ export default class Position implements PositionInfo {
         for (const destCoords of piece.pseudoLegalMoves())
           yield [srcCoords, destCoords];
   }
+
+  // ===== ===== ===== ===== =====
+  // PIECE MOVES
+  // ===== ===== ===== ===== =====
 
   protected handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
     if (rook.isOnInitialSquare())
@@ -205,15 +215,15 @@ export default class Position implements PositionInfo {
     piece.coords = destCoords;
   }
 
-  protected isEnPassantCapture(srcCoords: Coords, destCoords: Coords): boolean {
-    return destCoords.x === this.enPassantFile
+  public isEnPassantCapture(srcCoords: Coords, destCoords: Coords): boolean {
+    return destCoords.y === this.enPassantFile
       && srcCoords.x === Piece.MIDDLE_RANKS[this.inactiveColor];
   }
 
   protected handleKingMove(king: King, destCoords: Coords, castlingRights: CastlingRights): void {
     castlingRights[king.color].length = 0;
 
-    if (!(this.constructor as typeof Position).isCastling(king, destCoords)) {
+    if (!this.isCastling(king, destCoords)) {
       king.board.transfer(king.coords, destCoords);
       return;
     }
@@ -233,6 +243,13 @@ export default class Position implements PositionInfo {
     board
       .transfer(srcCoords, destKingCoords)
       .transfer(rookSrcCoords, rookDestCoords);
+  }
+
+  /**
+   * A different method is used in Chess960 to determine if a move is castling.
+   */
+  protected isCastling(king: King, destCoords: Coords): boolean {
+    return Math.abs(destCoords.y - king.coords.y) === 2;
   }
 
   /**
@@ -297,6 +314,10 @@ export default class Position implements PositionInfo {
       fullMoveNumber: this.fullMoveNumber + Number(updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
     });
   }
+
+  // ===== ===== ===== ===== =====
+  // MISC
+  // ===== ===== ===== ===== =====
 
   public toString(): FenString {
     return [

@@ -13,8 +13,8 @@ export default class Chess960Position extends Position {
   public override readonly castlingRights: Chess960CastlingRights;
   public override game: Chess960Game;
 
-  protected static override isCastling(king: King, destCoords: Coords): boolean {
-    return !!king.board.get(destCoords)?.isRook()
-      && king.board.get(destCoords)!.color === king.color;
+  protected override isCastling(king: King, destCoords: Coords): boolean {
+    return !!this.board.get(destCoords)?.isRook()
+      && this.board.get(destCoords)!.color === king.color;
   }
 }
