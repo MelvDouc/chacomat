@@ -14,9 +14,10 @@ export default class Chess960CastlingRights extends CastlingRights {
   public static override fromString(str: string): Chess960CastlingRights {
     const castlingRights = new Chess960CastlingRights();
     [...str].forEach((char) => {
-      for (const color of [Color.WHITE, Color.BLACK])
-        if (this.allowedFiles[color].includes(char))
-          castlingRights[color].push(Coords.getFileNameIndex(char as ChessFileName | Uppercase<ChessFileName>));
+      if (this.allowedFiles[Color.WHITE].includes(char))
+        castlingRights[Color.WHITE].push(Coords.getFileNameIndex(char as Uppercase<ChessFileName>));
+      if (this.allowedFiles[Color.BLACK].includes(char))
+        castlingRights[Color.BLACK].push(Coords.getFileNameIndex(char as ChessFileName));
     });
     return castlingRights;
   }

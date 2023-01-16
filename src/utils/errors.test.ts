@@ -12,11 +12,14 @@ describe("InactiveGameError", () => {
   it("should be thrown after checkmate", () => {
     const game = new ChessGame();
     game
-      .moveWithNotations("f2", "f3")
-      .moveWithNotations("e7", "e6")
-      .moveWithNotations("g2", "g4")
-      .moveWithNotations("d8", "h4");
+      .moveWithNotations("e2", "e4")
+      .moveWithNotations("e7", "e5")
+      .moveWithNotations("d1", "h5")
+      .moveWithNotations("b8", "c6")
+      .moveWithNotations("f1", "c4")
+      .moveWithNotations("g8", "f6")
+      .moveWithNotations("h5", "f7");
 
-    expect(() => game.moveWithNotations("e1", "f2")).toThrow(ChessGame.errors.InactiveGameError);
+    expect(() => game.moveWithNotations("c6", "d4")).toThrow(ChessGame.errors.InactiveGameError);
   });
 });

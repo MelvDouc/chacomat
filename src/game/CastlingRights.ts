@@ -32,10 +32,13 @@ export default class CastlingRights {
     const castlingRights = new CastlingRights();
     let colorKey: keyof typeof Color;
 
-    for (colorKey in Color)
-      for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
-        if (str.includes(this.initials[Color[colorKey]][wing]))
-          castlingRights[Color[colorKey]].push(wing);
+    for (colorKey in Color) {
+      const color = Color[colorKey];
+      if (str.includes(this.initials[color][Wing.QUEEN_SIDE]))
+        castlingRights[Color[colorKey]].push(Wing.QUEEN_SIDE);
+      if (str.includes(this.initials[color][Wing.KING_SIDE]))
+        castlingRights[Color[colorKey]].push(Wing.KING_SIDE);
+    }
 
     return castlingRights;
   }
@@ -58,10 +61,14 @@ export default class CastlingRights {
     let str = "";
     let colorKey: keyof typeof Color;
 
-    for (colorKey in Color)
-      for (const wing of [Wing.KING_SIDE, Wing.QUEEN_SIDE])
-        if (this[Color[colorKey]].includes(wing))
-          str += CastlingRights.initials[Color[colorKey]][wing];
+    for (colorKey in Color) {
+      const color = Color[colorKey];
+      if (this[color].includes(Wing.KING_SIDE))
+        str += CastlingRights.initials[color][Wing.KING_SIDE];
+      if (this[color].includes(Wing.QUEEN_SIDE))
+        str += CastlingRights.initials[color][Wing.QUEEN_SIDE];
+    }
+
 
     return str || CastlingRights.nullCastlingRightsChar;
   }
