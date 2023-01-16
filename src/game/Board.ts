@@ -1,5 +1,5 @@
 import Coords from "@chacomat/game/Coords.js";
-import { Color } from "@chacomat/utils/constants.js";
+import { Color, ConsoleColors } from "@chacomat/utils/constants.js";
 import Piece from "@chacomat/pieces/index.js";
 import type {
   BlackAndWhite,
@@ -70,9 +70,10 @@ export default class Board extends Map<Coords, Piece> {
       const pieceClone = piece.clone();
       pieceClone.board = boardClone;
       boardClone.set(coords, pieceClone);
-      if (pieceClone.isKing())
-        boardClone.kings[piece.color] = pieceClone;
     }
+    let colorKey: keyof typeof Color;
+    for (colorKey in Color)
+      boardClone.kings[Color[colorKey]] = boardClone.get(this.kings[Color[colorKey]].coords) as King;
     return boardClone;
   }
 
@@ -86,6 +87,22 @@ export default class Board extends Map<Coords, Piece> {
         return this.get(Coords.get(x, y)) ?? null;
       });
     });
+  }
+
+  public log(): void {
+    console.log(
+      Array
+        .from({ length: 8 }, (_, x) => {
+          let row = "";
+          for (let y = 0; y < 8; y++) {
+            const char = this.get(this.Coords.get(x, y))?.initial ?? " ";
+            const bgColor = (x % 2 === y % 2) ? ConsoleColors.BgWhite : ConsoleColors.BgGreen;
+            row += `${bgColor + ConsoleColors.FgBlack} ${char} ${ConsoleColors.Reset}`;
+          }
+          return row;
+        })
+        .join("\n")
+    );
   }
 
   /**

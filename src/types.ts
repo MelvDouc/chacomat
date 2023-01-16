@@ -19,14 +19,12 @@ export type ChessRankName = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 export type AlgebraicSquareNotation = `${ChessFileName}${ChessRankName}`;
 
 export type ChessGame = import("./game/ChessGame.js").default;
-export type Chess960Game = import("./chess960/Chess960Game.js").default;
-
 export type Position = import("./game/Position.js").default;
-export type Chess960Position = import("./chess960/Chess960Position.js").default;
-
 export type Board = import("./game/Board.js").default;
-
 export type CastlingRights = import("./game/CastlingRights.js").default;
+
+export type Chess960Game = import("./chess960/Chess960Game.js").default;
+export type Chess960Position = import("./chess960/Chess960Position.js").default;
 export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.js").default;
 
 export type Coords = import("./game/Coords.js").default;
@@ -89,10 +87,4 @@ export interface PieceInfo {
   color: Color;
   board?: Board;
   coords?: Coords;
-}
-
-declare global {
-  namespace ChacoMat {
-    type FenString = string;
-  }
 }

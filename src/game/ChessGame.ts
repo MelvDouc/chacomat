@@ -1,12 +1,9 @@
 import Coords from "@chacomat/game/Coords.js";
 import Position from "@chacomat/game/Position.js";
 import { Color, GameStatus, Wing } from "@chacomat/utils/constants.js";
-import { getChess960FenString } from "@chacomat/utils/fischer-random.js";
-import { viewBoard } from "@chacomat/utils/log.js";
 import {
   IllegalMoveError,
   InactiveGameError,
-  InvalidCoordsError,
   InvalidFenError
 } from "@chacomat/utils/errors.js";
 import type {
@@ -24,10 +21,11 @@ export default class ChessGame {
   public static readonly Wings = Wing;
   public static readonly Statuses = GameStatus;
   protected static readonly Position = Position;
-  public static readonly IllegalMoveError = IllegalMoveError;
-  public static readonly InactiveGameError = InactiveGameError;
-  public static readonly InvalidCoordsError = InvalidCoordsError;
-  public static readonly InvalidFenError = InvalidFenError;
+  public static readonly errors = {
+    IllegalMoveError: IllegalMoveError,
+    InactiveGameError: InactiveGameError,
+    InvalidFenError: InvalidFenError
+  };
 
   public currentPosition: Position;
   public readonly metaInfo: Partial<ChessGameMetaInfo>;
@@ -58,13 +56,7 @@ export default class ChessGame {
     promotionType?: PromotedPieceInitial
   ): this {
     if (this.currentPosition.status !== GameStatus.ACTIVE)
-      throw new ChessGame.InactiveGameError(this.currentPosition.status);
-
-    if (!Coords.isValidCoords(srcCoords))
-      throw new ChessGame.InvalidCoordsError(srcCoords);
-
-    if (!Coords.isValidCoords(destCoords))
-      throw new ChessGame.InvalidCoordsError(destCoords);
+      throw new ChessGame.errors.InactiveGameError(this.currentPosition.status);
 
     if (!this.currentPosition.legalMoves.some(([src, dest]) =>
       src.x === srcCoords.x
@@ -72,7 +64,7 @@ export default class ChessGame {
       && dest.x === destCoords.x
       && dest.y === destCoords.y
     ))
-      throw new ChessGame.IllegalMoveError(srcCoords, destCoords);
+      throw new ChessGame.errors.IllegalMoveError(srcCoords, destCoords);
 
     const nextPosition = this.currentPosition.getPositionFromMove(
       Coords.get(srcCoords.x, srcCoords.y),
@@ -111,6 +103,6 @@ export default class ChessGame {
    * Pretty print this game's current board to the console.
    */
   public logBoard(): void {
-    viewBoard(this.currentPosition.board);
+    this.currentPosition.board.log();
   }
 }

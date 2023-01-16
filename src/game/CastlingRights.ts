@@ -30,11 +30,12 @@ export default class CastlingRights {
    */
   public static fromString(str: string): CastlingRights {
     const castlingRights = new CastlingRights();
+    let colorKey: keyof typeof Color;
 
-    for (const color of [Color.WHITE, Color.BLACK])
+    for (colorKey in Color)
       for (const wing of [Wing.QUEEN_SIDE, Wing.KING_SIDE])
-        if (str.includes(this.initials[color][wing]))
-          castlingRights[color].push(wing);
+        if (str.includes(this.initials[Color[colorKey]][wing]))
+          castlingRights[Color[colorKey]].push(wing);
 
     return castlingRights;
   }
@@ -55,11 +56,12 @@ export default class CastlingRights {
 
   public toString(): string {
     let str = "";
+    let colorKey: keyof typeof Color;
 
-    for (const color of [Color.WHITE, Color.BLACK])
+    for (colorKey in Color)
       for (const wing of [Wing.KING_SIDE, Wing.QUEEN_SIDE])
-        if (this[color].includes(wing))
-          str += CastlingRights.initials[color][wing];
+        if (this[Color[colorKey]].includes(wing))
+          str += CastlingRights.initials[Color[colorKey]][wing];
 
     return str || CastlingRights.nullCastlingRightsChar;
   }

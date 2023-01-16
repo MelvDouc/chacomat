@@ -1,6 +1,6 @@
 import { WhitePieceInitial } from "@chacomat/utils/constants.js";
-import { FenString } from "@chacomat/types.js";
 import Coords from "@chacomat/game/Coords.js";
+import { FenString } from "@chacomat/types.js";
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;

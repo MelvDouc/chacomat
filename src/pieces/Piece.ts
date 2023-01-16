@@ -77,18 +77,14 @@ export default abstract class Piece {
     coords && (this.coords = coords);
   }
 
-  protected get self(): typeof Piece {
-    return this.constructor as typeof Piece;
-  }
-
   public get whiteInitial(): WhitePieceInitial {
-    return this.self.WHITE_INITIAL;
+    return (this.constructor as typeof Piece).WHITE_INITIAL;
   }
 
   public get initial(): PieceInitial {
     return (this.color === Color.WHITE)
-      ? this.self.WHITE_INITIAL
-      : this.self.WHITE_INITIAL.toLowerCase() as BlackPieceInitial;
+      ? (this.constructor as typeof Piece).WHITE_INITIAL
+      : (this.constructor as typeof Piece).WHITE_INITIAL.toLowerCase() as BlackPieceInitial;
   }
 
   public get oppositeColor(): Color {
@@ -96,8 +92,11 @@ export default abstract class Piece {
   }
 
   public *attackedCoords(): CoordsGenerator {
-    for (let i = 0; i < this.self.OFFSETS.x.length; i++) {
-      const destCoords = this.coords.getPeer(this.self.OFFSETS.x[i], this.self.OFFSETS.y[i]);
+    for (let i = 0; i < (this.constructor as typeof Piece).OFFSETS.x.length; i++) {
+      const destCoords = this.coords.getPeer(
+        (this.constructor as typeof Piece).OFFSETS.x[i],
+        (this.constructor as typeof Piece).OFFSETS.y[i]
+      );
       if (destCoords)
         yield destCoords;
     }
@@ -117,10 +116,15 @@ export default abstract class Piece {
     } as PieceInfo]);
   }
 
-  public isKing(): this is King { return this.whiteInitial === WhitePieceInitial.KING; }
-  public isQueen(): this is Queen { return this.whiteInitial === WhitePieceInitial.QUEEN; }
-  public isRook(): this is Rook { return this.whiteInitial === WhitePieceInitial.ROOK; }
-  public isBishop(): this is Bishop { return this.whiteInitial === WhitePieceInitial.BISHOP; }
-  public isKnight(): this is Knight { return this.whiteInitial === WhitePieceInitial.KNIGHT; }
-  public isPawn(): this is Pawn { return this.whiteInitial === WhitePieceInitial.PAWN; }
+  public isKing(): this is King {
+    return this.whiteInitial === WhitePieceInitial.KING;
+  }
+
+  public isRook(): this is Rook {
+    return this.whiteInitial === WhitePieceInitial.ROOK;
+  }
+
+  public isPawn(): this is Pawn {
+    return this.whiteInitial === WhitePieceInitial.PAWN;
+  }
 }

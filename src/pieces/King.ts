@@ -22,9 +22,10 @@ export default class King extends Piece {
     if (kingDirection !== 0) {
       for (let y = Y + kingDirection; ; y += kingDirection) {
         const destCoords = this.board.Coords.get(X, y);
-        if (this.board.position.attackedCoordsSet.has(destCoords))
-          return false;
-        if (destCoords !== rookCoords && this.board.has(destCoords))
+        if (
+          this.board.position.attackedCoordsSet.has(destCoords)
+          || destCoords !== rookCoords && this.board.has(destCoords)
+        )
           return false;
         if (y === King.CASTLED_KING_FILES[wing])
           break;
