@@ -77,15 +77,18 @@ export default abstract class Piece {
     coords && (this.coords = coords);
   }
 
+  protected get self(): typeof Piece {
+    return this.constructor as typeof Piece;
+  }
+
   public get whiteInitial(): WhitePieceInitial {
-    return (this.constructor as typeof Piece).WHITE_INITIAL;
+    return this.self.WHITE_INITIAL;
   }
 
   public get initial(): PieceInitial {
-    const { WHITE_INITIAL } = this.constructor as typeof Piece;
     return (this.color === Color.WHITE)
-      ? WHITE_INITIAL
-      : WHITE_INITIAL.toLowerCase() as BlackPieceInitial;
+      ? this.self.WHITE_INITIAL
+      : this.self.WHITE_INITIAL.toLowerCase() as BlackPieceInitial;
   }
 
   public get oppositeColor(): Color {
@@ -93,10 +96,8 @@ export default abstract class Piece {
   }
 
   public *attackedCoords(): CoordsGenerator {
-    const { x: xOffsets, y: yOffsets } = (this.constructor as typeof Piece).OFFSETS;
-
-    for (let i = 0; i < xOffsets.length; i++) {
-      const destCoords = this.coords.getPeer(xOffsets[i], yOffsets[i]);
+    for (let i = 0; i < this.self.OFFSETS.x.length; i++) {
+      const destCoords = this.coords.getPeer(this.self.OFFSETS.x[i], this.self.OFFSETS.y[i]);
       if (destCoords)
         yield destCoords;
     }

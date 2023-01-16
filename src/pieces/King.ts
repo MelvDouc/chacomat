@@ -10,9 +10,10 @@ export default class King extends Piece {
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
    */
-  protected canCastleToWing(wing: Wing): boolean {
+  protected canCastleToFile(srcRookY: number): boolean {
     const { x: X, y: Y } = this.coords;
-    const rookCoords = this.board.Coords.get(X, wing);
+    const wing = this.getWing(srcRookY);
+    const rookCoords = this.board.Coords.get(X, srcRookY);
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
@@ -44,11 +45,12 @@ export default class King extends Piece {
   }
 
   public *castlingCoords(): CoordsGenerator {
-    for (const srcRookY of this.board.position.castlingRights[this.color]) {
-      const wing = (srcRookY < this.coords.y) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
-      if (this.canCastleToWing(wing))
-        yield this.board.Coords.get(this.coords.x, King.CASTLED_KING_FILES[wing]);
-    }
+    for (const srcRookY of this.board.position.castlingRights[this.color])
+      if (this.canCastleToFile(srcRookY))
+        yield this.board.Coords.get(
+          this.coords.x,
+          King.CASTLED_KING_FILES[this.getWing(srcRookY)]
+        );
   }
 
   public getWing(y: number): Wing {

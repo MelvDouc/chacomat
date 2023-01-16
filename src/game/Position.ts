@@ -64,18 +64,17 @@ export default class Position implements PositionInfo {
     return Math.abs(destCoords.y - king.coords.y) === 2;
   }
 
-
   public readonly board: Board;
   public readonly castlingRights: CastlingRights;
   public readonly colorToMove: Color;
   public readonly enPassantFile: number;
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
-  private _legalMoves: Move[];
-  private _attackedCoordsSet: Set<Coords>;
   public prev: Position | null = null;
   public next: Position[] = [];
   public game: ChessGame;
+  #legalMoves: Move[];
+  #attackedCoordsSet: Set<Coords>;
 
   constructor(positionInfo: PositionInfo) {
     Object.assign(this, positionInfo);
@@ -87,8 +86,8 @@ export default class Position implements PositionInfo {
   }
 
   public get legalMoves(): Move[] {
-    if (this._legalMoves)
-      return this._legalMoves;
+    if (this.#legalMoves)
+      return this.#legalMoves;
 
     const legalMoves: Move[] = [];
 
@@ -102,7 +101,7 @@ export default class Position implements PositionInfo {
         legalMoves.push([king.coords, destCoords]);
     }
 
-    return (this._legalMoves = legalMoves);
+    return (this.#legalMoves = legalMoves);
   }
 
   /**
@@ -115,8 +114,8 @@ export default class Position implements PositionInfo {
   }
 
   public get attackedCoordsSet(): Set<Coords> {
-    this._attackedCoordsSet ??= this.board.getCoordsAttackedByColor(this.inactiveColor);
-    return this._attackedCoordsSet;
+    this.#attackedCoordsSet ??= this.board.getCoordsAttackedByColor(this.inactiveColor);
+    return this.#attackedCoordsSet;
   }
 
   /**
@@ -185,8 +184,7 @@ export default class Position implements PositionInfo {
   }
 
   protected handleKingMove(king: King, destCoords: Coords, castlingRights: CastlingRights): void {
-    castlingRights.unset(king.color, Wing.QUEEN_SIDE);
-    castlingRights.unset(king.color, Wing.KING_SIDE);
+    castlingRights[king.color].length = 0;
 
     if ((this.constructor as typeof Position).isCastling(king, destCoords)) {
       this.castle(king, destCoords);
@@ -246,9 +244,7 @@ export default class Position implements PositionInfo {
         : -1,
       colorToMove: (updateColorAndMoveNumber) ? this.inactiveColor : this.colorToMove,
       halfMoveClock: (isCaptureOrPawnMove) ? 0 : this.halfMoveClock + 1,
-      fullMoveNumber: (updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
-        ? this.fullMoveNumber + 1
-        : this.fullMoveNumber
+      fullMoveNumber: this.fullMoveNumber + Number(updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
     });
   }
 
