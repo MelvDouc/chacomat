@@ -1,7 +1,7 @@
 {
   "name": "chacomat",
   "version": "1.0.0",
-  "description": "A TypeScript chess game.",
+  "description": "An environment-independent chess game.",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
