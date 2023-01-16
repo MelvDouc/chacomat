@@ -16,7 +16,7 @@ describe("A Chess960 game", () => {
   });
 
   it("should have correct castling rights", () => {
-    const { castlingRights } = Chess960Game.getRandomGame().currentPosition;
+    const { castlingRights } = Chess960Game.getRandomStartPosition().currentPosition;
 
     expect(new Set(castlingRights[Chess960Game.Colors.WHITE]).size).toBe(2);
     expect(new Set(castlingRights[Chess960Game.Colors.BLACK]).size).toBe(2);

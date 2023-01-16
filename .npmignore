@@ -7,5 +7,5 @@ test
 
 .gitignore
 tsconfig.json
-jest.config.js
+jest.config.*
 todo.md

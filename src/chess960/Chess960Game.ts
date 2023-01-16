@@ -11,7 +11,7 @@ import type {
 export default class Chess960Game extends ChessGame {
   protected static override readonly Position = Chess960Position;
 
-  public static getRandomGame(): Chess960Game {
+  public static getRandomStartPosition(): Chess960Game {
     const piecePlacement = getChess960PiecePlacement();
     const board = new Board();
     const castlingRights = new Chess960CastlingRights();
