@@ -5,6 +5,7 @@ dist/**/*.test.*
 src
 test
 
+.gitignore
 tsconfig.json
 jest.config.js
-.gitignore
+todo.md
