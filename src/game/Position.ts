@@ -1,7 +1,9 @@
-import { Color, GameStatus } from "@chacomat/utils/constants.js";
 import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import Piece from "@chacomat/pieces/Piece.js";
+import { Color, GameStatus } from "@chacomat/utils/constants.js";
+import fenChecker from "@chacomat/utils/fen-checker.js";
+import { InvalidFenError } from "@chacomat/utils/errors.js";
 import type {
   AlgebraicSquareNotation,
   ChessGame,
@@ -31,6 +33,9 @@ export default class Position implements PositionInfo {
    * Create a new position using only an FEN string.
    */
   public static fromFenString(fenString: FenString): Position {
+    if (!fenChecker.isValidFenString(fenString))
+      throw new InvalidFenError(fenString);
+
     const [
       pieceStr,
       color,
