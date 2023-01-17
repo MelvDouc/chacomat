@@ -1,6 +1,7 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Coords from "@chacomat/game/Coords.js";
 import Pawn from "@chacomat/pieces/index.js";
+import { GameStatus } from "@chacomat/utils/constants.js";
 
 describe("Fool's Mate", () => {
   const game = new ChessGame();
@@ -13,7 +14,7 @@ describe("Fool's Mate", () => {
     expect(game.currentPosition.isCheck()).toBe(true);
   });
   it("should be checkmate", () => {
-    expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
+    expect(game.currentPosition.status).toBe(GameStatus.CHECKMATE);
   });
 });
 
@@ -54,7 +55,7 @@ describe("Stalemate", () => {
       fenString: "5bnr/4p1pq/4Qpkr/7p/7P/4P3/PPPP1PP1/RNB1KBNR b KQ - 2 10"
     });
 
-    expect(game.status).toBe(ChessGame.Statuses.STALEMATE);
+    expect(game.status).toBe(GameStatus.STALEMATE);
   });
 
   it("should be possible after a promotion", () => {
@@ -64,7 +65,7 @@ describe("Stalemate", () => {
 
     game.moveWithNotations("c7", "c8", "Q");
 
-    expect(game.status).toBe(ChessGame.Statuses.STALEMATE);
+    expect(game.status).toBe(GameStatus.STALEMATE);
   });
 });
 
@@ -107,6 +108,6 @@ describe("full games", () => {
       .moveWithNotations("d7", "b8")
       .moveWithNotations("d1", "d8");
 
-    expect(game.currentPosition.status).toBe(ChessGame.Statuses.CHECKMATE);
+    expect(game.currentPosition.status).toBe(GameStatus.CHECKMATE);
   });
 });

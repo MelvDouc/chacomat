@@ -8,6 +8,7 @@ import {
 } from "@chacomat/utils/errors.js";
 import type {
   AlgebraicSquareNotation,
+  BlackAndWhite,
   ChessGameMetaInfo,
   ChessGameParameters,
   PromotedPieceInitial,
@@ -17,9 +18,6 @@ import type {
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
  */
 export default class ChessGame {
-  public static readonly Colors = Color;
-  public static readonly Wings = Wing;
-  public static readonly Statuses = GameStatus;
   protected static readonly Position = Position;
   public static readonly errors = {
     IllegalMoveError: IllegalMoveError,
@@ -28,14 +26,18 @@ export default class ChessGame {
   };
 
   public currentPosition: InstanceType<typeof ChessGame.Position>;
+  public readonly positions: Record<number, BlackAndWhite<typeof this["currentPosition"]>> = {};
   public readonly metaInfo: Partial<ChessGameMetaInfo>;
 
   constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
     const PositionConstructor = (this.constructor as typeof ChessGame).Position;
-    this.currentPosition = (positionInfo)
+    const position = (positionInfo)
       ? new PositionConstructor(positionInfo)
       : PositionConstructor.fromFenString(fenString ?? Position.startFenString);
-    this.currentPosition.game = this;
+    position.game = this;
+    this.positions[position.fullMoveNumber] = {} as BlackAndWhite<typeof position>;
+    this.positions[position.fullMoveNumber][position.colorToMove] = position;
+    this.currentPosition = position;
     this.metaInfo = metaInfo ?? {};
   }
 
@@ -73,8 +75,9 @@ export default class ChessGame {
       true
     );
     nextPosition.game = this;
-    nextPosition.prev = this.currentPosition;
-    this.currentPosition.next.push(nextPosition);
+    this.positions[nextPosition.fullMoveNumber] ??= {} as BlackAndWhite<typeof nextPosition>;
+    this.positions[nextPosition.fullMoveNumber][nextPosition.colorToMove] = nextPosition;
+    nextPosition.game = this;
     this.currentPosition = nextPosition;
 
     return this;
@@ -97,6 +100,14 @@ export default class ChessGame {
       Coords.fromNotation(destNotation)!,
       promotionType
     );
+  }
+
+  public goToMove(fullMoveNumber: number, color: Color = Color.WHITE): this {
+    if (!(fullMoveNumber in this.positions) || !(color in this.positions[fullMoveNumber]))
+      throw new Error(`Invalid move number: ${fullMoveNumber}`);
+
+    this.currentPosition = this.positions[fullMoveNumber][color];
+    return this;
   }
 
   /**

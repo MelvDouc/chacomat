@@ -63,8 +63,6 @@ export default class Position implements PositionInfo {
   public readonly enPassantFile: number;
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
-  public prev: Position | null = null;
-  public next: Position[] = [];
   public game: ChessGame;
   #legalMoves: Move[];
   #attackedCoordsSet: Set<Coords>;
@@ -131,9 +129,14 @@ export default class Position implements PositionInfo {
     const pieceStr = this.board.toString();
     let repetitionCount = 0;
 
-    for (let pos = this.prev; pos && repetitionCount < 3; pos = pos.prev)
-      if (pos.colorToMove === this.colorToMove && pos.board.toString() === pieceStr)
+    for (
+      let moveNumber = this.fullMoveNumber - 2;
+      moveNumber in this.game.positions && repetitionCount < 3;
+      moveNumber -= 2
+    ) {
+      if (this.game.positions[moveNumber][this.colorToMove]?.board.toString() === pieceStr)
         repetitionCount++;
+    }
 
     return repetitionCount === 3;
   }
