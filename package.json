@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "jest --verbose",
-    "build": "rm -rf dist && tsc && tsc-alias"
+    "build": "rm -rf dist && tsc && tsc-alias",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
