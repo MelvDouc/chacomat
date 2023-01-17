@@ -2,7 +2,7 @@ import Chess960Position from "@chacomat/chess960/Chess960Position.js";
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Board from "@chacomat/game/Board.js";
-import Piece from "@chacomat/pieces/index.js";
+import Piece from "@chacomat/pieces/Piece.js";
 import { Color } from "@chacomat/utils/constants.js";
 import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
 import type {
@@ -21,16 +21,17 @@ export default class Chess960Game extends ChessGame {
 
     for (colorKey in Color) {
       const color = Color[colorKey];
-      castlingRights[color].push(...piecePlacement[Piece.PIECE_TYPES.ROOK]);
+      castlingRights[color].push(...piecePlacement[Piece.TYPES.ROOK]);
 
       for (pieceKey in piecePlacement) {
         for (const y of piecePlacement[pieceKey]) {
-          const coords = board.Coords.get(Piece.START_PIECE_RANKS[color], y);
-          const piece = Reflect.construct(Piece.constructors.get(pieceKey)!, [{
+          const coords = board.Coords.get(Piece.START_RANKS.PIECE[color], y);
+          const piece = new Piece({
             color,
+            board,
             coords,
-            board
-          } as PieceInfo]) as Piece;
+            type: pieceKey
+          });
           board.set(coords, piece);
           if (piece.isKing())
             board.kings[piece.color] = piece;
@@ -38,12 +39,13 @@ export default class Chess960Game extends ChessGame {
       }
 
       for (let y = 0; y < 8; y++) {
-        const coords = board.Coords.get(Piece.START_PAWN_RANKS[color], y);
-        board.set(coords, Reflect.construct(Piece.constructors.get(Piece.PIECE_TYPES.PAWN)!, [{
+        const coords = board.Coords.get(Piece.START_RANKS.PAWN[color], y);
+        board.set(coords, new Piece({
           color,
+          board,
           coords,
-          board
-        } as PieceInfo]));
+          type: Piece.TYPES.PAWN
+        }));
       }
     }
 

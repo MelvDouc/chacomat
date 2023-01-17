@@ -1,24 +1,53 @@
 import { Color } from "@chacomat/utils/constants.js";
-import Piece, { Knight, Queen, Pawn } from "@chacomat/pieces/index.js";
+import Piece from "@chacomat/pieces/Piece.js";
+import Coords from "@chacomat/game/Coords.js";
+import ChessGame from "@chacomat/game/ChessGame.js";
 
 describe("Piece", () => {
   it("n should be a black knight", () => {
     const piece = Piece.fromInitial("n");
 
     expect(piece.color).toBe(Color.BLACK);
-    expect(piece instanceof Knight).toBe(true);
+    expect(piece.isKnight()).toBe(true);
   });
 
   it("P should be a white pawn", () => {
-    const piece = Piece.fromInitial(Piece.PIECE_TYPES.PAWN);
+    const piece = Piece.fromInitial(Piece.TYPES.PAWN);
 
     expect(piece.color).toBe(Color.WHITE);
-    expect(piece instanceof Pawn).toBe(true);
+    expect(piece.isPawn()).toBe(true);
   });
 
   it("Q should produce a queen", () => {
-    const pawn = new Pawn({ color: Color.WHITE });
+    const pawn = new Piece({ color: Color.WHITE, type: Piece.TYPES.PAWN });
+    pawn.type = Piece.TYPES.QUEEN;
 
-    expect(pawn.promote(Piece.PIECE_TYPES.QUEEN) instanceof Queen).toBe(true);
+    expect(pawn.isQueen()).toBe(true);
+  });
+});
+
+const c1 = Coords.fromNotation("c1")!;
+
+describe("A king", () => {
+  it("should be able to castle with no squares between it and a rook", () => {
+    const { currentPosition } = new ChessGame({
+      fenString: "4k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
+    });
+    const { legalMovesAsNotation } = currentPosition;
+
+    expect(legalMovesAsNotation).toContain("e1-c1");
+    expect(legalMovesAsNotation).not.toContain("e1-g1");
+  });
+
+  it("should not be able to castle through check", () => {
+    const game = new ChessGame({
+      fenString: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
+    });
+    const whiteKing = game.currentPosition.board.kings[Color.WHITE];
+    const castlingCoords = [
+      ...Piece.castlingCoords(whiteKing, false)
+    ];
+
+    expect(castlingCoords).not.toContain(c1);
   });
 });

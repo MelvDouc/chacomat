@@ -1,4 +1,4 @@
-import { GameStatus, WhitePieceInitial } from "@chacomat/utils/constants.js";
+import { GameStatus, PieceType } from "@chacomat/utils/constants.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Position from "@chacomat/game/Position.js";
 
@@ -17,7 +17,7 @@ describe("FEN string", () => {
     const pos2 = pos1.createPositionFromMove(
       pos1.board.Coords.get(2, 1),
       pos1.board.Coords.get(3, 0),
-      WhitePieceInitial.QUEEN,
+      PieceType.QUEEN,
       true,
     );
 

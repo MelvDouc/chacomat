@@ -1,6 +1,6 @@
 import Position from "@chacomat/game/Position.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
-import { Pawn } from "@chacomat/pieces/index.js";
+import Piece from "@chacomat/pieces/Piece.js";
 import { Color } from "@chacomat/utils/constants.js";
 
 describe("A board", () => {
@@ -12,9 +12,9 @@ describe("A board", () => {
 
     for (let y = 0; y < 8; y++) {
       const c = board.Coords.get(1, y);
-      board.set(c, new Pawn({ color: Color.BLACK, coords: c, board }));
+      board.set(c, new Piece({ color: Color.BLACK, type: Piece.TYPES.PAWN, coords: c, board }));
       const c2 = board.Coords.get(6, y);
-      board.set(c2, new Pawn({ color: Color.WHITE, coords: c2, board }));
+      board.set(c2, new Piece({ color: Color.WHITE, type: Piece.TYPES.PAWN, coords: c2, board }));
     }
 
     expect("k7/pppppppp/8/8/8/8/PPPPPPPP/7K").toBe(board.toString());
@@ -25,8 +25,8 @@ describe("A piece array from the start position", () => {
   const position = Position.fromFenString(Position.startFenString);
   const pieceArray = position.board.getPieceArray();
   it("should only have pawns rows 1 and 6", () => {
-    expect(pieceArray[1].every((piece) => piece instanceof Pawn)).toBe(true);
-    expect(pieceArray[6].every((piece) => piece instanceof Pawn)).toBe(true);
+    expect(pieceArray[1].every((piece) => !!piece?.isPawn())).toBe(true);
+    expect(pieceArray[6].every((piece) => !!piece?.isPawn())).toBe(true);
   });
   it("should have empty rows from row 2 to 5", () => {
     expect(

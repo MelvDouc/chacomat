@@ -1,10 +1,10 @@
-import { WhitePieceInitial } from "@chacomat/utils/constants.js";
+import { PieceType } from "@chacomat/utils/constants.js";
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function getChess960PiecePlacement(): Record<Exclude<WhitePieceInitial, (typeof WhitePieceInitial)["PAWN"]>, number[]> {
+export function getChess960PiecePlacement(): Record<Exclude<PieceType, (typeof PieceType)["PAWN"]>, number[]> {
   const files = new Set(Array.from({ length: 8 }, (_, i) => i));
 
   const kingFile = getKingFile(files),
@@ -14,11 +14,11 @@ export function getChess960PiecePlacement(): Record<Exclude<WhitePieceInitial, (
   files.delete(queenFile);
 
   return {
-    [WhitePieceInitial.KING]: [kingFile],
-    [WhitePieceInitial.QUEEN]: [queenFile],
-    [WhitePieceInitial.ROOK]: rookFiles,
-    [WhitePieceInitial.BISHOP]: bishopFiles,
-    [WhitePieceInitial.KNIGHT]: [...files]
+    [PieceType.KING]: [kingFile],
+    [PieceType.QUEEN]: [queenFile],
+    [PieceType.ROOK]: rookFiles,
+    [PieceType.BISHOP]: bishopFiles,
+    [PieceType.KNIGHT]: [...files]
   };
 }
 

@@ -113,6 +113,10 @@ export default class Piece {
     return this.type === PieceType.BISHOP;
   }
 
+  public isQueen(): boolean {
+    return this.type === PieceType.QUEEN;
+  }
+
   public isKnight(): boolean {
     return this.type === PieceType.KNIGHT;
   }

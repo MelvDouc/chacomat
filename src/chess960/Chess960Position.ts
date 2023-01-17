@@ -3,7 +3,7 @@ import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js
 import type {
   Chess960Game,
   Coords,
-  King
+  Piece
 } from "@chacomat/types.js";
 
 export default class Chess960Position extends Position {
@@ -13,7 +13,7 @@ export default class Chess960Position extends Position {
   public override readonly castlingRights: Chess960CastlingRights;
   public override game: Chess960Game;
 
-  protected override isCastling(king: King, destCoords: Coords): boolean {
+  protected override isCastling(king: Piece, destCoords: Coords): boolean {
     return !!this.board.get(destCoords)?.isRook()
       && this.board.get(destCoords)!.color === king.color;
   }

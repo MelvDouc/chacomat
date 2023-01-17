@@ -1,6 +1,6 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Coords from "@chacomat/game/Coords.js";
-import Pawn from "@chacomat/pieces/index.js";
+import Piece from "@chacomat/pieces/Piece.js";
 import { Color, GameStatus } from "@chacomat/utils/constants.js";
 
 describe("Fool's Mate", () => {
@@ -44,7 +44,7 @@ describe("en passant", () => {
 
     expect(game.currentPosition.board.get(Coords.fromNotation("c4")!)).toBeFalsy();
     expect(game.currentPosition.board.get(Coords.fromNotation("d4")!)).toBeFalsy();
-    expect(game.currentPosition.board.get(Coords.fromNotation("c3")!)).toBeInstanceOf(Pawn);
+    expect(game.currentPosition.board.get(Coords.fromNotation("c3")!)?.type).toBe(Piece.TYPES.PAWN);
   });
 });
 
@@ -62,7 +62,7 @@ describe("Stalemate", () => {
       fenString: "8/k1P5/2K5/8/8/8/8/8 w - - 0 1"
     });
 
-    game.moveWithNotations("c7", "c8", "Q");
+    game.moveWithNotations("c7", "c8", Piece.TYPES.QUEEN);
 
     expect(game.status).toBe(GameStatus.STALEMATE);
   });
