@@ -1,7 +1,7 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Coords from "@chacomat/game/Coords.js";
 import Pawn from "@chacomat/pieces/index.js";
-import { GameStatus } from "@chacomat/utils/constants.js";
+import { Color, GameStatus } from "@chacomat/utils/constants.js";
 
 describe("Fool's Mate", () => {
   const game = new ChessGame();
@@ -42,7 +42,6 @@ describe("en passant", () => {
       .moveWithNotations("c2", "c4")
       .moveWithNotations("d4", "c3");
 
-    game.logBoard();
     expect(game.currentPosition.board.get(Coords.fromNotation("c4")!)).toBeFalsy();
     expect(game.currentPosition.board.get(Coords.fromNotation("d4")!)).toBeFalsy();
     expect(game.currentPosition.board.get(Coords.fromNotation("c3")!)).toBeInstanceOf(Pawn);
@@ -66,6 +65,27 @@ describe("Stalemate", () => {
     game.moveWithNotations("c7", "c8", "Q");
 
     expect(game.status).toBe(GameStatus.STALEMATE);
+  });
+});
+
+describe("The goToMove() method", () => {
+  const game = new ChessGame();
+  const pos1 = game.currentPosition;
+  game
+    .moveWithNotations("d2", "d4")
+    .moveWithNotations("g8", "f6")
+    .moveWithNotations("c2", "c4")
+    .moveWithNotations("e7", "e6");
+  const pos2 = game.moveWithNotations("b1", "c3").currentPosition;
+
+  it("should work backwards", () => {
+    game.goToMove(1);
+    expect(game.currentPosition).toBe(pos1);
+  });
+
+  it("should work forwards", () => {
+    game.goToMove(3, Color.BLACK);
+    expect(game.currentPosition).toBe(pos2);
   });
 });
 

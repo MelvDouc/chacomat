@@ -4,8 +4,7 @@ import type {
 } from "@chacomat/types.js";
 
 export default class Coords {
-  private static readonly all: Record<number, Record<number, Coords>> = {};
-  private static readonly notations: Record<number, Record<number, AlgebraicSquareNotation>> = {};
+  private static readonly all: Record<number, Record<number, { coords: Coords; notation: AlgebraicSquareNotation; }>> = {};
   private static readonly coordsByNotation = {} as Record<AlgebraicSquareNotation, Coords>;
 
   public static getFileNameIndex(fileName: ChessFileName | Uppercase<ChessFileName>): number {
@@ -21,29 +20,23 @@ export default class Coords {
   }
 
   public static get(x: number, y: number): Coords {
-    return Coords.all[x][y];
+    return Coords.all[x][y].coords;
   }
 
   public static isSafe(coordinate: number): boolean {
     return coordinate >= 0 && coordinate < 8;
   }
 
-  public static isValidCoords(arg: any): arg is Coords {
-    return typeof arg === "object"
-      && arg !== null
-      && arg.x in Coords.all
-      && arg.y in Coords.all[arg.x];
-  }
-
   static {
     for (let x = 0; x < 8; x++) {
       Coords.all[x] = {};
-      Coords.notations[x] = {};
       for (let y = 0; y < 8; y++) {
         const coords = new Coords(x, y);
         const notation = Coords.getFileName(y) + String(8 - x) as AlgebraicSquareNotation;
-        Coords.all[x][y] = coords;
-        Coords.notations[x][y] = notation;
+        Coords.all[x][y] = {
+          coords,
+          notation
+        };
         Coords.coordsByNotation[notation] = coords;
       }
     }
@@ -59,14 +52,14 @@ export default class Coords {
   }
 
   public get notation(): AlgebraicSquareNotation {
-    return Coords.notations[this.x][this.y];
+    return Coords.all[this.x][this.y].notation;
   }
 
   public getPeer(xOffset: number, yOffset: number): Coords | null {
     const x = this.x + xOffset,
       y = this.y + yOffset;
     if (Coords.isSafe(x) && Coords.isSafe(y))
-      return Coords.all[x][y];
+      return Coords.all[x][y].coords;
     return null;
   }
 }

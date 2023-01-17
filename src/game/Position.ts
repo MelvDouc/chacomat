@@ -64,6 +64,8 @@ export default class Position implements PositionInfo {
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
   public game: ChessGame;
+  public prev: Position | null = null;
+  public next: Position[] = [];
   #legalMoves: Move[];
   #attackedCoordsSet: Set<Coords>;
 
@@ -130,11 +132,11 @@ export default class Position implements PositionInfo {
     let repetitionCount = 0;
 
     for (
-      let moveNumber = this.fullMoveNumber - 2;
-      moveNumber in this.game.positions && repetitionCount < 3;
-      moveNumber -= 2
+      let pos = this.prev;
+      pos !== null && repetitionCount < 3;
+      pos = pos.prev
     ) {
-      if (this.game.positions[moveNumber][this.colorToMove]?.board.toString() === pieceStr)
+      if (pos.colorToMove === this.colorToMove && pos.board.toString() === pieceStr)
         repetitionCount++;
     }
 
@@ -319,6 +321,9 @@ export default class Position implements PositionInfo {
   // MISC
   // ===== ===== ===== ===== =====
 
+  /**
+   * @returns The FEN string of this position.
+   */
   public toString(): FenString {
     return [
       this.board.toString(),

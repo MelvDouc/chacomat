@@ -1,6 +1,6 @@
 import Coords from "@chacomat/game/Coords.js";
 import Position from "@chacomat/game/Position.js";
-import { Color, GameStatus, Wing } from "@chacomat/utils/constants.js";
+import { Color, GameStatus } from "@chacomat/utils/constants.js";
 import {
   IllegalMoveError,
   InactiveGameError,
@@ -8,7 +8,6 @@ import {
 } from "@chacomat/utils/errors.js";
 import type {
   AlgebraicSquareNotation,
-  BlackAndWhite,
   ChessGameMetaInfo,
   ChessGameParameters,
   PromotedPieceInitial,
@@ -26,7 +25,6 @@ export default class ChessGame {
   };
 
   public currentPosition: InstanceType<typeof ChessGame.Position>;
-  public readonly positions: Record<number, BlackAndWhite<typeof this["currentPosition"]>> = {};
   public readonly metaInfo: Partial<ChessGameMetaInfo>;
 
   constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
@@ -35,8 +33,6 @@ export default class ChessGame {
       ? new PositionConstructor(positionInfo)
       : PositionConstructor.fromFenString(fenString ?? Position.startFenString);
     position.game = this;
-    this.positions[position.fullMoveNumber] = {} as BlackAndWhite<typeof position>;
-    this.positions[position.fullMoveNumber][position.colorToMove] = position;
     this.currentPosition = position;
     this.metaInfo = metaInfo ?? {};
   }
@@ -75,9 +71,8 @@ export default class ChessGame {
       true
     );
     nextPosition.game = this;
-    this.positions[nextPosition.fullMoveNumber] ??= {} as BlackAndWhite<typeof nextPosition>;
-    this.positions[nextPosition.fullMoveNumber][nextPosition.colorToMove] = nextPosition;
-    nextPosition.game = this;
+    nextPosition.prev = this.currentPosition;
+    this.currentPosition.next.push(nextPosition);
     this.currentPosition = nextPosition;
 
     return this;
@@ -102,11 +97,28 @@ export default class ChessGame {
     );
   }
 
-  public goToMove(fullMoveNumber: number, color: Color = Color.WHITE): this {
-    if (!(fullMoveNumber in this.positions) || !(color in this.positions[fullMoveNumber]))
-      throw new Error(`Invalid move number: ${fullMoveNumber}`);
+  public goToMove(fullMoveNumber: number, color: Color = Color.WHITE, variationIndex = 0): this {
+    if (fullMoveNumber === this.currentPosition.fullMoveNumber) {
+      const candidate = (color === this.currentPosition.colorToMove) ? this.currentPosition.prev?.next?.at(variationIndex)
+        : (color === Color.BLACK) ? this.currentPosition.next?.at(variationIndex)
+          : this.currentPosition.prev;
+      candidate && (this.currentPosition = candidate);
 
-    this.currentPosition = this.positions[fullMoveNumber][color];
+      return this;
+    }
+
+    let position: Position | null | undefined = this.currentPosition;
+    const browse: () => typeof position = (fullMoveNumber - this.currentPosition.fullMoveNumber < 0)
+      ? () => position?.prev
+      : () => position?.next?.at(variationIndex);
+
+    while (position = browse()) {
+      if (position.fullMoveNumber !== fullMoveNumber || position.colorToMove !== color)
+        continue;
+      this.currentPosition = position.prev?.next?.at(variationIndex) ?? position;
+      break;
+    }
+
     return this;
   }
 
