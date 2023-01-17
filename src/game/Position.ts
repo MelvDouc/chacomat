@@ -7,12 +7,9 @@ import type {
   ChessGame,
   Coords,
   FenString,
-  King,
   Move,
-  Pawn,
   PositionInfo,
-  PromotedPieceInitial,
-  Rook
+  PromotedPieceInitial
 } from "@chacomat/types.js";
 
 /**
@@ -112,7 +109,7 @@ export default class Position implements PositionInfo {
   }
 
   protected isInsufficientMaterial(): boolean {
-    const pieces = this.board.getPiecesByColor();
+    const pieces = this.board.getNonKingPiecesByColor();
 
     if (pieces[Color.WHITE].length > 1 || pieces[Color.BLACK].length > 1)
       return false;
@@ -123,7 +120,7 @@ export default class Position implements PositionInfo {
       && (
         !blackPiece
         || blackPiece.isKnight()
-        || blackPiece.isBishop() && blackPiece.squareParity === whitePiece?.squareParity
+        || blackPiece.isBishop() && Piece.getBishopSquareParity(blackPiece) === Piece.getBishopSquareParity(whitePiece)
       );
   }
 
@@ -159,7 +156,10 @@ export default class Position implements PositionInfo {
 
     if (!this.isCheck()) {
       const king = this.board.kings[this.colorToMove];
-      for (const destCoords of king.castlingCoords((this.constructor as typeof Position).useChess960Castling))
+      for (const destCoords of Piece.castlingCoords(
+        king,
+        (this.constructor as typeof Position).useChess960Castling
+      ))
         legalMoves.push([king.coords, destCoords]);
     }
 
@@ -191,25 +191,23 @@ export default class Position implements PositionInfo {
   // PIECE MOVES
   // ===== ===== ===== ===== =====
 
-  protected handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
-    if (rook.isOnInitialSquare())
+  protected handleRookMove(rook: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
+    if (Piece.isRookOnInitialSquare(rook, castlingRights))
       castlingRights.unset(rook.color, rook.coords.y);
     rook.board.transfer(rook.coords, destCoords);
   }
 
-  protected handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN): void {
+  protected handlePawnMove(pawn: Piece, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.TYPES.QUEEN): void {
     if (this.isEnPassantCapture(pawn.coords, destCoords)) {
       pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y));
       pawn.board.transfer(pawn.coords, destCoords);
       return;
     }
 
-    const piece = (destCoords.x === Piece.START_PIECE_RANKS[pawn.oppositeColor])
-      ? pawn.promote(promotionType)
-      : pawn;
+    if (destCoords.x === Piece.START_RANKS.PIECE[pawn.oppositeColor])
+      pawn.type = promotionType;
 
-    pawn.board.set(destCoords, piece).delete(pawn.coords);
-    piece.coords = destCoords;
+    pawn.board.transfer(pawn.coords, destCoords);
   }
 
   public isEnPassantCapture(srcCoords: Coords, destCoords: Coords): boolean {
@@ -217,7 +215,7 @@ export default class Position implements PositionInfo {
       && srcCoords.x === Piece.MIDDLE_RANKS[this.inactiveColor];
   }
 
-  protected handleKingMove(king: King, destCoords: Coords, castlingRights: CastlingRights): void {
+  protected handleKingMove(king: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
     castlingRights[king.color].length = 0;
 
     if (!this.isCastling(king, destCoords)) {
@@ -228,15 +226,15 @@ export default class Position implements PositionInfo {
     this.castle(king, destCoords);
   }
 
-  protected castle(king: King, destCoords: Coords): void {
+  protected castle(king: Piece, destCoords: Coords): void {
     const { board, coords: srcCoords } = king;
-    const wing = king.getWing(destCoords.y);
+    const wing = Piece.getWingRelativeToKing(srcCoords.y, destCoords.y);
     // These are distinct from `destCoords` as the latter may point to a same-colored rook in the case of castling.
-    const destKingCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_KING_FILES[wing]);
+    const destKingCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_FILES.KING[wing]);
     const rookSrcCoords = board.get(destCoords)?.isRook()
       ? destCoords
       : board.Coords.get(destCoords.x, wing);
-    const rookDestCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_ROOK_FILES[wing]);
+    const rookDestCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_FILES.ROOK[wing]);
     board
       .transfer(srcCoords, destKingCoords)
       .transfer(rookSrcCoords, rookDestCoords);
@@ -245,7 +243,7 @@ export default class Position implements PositionInfo {
   /**
    * A different method is used in Chess960 to determine if a move is castling.
    */
-  protected isCastling(king: King, destCoords: Coords): boolean {
+  protected isCastling(king: Piece, destCoords: Coords): boolean {
     return Math.abs(destCoords.y - king.coords.y) === 2;
   }
 
@@ -283,7 +281,7 @@ export default class Position implements PositionInfo {
   public createPositionFromMove(
     srcCoords: Coords,
     destCoords: Coords,
-    promotionType: PromotedPieceInitial = Piece.WHITE_PIECE_INITIALS.QUEEN,
+    promotionType: PromotedPieceInitial = Piece.TYPES.QUEEN,
     updateColorAndMoveNumber = false
   ): Position {
     const board = this.board.clone(),
@@ -293,7 +291,7 @@ export default class Position implements PositionInfo {
     const isSrcPiecePawn = srcPiece.isPawn(),
       isCaptureOrPawnMove = !!destPiece || isSrcPiecePawn;
 
-    if (destPiece?.isRook() && destPiece.isOnInitialSquare())
+    if (destPiece?.isRook() && Piece.isRookOnInitialSquare(destPiece, castlingRights))
       castlingRights.unset(destPiece.color, destPiece.coords.y);
 
     if (isSrcPiecePawn)

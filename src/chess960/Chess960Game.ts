@@ -21,7 +21,7 @@ export default class Chess960Game extends ChessGame {
 
     for (colorKey in Color) {
       const color = Color[colorKey];
-      castlingRights[color].push(...piecePlacement[Piece.WHITE_PIECE_INITIALS.ROOK]);
+      castlingRights[color].push(...piecePlacement[Piece.PIECE_TYPES.ROOK]);
 
       for (pieceKey in piecePlacement) {
         for (const y of piecePlacement[pieceKey]) {
@@ -39,7 +39,7 @@ export default class Chess960Game extends ChessGame {
 
       for (let y = 0; y < 8; y++) {
         const coords = board.Coords.get(Piece.START_PAWN_RANKS[color], y);
-        board.set(coords, Reflect.construct(Piece.constructors.get(Piece.WHITE_PIECE_INITIALS.PAWN)!, [{
+        board.set(coords, Reflect.construct(Piece.constructors.get(Piece.PIECE_TYPES.PAWN)!, [{
           color,
           coords,
           board

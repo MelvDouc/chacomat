@@ -1,90 +1,76 @@
+import { castlingCoords, getWing } from "@chacomat/pieces/castling.js";
+import {
+  attackedCoordsGenerators,
+  pseudoLegalPawnMoves
+} from "@chacomat/pieces/piece-moves.js";
+import {
+  castledFiles,
+  directions,
+  middleRanks,
+  startRanks
+} from "@chacomat/pieces/placements.js";
 import {
   Color,
-  WhitePieceInitial,
-  Wing
+  PieceType
 } from "@chacomat/utils/constants.js";
 import type {
-  Bishop,
-  BlackAndWhite,
   BlackPieceInitial,
   Board,
+  CastlingRights,
   Coords,
   CoordsGenerator,
-  King,
-  Knight,
-  Pawn,
   PieceInfo,
-  PieceInitial,
-  Queen,
-  Rook,
-  Wings
+  PieceInitial
 } from "@chacomat/types.js";
 
-export default abstract class Piece {
-  public static readonly WHITE_PIECE_INITIALS = WhitePieceInitial;
-  public static readonly WHITE_INITIAL: WhitePieceInitial;
-  protected static readonly OFFSETS: { x: number[]; y: number[]; };
-  public static readonly constructors: Map<WhitePieceInitial, typeof Piece> = new Map();
-
-  public static readonly CASTLED_KING_FILES: Wings<number> = {
-    [Wing.QUEEN_SIDE]: 2,
-    [Wing.KING_SIDE]: 6
-  };
-
-  public static readonly CASTLED_ROOK_FILES: Wings<number> = {
-    [Wing.QUEEN_SIDE]: 3,
-    [Wing.KING_SIDE]: 5
-  };
-
-  public static readonly DIRECTIONS: BlackAndWhite<number> = {
-    [Color.WHITE]: -1,
-    [Color.BLACK]: 1
-  };
-
-  public static readonly START_PIECE_RANKS: BlackAndWhite<number> = {
-    [Color.WHITE]: 7,
-    [Color.BLACK]: 0
-  };
-
-  public static readonly START_PAWN_RANKS: BlackAndWhite<number> = {
-    [Color.WHITE]: 6,
-    [Color.BLACK]: 1
-  };
-
-  public static readonly MIDDLE_RANKS: BlackAndWhite<number> = {
-    [Color.WHITE]: 4,
-    [Color.BLACK]: 3
-  };
+export default class Piece {
+  public static readonly TYPES = PieceType;
+  public static readonly START_RANKS = startRanks;
+  public static readonly MIDDLE_RANKS = middleRanks;
+  public static readonly CASTLED_FILES = castledFiles;
+  public static readonly DIRECTIONS = directions;
+  public static castlingCoords = castlingCoords;
+  public static getWingRelativeToKing = getWing;
 
   public static fromInitial(initial: PieceInitial, board?: Board): Piece {
-    const whiteInitial = initial.toUpperCase() as WhitePieceInitial;
-    return Reflect.construct(
-      this.constructors.get(whiteInitial)!,
-      [{
-        color: (initial === whiteInitial) ? Color.WHITE : Color.BLACK,
-        board
-      } as PieceInfo]
-    );
+    const type = initial.toUpperCase() as PieceType;
+
+    return new Piece({
+      color: (initial === type) ? Color.WHITE : Color.BLACK,
+      type,
+      board: board as Board
+    });
+  }
+
+  public static isRookOnInitialSquare({ coords: { x, y }, color }: Piece, castlingRights: CastlingRights): boolean {
+    return x === startRanks.PIECE[color]
+      && castlingRights[color].includes(y);
+  }
+
+  public static getBishopSquareParity(bishop: Piece | null | undefined): 0 | 1 | typeof NaN {
+    if (!bishop)
+      return NaN;
+    return (bishop.coords.x % 2 === bishop.coords.y % 2)
+      ? 0
+      : 1;
   }
 
   public readonly color: Color;
+  public type: PieceType;
   public board: Board;
   public coords: Coords;
 
-  constructor({ color, board, coords }: PieceInfo) {
+  constructor({ color, board, type, coords }: PieceInfo) {
     this.color = color;
+    this.type = type;
     board && (this.board = board);
     coords && (this.coords = coords);
   }
 
-  public get whiteInitial(): WhitePieceInitial {
-    return (this.constructor as typeof Piece).WHITE_INITIAL;
-  }
-
   public get initial(): PieceInitial {
     return (this.color === Color.WHITE)
-      ? (this.constructor as typeof Piece).WHITE_INITIAL
-      : (this.constructor as typeof Piece).WHITE_INITIAL.toLowerCase() as BlackPieceInitial;
+      ? this.type
+      : this.type.toLowerCase() as BlackPieceInitial;
   }
 
   public get oppositeColor(): Color {
@@ -92,47 +78,46 @@ export default abstract class Piece {
   }
 
   public *attackedCoords(): CoordsGenerator {
-    for (let i = 0; i < (this.constructor as typeof Piece).OFFSETS.x.length; i++) {
-      const destCoords = this.coords.getPeer(
-        (this.constructor as typeof Piece).OFFSETS.x[i],
-        (this.constructor as typeof Piece).OFFSETS.y[i]
-      );
-      if (destCoords)
-        yield destCoords;
-    }
+    yield* attackedCoordsGenerators[this.type](this);
   }
 
   public *pseudoLegalMoves(): CoordsGenerator {
+    if (this.isPawn()) {
+      yield* pseudoLegalPawnMoves(this);
+      return;
+    }
+
     for (const targetCoords of this.attackedCoords())
       if (this.board.get(targetCoords)?.color !== this.color)
         yield targetCoords;
   }
 
   public clone(): Piece {
-    return Reflect.construct(this.constructor as typeof Piece, [{
+    return new Piece({
       color: this.color,
+      type: this.type,
       board: this.board,
       coords: this.coords
-    } as PieceInfo]);
+    });
   }
 
-  public isKing(): this is King {
-    return this.whiteInitial === WhitePieceInitial.KING;
+  public isKing(): boolean {
+    return this.type === PieceType.KING;
   }
 
-  public isRook(): this is Rook {
-    return this.whiteInitial === WhitePieceInitial.ROOK;
+  public isRook(): boolean {
+    return this.type === PieceType.ROOK;
   }
 
-  public isBishop(): this is Bishop {
-    return this.whiteInitial === WhitePieceInitial.BISHOP;
+  public isBishop(): boolean {
+    return this.type === PieceType.BISHOP;
   }
 
-  public isKnight(): this is Bishop {
-    return this.whiteInitial === WhitePieceInitial.KNIGHT;
+  public isKnight(): boolean {
+    return this.type === PieceType.KNIGHT;
   }
 
-  public isPawn(): this is Pawn {
-    return this.whiteInitial === WhitePieceInitial.PAWN;
+  public isPawn(): boolean {
+    return this.type === PieceType.PAWN;
   }
 }

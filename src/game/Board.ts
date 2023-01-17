@@ -1,9 +1,8 @@
 import Coords from "@chacomat/game/Coords.js";
 import { Color, ConsoleColors } from "@chacomat/utils/constants.js";
-import Piece from "@chacomat/pieces/index.js";
+import Piece from "@chacomat/pieces/Piece.js";
 import type {
   BlackAndWhite,
-  King,
   PieceInitial,
   Position
 } from "@chacomat/types.js";
@@ -13,7 +12,7 @@ export default class Board extends Map<Coords, Piece> {
   private static readonly nullPieceRegex = /0+/g;
 
   public position: Position;
-  public readonly kings = {} as BlackAndWhite<King>;
+  public readonly kings = {} as BlackAndWhite<Piece>;
 
   constructor(pieceStr?: string) {
     super();
@@ -71,20 +70,19 @@ export default class Board extends Map<Coords, Piece> {
       pieceClone.board = boardClone;
       boardClone.set(coords, pieceClone);
     }
-    let colorKey: keyof typeof Color;
-    for (colorKey in Color)
-      boardClone.kings[Color[colorKey]] = boardClone.get(this.kings[Color[colorKey]].coords) as King;
+    boardClone.kings[Color.WHITE] = boardClone.get(this.kings[Color.WHITE].coords)!;
+    boardClone.kings[Color.BLACK] = boardClone.get(this.kings[Color.BLACK].coords)!;
     return boardClone;
   }
 
-  public getPiecesByColor(): BlackAndWhite<Exclude<Piece, King>[]> {
+  public getNonKingPiecesByColor(): BlackAndWhite<Piece[]> {
     return [...this.values()].reduce((acc, piece) => {
       if (!piece.isKing())
         acc[piece.color].push(piece);
       return acc;
     }, {
-      [Color.WHITE]: [] as Exclude<Piece, King>[],
-      [Color.BLACK]: [] as Exclude<Piece, King>[],
+      [Color.WHITE]: [] as Piece[],
+      [Color.BLACK]: [] as Piece[]
     });
   }
 

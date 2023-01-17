@@ -20,7 +20,7 @@ export enum GameStatus {
   INSUFFICIENT_MATERIAL = "insufficient material"
 }
 
-export enum WhitePieceInitial {
+export enum PieceType {
   PAWN = "P",
   KNIGHT = "N",
   BISHOP = "B",

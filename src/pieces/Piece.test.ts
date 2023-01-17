@@ -10,7 +10,7 @@ describe("Piece", () => {
   });
 
   it("P should be a white pawn", () => {
-    const piece = Piece.fromInitial(Piece.WHITE_PIECE_INITIALS.PAWN);
+    const piece = Piece.fromInitial(Piece.PIECE_TYPES.PAWN);
 
     expect(piece.color).toBe(Color.WHITE);
     expect(piece instanceof Pawn).toBe(true);
@@ -19,6 +19,6 @@ describe("Piece", () => {
   it("Q should produce a queen", () => {
     const pawn = new Pawn({ color: Color.WHITE });
 
-    expect(pawn.promote(Piece.WHITE_PIECE_INITIALS.QUEEN) instanceof Queen).toBe(true);
+    expect(pawn.promote(Piece.PIECE_TYPES.QUEEN) instanceof Queen).toBe(true);
   });
 });
