@@ -23,3 +23,7 @@ describe("InactiveGameError", () => {
     expect(() => game.moveWithNotations("c6", "d4")).toThrow(ChessGame.errors.InactiveGameError);
   });
 });
+
+describe("InvalidFenError", () => {
+
+});

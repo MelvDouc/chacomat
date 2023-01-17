@@ -29,8 +29,14 @@ export default class Piece {
   public static readonly MIDDLE_RANKS = middleRanks;
   public static readonly CASTLED_FILES = castledFiles;
   public static readonly DIRECTIONS = directions;
-  public static castlingCoords = castlingCoords;
-  public static getWingRelativeToKing = getWing;
+  private static readonly blackInitials: Record<PieceType, BlackPieceInitial> = {
+    [PieceType.PAWN]: "p",
+    [PieceType.KNIGHT]: "n",
+    [PieceType.BISHOP]: "b",
+    [PieceType.ROOK]: "r",
+    [PieceType.QUEEN]: "q",
+    [PieceType.KING]: "k"
+  };
 
   public static fromInitial(initial: PieceInitial, board?: Board): Piece {
     const type = initial.toUpperCase() as PieceType;
@@ -40,6 +46,14 @@ export default class Piece {
       type,
       board: board as Board
     });
+  }
+
+  public static getWingRelativeToKing(kingY: number, compareY: number) {
+    return getWing(kingY, compareY);
+  }
+
+  public static *castlingCoords(king: Piece, useChess960Rules: boolean) {
+    yield* castlingCoords(king, useChess960Rules);
   }
 
   public static isRookOnInitialSquare({ coords: { x, y }, color }: Piece, castlingRights: CastlingRights): boolean {
@@ -70,7 +84,7 @@ export default class Piece {
   public get initial(): PieceInitial {
     return (this.color === Color.WHITE)
       ? this.type
-      : this.type.toLowerCase() as BlackPieceInitial;
+      : Piece.blackInitials[this.type];
   }
 
   public get oppositeColor(): Color {
