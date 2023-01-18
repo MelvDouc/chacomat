@@ -1,5 +1,6 @@
 import Color from "@chacomat/utils/Color.js";
 import { PieceType } from "@chacomat/utils/constants.js";
+import { PieceOffsets } from "@chacomat/types.js";
 
 export const pawnOffsets = {
   x: {
@@ -7,32 +8,32 @@ export const pawnOffsets = {
     [Color.BLACK]: [1, 1]
   },
   y: [-1, 1]
-} as const;
+};
 
-const knightOffsets = {
-  x: [-2, -2, -1, -1, 1, 1, 2, 2],
-  y: [-1, 1, -2, 2, -2, 2, -1, 1]
-} as const;
+const knightOffsets: PieceOffsets = {
+  x: [-1, -2, -2, -1, 1, 2, 2, 1],
+  y: [-2, -1, 1, 2, 2, 1, -1, -2]
+};
 
-const rookOffsets = {
+const rookOffsets: PieceOffsets = {
   x: [0, -1, 0, 1],
   y: [-1, 0, 1, 0]
-} as const;
+};
 
-const bishopOffsets = {
+const bishopOffsets: PieceOffsets = {
   x: [-1, -1, 1, 1],
   y: [-1, 1, -1, 1]
-} as const;
+};
 
-const adjacentOffsets = {
+const adjacentOffsets: PieceOffsets = {
   x: rookOffsets.x.concat(bishopOffsets.x),
   y: rookOffsets.y.concat(bishopOffsets.y)
 } as const;
 
-export const pieceOffsets = {
+export const pieceOffsets: Readonly<Record<Exclude<PieceType, PieceType.PAWN>, PieceOffsets>> = {
   [PieceType.KNIGHT]: knightOffsets,
   [PieceType.BISHOP]: bishopOffsets,
   [PieceType.ROOK]: rookOffsets,
   [PieceType.QUEEN]: adjacentOffsets,
   [PieceType.KING]: adjacentOffsets
-} as const;
+};
