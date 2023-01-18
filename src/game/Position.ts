@@ -84,7 +84,6 @@ export default class Position implements PositionInfo {
     return (this.colorToMove === Color.WHITE) ? Color.BLACK : Color.WHITE;
   }
 
-
   public get attackedCoordsSet(): Set<Coords> {
     this.#attackedCoordsSet ??= this.board.getCoordsAttackedByColor(this.inactiveColor);
     return this.#attackedCoordsSet;
@@ -156,7 +155,7 @@ export default class Position implements PositionInfo {
     const legalMoves: Move[] = [];
 
     for (const move of this.pseudoLegalMoves())
-      if (!this.tryMoveForCheck(move[0], move[1]).isCheck)
+      if (!this.isCheckAfterMove(move[0], move[1]))
         legalMoves.push(move);
 
     if (!this.isCheck()) {
@@ -257,9 +256,7 @@ export default class Position implements PositionInfo {
    * [ ] Handle promotion
    * [ ] Handle castling
    */
-  public tryMoveForCheck(srcCoords: Coords, destCoords: Coords): {
-    isCheck: boolean;
-  } {
+  public isCheckAfterMove(srcCoords: Coords, destCoords: Coords): boolean {
     const capturedPiece = (
       (this.board.get(srcCoords) as Piece).isPawn()
       && this.isEnPassantCapture(srcCoords, destCoords)
@@ -276,7 +273,7 @@ export default class Position implements PositionInfo {
     this.board.transfer(destCoords, srcCoords);
     capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
 
-    return { isCheck };
+    return isCheck;
   }
 
   /**
