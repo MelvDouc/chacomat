@@ -18,18 +18,18 @@ import type {
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
  */
 export default class ChessGame {
-  protected static readonly Position = Position;
-  public static readonly errors = {
+  static readonly #Position = Position;
+  static readonly errors = {
     IllegalMoveError: IllegalMoveError,
     InactiveGameError: InactiveGameError,
     InvalidFenError: InvalidFenError
   };
 
-  public currentPosition: InstanceType<typeof ChessGame.Position>;
-  public readonly metaInfo: Partial<ChessGameMetaInfo>;
+  currentPosition: InstanceType<typeof Position>;
+  readonly metaInfo: Partial<ChessGameMetaInfo>;
 
   constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
-    const PositionConstructor = (this.constructor as typeof ChessGame).Position;
+    const PositionConstructor = (this.constructor as typeof ChessGame).#Position;
     const position = (positionInfo)
       ? new PositionConstructor(positionInfo)
       : PositionConstructor.fromFenString(fenString ?? Position.startFenString);
@@ -38,7 +38,7 @@ export default class ChessGame {
     this.metaInfo = metaInfo ?? {};
   }
 
-  public get status(): GameStatus {
+  get status(): GameStatus {
     return this.currentPosition.status;
   }
 
@@ -49,7 +49,7 @@ export default class ChessGame {
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
    * @returns The current instance of a game containing the position after the move.
    */
-  public move(
+  move(
     srcCoords: { x: number; y: number; },
     destCoords: { x: number; y: number; },
     promotionType?: PromotedPieceInitial
@@ -86,7 +86,7 @@ export default class ChessGame {
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
    * @returns The current instance of a game containing the position after the move.
    */
-  public moveWithNotations(
+  moveWithNotations(
     srcNotation: AlgebraicSquareNotation,
     destNotation: AlgebraicSquareNotation,
     promotionType?: PromotedPieceInitial
@@ -98,7 +98,7 @@ export default class ChessGame {
     );
   }
 
-  public goToMove(fullMoveNumber: number, color: Color = Color.WHITE, variationIndex = 0): this {
+  goToMove(fullMoveNumber: number, color: Color = Color.WHITE, variationIndex = 0): this {
     if (fullMoveNumber === this.currentPosition.fullMoveNumber) {
       const candidate = (color === this.currentPosition.colorToMove) ? this.currentPosition.prev?.next?.at(variationIndex)
         : (color === Color.BLACK) ? this.currentPosition.next?.at(variationIndex)
@@ -126,7 +126,7 @@ export default class ChessGame {
   /**
    * Pretty print this game's current board to the console.
    */
-  public logBoard(): void {
+  logBoard(): void {
     this.currentPosition.board.log();
   }
 }

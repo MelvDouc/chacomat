@@ -1,5 +1,6 @@
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
 import Color from "@chacomat/utils/Color.js";
+import fenChecker from "@chacomat/utils/fen-checker.js";
 
 describe("Chess960CastlingRights", () => {
   it("should parse a castling string correctly #1", () => {
@@ -29,6 +30,6 @@ describe("Chess960CastlingRights", () => {
 
   it("should be stringifiable #2", () => {
     const castlingRights = new Chess960CastlingRights();
-    expect(castlingRights.toString()).toBe("-");
+    expect(castlingRights.toString()).toBe(fenChecker.nullCharacter);
   });
 });

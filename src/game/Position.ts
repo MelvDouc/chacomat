@@ -19,11 +19,11 @@ import type {
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.
  */
 export default class Position implements PositionInfo {
-  public static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  public static readonly CastlingRights: typeof CastlingRights = CastlingRights;
-  protected static readonly useChess960Castling: boolean = false;
+  static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  static readonly #CastlingRights: typeof CastlingRights = CastlingRights;
+  static readonly useChess960Castling: boolean = false;
 
-  protected static readonly colorAbbreviations = {
+  static readonly colorAbbreviations = {
     w: Color.WHITE,
     b: Color.BLACK,
     [Color.WHITE]: "w",
@@ -33,7 +33,7 @@ export default class Position implements PositionInfo {
   /**
    * Create a new position using only an FEN string.
    */
-  public static fromFenString(fenString: FenString): Position {
+  static fromFenString(fenString: FenString): Position {
     if (!fenChecker.isValidFenString(fenString))
       throw new InvalidFenError(fenString);
 
@@ -48,9 +48,9 @@ export default class Position implements PositionInfo {
     const board = new Board(pieceStr);
     const position = new this({
       board,
-      castlingRights: this.CastlingRights.fromString(castlingStr),
+      castlingRights: this.#CastlingRights.fromString(castlingStr),
       colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations] as Color,
-      enPassantFile: (enPassant === "-")
+      enPassantFile: (enPassant === fenChecker.nullCharacter)
         ? -1
         : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
       halfMoveClock: +halfMoveClock,
@@ -60,15 +60,15 @@ export default class Position implements PositionInfo {
     return position;
   }
 
-  public readonly board: Board;
-  public readonly castlingRights: CastlingRights;
-  public readonly colorToMove: Color;
-  public readonly enPassantFile: number;
-  public readonly halfMoveClock: number;
-  public readonly fullMoveNumber: number;
-  public game: ChessGame;
-  public prev: Position | null = null;
-  public next: Position[] = [];
+  readonly board: Board;
+  readonly castlingRights: CastlingRights;
+  readonly colorToMove: Color;
+  readonly enPassantFile: number;
+  readonly halfMoveClock: number;
+  readonly fullMoveNumber: number;
+  game: ChessGame;
+  prev: Position | null = null;
+  next: Position[] = [];
   #legalMoves: Move[];
   #attackedCoordsSet: Set<Coords>;
 
@@ -81,11 +81,11 @@ export default class Position implements PositionInfo {
   // STATE
   // ===== ===== ===== ===== =====
 
-  public get inactiveColor(): Color {
+  get inactiveColor(): Color {
     return ReversedColor[this.colorToMove];
   }
 
-  public get attackedCoordsSet(): Set<Coords> {
+  get attackedCoordsSet(): Set<Coords> {
     this.#attackedCoordsSet ??= this.board.getCoordsAttackedByColor(this.inactiveColor);
     return this.#attackedCoordsSet;
   }
@@ -97,7 +97,7 @@ export default class Position implements PositionInfo {
   /**
    * Determine whether the position is active, checkmate or a draw and what kind of draw.
    */
-  public get status(): GameStatus {
+  get status(): GameStatus {
     if (!this.legalMoves.length)
       return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
     if (this.isInsufficientMaterial())
@@ -109,11 +109,11 @@ export default class Position implements PositionInfo {
     return GameStatus.ACTIVE;
   }
 
-  public isCheck(): boolean {
+  isCheck(): boolean {
     return this.attackedCoordsSet.has(this.board.kings[this.colorToMove].coords);
   }
 
-  protected isInsufficientMaterial(): boolean {
+  isInsufficientMaterial(): boolean {
     if (this.board.size > 4)
       return false;
 
@@ -132,7 +132,7 @@ export default class Position implements PositionInfo {
       );
   }
 
-  protected isTripleRepetition(): boolean {
+  isTripleRepetition(): boolean {
     const pieceStr = this.board.toString();
     let repetitionCount = 0;
 
@@ -152,14 +152,14 @@ export default class Position implements PositionInfo {
   // LEGAL MOVES
   // ===== ===== ===== ===== =====
 
-  public get legalMoves(): Move[] {
+  get legalMoves(): Move[] {
     if (this.#legalMoves)
       return this.#legalMoves;
 
     const legalMoves: Move[] = [];
 
-    for (const move of this.pseudoLegalMoves())
-      if (!this.isCheckAfterMove(move[0], move[1]))
+    for (const move of this.#pseudoLegalMoves())
+      if (!this.#isCheckAfterMove(move[0], move[1]))
         legalMoves.push(move);
 
     if (!this.isCheck()) {
@@ -177,7 +177,7 @@ export default class Position implements PositionInfo {
   /**
    * @returns A human-readable array of moves as strings following the pattern `e2-e4`.
    */
-  public get legalMovesAsNotation(): string[] {
+  get legalMovesAsNotation(): string[] {
     return this.legalMoves.map(([srcCoords, destCoords]) => {
       return `${srcCoords.notation}-${destCoords.notation}`;
     });
@@ -186,7 +186,7 @@ export default class Position implements PositionInfo {
   /**
    * Generates the moves that could be played without regard for whether it puts the current player in check.
    */
-  protected *pseudoLegalMoves(): Generator<[Coords, Coords], void, unknown> {
+  *#pseudoLegalMoves(): Generator<[Coords, Coords], void, unknown> {
     const entries = [...this.board.entries()];
 
     for (const [srcCoords, piece] of entries)
@@ -196,16 +196,33 @@ export default class Position implements PositionInfo {
   }
 
   // ===== ===== ===== ===== =====
+  // MOVE TYPES
+  // ===== ===== ===== ===== =====
+
+  isEnPassantCapture(srcCoords: Coords, destCoords: Coords): boolean {
+    return destCoords.y === this.enPassantFile
+      && srcCoords.x === Piece.MIDDLE_RANKS[this.inactiveColor];
+  }
+
+  /**
+   * A different method is used in Chess960 to determine if a move is castling.
+   */
+  isCastling(king: Piece, destCoords: Coords): boolean {
+    return Math.abs(destCoords.y - king.coords.y) === 2;
+  }
+
+
+  // ===== ===== ===== ===== =====
   // PIECE MOVES
   // ===== ===== ===== ===== =====
 
-  protected handleRookMove(rook: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
+  #handleRookMove(rook: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
     if (Piece.isRookOnInitialSquare(rook, castlingRights))
       castlingRights.unset(rook.color, rook.coords.y);
     rook.board.transfer(rook.coords, destCoords);
   }
 
-  protected handlePawnMove(pawn: Piece, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.TYPES.QUEEN): void {
+  #handlePawnMove(pawn: Piece, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.TYPES.QUEEN): void {
     if (this.isEnPassantCapture(pawn.coords, destCoords)) {
       pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y));
       pawn.board.transfer(pawn.coords, destCoords);
@@ -218,12 +235,7 @@ export default class Position implements PositionInfo {
     pawn.board.transfer(pawn.coords, destCoords);
   }
 
-  public isEnPassantCapture(srcCoords: Coords, destCoords: Coords): boolean {
-    return destCoords.y === this.enPassantFile
-      && srcCoords.x === Piece.MIDDLE_RANKS[this.inactiveColor];
-  }
-
-  protected handleKingMove(king: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
+  #handleKingMove(king: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
     castlingRights[king.color].length = 0;
 
     if (!this.isCastling(king, destCoords)) {
@@ -231,10 +243,10 @@ export default class Position implements PositionInfo {
       return;
     }
 
-    this.castle(king, destCoords);
+    this.#castle(king, destCoords);
   }
 
-  protected castle(king: Piece, destCoords: Coords): void {
+  #castle(king: Piece, destCoords: Coords): void {
     const { board, coords: srcCoords } = king;
     const wing = Piece.getWingRelativeToKing(srcCoords.y, destCoords.y);
     // These are distinct from `destCoords` as the latter may point to a same-colored rook in the case of castling.
@@ -249,18 +261,11 @@ export default class Position implements PositionInfo {
   }
 
   /**
-   * A different method is used in Chess960 to determine if a move is castling.
-   */
-  protected isCastling(king: Piece, destCoords: Coords): boolean {
-    return Math.abs(destCoords.y - king.coords.y) === 2;
-  }
-
-  /**
    * [X] Capture en passant pawn
    * [ ] Handle promotion
    * [ ] Handle castling
    */
-  public isCheckAfterMove(srcCoords: Coords, destCoords: Coords): boolean {
+  #isCheckAfterMove(srcCoords: Coords, destCoords: Coords): boolean {
     const capturedPiece = (
       (this.board.get(srcCoords) as Piece).isPawn()
       && this.isEnPassantCapture(srcCoords, destCoords)
@@ -284,7 +289,7 @@ export default class Position implements PositionInfo {
    * The color to move isn't updated just yet as this position will be used
    * to verify if a move has put the currently active color in check.
    */
-  public createPositionFromMove(
+  createPositionFromMove(
     srcCoords: Coords,
     destCoords: Coords,
     promotionType: PromotedPieceInitial = Piece.TYPES.QUEEN,
@@ -301,11 +306,11 @@ export default class Position implements PositionInfo {
       castlingRights.unset(destPiece.color, destPiece.coords.y);
 
     if (isSrcPiecePawn)
-      this.handlePawnMove(srcPiece, destCoords, promotionType);
+      this.#handlePawnMove(srcPiece, destCoords, promotionType);
     else if (srcPiece.isKing())
-      this.handleKingMove(srcPiece, destCoords, castlingRights);
+      this.#handleKingMove(srcPiece, destCoords, castlingRights);
     else if (srcPiece.isRook())
-      this.handleRookMove(srcPiece, destCoords, castlingRights);
+      this.#handleRookMove(srcPiece, destCoords, castlingRights);
     else
       board.transfer(srcCoords, destCoords);
 
@@ -328,13 +333,13 @@ export default class Position implements PositionInfo {
   /**
    * @returns The FEN string of this position.
    */
-  public toString(): FenString {
+  toString(): FenString {
     return [
       this.board.toString(),
       Position.colorAbbreviations[this.colorToMove],
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
-        ? "-"
+        ? fenChecker.nullCharacter
         : this.board.Coords.get(
           Piece.MIDDLE_RANKS[this.colorToMove] - Piece.DIRECTIONS[this.colorToMove],
           this.enPassantFile

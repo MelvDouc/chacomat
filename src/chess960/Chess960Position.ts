@@ -7,13 +7,13 @@ import type {
 } from "@chacomat/types.js";
 
 export default class Chess960Position extends Position {
-  public static override CastlingRights = Chess960CastlingRights;
-  protected static override readonly useChess960Castling = true;
+  static override #CastlingRights = Chess960CastlingRights;
+  static override readonly #useChess960Castling = true;
 
-  public override readonly castlingRights: Chess960CastlingRights;
-  public override game: Chess960Game;
+  override readonly castlingRights: Chess960CastlingRights;
+  override game: Chess960Game;
 
-  protected override isCastling(king: Piece, destCoords: Coords): boolean {
+  override #isCastling(king: Piece, destCoords: Coords): boolean {
     return !!this.board.get(destCoords)?.isRook()
       && this.board.get(destCoords)!.color === king.color;
   }

@@ -1,5 +1,6 @@
 import Coords from "@chacomat/game/Coords.js";
 import Color from "@chacomat/utils/Color.js";
+import fenChecker from "@chacomat/utils/fen-checker.js";
 import { ConsoleColors } from "@chacomat/utils/Color.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
@@ -9,27 +10,28 @@ import type {
 } from "@chacomat/types.js";
 
 export default class Board extends Map<Coords, Piece> {
-  private static readonly nullPiece = "0";
-  private static readonly nullPieceRegex = /0+/g;
+  static readonly #nullPiece = "0";
+  static readonly #nullPieceRegex = /0+/g;
 
-  public position: Position;
-  public readonly kings = {} as BlackAndWhite<Piece>;
+  position: Position;
+  readonly kings = {} as BlackAndWhite<Piece>;
 
   constructor(pieceStr?: string) {
     super();
 
     if (pieceStr) {
       pieceStr
-        .split("/")
+        .split(fenChecker.rowSeparator)
         .forEach((row, x) => {
           row
-            .replace(/\d+/g, (num) => Board.nullPiece.repeat(+num))
+            .replace(/\d+/g, (num) => Board.#nullPiece.repeat(+num))
             .split("")
             .forEach((item, y) => {
-              if (item === Board.nullPiece)
+              if (item === Board.#nullPiece)
                 return;
               const coords = Coords.get(x, y);
-              const piece = Piece.fromInitial(item as PieceInitial, this);
+              const piece = Piece.fromInitial(item as PieceInitial);
+              piece.board = this;
               piece.coords = coords;
               this.set(coords, piece);
               if (piece.isKing())
@@ -39,24 +41,24 @@ export default class Board extends Map<Coords, Piece> {
     }
   }
 
-  public get Coords(): typeof Coords {
+  get Coords(): typeof Coords {
     return Coords;
   }
 
-  public getRank(rank: number) {
+  getRank(rank: number) {
     return {
       getFile: (file: number) => this.get(Coords.get(rank, file))
     };
   }
 
-  public transfer(srcCoords: Coords, destCoords: Coords): this {
+  transfer(srcCoords: Coords, destCoords: Coords): this {
     const srcPiece = this.get(srcCoords)!;
     this.set(destCoords, srcPiece).delete(srcCoords);
     srcPiece.coords = destCoords;
     return this;
   }
 
-  public getCoordsAttackedByColor(color: Color): Set<Coords> {
+  getCoordsAttackedByColor(color: Color): Set<Coords> {
     const set = new Set<Coords>();
 
     for (const piece of this.values())
@@ -70,19 +72,22 @@ export default class Board extends Map<Coords, Piece> {
   /**
    * Clones this instance and every piece it contains.
    */
-  public clone(): Board {
+  clone(): Board {
     const boardClone = new Board();
     for (const [coords, piece] of this) {
-      const pieceClone = piece.clone();
-      pieceClone.board = boardClone;
-      boardClone.set(coords, pieceClone);
+      boardClone.set(coords, new Piece({
+        color: piece.color,
+        type: piece.type,
+        coords,
+        board: boardClone
+      }));
     }
     boardClone.kings[Color.WHITE] = boardClone.get(this.kings[Color.WHITE].coords)!;
     boardClone.kings[Color.BLACK] = boardClone.get(this.kings[Color.BLACK].coords)!;
     return boardClone;
   }
 
-  public getNonKingPiecesByColor(): BlackAndWhite<Piece[]> {
+  getNonKingPiecesByColor(): BlackAndWhite<Piece[]> {
     return [...this.values()].reduce((acc, piece) => {
       if (!piece.isKing())
         acc[piece.color].push(piece);
@@ -97,7 +102,7 @@ export default class Board extends Map<Coords, Piece> {
    * Get an bidimensional array representing the placement of each piece.
    * Empty squares are null.
    */
-  public getPieceArray(): (Piece | null)[][] {
+  getPieceArray(): (Piece | null)[][] {
     return Array.from({ length: 8 }, (_, x) => {
       return Array.from({ length: 8 }, (_, y) => {
         return this.get(Coords.get(x, y)) ?? null;
@@ -105,7 +110,7 @@ export default class Board extends Map<Coords, Piece> {
     });
   }
 
-  public log(): void {
+  log(): void {
     console.log(
       Array
         .from({ length: 8 }, (_, x) => {
@@ -124,14 +129,14 @@ export default class Board extends Map<Coords, Piece> {
   /**
    * The board portion of an FEN string.
    */
-  public override toString(): string {
+  override toString(): string {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array
-          .from({ length: 8 }, (_, y) => this.get(Coords.get(x, y))?.initial ?? Board.nullPiece)
+          .from({ length: 8 }, (_, y) => this.get(Coords.get(x, y))?.initial ?? Board.#nullPiece)
           .join("")
-          .replace(Board.nullPieceRegex, (zeros) => String(zeros.length));
+          .replace(Board.#nullPieceRegex, (zeros) => String(zeros.length));
       })
-      .join("/");
+      .join(fenChecker.rowSeparator);
   }
 }

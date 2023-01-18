@@ -8,9 +8,9 @@ import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
 import { ChessGameParameters, PositionInfo } from "@chacomat/types.js";
 
 export default class Chess960Game extends ChessGame {
-  protected static override readonly Position = Chess960Position;
+  static override readonly #Position = Chess960Position;
 
-  private static getRandomStartPositionInfo(): PositionInfo {
+  static #getRandomStartPositionInfo(): PositionInfo {
     const piecePlacement = getChess960PiecePlacement();
     const board = new Board();
     const castlingRights = new Chess960CastlingRights();
@@ -58,9 +58,10 @@ export default class Chess960Game extends ChessGame {
   }
 
   constructor(chessGameParameters: ChessGameParameters = {}) {
-    if (!chessGameParameters.fenString && !chessGameParameters.positionInfo)
-      super({ positionInfo: Chess960Game.getRandomStartPositionInfo() });
-    else
-      super(chessGameParameters);
+    if (!chessGameParameters.fenString && !chessGameParameters.positionInfo) {
+      const positionInfo = Chess960Game.#getRandomStartPositionInfo();
+      chessGameParameters.positionInfo = positionInfo;
+    }
+    super(chessGameParameters);
   }
 }

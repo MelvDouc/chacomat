@@ -14,7 +14,9 @@ const fenRegex = new RegExp("^" + [
 ].map((regex) => regex.source).join(" ") + "$");
 
 export default {
+  nullCharacter: "-",
+  rowSeparator: "/",
   isValidFenString: (fenString: FenString): boolean => {
     return fenRegex.test(fenString);
   }
-};
+} as const;
