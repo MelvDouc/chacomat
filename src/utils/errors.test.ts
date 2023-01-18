@@ -1,4 +1,5 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
+import Position from "@chacomat/game/Position.js";
 
 describe("IllegalMoveError", () => {
   it("should be thrown on an illegal move", () => {
@@ -25,5 +26,5 @@ describe("InactiveGameError", () => {
 });
 
 describe("InvalidFenError", () => {
-
+  expect(() => Position.fromFenString(Position.startFenString.replace("8", "9"))).toThrow(ChessGame.errors.InvalidFenError);
 });
