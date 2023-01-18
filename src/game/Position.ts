@@ -114,6 +114,9 @@ export default class Position implements PositionInfo {
   }
 
   protected isInsufficientMaterial(): boolean {
+    if (this.board.size > 4)
+      return false;
+
     const pieces = this.board.getNonKingPiecesByColor();
 
     if (pieces[Color.WHITE].length > 1 || pieces[Color.BLACK].length > 1)
@@ -262,7 +265,7 @@ export default class Position implements PositionInfo {
       (this.board.get(srcCoords) as Piece).isPawn()
       && this.isEnPassantCapture(srcCoords, destCoords)
     )
-      ? this.board.get(this.board.Coords.get(srcCoords.x, destCoords.y)) as Piece
+      ? this.board.getRank(srcCoords.x).getFile(destCoords.y) as Piece
       : this.board.get(destCoords);
     capturedPiece && this.board.delete(capturedPiece.coords);
     this.board.transfer(srcCoords, destCoords);
