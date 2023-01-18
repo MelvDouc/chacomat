@@ -37,6 +37,8 @@ const spanishGame = new ChessGame({
 spanishGame.logBoard();
 ```
 
+![log of a chessboard](https://imgur.com/a/BOP8r4G "game.logBoard()")
+
 ## Get the pieces as an array
 
 ```typescript

@@ -115,7 +115,7 @@ export default class Board extends Map<Coords, Piece> {
             const bgColor = (x % 2 === y % 2) ? ConsoleColors.BgWhite : ConsoleColors.BgGreen;
             row += `${bgColor + ConsoleColors.FgBlack} ${char} ${ConsoleColors.Reset}`;
           }
-          return row;
+          return `  ${row}`;
         })
         .join("\n")
     );
