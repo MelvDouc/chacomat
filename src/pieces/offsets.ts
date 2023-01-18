@@ -28,7 +28,7 @@ const bishopOffsets: PieceOffsets = {
 const adjacentOffsets: PieceOffsets = {
   x: rookOffsets.x.concat(bishopOffsets.x),
   y: rookOffsets.y.concat(bishopOffsets.y)
-} as const;
+};
 
 export const pieceOffsets: Readonly<Record<Exclude<PieceType, PieceType.PAWN>, PieceOffsets>> = {
   [PieceType.KNIGHT]: knightOffsets,
