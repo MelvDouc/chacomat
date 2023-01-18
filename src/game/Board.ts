@@ -43,6 +43,12 @@ export default class Board extends Map<Coords, Piece> {
     return Coords;
   }
 
+  public getRank(rank: number) {
+    return {
+      getFile: (file: number) => this.get(Coords.get(rank, file))
+    };
+  }
+
   public transfer(srcCoords: Coords, destCoords: Coords): this {
     const srcPiece = this.get(srcCoords)!;
     this.set(destCoords, srcPiece).delete(srcCoords);
