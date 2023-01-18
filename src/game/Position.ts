@@ -1,7 +1,8 @@
 import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import { Color, GameStatus } from "@chacomat/utils/constants.js";
+import Color, { ReversedColor } from "@chacomat/utils/Color.js";
+import { GameStatus } from "@chacomat/utils/constants.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 import { InvalidFenError } from "@chacomat/utils/errors.js";
 import type {
@@ -81,7 +82,7 @@ export default class Position implements PositionInfo {
   // ===== ===== ===== ===== =====
 
   public get inactiveColor(): Color {
-    return (this.colorToMove === Color.WHITE) ? Color.BLACK : Color.WHITE;
+    return ReversedColor[this.colorToMove];
   }
 
   public get attackedCoordsSet(): Set<Coords> {

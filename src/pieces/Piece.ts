@@ -9,10 +9,8 @@ import {
   middleRanks,
   startRanks
 } from "@chacomat/pieces/placements.js";
-import {
-  Color,
-  PieceType
-} from "@chacomat/utils/constants.js";
+import Color, { ReversedColor } from "@chacomat/utils/Color.js";
+import { PieceType } from "@chacomat/utils/constants.js";
 import type {
   BlackPieceInitial,
   Board,
@@ -61,6 +59,10 @@ export default class Piece {
       && castlingRights[color].includes(y);
   }
 
+  /**
+   * Determine what color complex a bishop belongs to.
+   * @returns Whether a bishop is on a light square (0) or a dark square (1)
+   */
   public static getBishopSquareParity(bishop: Piece | null | undefined): 0 | 1 | typeof NaN {
     if (!bishop)
       return NaN;
@@ -88,7 +90,7 @@ export default class Piece {
   }
 
   public get oppositeColor(): Color {
-    return (this.color === Color.WHITE) ? Color.BLACK : Color.WHITE;
+    return ReversedColor[this.color];
   }
 
   public *attackedCoords(): CoordsGenerator {
@@ -96,7 +98,7 @@ export default class Piece {
   }
 
   public *pseudoLegalMoves(): CoordsGenerator {
-    if (this.isPawn()) {
+    if (this.type === PieceType.PAWN) {
       yield* pseudoLegalPawnMoves(this);
       return;
     }

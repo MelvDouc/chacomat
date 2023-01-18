@@ -1,7 +1,7 @@
 import Position from "@chacomat/game/Position.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import { Color } from "@chacomat/utils/constants.js";
+import Color from "@chacomat/utils/Color.js";
 
 describe("A board", () => {
   it("should be serializable", () => {

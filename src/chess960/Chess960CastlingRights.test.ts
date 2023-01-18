@@ -1,5 +1,5 @@
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
-import { Color } from "@chacomat/utils/constants.js";
+import Color from "@chacomat/utils/Color.js";
 
 describe("Chess960CastlingRights", () => {
   it("should parse a castling string correctly #1", () => {

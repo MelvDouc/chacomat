@@ -3,7 +3,7 @@ import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Board from "@chacomat/game/Board.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import { Color } from "@chacomat/utils/constants.js";
+import Color from "@chacomat/utils/Color.js";
 import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
 import { ChessGameParameters, PositionInfo } from "@chacomat/types.js";
 

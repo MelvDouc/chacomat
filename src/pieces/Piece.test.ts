@@ -1,4 +1,4 @@
-import { Color } from "@chacomat/utils/constants.js";
+import Color from "@chacomat/utils/Color.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Coords from "@chacomat/game/Coords.js";
 import ChessGame from "@chacomat/game/ChessGame.js";

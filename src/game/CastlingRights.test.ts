@@ -1,6 +1,7 @@
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
-import { Color, Wing } from "@chacomat/utils/constants.js";
+import Color from "@chacomat/utils/Color.js";
+import { Wing } from "@chacomat/utils/constants.js";
 
 describe("Castling rights", () => {
   it("should be convertible from string to object", () => {

@@ -1,5 +1,6 @@
 import Coords from "@chacomat/game/Coords.js";
-import { Color, ConsoleColors } from "@chacomat/utils/constants.js";
+import Color from "@chacomat/utils/Color.js";
+import { ConsoleColors } from "@chacomat/utils/Color.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
   BlackAndWhite,

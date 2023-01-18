@@ -1,6 +1,7 @@
 import Coords from "@chacomat/game/Coords.js";
 import Position from "@chacomat/game/Position.js";
-import { Color, GameStatus } from "@chacomat/utils/constants.js";
+import Color from "@chacomat/utils/Color.js";
+import { GameStatus } from "@chacomat/utils/constants.js";
 import {
   IllegalMoveError,
   InactiveGameError,

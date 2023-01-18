@@ -1,6 +1,6 @@
 import Chess960Game from "@chacomat/chess960/Chess960Game.js";
 import Chess960Position from "@chacomat/chess960/Chess960Position.js";
-import { Color } from "@chacomat/utils/constants.js";
+import Color from "@chacomat/utils/Color.js";
 
 describe("A Chess960 game", () => {
   it("should detect check", () => {

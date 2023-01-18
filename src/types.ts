@@ -1,7 +1,6 @@
-import { Color, GameStatus, PieceType, Wing } from "@chacomat/utils/constants.js";
+import { GameStatus, PieceType, Wing } from "@chacomat/utils/constants.js";
 
 export type {
-  Color,
   GameStatus,
   PieceType,
   Wing
@@ -26,6 +25,8 @@ export type CastlingRights = import("./game/CastlingRights.js").default;
 export type Chess960Game = import("./chess960/Chess960Game.js").default;
 export type Chess960Position = import("./chess960/Chess960Position.js").default;
 export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.js").default;
+
+export type Color = import("./utils/Color.js").default;
 
 export type Coords = import("./game/Coords.js").default;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
