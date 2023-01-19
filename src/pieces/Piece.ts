@@ -1,4 +1,4 @@
-import { castlingCoords, getWing } from "@chacomat/pieces/castling.js";
+import { canCastleToFile, getWing } from "@chacomat/pieces/castling.js";
 import {
   attackedCoordsGenerators,
   pseudoLegalPawnMoves
@@ -9,17 +9,15 @@ import {
   middleRanks,
   startRanks
 } from "@chacomat/pieces/placements.js";
-import Color, { ReversedColor } from "@chacomat/utils/Color.js";
-import { PieceType } from "@chacomat/utils/constants.js";
 import type {
   BlackPieceInitial,
   Board,
   CastlingRights,
   Coords,
-  CoordsGenerator,
-  PieceParameters,
-  PieceInitial
+  CoordsGenerator, PieceInitial, PieceParameters
 } from "@chacomat/types.js";
+import Color, { ReversedColor } from "@chacomat/utils/Color.js";
+import { PieceType } from "@chacomat/utils/constants.js";
 
 export default class Piece {
   static readonly TYPES = PieceType;
@@ -49,8 +47,13 @@ export default class Piece {
     return getWing(kingY, compareY);
   }
 
-  static *castlingCoords(king: Piece, useChess960Rules: boolean) {
-    yield* castlingCoords(king, useChess960Rules);
+  static *castlingCoords({ color, board, coords }: Piece, useChess960Rules: boolean): CoordsGenerator {
+    for (const srcRookY of board.position.castlingRights[color])
+      if (canCastleToFile({ kingCoords: coords, board }, srcRookY))
+        // Yield an empty file in regular chess and the castling rook's file in Chess960.
+        yield (useChess960Rules)
+          ? board.Coords(coords.x, srcRookY)
+          : board.Coords(coords.x, castledFiles.KING[getWing(coords.y, srcRookY)]);
   }
 
   static isRookOnInitialSquare({ coords: { x, y }, color }: Piece, castlingRights: CastlingRights): boolean {

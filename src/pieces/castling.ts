@@ -1,16 +1,14 @@
 import { castledFiles } from "@chacomat/pieces/placements.js";
-import { Wing } from "@chacomat/utils/constants.js";
 import type {
   Board,
-  Coords,
-  CoordsGenerator,
-  Piece
+  Coords
 } from "@chacomat/types.js";
+import { Wing } from "@chacomat/utils/constants.js";
 
 /**
  * This assumes that the king's coordinates are in keeping with the position's castling rights.
  */
-function canCastleToFile(
+export function canCastleToFile(
   { board, kingCoords }: { board: Board, kingCoords: Coords; },
   srcRookY: number
 ): boolean {
@@ -57,13 +55,4 @@ export function getWing(kingY: number, compareY: number): Wing {
   return (compareY < kingY)
     ? Wing.QUEEN_SIDE
     : Wing.KING_SIDE;
-}
-
-export function* castlingCoords({ color, board, coords }: Piece, useChess960Rules: boolean): CoordsGenerator {
-  for (const srcRookY of board.position.castlingRights[color])
-    if (canCastleToFile({ kingCoords: coords, board }, srcRookY))
-      // Yield an empty file in regular chess and the castling rook's file in Chess960.
-      yield (useChess960Rules)
-        ? board.Coords(coords.x, srcRookY)
-        : board.Coords(coords.x, castledFiles.KING[getWing(coords.y, srcRookY)]);
 }

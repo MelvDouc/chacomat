@@ -1,5 +1,11 @@
 import Coords from "@chacomat/game/Coords.js";
 import Position from "@chacomat/game/Position.js";
+import type {
+  AlgebraicSquareNotation,
+  ChessGameMetaInfo,
+  ChessGameParameters,
+  PromotedPieceType
+} from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
 import {
@@ -7,12 +13,6 @@ import {
   InactiveGameError,
   InvalidFenError
 } from "@chacomat/utils/errors.js";
-import type {
-  AlgebraicSquareNotation,
-  ChessGameMetaInfo,
-  ChessGameParameters,
-  PromotedPieceType,
-} from "@chacomat/types.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -52,6 +52,10 @@ export default class ChessGame {
     if (position.isTripleRepetition())
       return GameStatus.TRIPLE_REPETITION;
     return GameStatus.ACTIVE;
+  }
+
+  get errors() {
+    return (this.constructor as typeof ChessGame).errors;
   }
 
   /**
