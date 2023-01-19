@@ -1,76 +1,80 @@
 import type {
   AlgebraicSquareNotation,
-  ChessFileName
+  ChessFileName,
+  Coords
 } from "@chacomat/types.js";
 
-export default class Coords {
-  static readonly #all: Record<number, Record<number, { coords: Coords; notation: AlgebraicSquareNotation; }>> = {};
-  static readonly #coordsByNotation = {} as Record<AlgebraicSquareNotation, Coords>;
+type CoordsConstructor = {
+  (x: number, y: number): Coords;
+  getFileNameIndex: (fileName: ChessFileName | Uppercase<ChessFileName>) => number;
+  getFileName: (file: number) => ChessFileName;
+  fromNotation: (notation: AlgebraicSquareNotation) => Coords | null;
+  isSafe: (coordinate: number) => boolean;
+};
 
-  static getFileNameIndex(fileName: ChessFileName | Uppercase<ChessFileName>): number {
-    return fileName.toLowerCase().charCodeAt(0) - 97;
-  }
+const ALL_COORDS: Record<number, Record<number, { coords: Coords; notation: AlgebraicSquareNotation; }>> = {};
+const coordsByNotation = {} as Record<AlgebraicSquareNotation, Coords>;
 
-  static getFileName(file: number): ChessFileName {
-    return String.fromCharCode(97 + file) as ChessFileName;
-  }
+// @ts-ignore
+const Coords: CoordsConstructor = function (x, y) {
+  return ALL_COORDS[x][y].coords;
+};
 
-  static fromNotation(notation: AlgebraicSquareNotation): Coords | null {
-    return Coords.#coordsByNotation[notation] ?? null;
-  }
+Coords.getFileNameIndex = (fileName: ChessFileName | Uppercase<ChessFileName>): number => {
+  return fileName.toLowerCase().charCodeAt(0) - 97;
+};
 
-  static get(x: number, y: number): Coords {
-    return Coords.#all[x][y].coords;
-  }
+Coords.getFileName = (file: number): ChessFileName => {
+  return String.fromCharCode(97 + file) as ChessFileName;
+};
 
-  static isSafe(coordinate: number): boolean {
-    return coordinate >= 0 && coordinate < 8;
-  }
+Coords.fromNotation = (notation: AlgebraicSquareNotation): Coords | null => {
+  return coordsByNotation[notation] ?? null;
+};
 
-  static {
-    for (let x = 0; x < 8; x++) {
-      Coords.#all[x] = {};
-      for (let y = 0; y < 8; y++) {
-        const coords = Object.create(Coords.prototype, {
-          x: {
-            value: x,
-            writable: false,
-            configurable: false,
-            enumerable: true
-          },
-          y: {
-            value: y,
-            writable: false,
-            configurable: false,
-            enumerable: true
-          }
-        });
-        const notation = Coords.getFileName(y) + String(8 - x) as AlgebraicSquareNotation;
-        Coords.#all[x][y] = {
-          coords,
-          notation
-        };
-        Coords.#coordsByNotation[notation] = coords;
+Coords.isSafe = (coordinate: number): boolean => {
+  return coordinate >= 0 && coordinate < 8;
+};
+
+for (let x = 0; x < 8; x++) {
+  ALL_COORDS[x] = {};
+  for (let y = 0; y < 8; y++) {
+    const coords = Object.create(Coords.prototype, {
+      x: {
+        value: x,
+        writable: false,
+        configurable: false,
+        enumerable: true
+      },
+      y: {
+        value: y,
+        writable: false,
+        configurable: false,
+        enumerable: true
+      },
+      notation: {
+        get() {
+          return ALL_COORDS[x][y].notation;
+        }
+      },
+      getPeer: {
+        value: (xOffset: number, yOffset: number): Coords | null => {
+          const x2 = x + xOffset,
+            y2 = y + yOffset;
+          if (Coords.isSafe(x2) && Coords.isSafe(y2))
+            return ALL_COORDS[x2][y2].coords;
+          return null;
+        }
       }
-    }
-  }
+    });
 
-  readonly x: number;
-  readonly y: number;
-
-  constructor() {
-    throw new TypeError("This constructor is private.");
-  }
-
-  get notation(): AlgebraicSquareNotation {
-    return Coords.#all[this.x][this.y].notation;
-  }
-
-  getPeer(xOffset: number, yOffset: number): Coords | null {
-    const x = this.x + xOffset,
-      y = this.y + yOffset;
-    if (Coords.isSafe(x) && Coords.isSafe(y))
-      return Coords.#all[x][y].coords;
-    return null;
+    const notation = Coords.getFileName(y) + String(8 - x) as AlgebraicSquareNotation;
+    ALL_COORDS[x][y] = {
+      coords,
+      notation
+    };
+    coordsByNotation[notation] = coords;
   }
 }
+
+export default Coords;

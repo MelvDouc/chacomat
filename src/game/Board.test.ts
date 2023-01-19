@@ -11,9 +11,9 @@ describe("A board", () => {
       board = game.currentPosition.board;
 
     for (let y = 0; y < 8; y++) {
-      const c = board.Coords.get(1, y);
+      const c = board.Coords(1, y);
       board.set(c, new Piece({ color: Color.BLACK, type: Piece.TYPES.PAWN, coords: c, board }));
-      const c2 = board.Coords.get(6, y);
+      const c2 = board.Coords(6, y);
       board.set(c2, new Piece({ color: Color.WHITE, type: Piece.TYPES.PAWN, coords: c2, board }));
     }
 

@@ -16,7 +16,7 @@ function canCastleToFile(
 ): boolean {
   const { x: kingX, y: kingY } = kingCoords;
   const wing = getWing(kingY, srcRookY);
-  const rookCoords = board.Coords.get(kingX, srcRookY);
+  const rookCoords = board.Coords(kingX, srcRookY);
 
   // The squares traversed by the king must not be attacked,
   // and they must be either empty or occupied by the castling rook.
@@ -25,7 +25,7 @@ function canCastleToFile(
 
   if (kingDirection !== 0) {
     for (let y = kingY + kingDirection; ; y += kingDirection) {
-      const destCoords = board.Coords.get(kingX, y);
+      const destCoords = board.Coords(kingX, y);
       if (
         board.position.attackedCoordsSet.has(destCoords)
         || destCoords !== rookCoords && board.has(destCoords)
@@ -42,7 +42,7 @@ function canCastleToFile(
 
   if (rookDirection !== 0) {
     for (let y = rookCoords.y + rookDirection; ; y += rookDirection) {
-      const destCoords = board.Coords.get(kingX, y);
+      const destCoords = board.Coords(kingX, y);
       if (destCoords !== kingCoords && board.has(destCoords))
         return false;
       if (y === destRookY)
@@ -64,6 +64,6 @@ export function* castlingCoords({ color, board, coords }: Piece, useChess960Rule
     if (canCastleToFile({ kingCoords: coords, board }, srcRookY))
       // Yield an empty file in regular chess and the castling rook's file in Chess960.
       yield (useChess960Rules)
-        ? board.Coords.get(coords.x, srcRookY)
-        : board.Coords.get(coords.x, castledFiles.KING[getWing(coords.y, srcRookY)]);
+        ? board.Coords(coords.x, srcRookY)
+        : board.Coords(coords.x, castledFiles.KING[getWing(coords.y, srcRookY)]);
 }

@@ -25,28 +25,16 @@ export default class Board extends Map<Coords, Piece> {
 
       for (pieceKey in piecePlacement) {
         for (const y of piecePlacement[pieceKey]) {
-          const coords = Coords.get(pieceRank, y);
-          board.set(coords, new Piece({
-            color,
-            board,
-            coords,
-            type: pieceKey
-          }));
+          const coords = Coords(pieceRank, y);
+          board.set(coords, new Piece({ color, board, coords, type: pieceKey }));
         }
       }
 
-      board.kings[color] = board
-        .getRank(pieceRank)
-        .getFile(piecePlacement[Piece.TYPES.KING][0])!;
+      board.kings[color] = board.getRank(pieceRank).getFile(piecePlacement[Piece.TYPES.KING][0])!;
 
       for (let y = 0; y < 8; y++) {
-        const coords = Coords.get(Piece.START_RANKS.PAWN[color], y);
-        board.set(coords, new Piece({
-          color,
-          board,
-          coords,
-          type: Piece.TYPES.PAWN
-        }));
+        const coords = Coords(Piece.START_RANKS.PAWN[color], y);
+        board.set(coords, new Piece({ color, board, coords, type: Piece.TYPES.PAWN }));
       }
     }
 
@@ -69,7 +57,7 @@ export default class Board extends Map<Coords, Piece> {
             .forEach((item, y) => {
               if (item === Board.#nullPiece)
                 return;
-              const coords = Coords.get(x, y);
+              const coords = Coords(x, y);
               const piece = Piece.fromInitial(item as PieceInitial);
               piece.board = this;
               piece.coords = coords;
@@ -87,7 +75,7 @@ export default class Board extends Map<Coords, Piece> {
 
   getRank(rank: number) {
     return {
-      getFile: (file: number) => this.get(Coords.get(rank, file))
+      getFile: (file: number) => this.get(Coords(rank, file))
     };
   }
 
@@ -145,7 +133,7 @@ export default class Board extends Map<Coords, Piece> {
   getPieceArray(): (Piece | null)[][] {
     return Array.from({ length: 8 }, (_, x) => {
       return Array.from({ length: 8 }, (_, y) => {
-        return this.get(Coords.get(x, y)) ?? null;
+        return this.get(Coords(x, y)) ?? null;
       });
     });
   }
@@ -156,7 +144,7 @@ export default class Board extends Map<Coords, Piece> {
         .from({ length: 8 }, (_, x) => {
           let row = "";
           for (let y = 0; y < 8; y++) {
-            const char = this.get(this.Coords.get(x, y))?.initial ?? " ";
+            const char = this.get(this.Coords(x, y))?.initial ?? " ";
             const bgColor = (x % 2 === y % 2) ? ConsoleColors.BgWhite : ConsoleColors.BgGreen;
             row += `${bgColor + ConsoleColors.FgBlack} ${char} ${ConsoleColors.Reset}`;
           }
@@ -173,7 +161,7 @@ export default class Board extends Map<Coords, Piece> {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array
-          .from({ length: 8 }, (_, y) => this.get(Coords.get(x, y))?.initial ?? Board.#nullPiece)
+          .from({ length: 8 }, (_, y) => this.get(Coords(x, y))?.initial ?? Board.#nullPiece)
           .join("")
           .replace(Board.#nullPieceRegex, (zeros) => String(zeros.length));
       })

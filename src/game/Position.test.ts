@@ -15,8 +15,8 @@ describe("FEN string", () => {
     });
     const pos1 = game.currentPosition;
     const pos2 = pos1.createPositionFromMove(
-      pos1.board.Coords.get(2, 1),
-      pos1.board.Coords.get(3, 0),
+      pos1.board.Coords(2, 1),
+      pos1.board.Coords(3, 0),
       PieceType.QUEEN,
       true,
     );

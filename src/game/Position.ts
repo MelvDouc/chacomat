@@ -223,7 +223,7 @@ export default class Position implements PositionInfo {
 
   #handlePawnMove(pawn: Piece, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.TYPES.QUEEN): void {
     if (this.isEnPassantCapture(pawn.coords, destCoords)) {
-      pawn.board.delete(pawn.board.Coords.get(pawn.coords.x, destCoords.y));
+      pawn.board.delete(pawn.board.Coords(pawn.coords.x, destCoords.y));
       pawn.board.transfer(pawn.coords, destCoords);
       return;
     }
@@ -249,11 +249,11 @@ export default class Position implements PositionInfo {
     const { board, coords: srcCoords } = king;
     const wing = Piece.getWingRelativeToKing(srcCoords.y, destCoords.y);
     // These are distinct from `destCoords` as the latter may point to a same-colored rook in the case of castling.
-    const destKingCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_FILES.KING[wing]);
+    const destKingCoords = board.Coords(srcCoords.x, Piece.CASTLED_FILES.KING[wing]);
     const rookSrcCoords = board.get(destCoords)?.isRook()
       ? destCoords
-      : board.Coords.get(destCoords.x, wing);
-    const rookDestCoords = board.Coords.get(srcCoords.x, Piece.CASTLED_FILES.ROOK[wing]);
+      : board.Coords(destCoords.x, wing);
+    const rookDestCoords = board.Coords(srcCoords.x, Piece.CASTLED_FILES.ROOK[wing]);
     board
       .transfer(srcCoords, destKingCoords)
       .transfer(rookSrcCoords, rookDestCoords);
@@ -339,7 +339,7 @@ export default class Position implements PositionInfo {
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
         ? fenChecker.nullCharacter
-        : this.board.Coords.get(
+        : this.board.Coords(
           Piece.MIDDLE_RANKS[this.colorToMove] - Piece.DIRECTIONS[this.colorToMove],
           this.enPassantFile
         ).notation,

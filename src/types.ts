@@ -28,11 +28,17 @@ export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.j
 
 export type Color = import("./utils/Color.js").default;
 
-export type Coords = import("./game/Coords.js").default;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
 
 export type Piece = import("./pieces/Piece.js").default;
+
+export type Coords = {
+  readonly x: number;
+  readonly y: number;
+  get notation(): AlgebraicSquareNotation;
+  getPeer: (xOffset: number, yOffset: number) => Coords | null;
+};
 
 export type BlackAndWhite<T> = {
   [K in Color]: T;
