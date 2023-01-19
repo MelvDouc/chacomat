@@ -23,3 +23,14 @@ export enum PieceType {
   QUEEN = "Q",
   KING = "K"
 }
+
+export enum File {
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h
+}

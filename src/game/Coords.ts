@@ -1,13 +1,12 @@
+import { File } from "@chacomat/utils/constants.js";
 import type {
   AlgebraicSquareNotation,
-  ChessFileName,
   Coords
 } from "@chacomat/types.js";
 
 type CoordsConstructor = {
   (x: number, y: number): Coords;
-  getFileNameIndex: (fileName: ChessFileName | Uppercase<ChessFileName>) => number;
-  getFileName: (file: number) => ChessFileName;
+  File: typeof File;
   fromNotation: (notation: AlgebraicSquareNotation) => Coords | null;
   isSafe: (coordinate: number) => boolean;
 };
@@ -19,13 +18,7 @@ const Coords = function (x, y) {
   return ALL_COORDS[x][y].coords;
 } as CoordsConstructor;
 
-Coords.getFileNameIndex = (fileName: ChessFileName | Uppercase<ChessFileName>): number => {
-  return fileName.toLowerCase().charCodeAt(0) - 97;
-};
-
-Coords.getFileName = (file: number): ChessFileName => {
-  return String.fromCharCode(97 + file) as ChessFileName;
-};
+Coords.File = File;
 
 Coords.fromNotation = (notation: AlgebraicSquareNotation): Coords | null => {
   return coordsByNotation[notation] ?? null;
@@ -67,7 +60,7 @@ for (let x = 0; x < 8; x++) {
       }
     });
 
-    const notation = Coords.getFileName(y) + String(8 - x) as AlgebraicSquareNotation;
+    const notation = File[y] + String(8 - x) as AlgebraicSquareNotation;
     ALL_COORDS[x][y] = {
       coords,
       notation

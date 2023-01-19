@@ -1,24 +1,16 @@
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import Coords from "@chacomat/game/Coords.js";
-import type {
-  ChessFileName
-} from "@chacomat/types.js";
+import type { ChessFileName } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 
 export default class Chess960CastlingRights extends CastlingRights {
-  static readonly #allowedFiles = {
-    [Color.WHITE]: "ABCDEFGH",
-    [Color.BLACK]: "abcdefgh"
-  };
-
   public static override fromString(str: string): Chess960CastlingRights {
     const castlingRights = new Chess960CastlingRights();
     [...str].forEach((char) => {
-      if (Chess960CastlingRights.#allowedFiles[Color.WHITE].includes(char))
-        castlingRights[Color.WHITE].push(Coords.getFileNameIndex(char as Uppercase<ChessFileName>));
-      if (Chess960CastlingRights.#allowedFiles[Color.BLACK].includes(char))
-        castlingRights[Color.BLACK].push(Coords.getFileNameIndex(char as ChessFileName));
+      const initial = char.toLowerCase() as ChessFileName;
+      const color = (initial === char) ? Color.BLACK : Color.WHITE;
+      castlingRights[color].push(Coords.File[initial]);
     });
     return castlingRights;
   }
@@ -26,8 +18,8 @@ export default class Chess960CastlingRights extends CastlingRights {
   public override toString(): string {
     let str = "";
 
-    this[Color.WHITE].forEach((file) => str += Coords.getFileName(file).toUpperCase());
-    this[Color.BLACK].forEach((file) => str += Coords.getFileName(file));
+    this[Color.WHITE].forEach((fileIndex) => str += Coords.File[fileIndex].toUpperCase());
+    this[Color.BLACK].forEach((fileIndex) => str += Coords.File[fileIndex]);
 
     return str || fenChecker.nullCharacter;
   }
