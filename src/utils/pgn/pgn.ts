@@ -23,7 +23,7 @@ const HALF_MOVE_REGEXES: Record<string, {
         return dest.x === destX
           && dest.y === y
           && board.get(src)?.isPawn();
-      })!;
+      });
     }
   },
   PAWN_CAPTURE: {
@@ -37,7 +37,7 @@ const HALF_MOVE_REGEXES: Record<string, {
           && dest.x === destX
           && dest.y === destY
           && board.get(src)?.isPawn();
-      })!;
+      });
     }
   },
   CLEAR_PIECE_MOVE: {
@@ -50,7 +50,7 @@ const HALF_MOVE_REGEXES: Record<string, {
         return dest.x === destX
           && dest.y === destY
           && board.get(src)?.type === moveText[0];
-      })!;
+      });
     }
   },
   AMBIGUOUS_PIECE_MOVE: {
@@ -79,7 +79,7 @@ const HALF_MOVE_REGEXES: Record<string, {
         return dest.x === destX
           && dest.y === destY
           && board.get(src)?.type === moveText[0];
-      })!;
+      });
     }
   },
   CASTLING: {

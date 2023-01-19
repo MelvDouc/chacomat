@@ -75,7 +75,7 @@ export interface GameMetaInfo {
   */
   date: string;
   ECO: string;
-  [x: string]: any;
+  [x: string]: unknown;
 }
 
 /**

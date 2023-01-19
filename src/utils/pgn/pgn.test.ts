@@ -28,7 +28,7 @@ describe("PNG reader", () => {
 
     playMovesFromPgn("3. Bd3 4. e5 Nf3 5. Bc5", game);
 
-    expect(game.currentPosition.toString()).toBe(`rn1qk1nr/pbpp1ppp/1p6/2b1p3/2P1P3/3B1N2/PP1P1PPP/RNBQK2R w KQkq - 2 5`);
+    expect(game.currentPosition.toString()).toBe("rn1qk1nr/pbpp1ppp/1p6/2b1p3/2P1P3/3B1N2/PP1P1PPP/RNBQK2R w KQkq - 2 5");
   });
 });
 
@@ -87,7 +87,7 @@ describe("An ambiguous move", () => {
 
 describe("Castling", () => {
   it("should work on both sides", () => {
-    const game = new ChessGame({ fenString: `4k2r/8/8/8/8/8/8/R3K3 w Qk - 0 1` });
+    const game = new ChessGame({ fenString: "4k2r/8/8/8/8/8/8/R3K3 w Qk - 0 1" });
 
     expect(() => playMovesFromPgn("1. 0-0-0 0-0", game)).not.toThrowError();
     game.logBoard();
