@@ -16,7 +16,5 @@ const fenRegex = new RegExp("^" + [
 export default {
   nullCharacter: "-",
   rowSeparator: "/",
-  isValidFenString: (fenString: FenString): boolean => {
-    return fenRegex.test(fenString);
-  }
+  isValidFenString: (fenString: FenString): boolean => fenRegex.test(fenString)
 } as const;

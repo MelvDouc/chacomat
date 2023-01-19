@@ -54,8 +54,7 @@ export default class Piece {
   }
 
   static isRookOnInitialSquare({ coords: { x, y }, color }: Piece, castlingRights: CastlingRights): boolean {
-    return x === startRanks.PIECE[color]
-      && castlingRights[color].includes(y);
+    return x === startRanks.PIECE[color] && castlingRights[color].includes(y);
   }
 
   /**

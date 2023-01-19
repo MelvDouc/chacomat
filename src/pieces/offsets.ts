@@ -10,11 +10,6 @@ export const pawnOffsets = {
   y: [-1, 1]
 };
 
-const knightOffsets: PieceOffsets = {
-  x: [-1, -2, -2, -1, 1, 2, 2, 1],
-  y: [-2, -1, 1, 2, 2, 1, -1, -2]
-};
-
 const rookOffsets: PieceOffsets = {
   x: [0, -1, 0, 1],
   y: [-1, 0, 1, 0]
@@ -31,7 +26,10 @@ const adjacentOffsets: PieceOffsets = {
 };
 
 export const pieceOffsets: Readonly<Record<Exclude<PieceType, PieceType.PAWN>, PieceOffsets>> = {
-  [PieceType.KNIGHT]: knightOffsets,
+  [PieceType.KNIGHT]: {
+    x: [-1, -2, -2, -1, 1, 2, 2, 1],
+    y: [-2, -1, 1, 2, 2, 1, -1, -2]
+  },
   [PieceType.BISHOP]: bishopOffsets,
   [PieceType.ROOK]: rookOffsets,
   [PieceType.QUEEN]: adjacentOffsets,
