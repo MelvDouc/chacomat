@@ -18,7 +18,7 @@ import type {
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
  */
 export default class ChessGame {
-  static readonly #Position = Position;
+  static readonly Position = Position;
   static readonly errors = {
     IllegalMoveError: IllegalMoveError,
     InactiveGameError: InactiveGameError,
@@ -29,7 +29,7 @@ export default class ChessGame {
   readonly metaInfo: Partial<ChessGameMetaInfo>;
 
   constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
-    const PositionConstructor = (this.constructor as typeof ChessGame).#Position;
+    const PositionConstructor = (this.constructor as typeof ChessGame).Position;
     const position = (positionInfo)
       ? new PositionConstructor(positionInfo)
       : PositionConstructor.fromFenString(fenString ?? Position.startFenString);

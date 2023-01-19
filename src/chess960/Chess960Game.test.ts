@@ -25,15 +25,17 @@ describe("A Chess960 game", () => {
 
   it("should allow castling", () => {
     const { currentPosition } = new Chess960Game({
-      fenString: "k7/pppppppp/8/8/8/8/PPPPPPPP/2R3KR b CH - 0 1"
-    }).moveWithNotations("a8", "b8");
-    const legalKingMoves = currentPosition.legalMovesAsNotation.filter((x) => x.startsWith("g1"));
+      fenString: "k7/pppppppp/8/8/8/8/PPPPPPPP/1R4KR b CH - 0 1"
+    })
+      .moveWithNotations("a8", "b8");
+    const { castlingRights, colorToMove, legalMovesAsNotation } = currentPosition;
 
+    console.log(castlingRights);
     expect(currentPosition).toBeInstanceOf(Chess960Position);
     expect(currentPosition.isCheck()).toBe(false);
-    expect(currentPosition.castlingRights[currentPosition.colorToMove]).toContain(2);
-    expect(currentPosition.castlingRights[currentPosition.colorToMove]).toContain(7);
-    expect(legalKingMoves).toContain("g1-c1");
-    expect(legalKingMoves).toContain("g1-h1");
+    expect(castlingRights[colorToMove]).toContain(1);
+    expect(castlingRights[colorToMove]).toContain(7);
+    expect(legalMovesAsNotation).toContain("g1-b1");
+    expect(legalMovesAsNotation).toContain("g1-h1");
   });
 });

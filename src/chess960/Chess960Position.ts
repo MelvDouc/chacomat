@@ -1,20 +1,45 @@
-import Position from "@chacomat/game/Position.js";
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
+import Position from "@chacomat/game/Position.js";
+import Board from "@chacomat/game/Board.js";
+import Piece from "@chacomat/pieces/Piece.js";
+import Color from "@chacomat/utils/Color.js";
+import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
 import type {
   Chess960Game,
   Coords,
-  Piece
+  CoordsGenerator,
+  PositionInfo
 } from "@chacomat/types.js";
 
 export default class Chess960Position extends Position {
-  static override #CastlingRights = Chess960CastlingRights;
-  static override readonly #useChess960Castling = true;
+  static override CastlingRights = Chess960CastlingRights;
+
+  static getStartPositionInfo(): PositionInfo {
+    const piecePlacement = getChess960PiecePlacement();
+    const rookFiles = piecePlacement[Piece.TYPES.ROOK];
+    const castlingRights = new Chess960CastlingRights();
+    castlingRights[Color.WHITE].push(...rookFiles);
+    castlingRights[Color.BLACK].push(...rookFiles);
+
+    return {
+      board: Board.getChess960InitialBoard(piecePlacement),
+      castlingRights,
+      enPassantFile: -1,
+      colorToMove: Color.WHITE,
+      halfMoveClock: 0,
+      fullMoveNumber: 1
+    };
+  }
 
   override readonly castlingRights: Chess960CastlingRights;
   override game: Chess960Game;
 
-  override #isCastling(king: Piece, destCoords: Coords): boolean {
+  override isCastling(king: Piece, destCoords: Coords): boolean {
     return !!this.board.get(destCoords)?.isRook()
       && this.board.get(destCoords)!.color === king.color;
+  }
+
+  override *castlingCoords(): CoordsGenerator {
+    yield* Piece.castlingCoords(this.board.kings[this.colorToMove], true);
   }
 }

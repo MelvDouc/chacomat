@@ -9,6 +9,7 @@ import type {
   AlgebraicSquareNotation,
   ChessGame,
   Coords,
+  CoordsGenerator,
   FenString,
   Move,
   PositionInfo,
@@ -20,10 +21,9 @@ import type {
  */
 export default class Position implements PositionInfo {
   static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  static readonly #CastlingRights: typeof CastlingRights = CastlingRights;
-  static readonly useChess960Castling: boolean = false;
+  static readonly CastlingRights: typeof CastlingRights = CastlingRights;
 
-  static readonly colorAbbreviations = {
+  static readonly #colorAbbreviations = {
     w: Color.WHITE,
     b: Color.BLACK,
     [Color.WHITE]: "w",
@@ -48,8 +48,8 @@ export default class Position implements PositionInfo {
     const board = new Board(pieceStr);
     const position = new this({
       board,
-      castlingRights: this.#CastlingRights.fromString(castlingStr),
-      colorToMove: Position.colorAbbreviations[color as keyof typeof Position.colorAbbreviations] as Color,
+      castlingRights: this.CastlingRights.fromString(castlingStr),
+      colorToMove: Position.#colorAbbreviations[color as keyof object] as Color,
       enPassantFile: (enPassant === fenChecker.nullCharacter)
         ? -1
         : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
@@ -163,12 +163,8 @@ export default class Position implements PositionInfo {
         legalMoves.push(move);
 
     if (!this.isCheck()) {
-      const king = this.board.kings[this.colorToMove];
-      for (const destCoords of Piece.castlingCoords(
-        king,
-        (this.constructor as typeof Position).useChess960Castling
-      ))
-        legalMoves.push([king.coords, destCoords]);
+      for (const destCoords of this.castlingCoords())
+        legalMoves.push([this.board.kings[this.colorToMove].coords, destCoords]);
     }
 
     return (this.#legalMoves = legalMoves);
@@ -181,6 +177,10 @@ export default class Position implements PositionInfo {
     return this.legalMoves.map(([srcCoords, destCoords]) => {
       return `${srcCoords.notation}-${destCoords.notation}`;
     });
+  }
+
+  *castlingCoords(): CoordsGenerator {
+    yield* Piece.castlingCoords(this.board.kings[this.colorToMove], false);
   }
 
   /**
@@ -210,7 +210,6 @@ export default class Position implements PositionInfo {
   isCastling(king: Piece, destCoords: Coords): boolean {
     return Math.abs(destCoords.y - king.coords.y) === 2;
   }
-
 
   // ===== ===== ===== ===== =====
   // PIECE MOVES
@@ -336,7 +335,7 @@ export default class Position implements PositionInfo {
   toString(): FenString {
     return [
       this.board.toString(),
-      Position.colorAbbreviations[this.colorToMove],
+      Position.#colorAbbreviations[this.colorToMove],
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
         ? fenChecker.nullCharacter

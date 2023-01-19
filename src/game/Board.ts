@@ -1,17 +1,57 @@
 import Coords from "@chacomat/game/Coords.js";
+import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 import { ConsoleColors } from "@chacomat/utils/Color.js";
-import Piece from "@chacomat/pieces/Piece.js";
 import type {
   BlackAndWhite,
   PieceInitial,
+  PieceType,
   Position
 } from "@chacomat/types.js";
 
 export default class Board extends Map<Coords, Piece> {
   static readonly #nullPiece = "0";
   static readonly #nullPieceRegex = /0+/g;
+
+  static getChess960InitialBoard(piecePlacement: Record<Exclude<PieceType, PieceType.PAWN>, number[]>): Board {
+    const board = new Board();
+    let colorKey: keyof typeof Color,
+      pieceKey: keyof typeof piecePlacement;
+
+    for (colorKey in Color) {
+      const color = Color[colorKey];
+      const pieceRank = Piece.START_RANKS.PIECE[color];
+
+      for (pieceKey in piecePlacement) {
+        for (const y of piecePlacement[pieceKey]) {
+          const coords = Coords.get(pieceRank, y);
+          board.set(coords, new Piece({
+            color,
+            board,
+            coords,
+            type: pieceKey
+          }));
+        }
+      }
+
+      board.kings[color] = board
+        .getRank(pieceRank)
+        .getFile(piecePlacement[Piece.TYPES.KING][0])!;
+
+      for (let y = 0; y < 8; y++) {
+        const coords = Coords.get(Piece.START_RANKS.PAWN[color], y);
+        board.set(coords, new Piece({
+          color,
+          board,
+          coords,
+          type: Piece.TYPES.PAWN
+        }));
+      }
+    }
+
+    return board;
+  }
 
   position: Position;
   readonly kings = {} as BlackAndWhite<Piece>;

@@ -31,7 +31,20 @@ export default class Coords {
     for (let x = 0; x < 8; x++) {
       Coords.#all[x] = {};
       for (let y = 0; y < 8; y++) {
-        const coords = new Coords(x, y);
+        const coords = Object.create(Coords.prototype, {
+          x: {
+            value: x,
+            writable: false,
+            configurable: false,
+            enumerable: true
+          },
+          y: {
+            value: y,
+            writable: false,
+            configurable: false,
+            enumerable: true
+          }
+        });
         const notation = Coords.getFileName(y) + String(8 - x) as AlgebraicSquareNotation;
         Coords.#all[x][y] = {
           coords,
@@ -45,10 +58,8 @@ export default class Coords {
   readonly x: number;
   readonly y: number;
 
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-    Object.freeze(this);
+  constructor() {
+    throw new TypeError("This constructor is private.");
   }
 
   get notation(): AlgebraicSquareNotation {
