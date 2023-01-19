@@ -1,6 +1,4 @@
 import { Board, ChessFileName, ChessGame, Move } from "@chacomat/types.js";
-import Color from "@chacomat/utils/Color.js";
-import { Wing } from "@chacomat/utils/constants.js";
 import Coords from "@chacomat/utils/Coords.js";
 
 const pawnMoveRegex = /[a-h](x[a-h])?[1-8](=?[NBRQ])?/,
@@ -14,7 +12,7 @@ const moveRegex = new RegExp(`(?<=\\d+\\.\\s*)${halfMoveAndCheckRegex}(\\s+${hal
 // TODO: include promotion
 const HALF_MOVE_REGEXES: Record<string, {
   regex: RegExp;
-  getMove: (moveText: string, board: Board, legalMoves: Move[], color?: Color) => Move;
+  getMove: (moveText: string, board: Board, legalMoves: Move[]) => Move;
 }> = {
   STRAIGHT_PAWN_MOVE: {
     regex: /^[a-h][1-8](\+{1,2}|#)?$/,
@@ -74,9 +72,9 @@ const HALF_MOVE_REGEXES: Record<string, {
       }
 
       return legalMoves.find(([src, dest]) => {
-        if (srcX != undefined && src.x !== srcX)
+        if (srcX != null && src.x !== srcX)
           return false;
-        if (srcY != undefined && src.y !== srcY)
+        if (srcY != null && src.y !== srcY)
           return false;
         return dest.x === destX
           && dest.y === destY
@@ -85,49 +83,37 @@ const HALF_MOVE_REGEXES: Record<string, {
     }
   },
   CASTLING: {
-    regex: new RegExp(`^${castlingRegex.source}$`),
-    getMove: (moveText, board, legalMoves, color) => {
-      const wing = (moveText.length === 3) ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
-      const castlingRights = board.position.castlingRights[color];
-      const destY = (castlingRights.length === 1 || wing === Wing.QUEEN_SIDE)
-        ? castlingRights[0]
-        : castlingRights[1];
-      const king = board.kings[color];
-      return legalMoves.find(([src, dest]) => {
-        return board.get(src) === king
-          && dest.x === king.startRank
-          && dest.y === destY;
-      })!;
+    regex: new RegExp(`^${castlingRegex.source + checkRegex.source}$`),
+    getMove: (moveText, board, legalMoves) => {
+      const kingCoords = board.kings[board.position.colorToMove].coords;
+      const destCoords = [...board.position.castlingCoords()].find((coords) => {
+        return (moveText.length === 3)
+          ? coords.y > kingCoords.y
+          : coords.y < kingCoords.y;
+      });
+      return legalMoves.find(([src, dest]) => src === kingCoords && dest === destCoords);
     }
   }
 };
 
 export function playMovesFromPgn(pgnStr: string, game: ChessGame) {
-  const movePairs = pgnStr.match(moveRegex) as string[];
-
-  movePairs.forEach((pair) => {
+  (pgnStr.match(moveRegex) as string[]).forEach((pair) => {
     const [whiteMove, blackMove] = pair.slice(pair.indexOf(".") + 1).trim().split(/\s+/);
-    let key: keyof typeof HALF_MOVE_REGEXES;
-
-    for (key in HALF_MOVE_REGEXES) {
-      const { regex, getMove } = HALF_MOVE_REGEXES[key];
-      if (regex.test(whiteMove)) {
-        const move = getMove(whiteMove, game.currentPosition.board, game.currentPosition.legalMoves, Color.WHITE);
-        game.move(move[0], move[1]);
-        break;
-      }
-    }
-
-    if (!blackMove)
-      return;
-
-    for (key in HALF_MOVE_REGEXES) {
-      const { regex, getMove } = HALF_MOVE_REGEXES[key];
-      if (regex.test(blackMove)) {
-        const move = getMove(blackMove, game.currentPosition.board, game.currentPosition.legalMoves, Color.BLACK);
-        game.move(move[0], move[1]);
-        break;
-      }
-    }
+    findAndPlayMove(whiteMove, game);
+    if (blackMove)
+      findAndPlayMove(blackMove, game);
   });
+}
+
+function findAndPlayMove(moveText: string, game: ChessGame) {
+  let key: keyof typeof HALF_MOVE_REGEXES;
+
+  for (key in HALF_MOVE_REGEXES) {
+    const { regex, getMove } = HALF_MOVE_REGEXES[key];
+    if (regex.test(moveText)) {
+      const move = getMove(moveText, game.currentPosition.board, game.currentPosition.legalMoves);
+      game.move(move[0], move[1]);
+      break;
+    }
+  }
 }

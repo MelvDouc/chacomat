@@ -84,3 +84,12 @@ describe("An ambiguous move", () => {
     expect(board.get(g4)?.color).toBe(Color.WHITE);
   });
 });
+
+describe("Castling", () => {
+  it("should work on both sides", () => {
+    const game = new ChessGame({ fenString: `4k2r/8/8/8/8/8/8/R3K3 w Qk - 0 1` });
+
+    expect(() => playMovesFromPgn("1. 0-0-0 0-0", game)).not.toThrowError();
+    game.logBoard();
+  });
+});
