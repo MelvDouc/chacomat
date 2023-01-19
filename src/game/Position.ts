@@ -1,10 +1,6 @@
 import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import Color, { ReversedColor } from "@chacomat/utils/Color.js";
-import { GameStatus } from "@chacomat/utils/constants.js";
-import fenChecker from "@chacomat/utils/fen-checker.js";
-import { InvalidFenError } from "@chacomat/utils/errors.js";
 import type {
   AlgebraicSquareNotation,
   ChessGame,
@@ -15,6 +11,10 @@ import type {
   PositionInfo,
   PromotedPieceInitial
 } from "@chacomat/types.js";
+import Color, { ReversedColor, colorAbbreviations } from "@chacomat/utils/Color.js";
+import { GameStatus } from "@chacomat/utils/constants.js";
+import { InvalidFenError } from "@chacomat/utils/errors.js";
+import fenChecker from "@chacomat/utils/fen-checker.js";
 
 /**
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.
@@ -22,13 +22,6 @@ import type {
 export default class Position implements PositionInfo {
   static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   static readonly CastlingRights: typeof CastlingRights = CastlingRights;
-
-  static readonly #colorAbbreviations = {
-    w: Color.WHITE,
-    b: Color.BLACK,
-    [Color.WHITE]: "w",
-    [Color.BLACK]: "b",
-  };
 
   /**
    * Create a new position using only an FEN string.
@@ -49,7 +42,7 @@ export default class Position implements PositionInfo {
     const position = new this({
       board,
       castlingRights: this.CastlingRights.fromString(castlingStr),
-      colorToMove: Position.#colorAbbreviations[color as keyof object] as Color,
+      colorToMove: colorAbbreviations[color as keyof object] as Color,
       enPassantFile: (enPassant === fenChecker.nullCharacter)
         ? -1
         : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
@@ -335,7 +328,7 @@ export default class Position implements PositionInfo {
   toString(): FenString {
     return [
       this.board.toString(),
-      Position.#colorAbbreviations[this.colorToMove],
+      colorAbbreviations[this.colorToMove],
       this.castlingRights.toString(),
       (this.enPassantFile === -1)
         ? fenChecker.nullCharacter

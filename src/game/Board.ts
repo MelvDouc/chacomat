@@ -2,9 +2,8 @@ import Coords from "@chacomat/game/Coords.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
   BlackAndWhite,
-  PieceInitial,
-  PieceType,
-  Position
+  NonPawnPieceType,
+  PieceInitial, Position
 } from "@chacomat/types.js";
 import Color, { ConsoleColors } from "@chacomat/utils/Color.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
@@ -13,7 +12,7 @@ export default class Board extends Map<Coords, Piece> {
   static readonly #nullPiece = "0";
   static readonly #nullPieceRegex = /0+/g;
 
-  static getChess960InitialBoard(piecePlacement: Record<Exclude<PieceType, PieceType.PAWN>, number[]>): Board {
+  static getChess960InitialBoard(piecePlacement: Record<NonPawnPieceType, number[]>): Board {
     const board = new Board();
     let colorKey: keyof typeof Color,
       pieceKey: keyof typeof piecePlacement;

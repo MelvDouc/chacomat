@@ -1,6 +1,6 @@
+import type { NonPawnPieceType, PieceOffsets } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { PieceType } from "@chacomat/utils/constants.js";
-import { PieceOffsets } from "@chacomat/types.js";
 
 export const pawnOffsets = {
   x: {
@@ -25,7 +25,7 @@ const adjacentOffsets: PieceOffsets = {
   y: rookOffsets.y.concat(bishopOffsets.y)
 };
 
-export const pieceOffsets: Readonly<Record<Exclude<PieceType, PieceType.PAWN>, PieceOffsets>> = {
+export const pieceOffsets: Readonly<Record<NonPawnPieceType, PieceOffsets>> = {
   [PieceType.KNIGHT]: {
     x: [-1, -2, -2, -1, 1, 2, 2, 1],
     y: [-2, -1, 1, 2, 2, 1, -1, -2]

@@ -32,6 +32,7 @@ export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
 
 export type Piece = import("./pieces/Piece.js").default;
+export type NonPawnPieceType = Exclude<PieceType, typeof PieceType["PAWN"]>;
 
 export type Coords = {
   readonly x: number;
