@@ -113,29 +113,50 @@ export default class ChessGame {
     );
   }
 
-  goToMove(moveNumber: number, color: Color = Color.WHITE, variationIndex = 0): this {
-    const positions = {} as Record<number, Partial<BlackAndWhite<Position>>>;
-
+  #goToPrevMove(moveNumber: number, color: Color): this {
     for (
       let position = this.currentPosition;
       position;
       position = position.prev
     ) {
-      positions[position.fullMoveNumber] ??= {};
-      positions[position.fullMoveNumber][position.colorToMove] = position;
+      if (position.fullMoveNumber === moveNumber && position.colorToMove === color) {
+        this.currentPosition = position;
+        break;
+      }
     }
 
+    return this;
+  }
+
+  #goToNextMove(moveNumber: number, color: Color): this {
     for (
       let position = this.currentPosition;
       position;
       position = position.next[0]
     ) {
-      positions[position.fullMoveNumber] ??= {};
-      positions[position.fullMoveNumber][position.colorToMove] = position;
+      if (position.fullMoveNumber === moveNumber && position.colorToMove === color) {
+        this.currentPosition = position;
+        break;
+      }
     }
 
-    if (moveNumber in positions && color in positions[moveNumber] && variationIndex in positions[moveNumber][color])
-      this.currentPosition = positions[moveNumber][color];
+    return this;
+  }
+
+  goToMove(moveNumber: number, color: Color = Color.WHITE): this {
+    if (moveNumber < this.currentPosition.fullMoveNumber)
+      return this.#goToPrevMove(moveNumber, color);
+
+    if (moveNumber > this.currentPosition.fullMoveNumber)
+      return this.#goToNextMove(moveNumber, color);
+
+    if (color === Color.WHITE && this.currentPosition.colorToMove === Color.BLACK) {
+      if (this.currentPosition.prev)
+        this.currentPosition = this.currentPosition.prev;
+    } else if (color === Color.BLACK && this.currentPosition.colorToMove === Color.WHITE) {
+      if (this.currentPosition.next[0])
+        this.currentPosition = this.currentPosition.next[0];
+    }
 
     return this;
   }

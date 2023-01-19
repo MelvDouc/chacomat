@@ -71,22 +71,24 @@ describe("Stalemate", () => {
 
 describe("The goToMove() method", () => {
   const game = new ChessGame();
-  const pos1 = game.currentPosition;
+  const startPos = game.currentPosition;
   game
     .moveWithNotations("d2", "d4")
     .moveWithNotations("g8", "f6")
     .moveWithNotations("c2", "c4")
     .moveWithNotations("e7", "e6");
-  const pos2 = game.moveWithNotations("b1", "c3").currentPosition;
+  const posAfterNc3 = game.moveWithNotations("b1", "c3").currentPosition;
 
   it("should work backwards", () => {
     game.goToMove(1);
-    expect(game.currentPosition).toBe(pos1);
+    const posAtMove1 = game.currentPosition;
+    expect(posAfterNc3 === posAtMove1).not.toBe(true);
+    expect(posAtMove1).toBe(startPos);
   });
 
   it("should work forwards", () => {
     game.goToMove(3, Color.BLACK);
-    expect(game.currentPosition).toBe(pos2);
+    expect(game.currentPosition).toBe(posAfterNc3);
   });
 });
 
