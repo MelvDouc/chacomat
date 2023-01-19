@@ -43,7 +43,7 @@ export default class Position implements PositionParameters {
       colorToMove: colorAbbreviations[color as keyof object] as Color,
       enPassantFile: (enPassant === fenChecker.nullCharacter)
         ? -1
-        : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation)!.y,
+        : board.Coords.fromNotation(enPassant as AlgebraicSquareNotation).y,
       halfMoveClock: +halfMoveClock,
       fullMoveNumber: +fullMoveNumber
     });

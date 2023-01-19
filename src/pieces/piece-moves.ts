@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { pawnOffsets, pieceOffsets } from "@chacomat/pieces/offsets.js";
 import { PieceType } from "@chacomat/utils/constants.js";
 import type {
@@ -47,7 +48,7 @@ function* pawnCaptures(pawn: Piece): CoordsGenerator {
 // PIECES
 // ===== ===== ===== ===== =====
 
-function getShortPieceAttackedCoordsGenerator(pieceType: PieceType.KNIGHT | PieceType.KING): (piece: Piece) => CoordsGenerator {
+function getShortPieceAttackedCoordsGenerator(pieceType: PieceType.KNIGHT | PieceType.KING) {
   const { x: xOffsets, y: yOffsets } = pieceOffsets[pieceType];
 
   return function* (piece: Piece): CoordsGenerator {
@@ -59,7 +60,7 @@ function getShortPieceAttackedCoordsGenerator(pieceType: PieceType.KNIGHT | Piec
   };
 }
 
-function getLongPieceAttackedCoordsGenerator(pieceType: PieceType.ROOK | PieceType.BISHOP | PieceType.QUEEN): (piece: Piece) => CoordsGenerator {
+function getLongPieceAttackedCoordsGenerator(pieceType: PieceType.ROOK | PieceType.BISHOP | PieceType.QUEEN) {
   const { x: xOffsets, y: yOffsets } = pieceOffsets[pieceType];
 
   return function* (piece: Piece): CoordsGenerator {

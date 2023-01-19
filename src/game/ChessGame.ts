@@ -114,26 +114,11 @@ export default class ChessGame {
     );
   }
 
-  #goToPrevMove(moveNumber: number, color: Color): this {
+  #goToMoveWithCallback(moveNumber: number, color: Color, callback: (position: Position) => Position | null | undefined): this {
     for (
       let position = this.currentPosition;
       position;
-      position = position.prev
-    ) {
-      if (position.fullMoveNumber === moveNumber && position.colorToMove === color) {
-        this.currentPosition = position;
-        break;
-      }
-    }
-
-    return this;
-  }
-
-  #goToNextMove(moveNumber: number, color: Color): this {
-    for (
-      let position = this.currentPosition;
-      position;
-      position = position.next[0]
+      position = callback(position)
     ) {
       if (position.fullMoveNumber === moveNumber && position.colorToMove === color) {
         this.currentPosition = position;
@@ -146,10 +131,10 @@ export default class ChessGame {
 
   goToMove(moveNumber: number, color: Color = Color.WHITE): this {
     if (moveNumber < this.currentPosition.fullMoveNumber)
-      return this.#goToPrevMove(moveNumber, color);
+      return this.#goToMoveWithCallback(moveNumber, color, (pos) => pos.prev);
 
     if (moveNumber > this.currentPosition.fullMoveNumber)
-      return this.#goToNextMove(moveNumber, color);
+      return this.#goToMoveWithCallback(moveNumber, color, (pos) => pos.next[0]);
 
     if (color === Color.WHITE && this.currentPosition.colorToMove === Color.BLACK) {
       if (this.currentPosition.prev)

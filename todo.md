@@ -1,7 +1,8 @@
 # Tasks
 
 - [ ] Parse PGN
-- [x] Check for triple repetition
-- [x] Check for 50-move draw
-- [x] Put coordinates in pieces
-- [ ] Export Coords
+  - [ ] Parse Chess960 PGN
+- [X] Check for triple repetition
+- [X] Check for 50-move draw
+- [X] Put coordinates in pieces
+- [X] Export Coords
