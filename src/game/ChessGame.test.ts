@@ -27,11 +27,11 @@ describe("en passant", () => {
     .moveWithNotations("e4", "d5")
     .moveWithNotations("e7", "e5");
   it("#1", () => {
-    expect(game1.currentPosition.enPassantFile).toBe(game1.currentPosition.board.Coords.fromNotation("e6")!.y);
+    expect(game1.currentPosition.enPassantFile).toBe(game1.currentPosition.board.Coords.fromNotation("e6")?.y);
   });
 
   it("#2", () => {
-    expect(game1.currentPosition.legalMovesAsNotation).toContain(`d5-e6`);
+    expect(game1.currentPosition.legalMovesAsNotation).toContain("d5-e6");
   });
 
   it("the 'ep' pawn should be removed", () => {
@@ -43,9 +43,9 @@ describe("en passant", () => {
       .moveWithNotations("c2", "c4")
       .moveWithNotations("d4", "c3");
 
-    expect(game.currentPosition.board.get(Coords.fromNotation("c4")!)).toBeFalsy();
-    expect(game.currentPosition.board.get(Coords.fromNotation("d4")!)).toBeFalsy();
-    expect(game.currentPosition.board.get(Coords.fromNotation("c3")!)?.type).toBe(Piece.TYPES.PAWN);
+    expect(game.currentPosition.board.get(Coords.fromNotation("c4") as Coords)).toBeFalsy();
+    expect(game.currentPosition.board.get(Coords.fromNotation("d4") as Coords)).toBeFalsy();
+    expect(game.currentPosition.board.get(Coords.fromNotation("c3") as Coords)?.type).toBe(Piece.TYPES.PAWN);
   });
 });
 

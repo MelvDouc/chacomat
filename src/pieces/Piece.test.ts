@@ -26,7 +26,7 @@ describe("Piece", () => {
   });
 });
 
-const c1 = Coords.fromNotation("c1")!;
+const c1 = Coords.fromNotation("c1");
 
 describe("A king", () => {
   it("should be able to castle with no squares between it and a rook", () => {

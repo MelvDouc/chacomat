@@ -108,8 +108,8 @@ export default class ChessGame {
     promotionType?: PromotedPieceType
   ): this {
     return this.move(
-      Coords.fromNotation(srcNotation)!,
-      Coords.fromNotation(destNotation)!,
+      Coords.fromNotation(srcNotation) as Coords,
+      Coords.fromNotation(destNotation) as Coords,
       promotionType
     );
   }

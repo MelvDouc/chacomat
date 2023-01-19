@@ -109,8 +109,8 @@ export default class Board extends Map<Coords, Piece> {
         board: boardClone
       }));
     }
-    boardClone.kings[Color.WHITE] = boardClone.get(this.kings[Color.WHITE].coords)!;
-    boardClone.kings[Color.BLACK] = boardClone.get(this.kings[Color.BLACK].coords)!;
+    boardClone.kings[Color.WHITE] = boardClone.get(this.kings[Color.WHITE].coords);
+    boardClone.kings[Color.BLACK] = boardClone.get(this.kings[Color.BLACK].coords);
     return boardClone;
   }
 

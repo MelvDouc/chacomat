@@ -1,5 +1,5 @@
-import Position from "@chacomat/game/Position.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
+import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
 
