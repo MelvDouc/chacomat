@@ -1,4 +1,3 @@
-import Coords from "@chacomat/game/Coords.js";
 import Position from "@chacomat/game/Position.js";
 import type {
   AlgebraicSquareNotation,
@@ -8,6 +7,7 @@ import type {
 } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
+import Coords from "@chacomat/utils/Coords.js";
 import {
   IllegalMoveError,
   InactiveGameError,

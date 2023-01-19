@@ -1,4 +1,3 @@
-import Coords from "@chacomat/game/Coords.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
   BlackAndWhite,
@@ -7,6 +6,7 @@ import type {
   Position
 } from "@chacomat/types.js";
 import Color, { ConsoleColors } from "@chacomat/utils/Color.js";
+import Coords from "@chacomat/utils/Coords.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 
 export default class Board extends Map<Coords, Piece> {

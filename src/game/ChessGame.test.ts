@@ -1,8 +1,8 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
-import Coords from "@chacomat/game/Coords.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
+import Coords from "@chacomat/utils/Coords.js";
 
 describe("Fool's Mate", () => {
   const game = new ChessGame();

@@ -1,5 +1,5 @@
-import Coords from "@chacomat/game/Coords.js";
 import { Board, ChessFileName, ChessGame, Move } from "@chacomat/types.js";
+import Coords from "@chacomat/utils/Coords.js";
 
 const pawnMoveRegex = /[a-h](x[a-h])?[1-8](=?[NBRQ])?/,
   pieceMoveRegex = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/,

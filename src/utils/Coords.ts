@@ -1,8 +1,8 @@
-import { File } from "@chacomat/utils/constants.js";
 import type {
   AlgebraicSquareNotation,
   Coords
 } from "@chacomat/types.js";
+import { File } from "@chacomat/utils/constants.js";
 
 type CoordsConstructor = {
   (x: number, y: number): Coords;
@@ -34,14 +34,10 @@ for (let x = 0; x < 8; x++) {
     const coords = Object.create(Coords.prototype, {
       x: {
         value: x,
-        writable: false,
-        configurable: false,
         enumerable: true
       },
       y: {
         value: y,
-        writable: false,
-        configurable: false,
         enumerable: true
       },
       notation: {
