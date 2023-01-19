@@ -8,13 +8,13 @@ import type {
   Chess960Game,
   Coords,
   CoordsGenerator,
-  PositionInfo
+  PositionParameters
 } from "@chacomat/types.js";
 
 export default class Chess960Position extends Position {
   static override CastlingRights = Chess960CastlingRights;
 
-  static getStartPositionInfo(): PositionInfo {
+  static getStartPositionInfo(): PositionParameters {
     const piecePlacement = getChess960PiecePlacement();
     const rookFiles = piecePlacement[Piece.TYPES.ROOK];
     const castlingRights = new Chess960CastlingRights();

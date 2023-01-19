@@ -8,8 +8,8 @@ import type {
   CoordsGenerator,
   FenString,
   Move,
-  PositionInfo,
-  PromotedPieceInitial
+  PositionParameters,
+  PromotedPieceType
 } from "@chacomat/types.js";
 import Color, { ReversedColor, colorAbbreviations } from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
@@ -19,7 +19,7 @@ import fenChecker from "@chacomat/utils/fen-checker.js";
 /**
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.
  */
-export default class Position implements PositionInfo {
+export default class Position implements PositionParameters {
   static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   static readonly CastlingRights: typeof CastlingRights = CastlingRights;
 
@@ -65,7 +65,7 @@ export default class Position implements PositionInfo {
   #legalMoves: Move[];
   #attackedCoordsSet: Set<Coords>;
 
-  constructor(positionInfo: PositionInfo) {
+  constructor(positionInfo: PositionParameters) {
     Object.assign(this, positionInfo);
     this.board.position = this;
   }
@@ -214,7 +214,7 @@ export default class Position implements PositionInfo {
     rook.board.transfer(rook.coords, destCoords);
   }
 
-  #handlePawnMove(pawn: Piece, destCoords: Coords, promotionType: PromotedPieceInitial = Piece.TYPES.QUEEN): void {
+  #handlePawnMove(pawn: Piece, destCoords: Coords, promotionType: PromotedPieceType = Piece.TYPES.QUEEN): void {
     if (this.isEnPassantCapture(pawn.coords, destCoords)) {
       pawn.board.delete(pawn.board.Coords(pawn.coords.x, destCoords.y));
       pawn.board.transfer(pawn.coords, destCoords);
@@ -284,7 +284,7 @@ export default class Position implements PositionInfo {
   createPositionFromMove(
     srcCoords: Coords,
     destCoords: Coords,
-    promotionType: PromotedPieceInitial = Piece.TYPES.QUEEN,
+    promotionType: PromotedPieceType = Piece.TYPES.QUEEN,
     updateColorAndMoveNumber = false
   ): Position {
     const board = this.board.clone(),

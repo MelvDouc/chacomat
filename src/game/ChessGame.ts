@@ -11,7 +11,7 @@ import type {
   AlgebraicSquareNotation,
   ChessGameMetaInfo,
   ChessGameParameters,
-  PromotedPieceInitial,
+  PromotedPieceType,
 } from "@chacomat/types.js";
 
 /**
@@ -52,7 +52,7 @@ export default class ChessGame {
   move(
     srcCoords: { x: number; y: number; },
     destCoords: { x: number; y: number; },
-    promotionType?: PromotedPieceInitial
+    promotionType?: PromotedPieceType
   ): this {
     if (this.currentPosition.status !== GameStatus.ACTIVE)
       throw new ChessGame.errors.InactiveGameError(this.currentPosition.status);
@@ -89,7 +89,7 @@ export default class ChessGame {
   moveWithNotations(
     srcNotation: AlgebraicSquareNotation,
     destNotation: AlgebraicSquareNotation,
-    promotionType?: PromotedPieceInitial
+    promotionType?: PromotedPieceType
   ): this {
     return this.move(
       Coords.fromNotation(srcNotation)!,

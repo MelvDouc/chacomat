@@ -17,7 +17,7 @@ import type {
   CastlingRights,
   Coords,
   CoordsGenerator,
-  PieceInfo,
+  PieceParameters,
   PieceInitial
 } from "@chacomat/types.js";
 
@@ -74,7 +74,7 @@ export default class Piece {
   board: Board;
   coords: Coords;
 
-  constructor({ color, board, type, coords }: PieceInfo) {
+  constructor({ color, board, type, coords }: PieceParameters) {
     this.color = color;
     this.type = type;
     board && (this.board = board);

@@ -13,9 +13,6 @@ export type FenString = string;
 export type ChessFileName = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
 export type ChessRankName = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 export type AlgebraicSquareNotation = `${ChessFileName}${ChessRankName}`;
-export type BlackPieceInitial = Lowercase<PieceType>;
-export type PieceInitial = PieceType | BlackPieceInitial;
-export type PromotedPieceInitial = Exclude<PieceType, PieceType.KING | PieceType.PAWN>;
 
 export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
@@ -28,11 +25,11 @@ export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.j
 
 export type Color = import("./utils/Color.js").default;
 
-export type CoordsGenerator = Generator<Coords, void, unknown>;
-export type Move = [Coords, Coords];
-
 export type Piece = import("./pieces/Piece.js").default;
-export type NonPawnPieceType = Exclude<PieceType, typeof PieceType["PAWN"]>;
+export type BlackPieceInitial = Lowercase<PieceType>;
+export type PieceInitial = PieceType | BlackPieceInitial;
+export type PromotedPieceType = Exclude<PieceType, PieceType.KING | PieceType.PAWN>;
+export type NonPawnPieceType = Exclude<PieceType, PieceType.PAWN>;
 
 export type Coords = {
   readonly x: number;
@@ -40,6 +37,8 @@ export type Coords = {
   get notation(): AlgebraicSquareNotation;
   getPeer: (xOffset: number, yOffset: number) => Coords | null;
 };
+export type CoordsGenerator = Generator<Coords, void, unknown>;
+export type Move = [Coords, Coords];
 
 export type BlackAndWhite<T> = {
   [K in Color]: T;
@@ -56,7 +55,7 @@ export interface PieceOffsets {
 
 export interface ChessGameParameters {
   fenString?: FenString;
-  positionInfo?: PositionInfo;
+  positionInfo?: PositionParameters;
   metaInfo?: Partial<ChessGameMetaInfo>;
 }
 /**
@@ -76,12 +75,13 @@ export interface ChessGameMetaInfo {
   */
   date: string;
   ECO: string;
+  [x: string]: any;
 }
 
 /**
  * The six items of information found in an FEN string.
  */
-export interface PositionInfo {
+export interface PositionParameters {
   board: Board;
   castlingRights: CastlingRights;
   colorToMove: Color;
@@ -90,7 +90,7 @@ export interface PositionInfo {
   fullMoveNumber: number;
 }
 
-export interface PieceInfo {
+export interface PieceParameters {
   color: Color;
   type: PieceType;
   board?: Board;

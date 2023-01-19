@@ -77,10 +77,10 @@ function getLongPieceAttackedCoordsGenerator(pieceType: PieceType.ROOK | PieceTy
 }
 
 // ===== ===== ===== ===== =====
-// EXPORT
+// EXPORTS
 // ===== ===== ===== ===== =====
 
-export const attackedCoordsGenerators = {
+export const attackedCoordsGenerators: Record<PieceType, (piece: Piece) => CoordsGenerator> = {
   [PieceType.PAWN]: pawnAttackedCoords,
   [PieceType.KNIGHT]: getShortPieceAttackedCoordsGenerator(PieceType.KNIGHT),
   [PieceType.KING]: getShortPieceAttackedCoordsGenerator(PieceType.KING),
