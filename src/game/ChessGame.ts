@@ -9,6 +9,7 @@ import {
 } from "@chacomat/utils/errors.js";
 import type {
   AlgebraicSquareNotation,
+  BlackAndWhite,
   ChessGameMetaInfo,
   ChessGameParameters,
   PromotedPieceType,
@@ -38,8 +39,20 @@ export default class ChessGame {
     this.metaInfo = metaInfo ?? {};
   }
 
+  /**
+   * Determine whether the position is active, checkmate or a draw and what kind of draw.
+   */
   get status(): GameStatus {
-    return this.currentPosition.status;
+    const position = this.currentPosition;
+    if (!position.legalMoves.length)
+      return (position.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
+    if (position.isInsufficientMaterial())
+      return GameStatus.INSUFFICIENT_MATERIAL;
+    if (position.halfMoveClock > 50)
+      return GameStatus.FIFTY_MOVE_DRAW;
+    if (position.isTripleRepetition())
+      return GameStatus.TRIPLE_REPETITION;
+    return GameStatus.ACTIVE;
   }
 
   /**
@@ -54,8 +67,10 @@ export default class ChessGame {
     destCoords: { x: number; y: number; },
     promotionType?: PromotedPieceType
   ): this {
-    if (this.currentPosition.status !== GameStatus.ACTIVE)
-      throw new ChessGame.errors.InactiveGameError(this.currentPosition.status);
+    const { status } = this;
+
+    if (status !== GameStatus.ACTIVE)
+      throw new ChessGame.errors.InactiveGameError(status);
 
     if (!this.currentPosition.legalMoves.some(([src, dest]) =>
       src.x === srcCoords.x
@@ -98,27 +113,29 @@ export default class ChessGame {
     );
   }
 
-  goToMove(fullMoveNumber: number, color: Color = Color.WHITE, variationIndex = 0): this {
-    if (fullMoveNumber === this.currentPosition.fullMoveNumber) {
-      const candidate = (color === this.currentPosition.colorToMove) ? this.currentPosition.prev?.next?.at(variationIndex)
-        : (color === Color.BLACK) ? this.currentPosition.next?.at(variationIndex)
-          : this.currentPosition.prev;
-      candidate && (this.currentPosition = candidate);
+  goToMove(moveNumber: number, color: Color = Color.WHITE, variationIndex = 0): this {
+    const positions = {} as Record<number, Partial<BlackAndWhite<Position>>>;
 
-      return this;
+    for (
+      let position = this.currentPosition;
+      position;
+      position = position.prev
+    ) {
+      positions[position.fullMoveNumber] ??= {};
+      positions[position.fullMoveNumber][position.colorToMove] = position;
     }
 
-    let position: Position | null | undefined = this.currentPosition;
-    const browse: () => typeof position = (fullMoveNumber - this.currentPosition.fullMoveNumber < 0)
-      ? () => position?.prev
-      : () => position?.next?.at(variationIndex);
-
-    while (position = browse()) {
-      if (position.fullMoveNumber !== fullMoveNumber || position.colorToMove !== color)
-        continue;
-      this.currentPosition = position.prev?.next?.at(variationIndex) ?? position;
-      break;
+    for (
+      let position = this.currentPosition;
+      position;
+      position = position.next[0]
+    ) {
+      positions[position.fullMoveNumber] ??= {};
+      positions[position.fullMoveNumber][position.colorToMove] = position;
     }
+
+    if (moveNumber in positions && color in positions[moveNumber] && variationIndex in positions[moveNumber][color])
+      this.currentPosition = positions[moveNumber][color];
 
     return this;
   }

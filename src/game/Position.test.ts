@@ -50,6 +50,6 @@ describe("A board with only kings", () => {
       fenString: "k7/8/8/8/8/8/8/7K w - - 0 1"
     });
 
-    expect(game.currentPosition.status).toBe(GameStatus.INSUFFICIENT_MATERIAL);
+    expect(game.status).toBe(GameStatus.INSUFFICIENT_MATERIAL);
   });
 });

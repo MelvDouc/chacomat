@@ -15,7 +15,7 @@ describe("Fool's Mate", () => {
     expect(game.currentPosition.isCheck()).toBe(true);
   });
   it("should be checkmate", () => {
-    expect(game.currentPosition.status).toBe(GameStatus.CHECKMATE);
+    expect(game.status).toBe(GameStatus.CHECKMATE);
   });
 });
 
@@ -129,6 +129,6 @@ describe("full games", () => {
       .moveWithNotations("d7", "b8")
       .moveWithNotations("d1", "d8");
 
-    expect(game.currentPosition.status).toBe(GameStatus.CHECKMATE);
+    expect(game.status).toBe(GameStatus.CHECKMATE);
   });
 });

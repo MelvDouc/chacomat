@@ -12,7 +12,6 @@ import type {
   PromotedPieceType
 } from "@chacomat/types.js";
 import Color, { ReversedColor, colorAbbreviations } from "@chacomat/utils/Color.js";
-import { GameStatus } from "@chacomat/utils/constants.js";
 import { InvalidFenError } from "@chacomat/utils/errors.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 
@@ -86,21 +85,6 @@ export default class Position implements PositionParameters {
   // ===== ===== ===== ===== =====
   // STATUS
   // ===== ===== ===== ===== =====
-
-  /**
-   * Determine whether the position is active, checkmate or a draw and what kind of draw.
-   */
-  get status(): GameStatus {
-    if (!this.legalMoves.length)
-      return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
-    if (this.isInsufficientMaterial())
-      return GameStatus.INSUFFICIENT_MATERIAL;
-    if (this.halfMoveClock > 50)
-      return GameStatus.FIFTY_MOVE_DRAW;
-    if (this.isTripleRepetition())
-      return GameStatus.TRIPLE_REPETITION;
-    return GameStatus.ACTIVE;
-  }
 
   isCheck(): boolean {
     return this.attackedCoordsSet.has(this.board.kings[this.colorToMove].coords);

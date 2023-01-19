@@ -1,5 +1,6 @@
 import Chess960Game from "@chacomat/chess960/Chess960Game.js";
 import Chess960Position from "@chacomat/chess960/Chess960Position.js";
+import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
 import Color from "@chacomat/utils/Color.js";
 
 describe("A Chess960 game", () => {
@@ -25,13 +26,13 @@ describe("A Chess960 game", () => {
 
   it("should allow castling", () => {
     const { currentPosition } = new Chess960Game({
-      fenString: "k7/pppppppp/8/8/8/8/PPPPPPPP/1R4KR b CH - 0 1"
+      fenString: "k7/pppppppp/8/8/8/8/PPPPPPPP/1R4KR b BH - 0 1"
     })
       .moveWithNotations("a8", "b8");
     const { castlingRights, colorToMove, legalMovesAsNotation } = currentPosition;
 
-    console.log(castlingRights);
     expect(currentPosition).toBeInstanceOf(Chess960Position);
+    expect(castlingRights).toBeInstanceOf(Chess960CastlingRights);
     expect(currentPosition.isCheck()).toBe(false);
     expect(castlingRights[colorToMove]).toContain(1);
     expect(castlingRights[colorToMove]).toContain(7);

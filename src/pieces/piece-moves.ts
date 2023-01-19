@@ -1,5 +1,4 @@
 import { pawnOffsets, pieceOffsets } from "@chacomat/pieces/offsets.js";
-import { directions, startRanks } from "@chacomat/pieces/placements.js";
 import { PieceType } from "@chacomat/utils/constants.js";
 import type {
   CoordsGenerator,
@@ -21,13 +20,13 @@ function* pawnAttackedCoords(pawn: Piece): CoordsGenerator {
 }
 
 function* forwardPawnMoves(pawn: Piece): CoordsGenerator {
-  const coords1 = pawn.coords.getPeer(directions[pawn.color], 0)!;
+  const coords1 = pawn.coords.getPeer(pawn.direction, 0)!;
 
   if (!pawn.board.has(coords1)) {
     yield coords1;
 
-    if (pawn.coords.x === startRanks.PAWN[pawn.color]) {
-      const coords2 = coords1.getPeer(directions[pawn.color], 0)!;
+    if (pawn.coords.x === pawn.startRank) {
+      const coords2 = coords1.getPeer(pawn.direction, 0)!;
 
       if (!pawn.board.has(coords2))
         yield coords2;

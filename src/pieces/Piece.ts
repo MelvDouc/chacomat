@@ -91,6 +91,16 @@ export default class Piece {
     return ReversedColor[this.color];
   }
 
+  get direction(): number {
+    return directions[this.color];
+  }
+
+  get startRank(): number {
+    if (this.type === PieceType.PAWN)
+      return startRanks.PAWN[this.color];
+    return startRanks.PIECE[this.color];
+  }
+
   *attackedCoords(): CoordsGenerator {
     yield* attackedCoordsGenerators[this.type](this);
   }
