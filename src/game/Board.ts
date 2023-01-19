@@ -1,14 +1,13 @@
 import Coords from "@chacomat/game/Coords.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import Color from "@chacomat/utils/Color.js";
-import fenChecker from "@chacomat/utils/fen-checker.js";
-import { ConsoleColors } from "@chacomat/utils/Color.js";
 import type {
   BlackAndWhite,
   PieceInitial,
   PieceType,
   Position
 } from "@chacomat/types.js";
+import Color, { ConsoleColors } from "@chacomat/utils/Color.js";
+import fenChecker from "@chacomat/utils/fen-checker.js";
 
 export default class Board extends Map<Coords, Piece> {
   static readonly #nullPiece = "0";
@@ -30,7 +29,7 @@ export default class Board extends Map<Coords, Piece> {
         }
       }
 
-      board.kings[color] = board.getRank(pieceRank).getFile(piecePlacement[Piece.TYPES.KING][0])!;
+      board.kings[color] = board.getRank(pieceRank).getFile(piecePlacement[Piece.TYPES.KING][0]) as Piece;
 
       for (let y = 0; y < 8; y++) {
         const coords = Coords(Piece.START_RANKS.PAWN[color], y);
@@ -80,7 +79,7 @@ export default class Board extends Map<Coords, Piece> {
   }
 
   transfer(srcCoords: Coords, destCoords: Coords): this {
-    const srcPiece = this.get(srcCoords)!;
+    const srcPiece = this.get(srcCoords) as Piece;
     this.set(destCoords, srcPiece).delete(srcCoords);
     srcPiece.coords = destCoords;
     return this;

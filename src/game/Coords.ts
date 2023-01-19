@@ -15,10 +15,9 @@ type CoordsConstructor = {
 const ALL_COORDS: Record<number, Record<number, { coords: Coords; notation: AlgebraicSquareNotation; }>> = {};
 const coordsByNotation = {} as Record<AlgebraicSquareNotation, Coords>;
 
-// @ts-ignore
-const Coords: CoordsConstructor = function (x, y) {
+const Coords = function (x, y) {
   return ALL_COORDS[x][y].coords;
-};
+} as CoordsConstructor;
 
 Coords.getFileNameIndex = (fileName: ChessFileName | Uppercase<ChessFileName>): number => {
   return fileName.toLowerCase().charCodeAt(0) - 97;
