@@ -56,12 +56,12 @@ export interface PieceOffsets {
 export interface ChessGameParameters {
   fenString?: FenString;
   positionInfo?: PositionParameters;
-  metaInfo?: Partial<ChessGameMetaInfo>;
+  metaInfo?: Partial<GameMetaInfo>;
 }
 /**
  * Various info that would typically be found in a PGN file.
  */
-export interface ChessGameMetaInfo {
+export interface GameMetaInfo {
   whitePlayer: string;
   blackPlayer: string;
   whiteElo: number;

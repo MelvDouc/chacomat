@@ -1,7 +1,7 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Color from "@chacomat/utils/Color.js";
 import Coords from "@chacomat/utils/Coords.js";
-import { playMovesFromPgn } from "@chacomat/utils/pgn.js";
+import { playMovesFromPgn } from "@chacomat/utils/pgn/pgn.js";
 
 describe("PNG reader", () => {
   it("should be able to handle the first few moves", () => {

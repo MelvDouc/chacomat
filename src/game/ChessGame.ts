@@ -1,9 +1,6 @@
 import Position from "@chacomat/game/Position.js";
 import type {
-  AlgebraicSquareNotation,
-  ChessGameMetaInfo,
-  ChessGameParameters,
-  PromotedPieceType
+  AlgebraicSquareNotation, ChessGameParameters, GameMetaInfo, PromotedPieceType
 } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
@@ -13,7 +10,7 @@ import {
   InactiveGameError,
   InvalidFenError
 } from "@chacomat/utils/errors.js";
-import { playMovesFromPgn } from "@chacomat/utils/pgn.js";
+import { playMovesFromPgn } from "@chacomat/utils/pgn/pgn.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -27,7 +24,7 @@ export default class ChessGame {
   };
 
   currentPosition: InstanceType<typeof Position>;
-  readonly metaInfo: Partial<ChessGameMetaInfo>;
+  readonly metaInfo: Partial<GameMetaInfo>;
 
   constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
     const PositionConstructor = (this.constructor as typeof ChessGame).Position;
