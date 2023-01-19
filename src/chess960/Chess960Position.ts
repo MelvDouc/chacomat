@@ -16,10 +16,9 @@ export default class Chess960Position extends Position {
 
   static getStartPositionInfo(): PositionParameters {
     const piecePlacement = getChess960PiecePlacement();
-    const rookFiles = piecePlacement[Piece.TYPES.ROOK];
     const castlingRights = new Chess960CastlingRights();
-    castlingRights[Color.WHITE].push(...rookFiles);
-    castlingRights[Color.BLACK].push(...rookFiles);
+    castlingRights[Color.WHITE].push(...piecePlacement[Piece.TYPES.ROOK]);
+    castlingRights[Color.BLACK].push(...piecePlacement[Piece.TYPES.ROOK]);
 
     return {
       board: Board.getChess960InitialBoard(piecePlacement),

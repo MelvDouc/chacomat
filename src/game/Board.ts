@@ -3,7 +3,8 @@ import Piece from "@chacomat/pieces/Piece.js";
 import type {
   BlackAndWhite,
   NonPawnPieceType,
-  PieceInitial, Position
+  PieceInitial,
+  Position
 } from "@chacomat/types.js";
 import Color, { ConsoleColors } from "@chacomat/utils/Color.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";

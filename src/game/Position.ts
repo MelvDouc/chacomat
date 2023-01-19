@@ -11,10 +11,9 @@ import type {
   PositionParameters,
   PromotedPieceType
 } from "@chacomat/types.js";
-import Color, { ReversedColor, colorAbbreviations } from "@chacomat/utils/Color.js";
+import Color, { colorAbbreviations, ReversedColor } from "@chacomat/utils/Color.js";
 import { InvalidFenError } from "@chacomat/utils/errors.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
-
 /**
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.
  */

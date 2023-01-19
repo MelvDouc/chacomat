@@ -9,7 +9,6 @@ import {
 } from "@chacomat/utils/errors.js";
 import type {
   AlgebraicSquareNotation,
-  BlackAndWhite,
   ChessGameMetaInfo,
   ChessGameParameters,
   PromotedPieceType,

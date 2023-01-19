@@ -1,4 +1,4 @@
-import { GameStatus, PieceType, Wing } from "@chacomat/utils/constants.js";
+import type { GameStatus, PieceType, Wing } from "@chacomat/utils/constants.js";
 
 export type {
   GameStatus,

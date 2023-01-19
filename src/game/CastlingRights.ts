@@ -1,18 +1,16 @@
-import Color from "@chacomat/utils/Color.js";
-import { Wing } from "@chacomat/utils/constants.js";
-import fenChecker from "@chacomat/utils/fen-checker.js";
 import type {
   BlackAndWhite,
   Wings
 } from "@chacomat/types.js";
+import Color from "@chacomat/utils/Color.js";
+import { Wing } from "@chacomat/utils/constants.js";
+import fenChecker from "@chacomat/utils/fen-checker.js";
 
 /**
  * @classdesc Create an object that represents the castling rights in a position.
  * It is clonable and stringifiable.
  */
 export default class CastlingRights {
-  static readonly #nullCastlingRightsChar: string = fenChecker.nullCharacter;
-
   /**
    * The characters used in an FEN string to represent castling rights.
    */
@@ -71,6 +69,6 @@ export default class CastlingRights {
         str += CastlingRights.#initials[color][Wing.QUEEN_SIDE];
     }
 
-    return str || CastlingRights.#nullCastlingRightsChar;
+    return str || fenChecker.nullCharacter;
   }
 }
