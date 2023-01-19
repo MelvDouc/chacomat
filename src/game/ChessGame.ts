@@ -13,6 +13,7 @@ import {
   InactiveGameError,
   InvalidFenError
 } from "@chacomat/utils/errors.js";
+import { playMovesFromPgn } from "@chacomat/utils/pgn.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -161,6 +162,11 @@ export default class ChessGame {
         this.currentPosition = this.currentPosition.next[0];
     }
 
+    return this;
+  }
+
+  enterPgn(pgn: string): this {
+    playMovesFromPgn(pgn, this);
     return this;
   }
 

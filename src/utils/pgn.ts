@@ -30,11 +30,11 @@ const HALF_MOVE_REGEXES: Record<string, {
     regex: /^[a-h]x[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
       const srcY = Coords.File[moveText[0] as ChessFileName],
-        destY = Coords.File[moveText[2] as ChessFileName],
-        destX = 8 - Number(moveText[3]);
+        destX = getRank(moveText[3]),
+        destY = Coords.File[moveText[2] as ChessFileName];
       return legalMoves.find(([src, dest]) => {
-        return dest.x === destX
-          && src.y === srcY
+        return src.y === srcY
+          && dest.x === destX
           && dest.y === destY
           && board.get(src)?.isPawn();
       })!;
@@ -44,7 +44,7 @@ const HALF_MOVE_REGEXES: Record<string, {
     regex: /^[NBRQK]x?[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
       moveText = moveText.replace("x", "");
-      const destX = 8 - +moveText[2];
+      const destX = getRank(moveText[2]);
       const destY = Coords.File[moveText[1] as ChessFileName];
       return legalMoves.find(([src, dest]) => {
         return dest.x === destX
@@ -57,17 +57,17 @@ const HALF_MOVE_REGEXES: Record<string, {
     regex: /^[NBRQK][a-h]?[1-8]?x?[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
       const chars = moveText.replace("x", "").replace(checkRegex, "").split("");
-      const destX = 8 - +chars.at(-1);
+      const destX = getRank(chars.at(-1));
       const destY = Coords.File[chars.at(-2) as ChessFileName];
       let srcX: number | undefined,
         srcY: number | undefined;
 
       if (chars.length === 5) {
-        srcX = 8 - +chars[2];
+        srcX = getRank(chars[2]);
         srcY = Coords.File[chars[1] as ChessFileName];
       } else {
         !isNaN(+chars[1])
-          ? srcX = 8 - +chars[1]
+          ? srcX = getRank(chars[1])
           : srcY = Coords.File[chars[1] as ChessFileName];
       }
 
@@ -116,4 +116,8 @@ function findAndPlayMove(moveText: string, game: ChessGame) {
       break;
     }
   }
+}
+
+function getRank(rankStr: string): number {
+  return 8 - +rankStr;
 }
