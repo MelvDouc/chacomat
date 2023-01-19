@@ -46,8 +46,8 @@ const HALF_MOVE_REGEXES: Record<string, {
     regex: /^[NBRQK]x?[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
       moveText = moveText.replace("x", "");
-      const destY = Coords.File[moveText[1] as ChessFileName],
-        destX = 8 - Number(moveText[2]);
+      const destX = 8 - +moveText[2];
+      const destY = Coords.File[moveText[1] as ChessFileName];
       return legalMoves.find(([src, dest]) => {
         return dest.x === destX
           && dest.y === destY
@@ -55,33 +55,33 @@ const HALF_MOVE_REGEXES: Record<string, {
       })!;
     }
   },
-  // FIXME
   AMBIGUOUS_PIECE_MOVE: {
     regex: /^[NBRQK][a-h]?[1-8]?x?[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
       const chars = moveText.replace("x", "").replace(checkRegex, "").split("");
-      let srcX: number, srcY: number;
-      const destY = Coords.File[chars.at(-2) as ChessFileName],
-        destX = 8 - Number(chars.at(-1));
-      if (chars.length === 4) {
-        if (!isNaN(Number(chars[1])))
-          srcY = Coords.File[chars[1] as ChessFileName];
-        else
-          srcX = 8 - Number(chars[1]);
-      } else {
+      const destX = 8 - +chars.at(-1);
+      const destY = Coords.File[chars.at(-2) as ChessFileName];
+      let srcX: number | undefined,
+        srcY: number | undefined;
+
+      if (chars.length === 5) {
+        srcX = 8 - +chars[2];
         srcY = Coords.File[chars[1] as ChessFileName];
-        srcX = 8 - Number(chars[2]);
+      } else {
+        !isNaN(+chars[1])
+          ? srcX = 8 - +chars[1]
+          : srcY = Coords.File[chars[1] as ChessFileName];
       }
-      const move = legalMoves.find(([src, dest]) => {
-        if (srcX !== undefined && src.x !== srcX)
+
+      return legalMoves.find(([src, dest]) => {
+        if (srcX != undefined && src.x !== srcX)
           return false;
-        if (srcY !== undefined && src.y !== srcY)
+        if (srcY != undefined && src.y !== srcY)
           return false;
         return dest.x === destX
           && dest.y === destY
           && board.get(src)?.type === moveText[0];
       })!;
-      return move;
     }
   },
   CASTLING: {
