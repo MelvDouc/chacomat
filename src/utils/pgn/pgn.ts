@@ -1,4 +1,4 @@
-import { ChessGame, GameMetaInfo } from "@chacomat/types.js";
+import { ChessGame, GameMetaInfo } from "@chacomat/types.local.js";
 import getMetaInfo from "@chacomat/utils/pgn/meta-info.js";
 import { playMovesFromPgn } from "./moves.js";
 

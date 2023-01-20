@@ -1,4 +1,4 @@
-import { FenString, GameStatus } from "@chacomat/types.js";
+import { FenString, GameStatus } from "@chacomat/types.local.js";
 
 export class IllegalMoveError extends Error {
   constructor(src: unknown, dest: unknown) {

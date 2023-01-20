@@ -10,7 +10,7 @@ import type {
   Move,
   PositionParameters,
   PromotedPieceType
-} from "@chacomat/types.js";
+} from "@chacomat/types.local.js";
 import { InvalidFenError } from "@chacomat/utils/errors.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 import {

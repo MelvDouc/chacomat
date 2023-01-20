@@ -1,6 +1,6 @@
 import Color from "@chacomat/constants/Color.js";
 import Wing from "@chacomat/constants/Wing.js";
-import { BlackAndWhite } from "@chacomat/types.js";
+import { BlackAndWhite } from "@chacomat/types.local.js";
 
 export const castledFiles = {
   KING: {

@@ -1,4 +1,4 @@
-import { GameMetaInfo } from "@chacomat/types.js";
+import { GameMetaInfo } from "@chacomat/types.local.js";
 
 const pgnInfoRegex = /^\[(?<k>\w+) "(?<v>[^"]*)"\]$/;
 

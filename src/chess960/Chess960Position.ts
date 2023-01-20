@@ -7,7 +7,7 @@ import type {
   Chess960Game,
   IndexGenerator,
   PositionParameters
-} from "@chacomat/types.js";
+} from "@chacomat/types.local.js";
 import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
 
 export default class Chess960Position extends Position {

@@ -1,4 +1,4 @@
-import { FenString } from "@chacomat/types.js";
+import { FenString } from "@chacomat/types.local.js";
 
 const boardRegex = /[1-8PNBRQKpnbrqk]{1,8}(\/[1-8PNBRQKpnbrqk]{1,8}){7}/;
 const castlingRegex = /(([KQkq]|[A-Ha-h]){1,4}|-)/;

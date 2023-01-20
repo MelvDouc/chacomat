@@ -1,5 +1,5 @@
 import PieceType from "@chacomat/constants/PieceType.js";
-import type { NonPawnPieceType } from "@chacomat/types.js";
+import type { NonPawnPieceType } from "@chacomat/types.local.js";
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;

@@ -5,7 +5,7 @@ import Wing from "@chacomat/constants/Wing.js";
 import Board from "@chacomat/game/Board.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import * as ChacoMat from "@chacomat/types.js";
+import * as ChacoMat from "@chacomat/types.local.js";
 
 export {
   ChessGame,

@@ -18,7 +18,7 @@ import type {
   IndexGenerator,
   PieceInitial,
   PieceParameters
-} from "@chacomat/types.js";
+} from "@chacomat/types.local.js";
 import { coordsToIndex, indexToCoords } from "@chacomat/utils/Index.js";
 
 export default class Piece {

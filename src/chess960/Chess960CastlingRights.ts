@@ -1,7 +1,7 @@
 import Color from "@chacomat/constants/Color.js";
 import File from "@chacomat/constants/File.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
-import type { ChessFileName } from "@chacomat/types.js";
+import type { ChessFileName } from "@chacomat/types.local.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 
 export default class Chess960CastlingRights extends CastlingRights {

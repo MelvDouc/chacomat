@@ -1,4 +1,4 @@
-import { AlgebraicSquareNotation, Coords } from "@chacomat/types.js";
+import { AlgebraicSquareNotation, Coords } from "@chacomat/types.local.js";
 
 const notationsByIndex = {} as Record<number, AlgebraicSquareNotation>;
 const indicesByNotation = {} as Record<AlgebraicSquareNotation, number>;

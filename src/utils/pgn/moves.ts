@@ -1,12 +1,10 @@
 import File from "@chacomat/constants/File.js";
 import {
   AlgebraicSquareNotation,
-  Board,
-  ChessFileName,
-  ChessGame,
+  Board, ChessFileName, ChessGame,
   Move,
   PromotedPieceType
-} from "@chacomat/types.js";
+} from "@chacomat/types.local.js";
 import {
   coordsToIndex,
   indexToCoords,

@@ -6,7 +6,7 @@ import type {
   GameMetaInfo,
   GameParameters,
   PromotedPieceType
-} from "@chacomat/types.js";
+} from "@chacomat/types.local.js";
 import {
   IllegalMoveError,
   InactiveGameError,

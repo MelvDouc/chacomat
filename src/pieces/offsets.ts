@@ -1,6 +1,6 @@
 import Color from "@chacomat/constants/Color.js";
 import PieceType from "@chacomat/constants/PieceType.js";
-import type { NonPawnPieceType, PieceOffsets } from "@chacomat/types.js";
+import type { NonPawnPieceType, PieceOffsets } from "@chacomat/types.local.js";
 
 export const pawnOffsets = {
   x: {

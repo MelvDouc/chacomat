@@ -1,6 +1,6 @@
 import Wing from "@chacomat/constants/Wing.js";
 import { castledFiles } from "@chacomat/pieces/placements.js";
-import type { Piece } from "@chacomat/types.js";
+import type { Piece } from "@chacomat/types.local.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
 
 /**

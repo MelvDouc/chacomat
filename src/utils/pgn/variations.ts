@@ -1,3 +1,5 @@
+import { PgnVariations } from "@chacomat/types.local.js";
+
 const moveRegex = /\d+\.{1,3}/g;
 
 const Parenthesis = {
@@ -55,10 +57,4 @@ function findClosingParenIndex(str: string, firstParenIndex: number): number {
   }
 
   return -1;
-}
-
-
-interface PgnVariations {
-  movesStr: string;
-  variations?: PgnVariations[];
 }

@@ -5,7 +5,7 @@ import type {
   NonPawnPieceType,
   PieceInitial,
   Position
-} from "@chacomat/types.js";
+} from "@chacomat/types.local.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
 

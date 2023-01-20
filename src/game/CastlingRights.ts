@@ -3,7 +3,7 @@ import Wing from "@chacomat/constants/Wing.js";
 import type {
   BlackAndWhite,
   Wings
-} from "@chacomat/types.js";
+} from "@chacomat/types.local.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 
 /**
