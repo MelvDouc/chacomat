@@ -2,9 +2,11 @@
 
 An environment-independent TypeScript chess game.
 
-## Getting started
+## Creating a game
 
-```typescript
+### By entering moves
+
+```javascript
 import { ChessGame } from "chacomat";
 
 const spanishGame = new ChessGame();
@@ -17,38 +19,38 @@ spanishGame
   .moveWithNotations("f1", "b5");
 ```
 
-## Create a game from an FEN string
+### from an FEN string
 
-```typescript
+```javascript
 const spanishGame = new ChessGame({
   fen: "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
   metaInfo: {
-    whitePlayer: "Magnus Carlsen",
-    blackPlayer: "Ian Nepomniachtchi"
+    White: "Magnus Carlsen",
+    Black: "Ian Nepomniachtchi"
   }
 });
 ```
 
-## Print board to console
+### from a PGN
 
-```typescript
-spanishGame.logBoard();
+```javascript
+const spanishGame = new ChessGame({
+  pgn: `
+    [White "Magnus Carlsen"]
+    [Black "Ian Nepomniachtchi"]
+    
+    1. e4 e5 2. Nf3 Nc6 3. Bb5
+`
+});
 ```
 
-![log of a chessboard](https://i.imgur.com/96BdDi8.png "game.logBoard()")
-
-## Get the pieces as an array
-
-```typescript
-const pieceArr = spanishGame.currentPosition.board.toArray();
-console.log(pieceArr);
-```
+Parenthesized variations aren't still a work in progress.
 
 ## Chess960
 
 Also known as **Fischer random chess**.
 
-```typescript
+```javascript
 import { Chess960Game } from "chacomat";
 
 const chess960Game = new Chess960Game();
@@ -56,3 +58,20 @@ console.log(chess960Game.currentPosition.toString()); // e.g. "rbkrnqbn/pppppppp
 ```
 
 Note how castling rights are noted using the rooks' initial files.
+
+## Various features
+
+### Print board to console
+
+```javascript
+spanishGame.logBoard();
+```
+
+![log of a chessboard](https://i.imgur.com/96BdDi8.png "game.logBoard()")
+
+### Get the pieces as an array
+
+```javascript
+const pieceArr = spanishGame.currentPosition.board.toArray();
+console.log(pieceArr);
+```
