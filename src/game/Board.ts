@@ -7,7 +7,7 @@ import type {
 } from "@chacomat/types.js";
 import Color, { ConsoleColors } from "@chacomat/utils/Color.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
-import { coordsToIndex } from "../utils/Index.js";
+import { coordsToIndex } from "@chacomat/utils/Index.js";
 
 export default class Board extends Map<number, Piece> {
   static readonly #nullPiece = "0";
@@ -29,7 +29,7 @@ export default class Board extends Map<number, Piece> {
         }
       }
 
-      board.kings[color] = board.getRank(pieceRank).getFile(piecePlacement[Piece.TYPES.KING][0]) as Piece;
+      board.kings[color] = board.atRank(pieceRank).atFile(piecePlacement[Piece.TYPES.KING][0]) as Piece;
 
       for (let y = 0; y < 8; y++) {
         const index = coordsToIndex(Piece.START_RANKS.PAWN[color], y);
@@ -68,9 +68,9 @@ export default class Board extends Map<number, Piece> {
     }
   }
 
-  getRank(rank: number) {
+  atRank(rank: number) {
     return {
-      getFile: (file: number) => this.get(coordsToIndex(rank, file))
+      atFile: (file: number) => this.get(coordsToIndex(rank, file))
     };
   }
 
@@ -128,7 +128,7 @@ export default class Board extends Map<number, Piece> {
   getPieceArray(): (Piece | null)[][] {
     return Array.from({ length: 8 }, (_, x) => {
       return Array.from({ length: 8 }, (_, y) => {
-        return this.get(coordsToIndex(x, y)) ?? null;
+        return this.atRank(x).atFile(y) ?? null;
       });
     });
   }
@@ -139,7 +139,7 @@ export default class Board extends Map<number, Piece> {
         .from({ length: 8 }, (_, x) => {
           let row = "";
           for (let y = 0; y < 8; y++) {
-            const char = this.get(coordsToIndex(x, y))?.initial ?? " ";
+            const char = this.atRank(x).atFile(y)?.initial ?? " ";
             const bgColor = (x % 2 === y % 2) ? ConsoleColors.BgWhite : ConsoleColors.BgGreen;
             row += `${bgColor + ConsoleColors.FgBlack} ${char} ${ConsoleColors.Reset}`;
           }
@@ -156,7 +156,7 @@ export default class Board extends Map<number, Piece> {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array
-          .from({ length: 8 }, (_, y) => this.get(coordsToIndex(x, y))?.initial ?? Board.#nullPiece)
+          .from({ length: 8 }, (_, y) => this.atRank(x).atFile(y)?.initial ?? Board.#nullPiece)
           .join("")
           .replace(Board.#nullPieceRegex, (zeros) => String(zeros.length));
       })
