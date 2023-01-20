@@ -3,6 +3,16 @@ import Color from "@chacomat/utils/Color.js";
 import { playMovesFromPgn } from "@chacomat/utils/pgn/pgn.js";
 import { notationToIndex } from "../Index.js";
 
+const b2 = notationToIndex("b2");
+const d1 = notationToIndex("d1");
+const d4 = notationToIndex("d4");
+const d6 = notationToIndex("d6");
+const e6 = notationToIndex("e6");
+const f6 = notationToIndex("f6");
+const g4 = notationToIndex("g4");
+const g6 = notationToIndex("g6");
+const h7 = notationToIndex("h7");
+
 describe("PNG reader", () => {
   it("should be able to handle the first few moves", () => {
     const game = new ChessGame();
@@ -36,14 +46,6 @@ describe("An ambiguous move", () => {
   const getGame = () => new ChessGame({
     fenString: "k7/7Q/3R1R2/8/6Q1/8/6K1/3R4 w - - 0 1"
   });
-  const d1 = notationToIndex("d1");
-  const d4 = notationToIndex("d4");
-  const d6 = notationToIndex("d6");
-  const e6 = notationToIndex("e6");
-  const f6 = notationToIndex("f6");
-  const g4 = notationToIndex("g4");
-  const g6 = notationToIndex("g6");
-  const h7 = notationToIndex("h7");
 
   it("should be detected on an ambiguous file", () => {
     const game = getGame();
@@ -90,6 +92,14 @@ describe("Castling", () => {
     const game = new ChessGame({ fenString: "4k2r/8/8/8/8/8/8/R3K3 w Qk - 0 1" });
 
     expect(() => playMovesFromPgn("1. 0-0-0 0-0", game)).not.toThrowError();
-    game.logBoard();
+  });
+
+  it("should work on the queen side with a black rook on b2", () => {
+    const game = new ChessGame({ fenString: "3k4/8/8/8/8/8/1r6/R3K3 w Q - 0 1" });
+    playMovesFromPgn("1. 0-0-0 Ke7 2. Kxb2", game);
+
+    expect(game.currentPosition.isCheck()).toBe(false);
+    expect(game.currentPosition.board.get(b2)?.isKing()).toBe(true);
+    expect(game.currentPosition.board.getNonKingPiecesByColor()[Color.BLACK].length).toBe(0);
   });
 });
