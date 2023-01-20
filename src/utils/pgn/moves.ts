@@ -12,13 +12,10 @@ import {
   indexToCoords,
   notationToIndex
 } from "@chacomat/utils/Index.js";
+import { parsedMoves, parseVariations } from "@chacomat/utils/pgn/variations.js";
 
-const pawnMoveRegex = /[a-h](x[a-h])?[1-8](=?[NBRQ])?/,
-  pieceMoveRegex = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/,
-  castlingRegex = /(0-0(-0)?|O-O(-O)?)/,
-  checkRegex = /(\+{1,2}|#)?/,
-  halfMove = `${pawnMoveRegex.source}|${pieceMoveRegex.source}|${castlingRegex.source}`;
-const moveRegex = new RegExp(`(\\d+\\.\\s*)(?<wmove>${halfMove})${checkRegex.source}(\\s+(?<bmove>${halfMove})${checkRegex.source})?`, "g");
+const castlingRegex = /(0-0(-0)?|O-O(-O)?)/;
+const checkRegex = /(\+{1,2}|#)?/;
 
 // TODO: include promotion
 const HALF_MOVE_REGEXES: Record<string, {
@@ -94,11 +91,21 @@ const HALF_MOVE_REGEXES: Record<string, {
 };
 
 // TODO: handle lone black half-move
-export function playMovesFromPgn(pgnStr: string, game: ChessGame) {
-  for (const { groups: { wmove, bmove } } of pgnStr.matchAll(moveRegex)) {
-    findAndPlayMove(wmove, game);
-    if (bmove)
-      findAndPlayMove(bmove, game);
+export function playMovesFromPgn(movesStr: string, game: ChessGame) {
+  const mainLine = parseVariations(movesStr);
+
+  for (let moveText of parsedMoves(mainLine.movesStr)) {
+    moveText = moveText.slice(moveText.lastIndexOf(".") + 1).trim();
+
+    if (moveText.includes("...")) {
+      findAndPlayMove(moveText, game);
+      continue;
+    }
+
+    const [whiteMove, blackMove] = moveText.split(/\s+/);
+    findAndPlayMove(whiteMove, game);
+    if (blackMove)
+      findAndPlayMove(blackMove, game);
   }
 }
 

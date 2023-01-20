@@ -1,0 +1,58 @@
+const moveRegex = /\d+\.{1,3}/g;
+
+const Parenthesis = {
+  START: "(",
+  END: ")"
+} as const;
+
+export function* parsedMoves(str: string) {
+  yield* [...str.matchAll(moveRegex)]
+    .map((x, i, arr) => {
+      const endIndex = (arr[i + 1] != null) ? arr[i + 1].index - 1 : str.length;
+      return str.slice(x.index, endIndex);
+    })
+    .values();
+}
+
+export function parseVariations(movesStr: string): PgnVariations {
+  const variations: PgnVariations[] = [];
+  let startIndex = movesStr.indexOf(Parenthesis.START);
+
+  while (startIndex !== -1) {
+    const endIndex = findClosingParenIndex(movesStr, startIndex);
+    if (movesStr[endIndex] !== Parenthesis.END)
+      throw new Error(`Unclosed parenthesis at ${movesStr.slice(startIndex, 10)} ...`);
+
+    const varText = movesStr.slice(startIndex + 1, endIndex);
+    variations.push(parseVariations(varText));
+
+    movesStr = `${movesStr.slice(0, startIndex - 1)} ${movesStr.slice(endIndex + 1)}`.replace(/\s+/g, " ");
+    startIndex = movesStr.indexOf(Parenthesis.START);
+  }
+
+  return (variations.length)
+    ? { movesStr, variations }
+    : { movesStr };
+}
+
+function findClosingParenIndex(str: string, firstParenIndex: number): number {
+  for (let i = firstParenIndex + 1, count = 1; i < str.length; i++) {
+    if (str[i] === Parenthesis.START) {
+      count++;
+      continue;
+    }
+    if (str[i] === Parenthesis.END) {
+      count--;
+      if (count === 0)
+        return i;
+    }
+  }
+
+  return -1;
+}
+
+
+interface PgnVariations {
+  movesStr: string;
+  variations?: PgnVariations[];
+}
