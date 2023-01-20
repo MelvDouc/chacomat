@@ -1,13 +1,13 @@
-import { PgnInfo } from "@chacomat/types.js";
+import { GameMetaInfo } from "@chacomat/types.js";
 
 const pgnInfoRegex = /^\[(?<k>\w+) "(?<v>[^"]*)"\]$/;
 
 function getMetaInfo(pgn: string): {
-  pgnInfo: PgnInfo;
+  pgnInfo: GameMetaInfo;
   movesStr: string;
 } {
   const lines = pgn.split("\n");
-  const pgnInfo = {} as PgnInfo;
+  const pgnInfo = {} as GameMetaInfo;
   let linesLength = 0;
 
   for (const line of lines) {

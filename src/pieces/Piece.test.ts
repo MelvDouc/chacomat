@@ -28,7 +28,7 @@ describe("Piece", () => {
 describe("A king", () => {
   it("should be able to castle with no squares between it and a rook", () => {
     const { currentPosition } = new ChessGame({
-      fenString: "4k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
+      fen: "4k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
     });
     const { legalMovesAsNotation } = currentPosition;
 
@@ -38,7 +38,7 @@ describe("A king", () => {
 
   it("should not be able to castle through check", () => {
     const game = new ChessGame({
-      fenString: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
+      fen: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
     });
     const whiteKing = game.currentPosition.board.kings[Color.WHITE];
     const castlingCoords = [

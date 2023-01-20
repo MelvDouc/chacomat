@@ -1,6 +1,6 @@
 import Position from "@chacomat/game/Position.js";
 import type {
-  AlgebraicSquareNotation, ChessGameFenParameter, ChessGamePgnParameter, ChessGamePositionParameter, PgnInfo, PromotedPieceType
+  AlgebraicSquareNotation, GameMetaInfo, GameParameters, PromotedPieceType
 } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
@@ -24,28 +24,24 @@ export default class ChessGame {
   };
 
   currentPosition: InstanceType<typeof Position>;
-  readonly pgnInfo: PgnInfo = {};
+  readonly metaInfo: GameMetaInfo = {};
 
-  constructor();
-  constructor({ pgn }: ChessGamePgnParameter);
-  constructor({ fenString }: ChessGameFenParameter);
-  constructor({ positionParams, pgnInfo }: ChessGamePositionParameter);
-
-  constructor(param: ChessGamePgnParameter | ChessGameFenParameter | ChessGamePositionParameter = {}) {
+  constructor({ pgn, fen, positionParams, metaInfo }: GameParameters = {}) {
     const PositionConstructor = (this.constructor as typeof ChessGame).Position;
 
-    if (isPgnParam(param)) {
-      const { pgnInfo, enterMoves } = enterPgn(param.pgn);
-      this.#setPosition(PositionConstructor.fromFenString(pgnInfo.FEN ?? Position.startFenString));
-      this.pgnInfo = pgnInfo;
+    if (typeof pgn === "string") {
+      const { pgnInfo, enterMoves } = enterPgn(pgn);
+      this.#setPosition(PositionConstructor.fromFenString(pgnInfo.FEN ?? fen ?? Position.startFenString));
+      this.metaInfo = pgnInfo;
       enterMoves(this);
-    } else if (isFenParam(param)) {
-      this.#setPosition(PositionConstructor.fromFenString(param.fenString));
-    } else if (isPositionParam(param)) {
-      this.#setPosition(new PositionConstructor(param.positionParams));
-      this.pgnInfo = param.pgnInfo;
     } else {
-      this.#setPosition(PositionConstructor.fromFenString(Position.startFenString));
+      if (typeof fen === "string")
+        this.#setPosition(PositionConstructor.fromFenString(fen));
+      else if (positionParams)
+        this.#setPosition(new PositionConstructor(positionParams));
+      else
+        this.#setPosition(PositionConstructor.fromFenString(Position.startFenString));
+      this.metaInfo = metaInfo;
     }
   }
 
@@ -158,7 +154,3 @@ export default class ChessGame {
     this.currentPosition.board.log();
   }
 }
-
-const isPgnParam = (param: any): param is ChessGamePgnParameter => typeof param?.pgn === "string";
-const isFenParam = (param: any): param is ChessGameFenParameter => typeof param.fenString === "string";
-const isPositionParam = (param: any): param is ChessGamePositionParameter => typeof param.positionParams === "object" && typeof param.pgnInfo === "object";

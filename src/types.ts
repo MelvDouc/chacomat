@@ -1,6 +1,7 @@
 import type { GameStatus, PieceType, Wing } from "@chacomat/utils/constants.js";
 
 export type {
+  GameParameters,
   GameStatus,
   PieceType,
   Wing
@@ -34,7 +35,7 @@ export type NonPawnPieceType = Exclude<PieceType, PieceType.PAWN>;
 export type IndexGenerator = Generator<number, void, unknown>;
 export type Move = [number, number];
 
-export type PgnInfo = Partial<FullPgnInfo>;
+export type GameMetaInfo = Partial<FullGameMetaInfo>;
 
 export type BlackAndWhite<T> = {
   [K in Color]: T;
@@ -54,23 +55,29 @@ export interface PieceOffsets {
   y: number[];
 }
 
-export interface ChessGamePgnParameter {
-  pgn: string;
+interface GameParameters {
+  /**
+   * If the parameters contain this property, then `positionParams` will be ignored.
+   */
+  pgn?: string;
 }
 
-export interface ChessGameFenParameter {
-  fenString: FenString;
+interface GameParameters {
+  /**
+   * If the parameters contain this property, then `positionParams` will be ignored.
+   */
+  fen?: FenString;
 }
 
-export interface ChessGamePositionParameter {
+interface GameParameters {
   positionParams?: PositionParameters;
-  pgnInfo?: PgnInfo;
+  metaInfo?: GameMetaInfo;
 }
 
 /**
  * Various Pascal-cased info that would typically be found in a PGN file.
  */
-interface FullPgnInfo {
+interface FullGameMetaInfo {
   White: string;
   Black: string;
   Result: "1-0" | "0-1" | "0-0" | "1/2-1/2" | "*";

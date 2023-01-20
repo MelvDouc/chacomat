@@ -6,7 +6,7 @@ import Color from "@chacomat/utils/Color.js";
 describe("A board", () => {
   it("should be serializable", () => {
     const game = new ChessGame({
-      fenString: "k7/8/8/8/8/8/8/7K w - - 0 1"
+      fen: "k7/8/8/8/8/8/8/7K w - - 0 1"
     }),
       board = game.currentPosition.board;
 

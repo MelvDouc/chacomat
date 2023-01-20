@@ -6,7 +6,7 @@ import Color from "@chacomat/utils/Color.js";
 describe("A Chess960 game", () => {
   it("should detect check", () => {
     const game = new Chess960Game({
-      fenString: "bbrnknrq/pppppppp/8/8/8/8/PPPPPPPP/BBRNKNRQ w CFcf - 0 1"
+      fen: "bbrnknrq/pppppppp/8/8/8/8/PPPPPPPP/BBRNKNRQ w CFcf - 0 1"
     })
       .moveWithNotations("g2", "g4")
       .moveWithNotations("d8", "c6")
@@ -18,7 +18,9 @@ describe("A Chess960 game", () => {
   });
 
   it("should have correct castling rights", () => {
-    const { castlingRights } = new Chess960Game().currentPosition;
+    const position = new Chess960Game().currentPosition;
+    console.log(position.toString());
+    const { castlingRights } = position;
 
     expect(new Set(castlingRights[Color.WHITE]).size).toBe(2);
     expect(new Set(castlingRights[Color.BLACK]).size).toBe(2);
@@ -26,7 +28,7 @@ describe("A Chess960 game", () => {
 
   it("should allow castling", () => {
     const { currentPosition } = new Chess960Game({
-      fenString: "k7/pppppppp/8/8/8/8/PPPPPPPP/1R4KR b BH - 0 1"
+      fen: "k7/pppppppp/8/8/8/8/PPPPPPPP/1R4KR b BH - 0 1"
     })
       .moveWithNotations("a8", "b8");
     const { castlingRights, colorToMove, legalMovesAsNotation } = currentPosition;

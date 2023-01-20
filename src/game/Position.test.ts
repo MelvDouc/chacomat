@@ -11,7 +11,7 @@ describe("FEN string", () => {
 
   it("should be valid after a move", () => {
     const game = new ChessGame({
-      fenString: "r5k1/p3rppp/1p2pn2/PP1bN3/8/2R1PP2/4B1PP/R5K1 b - - 0 24"
+      fen: "r5k1/p3rppp/1p2pn2/PP1bN3/8/2R1PP2/4B1PP/R5K1 b - - 0 24"
     });
     const pos1 = game.currentPosition;
     const pos2 = pos1.createPositionFromMove(17, 24, PieceType.QUEEN, true);
@@ -41,7 +41,7 @@ describe("A triple repetition", () => {
 
 describe("A board with only kings", () => {
   it("should be insufficient material", () => {
-    const game = new ChessGame({ fenString: "k7/8/8/8/8/8/8/7K w - - 0 1" });
+    const game = new ChessGame({ fen: "k7/8/8/8/8/8/8/7K w - - 0 1" });
 
     expect(game.status).toBe(GameStatus.INSUFFICIENT_MATERIAL);
   });

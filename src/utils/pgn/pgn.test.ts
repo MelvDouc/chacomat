@@ -46,7 +46,7 @@ describe("PNG reader", () => {
       pgn: `[Event "N3 2022-23"]
       [Site "Thionville FRA"]
       [Date "2023.01.15"]
-      [Round "5"]
+      [Round "5.3"]
       [White "Espinosa, Enrique"]
       [Black "Doucet, Melvin"]
       [Result "0-1"]
@@ -60,15 +60,16 @@ describe("PNG reader", () => {
       1.d4 d5 2.Bf4 Nf6 3.e3 Bg4 4.f3 Bd7 5.c4 c5 6.Nc3 e6 7.Nh3 Nc6 8.Be5 cxd4 9.exd4 dxc4 10.Bxc4 Rc8 11.Qe2 Be7 12.Bxf6 Bxf6 13.d5 Nd4 14.Qd3 Rxc4 15.Qxc4 Nc2+ 16.Ke2 Nxa1 17.Rxa1 exd5 18.Nxd5 0-0 19.Nhf4 Bxb2 20.Rb1 Qe8+ 21.Kf2 Qe5 22.Kf1 Bc6 23.Ne7+ Qxe7 24.Rxb2 Qh4 25.g3 Qf6 26.Rf2 Rd8 27.Qc5 a6 28.Qe3 Qa1+ 29.Kg2 Qd1 30.h4 Re8 31.Qc3 Re1 32.h5 Rg1+ 33.Kh3 Bd7+ 34.g4 Rh1+ 35.Rh2 Bc6 36.Rxh1 Qxh1+ 37.Kg3 h6 38.Qd3 Qe1+ 39.Kg2 Qa5 40.a3 Qc7 41.Qd4 Qe7 42.Qc3 Qh4 43.Kf1 Qg3 44.Nd5 Bb5+`
     });
 
-    expect(game.pgnInfo.Black).toBe("Doucet, Melvin");
-    expect(game.pgnInfo.BlackElo).toBe(1985);
-    expect(game.currentPosition.legalMoves.length).toBe(2);
+    expect(game.metaInfo.Black).toBe("Doucet, Melvin");
+    expect(game.metaInfo.BlackElo).toBe(1985);
+    expect(game.metaInfo.Round).toBeCloseTo(5.3);
+    expect(game.currentPosition.legalMoves).toHaveLength(2);
   });
 });
 
 describe("An ambiguous move", () => {
   const getGame = () => new ChessGame({
-    fenString: "k7/7Q/3R1R2/8/6Q1/8/6K1/3R4 w - - 0 1"
+    fen: "k7/7Q/3R1R2/8/6Q1/8/6K1/3R4 w - - 0 1"
   });
 
   it("should be detected on an ambiguous file", () => {
@@ -113,13 +114,13 @@ describe("An ambiguous move", () => {
 
 describe("Castling", () => {
   it("should work on both sides", () => {
-    const game = new ChessGame({ fenString: "4k2r/8/8/8/8/8/8/R3K3 w Qk - 0 1" });
+    const game = new ChessGame({ fen: "4k2r/8/8/8/8/8/8/R3K3 w Qk - 0 1" });
 
     expect(() => playMovesFromPgn("1. 0-0-0 0-0", game)).not.toThrowError();
   });
 
   it("should work on the queen side with a black rook on b2", () => {
-    const game = new ChessGame({ fenString: "3k4/8/8/8/8/8/1r6/R3K3 w Q - 0 1" });
+    const game = new ChessGame({ fen: "3k4/8/8/8/8/8/1r6/R3K3 w Q - 0 1" });
     playMovesFromPgn("1. 0-0-0 Ke7 2. Kxb2", game);
 
     expect(game.currentPosition.isCheck()).toBe(false);
