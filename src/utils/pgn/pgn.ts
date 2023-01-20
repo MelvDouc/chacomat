@@ -1,28 +1,24 @@
-import { AlgebraicSquareNotation, Board, ChessFileName, ChessGame, Move } from "@chacomat/types.js";
+import { AlgebraicSquareNotation, Board, ChessFileName, ChessGame, Move, PromotedPieceType } from "@chacomat/types.js";
 import { File } from "../constants.js";
 import { coordsToIndex, indexToCoords, notationToIndex } from "../Index.js";
 
 const pawnMoveRegex = /[a-h](x[a-h])?[1-8](=?[NBRQ])?/,
   pieceMoveRegex = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/,
-  castlingRegex = /(0-0(-0)?|O-O(-O)?)/,
+  castlingRegex = /0-0(-0)?/,
   checkRegex = /(\+{1,2}|#)?/,
-  halfMove = `(${pawnMoveRegex.source}|${pieceMoveRegex.source}|${castlingRegex.source})`,
-  halfMoveAndCheckRegex = halfMove + checkRegex.source;
-const moveRegex = new RegExp(`(?<=\\d+\\.\\s*)${halfMoveAndCheckRegex}(\\s+${halfMoveAndCheckRegex})?`, "g");
+  halfMove = `${pawnMoveRegex.source}|${pieceMoveRegex.source}|${castlingRegex.source}`;
+const moveRegex = new RegExp(`(\\d+\\.\\s*)(?<wmove>${halfMove})${checkRegex.source}(\\s+(?<bmove>${halfMove})${checkRegex.source})?`, "g");
 
 // TODO: include promotion
 const HALF_MOVE_REGEXES: Record<string, {
   regex: RegExp;
-  getMove: (moveText: string, board: Board, legalMoves: Move[]) => Move;
+  getMove: (moveText: string, board: Board, legalMoves: Move[]) => [...Move, PromotedPieceType?];
 }> = {
   STRAIGHT_PAWN_MOVE: {
     regex: /^[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
-      const destIndex = notationToIndex(moveText as AlgebraicSquareNotation);
-      return legalMoves.find(([src, dest]) => {
-        return dest === destIndex
-          && board.get(src)?.isPawn();
-      });
+      const destIndex = notationToIndex(moveText[0] + moveText[1] as AlgebraicSquareNotation);
+      return legalMoves.find(([src, dest]) => dest === destIndex && board.get(src)?.isPawn());
     }
   },
   PAWN_CAPTURE: {
@@ -42,10 +38,7 @@ const HALF_MOVE_REGEXES: Record<string, {
     getMove: (moveText, board, legalMoves) => {
       moveText = moveText.replace("x", "");
       const destIndex = notationToIndex(moveText[1] + moveText[2] as AlgebraicSquareNotation);
-      return legalMoves.find(([src, dest]) => {
-        return dest === destIndex
-          && board.get(src)?.type === moveText[0];
-      });
+      return legalMoves.find(([src, dest]) => dest === destIndex && board.get(src)?.type === moveText[0]);
     }
   },
   AMBIGUOUS_PIECE_MOVE: {
@@ -68,13 +61,10 @@ const HALF_MOVE_REGEXES: Record<string, {
       }
 
       return legalMoves.find(([src, dest]) => {
-        const srcCoords = indexToCoords(src);
-        if (srcX != null && srcCoords.x !== srcX)
-          return false;
-        if (srcY != null && srcCoords.y !== srcY)
-          return false;
         return destCoords === dest
-          && board.get(src)?.type === moveText[0];
+          && board.get(src)?.type === moveText[0]
+          && (srcX == null || srcX === indexToCoords(src).x)
+          && (srcY == null || srcY === indexToCoords(src).y);
       });
     }
   },
@@ -92,13 +82,13 @@ const HALF_MOVE_REGEXES: Record<string, {
   }
 };
 
+// TODO: handle lone black half-move
 export function playMovesFromPgn(pgnStr: string, game: ChessGame) {
-  (pgnStr.match(moveRegex) as string[]).forEach((pair) => {
-    const [whiteMove, blackMove] = pair.slice(pair.indexOf(".") + 1).trim().split(/\s+/);
-    findAndPlayMove(whiteMove, game);
-    if (blackMove)
-      findAndPlayMove(blackMove, game);
-  });
+  for (const { groups: { wmove, bmove } } of pgnStr.matchAll(moveRegex)) {
+    findAndPlayMove(wmove, game);
+    if (bmove)
+      findAndPlayMove(bmove, game);
+  }
 }
 
 function findAndPlayMove(moveText: string, game: ChessGame) {
