@@ -1,5 +1,5 @@
+import Color from "@chacomat/constants/Color.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
-import Color from "@chacomat/utils/Color.js";
 import { notationToIndex } from "@chacomat/utils/Index.js";
 import { playMovesFromPgn } from "@chacomat/utils/pgn/moves.js";
 

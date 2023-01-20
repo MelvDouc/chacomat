@@ -1,3 +1,4 @@
+import File from "@chacomat/constants/File.js";
 import {
   AlgebraicSquareNotation,
   Board,
@@ -6,7 +7,6 @@ import {
   Move,
   PromotedPieceType
 } from "@chacomat/types.js";
-import { File } from "@chacomat/utils/constants.js";
 import {
   coordsToIndex,
   indexToCoords,

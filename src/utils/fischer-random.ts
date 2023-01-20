@@ -1,4 +1,4 @@
-import { PieceType } from "@chacomat/utils/constants.js";
+import PieceType from "@chacomat/constants/PieceType.js";
 import type { NonPawnPieceType } from "@chacomat/types.js";
 
 function randomInt(min: number, max: number): number {

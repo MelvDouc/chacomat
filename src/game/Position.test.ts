@@ -1,6 +1,7 @@
+import GameStatus from "@chacomat/constants/GameStatus.js";
+import PieceType from "@chacomat/constants/PieceType.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Position from "@chacomat/game/Position.js";
-import { GameStatus, PieceType } from "@chacomat/utils/constants.js";
 
 describe("FEN string", () => {
   it("should be produce itself", () => {

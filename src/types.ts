@@ -1,4 +1,6 @@
-import type { GameStatus, PieceType, Wing } from "@chacomat/utils/constants.js";
+import GameStatus from "./constants/GameStatus.js";
+import PieceType from "./constants/PieceType.js";
+import Wing from "./constants/Wing.js";
 
 export type {
   GameParameters,
@@ -24,7 +26,7 @@ export type Chess960Game = import("./chess960/Chess960Game.js").default;
 export type Chess960Position = import("./chess960/Chess960Position.js").default;
 export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.js").default;
 
-export type Color = import("./utils/Color.js").default;
+export type Color = import("./constants/Color.js").default;
 
 export type Piece = import("./pieces/Piece.js").default;
 export type BlackPieceInitial = Lowercase<PieceType>;

@@ -1,6 +1,6 @@
+import Color from "@chacomat/constants/Color.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import Color from "@chacomat/utils/Color.js";
 
 describe("Piece", () => {
   it("n should be a black knight", () => {

@@ -1,5 +1,5 @@
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
-import Color from "@chacomat/utils/Color.js";
+import Color from "@chacomat/constants/Color.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 
 describe("Chess960CastlingRights", () => {

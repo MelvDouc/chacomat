@@ -1,7 +1,7 @@
+import Color from "@chacomat/constants/Color.js";
+import GameStatus from "@chacomat/constants/GameStatus.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import Color from "@chacomat/utils/Color.js";
-import { GameStatus } from "@chacomat/utils/constants.js";
 import { notationToIndex } from "@chacomat/utils/Index.js";
 
 describe("Fool's Mate", () => {

@@ -1,3 +1,4 @@
+import Color, { colorAbbreviations, ReversedColor } from "@chacomat/constants/Color.js";
 import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import Piece from "@chacomat/pieces/Piece.js";
@@ -10,10 +11,17 @@ import type {
   PositionParameters,
   PromotedPieceType
 } from "@chacomat/types.js";
-import Color, { colorAbbreviations, ReversedColor } from "@chacomat/utils/Color.js";
 import { InvalidFenError } from "@chacomat/utils/errors.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
-import { coordsToIndex, coordsToNotation, getFile, getRank, indexToCoords, indexToNotation, notationToIndex } from "@chacomat/utils/Index.js";
+import {
+  coordsToIndex,
+  coordsToNotation,
+  getFile,
+  getRank,
+  indexToCoords,
+  indexToNotation,
+  notationToIndex
+} from "@chacomat/utils/Index.js";
 /**
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.
  */

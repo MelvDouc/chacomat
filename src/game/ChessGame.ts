@@ -1,3 +1,5 @@
+import Color from "@chacomat/constants/Color.js";
+import GameStatus from "@chacomat/constants/GameStatus.js";
 import Position from "@chacomat/game/Position.js";
 import type {
   AlgebraicSquareNotation,
@@ -5,8 +7,6 @@ import type {
   GameParameters,
   PromotedPieceType
 } from "@chacomat/types.js";
-import Color from "@chacomat/utils/Color.js";
-import { GameStatus } from "@chacomat/utils/constants.js";
 import {
   IllegalMoveError,
   InactiveGameError,

@@ -1,9 +1,13 @@
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
+import Color from "@chacomat/constants/Color.js";
 import Board from "@chacomat/game/Board.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import type { Chess960Game, IndexGenerator, PositionParameters } from "@chacomat/types.js";
-import Color from "@chacomat/utils/Color.js";
+import type {
+  Chess960Game,
+  IndexGenerator,
+  PositionParameters
+} from "@chacomat/types.js";
 import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
 
 export default class Chess960Position extends Position {

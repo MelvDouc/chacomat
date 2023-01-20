@@ -1,3 +1,4 @@
+import Color, { ConsoleColors } from "@chacomat/constants/Color.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
   BlackAndWhite,
@@ -5,7 +6,6 @@ import type {
   PieceInitial,
   Position
 } from "@chacomat/types.js";
-import Color, { ConsoleColors } from "@chacomat/utils/Color.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
 

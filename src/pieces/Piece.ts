@@ -1,3 +1,5 @@
+import Color, { ReversedColor } from "@chacomat/constants/Color.js";
+import PieceType from "@chacomat/constants/PieceType.js";
 import { canCastleToFile, getWing } from "@chacomat/pieces/castling.js";
 import {
   attackedIndexGenerators,
@@ -17,8 +19,6 @@ import type {
   PieceInitial,
   PieceParameters
 } from "@chacomat/types.js";
-import Color, { ReversedColor } from "@chacomat/utils/Color.js";
-import { PieceType } from "@chacomat/utils/constants.js";
 import { coordsToIndex, indexToCoords } from "@chacomat/utils/Index.js";
 
 export default class Piece {
