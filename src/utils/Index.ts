@@ -1,4 +1,18 @@
-import { AlgebraicSquareNotation } from "@chacomat/types.js";
+import { AlgebraicSquareNotation, Coords } from "@chacomat/types.js";
+
+const notationsByIndex = {} as Record<number, AlgebraicSquareNotation>;
+const indicesByNotation = {} as Record<AlgebraicSquareNotation, number>;
+const coordsByIndex = {} as Record<number, Coords>;
+
+for (let x = 0; x < 8; x++) {
+  for (let y = 0; y < 8; y++) {
+    const index = coordsToIndex(x, y);
+    const notation = String.fromCharCode(97 + y) + String(8 - x) as AlgebraicSquareNotation;
+    notationsByIndex[index] = notation;
+    indicesByNotation[notation] = index;
+    coordsByIndex[index] = { x, y };
+  }
+}
 
 export function getRank(index: number): number {
   return Math.floor(index / 8);
@@ -8,16 +22,12 @@ export function getFile(index: number): number {
   return index % 8;
 }
 
-export function indexToCoords(index: number): { x: number; y: number; } {
-  return {
-    x: getRank(index),
-    y: getFile(index)
-  };
+export function indexToCoords(index: number): Coords {
+  return coordsByIndex[index];
 }
 
 export function indexToNotation(index: number): AlgebraicSquareNotation {
-  const { x, y } = indexToCoords(index);
-  return String.fromCharCode(97 + y) + String(8 - x) as AlgebraicSquareNotation;
+  return notationsByIndex[index];
 }
 
 export function coordsToIndex(x: number, y: number): number {
@@ -29,7 +39,7 @@ export function coordsToNotation(x: number, y: number): AlgebraicSquareNotation 
 }
 
 export function notationToIndex(notation: AlgebraicSquareNotation): number {
-  return coordsToIndex(8 - +notation[1], notation[0].charCodeAt(0) - 97);
+  return indicesByNotation[notation];
 }
 
 export function isSafe(n: number) {
