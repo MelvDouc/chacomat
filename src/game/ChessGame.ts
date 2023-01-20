@@ -4,13 +4,13 @@ import type {
 } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
-import Coords from "@chacomat/utils/Coords.js";
 import {
   IllegalMoveError,
   InactiveGameError,
   InvalidFenError
 } from "@chacomat/utils/errors.js";
 import { playMovesFromPgn } from "@chacomat/utils/pgn/pgn.js";
+import { notationToIndex } from "../utils/Index.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -57,15 +57,15 @@ export default class ChessGame {
   }
 
   /**
-   * Play a move using coordinates such that a8 is {x: 0, y: 0} and h1 is {x: 7, y: 7}.
-   * @param srcCoords The coords of the source square. Must contain a piece which can legally move in the current position.
-   * @param destCoords The coords of the square the source piece will move to.
+   * Play a move using board indices whereby a8 is 0, h8 is 7 and h1 is 63.
+   * @param srcIndex The index of the source square. Must contain a piece which can legally move in the current position.
+   * @param destIndex The index of the square the source piece will move to.
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
    * @returns The current instance of a game containing the position after the move.
    */
   move(
-    srcCoords: { x: number; y: number; },
-    destCoords: { x: number; y: number; },
+    srcIndex: number,
+    destIndex: number,
     promotionType?: PromotedPieceType
   ): this {
     const { status } = this;
@@ -74,16 +74,13 @@ export default class ChessGame {
       throw new ChessGame.errors.InactiveGameError(status);
 
     if (!this.currentPosition.legalMoves.some(([src, dest]) =>
-      src.x === srcCoords.x
-      && src.y === srcCoords.y
-      && dest.x === destCoords.x
-      && dest.y === destCoords.y
+      src === srcIndex && dest === destIndex
     ))
-      throw new ChessGame.errors.IllegalMoveError(srcCoords, destCoords);
+      throw new ChessGame.errors.IllegalMoveError(srcIndex, destIndex);
 
     const nextPosition = this.currentPosition.createPositionFromMove(
-      Coords(srcCoords.x, srcCoords.y),
-      Coords(destCoords.x, destCoords.y),
+      srcIndex,
+      destIndex,
       promotionType,
       true
     );
@@ -108,8 +105,8 @@ export default class ChessGame {
     promotionType?: PromotedPieceType
   ): this {
     return this.move(
-      Coords.fromNotation(srcNotation) as Coords,
-      Coords.fromNotation(destNotation) as Coords,
+      notationToIndex(srcNotation),
+      notationToIndex(destNotation),
       promotionType
     );
   }

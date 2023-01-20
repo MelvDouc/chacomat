@@ -2,6 +2,7 @@ import ChessGame from "@chacomat/game/ChessGame.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
+import { coordsToIndex } from "../utils/Index.js";
 
 describe("A board", () => {
   it("should be serializable", () => {
@@ -11,10 +12,10 @@ describe("A board", () => {
       board = game.currentPosition.board;
 
     for (let y = 0; y < 8; y++) {
-      const c = board.Coords(1, y);
-      board.set(c, new Piece({ color: Color.BLACK, type: Piece.TYPES.PAWN, coords: c, board }));
-      const c2 = board.Coords(6, y);
-      board.set(c2, new Piece({ color: Color.WHITE, type: Piece.TYPES.PAWN, coords: c2, board }));
+      const bIndex = coordsToIndex(1, y);
+      board.set(bIndex, new Piece({ color: Color.BLACK, type: Piece.TYPES.PAWN, index: bIndex, board }));
+      const wIndex = coordsToIndex(6, y);
+      board.set(wIndex, new Piece({ color: Color.WHITE, type: Piece.TYPES.PAWN, index: wIndex, board }));
     }
 
     expect("k7/pppppppp/8/8/8/8/PPPPPPPP/7K").toBe(board.toString());

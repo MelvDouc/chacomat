@@ -1,5 +1,6 @@
-import { Board, ChessFileName, ChessGame, Move } from "@chacomat/types.js";
-import Coords from "@chacomat/utils/Coords.js";
+import { AlgebraicSquareNotation, Board, ChessFileName, ChessGame, Move } from "@chacomat/types.js";
+import { File } from "../constants.js";
+import { coordsToIndex, indexToCoords, notationToIndex } from "../Index.js";
 
 const pawnMoveRegex = /[a-h](x[a-h])?[1-8](=?[NBRQ])?/,
   pieceMoveRegex = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/,
@@ -17,11 +18,9 @@ const HALF_MOVE_REGEXES: Record<string, {
   STRAIGHT_PAWN_MOVE: {
     regex: /^[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
-      const y = Coords.File[moveText[0] as ChessFileName],
-        destX = 8 - Number(moveText[1]);
+      const destIndex = notationToIndex(moveText as AlgebraicSquareNotation);
       return legalMoves.find(([src, dest]) => {
-        return dest.x === destX
-          && dest.y === y
+        return dest === destIndex
           && board.get(src)?.isPawn();
       });
     }
@@ -29,13 +28,11 @@ const HALF_MOVE_REGEXES: Record<string, {
   PAWN_CAPTURE: {
     regex: /^[a-h]x[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
-      const srcY = Coords.File[moveText[0] as ChessFileName],
-        destX = getRank(moveText[3]),
-        destY = Coords.File[moveText[2] as ChessFileName];
+      const srcY = File[moveText[0] as ChessFileName];
+      const destIndex = notationToIndex(moveText[2] + moveText[3] as AlgebraicSquareNotation);
       return legalMoves.find(([src, dest]) => {
-        return src.y === srcY
-          && dest.x === destX
-          && dest.y === destY
+        return indexToCoords(src).x === srcY
+          && dest === destIndex
           && board.get(src)?.isPawn();
       });
     }
@@ -44,11 +41,9 @@ const HALF_MOVE_REGEXES: Record<string, {
     regex: /^[NBRQK]x?[a-h][1-8](\+{1,2}|#)?$/,
     getMove: (moveText, board, legalMoves) => {
       moveText = moveText.replace("x", "");
-      const destX = getRank(moveText[2]);
-      const destY = Coords.File[moveText[1] as ChessFileName];
+      const destIndex = notationToIndex(moveText[1] + moveText[2] as AlgebraicSquareNotation);
       return legalMoves.find(([src, dest]) => {
-        return dest.x === destX
-          && dest.y === destY
+        return dest === destIndex
           && board.get(src)?.type === moveText[0];
       });
     }
@@ -58,26 +53,27 @@ const HALF_MOVE_REGEXES: Record<string, {
     getMove: (moveText, board, legalMoves) => {
       const chars = moveText.replace("x", "").replace(checkRegex, "").split("");
       const destX = getRank(chars.at(-1));
-      const destY = Coords.File[chars.at(-2) as ChessFileName];
+      const destY = File[chars.at(-2) as ChessFileName];
+      const destCoords = coordsToIndex(destX, destY);
       let srcX: number | undefined,
         srcY: number | undefined;
 
       if (chars.length === 5) {
         srcX = getRank(chars[2]);
-        srcY = Coords.File[chars[1] as ChessFileName];
+        srcY = File[chars[1] as ChessFileName];
       } else {
         !isNaN(+chars[1])
           ? srcX = getRank(chars[1])
-          : srcY = Coords.File[chars[1] as ChessFileName];
+          : srcY = File[chars[1] as ChessFileName];
       }
 
       return legalMoves.find(([src, dest]) => {
-        if (srcX != null && src.x !== srcX)
+        const srcCoords = indexToCoords(src);
+        if (srcX != null && srcCoords.x !== srcX)
           return false;
-        if (srcY != null && src.y !== srcY)
+        if (srcY != null && srcCoords.y !== srcY)
           return false;
-        return dest.x === destX
-          && dest.y === destY
+        return destCoords === dest
           && board.get(src)?.type === moveText[0];
       });
     }
@@ -85,13 +81,13 @@ const HALF_MOVE_REGEXES: Record<string, {
   CASTLING: {
     regex: new RegExp(`^${castlingRegex.source + checkRegex.source}$`),
     getMove: (moveText, board, legalMoves) => {
-      const kingCoords = board.kings[board.position.colorToMove].coords;
-      const destCoords = [...board.position.castlingCoords()].find((coords) => {
+      const kingIndex = board.kings[board.position.colorToMove].index;
+      const destIndex = [...board.position.castlingCoords()].find((index) => {
         return (moveText.length === 3)
-          ? coords.y > kingCoords.y
-          : coords.y < kingCoords.y;
+          ? index > kingIndex
+          : index < kingIndex;
       });
-      return legalMoves.find(([src, dest]) => src === kingCoords && dest === destCoords);
+      return legalMoves.find(([src, dest]) => src === kingIndex && dest === destIndex);
     }
   }
 };

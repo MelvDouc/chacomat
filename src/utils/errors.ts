@@ -1,8 +1,8 @@
 import { FenString, GameStatus } from "@chacomat/types.js";
 
 export class IllegalMoveError extends Error {
-  constructor(srcCoords: { x: number; y: number; }, destCoords: { x: number; y: number; }) {
-    super(`Illegal move: ${JSON.stringify(srcCoords)}-${JSON.stringify(destCoords)}`);
+  constructor(src: unknown, dest: unknown) {
+    super(`Illegal move from ${src} to ${dest}`);
   }
 }
 

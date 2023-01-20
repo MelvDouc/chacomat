@@ -2,12 +2,7 @@ import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js
 import Board from "@chacomat/game/Board.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import type {
-  Chess960Game,
-  Coords,
-  CoordsGenerator,
-  PositionParameters
-} from "@chacomat/types.js";
+import type { Chess960Game, IndexGenerator, PositionParameters } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
 
@@ -33,12 +28,12 @@ export default class Chess960Position extends Position {
   override readonly castlingRights: Chess960CastlingRights;
   override game: Chess960Game;
 
-  override isCastling(king: Piece, destCoords: Coords): boolean {
-    return !!this.board.get(destCoords)?.isRook()
-      && this.board.get(destCoords).color === king.color;
+  override isCastling(king: Piece, destIndex: number): boolean {
+    return !!this.board.get(destIndex)?.isRook()
+      && this.board.get(destIndex).color === king.color;
   }
 
-  override *castlingCoords(): CoordsGenerator {
+  override *castlingCoords(): IndexGenerator {
     yield* Piece.castlingCoords(this.board.kings[this.colorToMove], true);
   }
 }

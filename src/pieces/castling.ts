@@ -1,20 +1,15 @@
 import { castledFiles } from "@chacomat/pieces/placements.js";
-import type {
-  Board,
-  Coords
-} from "@chacomat/types.js";
+import type { Piece } from "@chacomat/types.js";
 import { Wing } from "@chacomat/utils/constants.js";
+import { coordsToIndex } from "../utils/Index.js";
 
 /**
  * This assumes that the king's coordinates are in keeping with the position's castling rights.
  */
-export function canCastleToFile(
-  { board, kingCoords }: { board: Board, kingCoords: Coords; },
-  srcRookY: number
-): boolean {
-  const { x: kingX, y: kingY } = kingCoords;
+export function canCastleToFile(king: Piece, srcRookY: number): boolean {
+  const { x: kingX, y: kingY } = king.coords;
   const wing = getWing(kingY, srcRookY);
-  const rookCoords = board.Coords(kingX, srcRookY);
+  const rookIndex = coordsToIndex(kingX, srcRookY);
 
   // The squares traversed by the king must not be attacked,
   // and they must be either empty or occupied by the castling rook.
@@ -23,10 +18,10 @@ export function canCastleToFile(
 
   if (kingDirection !== 0) {
     for (let y = kingY + kingDirection; ; y += kingDirection) {
-      const destCoords = board.Coords(kingX, y);
+      const destIndex = coordsToIndex(kingX, y);
       if (
-        board.position.attackedCoordsSet.has(destCoords)
-        || destCoords !== rookCoords && board.has(destCoords)
+        king.board.position.attackedIndicesSet.has(destIndex)
+        || destIndex !== rookIndex && king.board.has(destIndex)
       )
         return false;
       if (y === destKingY)
@@ -36,12 +31,12 @@ export function canCastleToFile(
 
   // The squares traversed by the rook must be empty or occupied the king.
   const destRookY = castledFiles.ROOK[wing];
-  const rookDirection = Math.sign(destRookY - rookCoords.y);
+  const rookDirection = Math.sign(destRookY - srcRookY);
 
   if (rookDirection !== 0) {
-    for (let y = rookCoords.y + rookDirection; ; y += rookDirection) {
-      const destCoords = board.Coords(kingX, y);
-      if (destCoords !== kingCoords && board.has(destCoords))
+    for (let y = srcRookY + rookDirection; ; y += rookDirection) {
+      const destIndex = coordsToIndex(kingX, y);
+      if (destIndex !== king.index && king.board.has(destIndex))
         return false;
       if (y === destRookY)
         break;

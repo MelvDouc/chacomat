@@ -2,7 +2,7 @@ import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
-import Coords from "@chacomat/utils/Coords.js";
+import { getFile, notationToIndex } from "../utils/Index.js";
 
 describe("Fool's Mate", () => {
   const game = new ChessGame();
@@ -27,7 +27,7 @@ describe("en passant", () => {
     .moveWithNotations("e4", "d5")
     .moveWithNotations("e7", "e5");
   it("#1", () => {
-    expect(game1.currentPosition.enPassantFile).toBe(game1.currentPosition.board.Coords.fromNotation("e6")?.y);
+    expect(game1.currentPosition.enPassantFile).toBe(getFile(notationToIndex("e6")));
   });
 
   it("#2", () => {
@@ -43,9 +43,9 @@ describe("en passant", () => {
       .moveWithNotations("c2", "c4")
       .moveWithNotations("d4", "c3");
 
-    expect(game.currentPosition.board.get(Coords.fromNotation("c4") as Coords)).toBeFalsy();
-    expect(game.currentPosition.board.get(Coords.fromNotation("d4") as Coords)).toBeFalsy();
-    expect(game.currentPosition.board.get(Coords.fromNotation("c3") as Coords)?.type).toBe(Piece.TYPES.PAWN);
+    expect(game.currentPosition.board.get(notationToIndex("c4"))).toBeFalsy();
+    expect(game.currentPosition.board.get(notationToIndex("d4"))).toBeFalsy();
+    expect(game.currentPosition.board.get(notationToIndex("c3"))?.type).toBe(Piece.TYPES.PAWN);
   });
 });
 

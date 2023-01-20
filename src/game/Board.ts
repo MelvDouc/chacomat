@@ -6,10 +6,10 @@ import type {
   Position
 } from "@chacomat/types.js";
 import Color, { ConsoleColors } from "@chacomat/utils/Color.js";
-import Coords from "@chacomat/utils/Coords.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
+import { coordsToIndex } from "../utils/Index.js";
 
-export default class Board extends Map<Coords, Piece> {
+export default class Board extends Map<number, Piece> {
   static readonly #nullPiece = "0";
   static readonly #nullPieceRegex = /0+/g;
 
@@ -24,16 +24,16 @@ export default class Board extends Map<Coords, Piece> {
 
       for (pieceKey in piecePlacement) {
         for (const y of piecePlacement[pieceKey]) {
-          const coords = Coords(pieceRank, y);
-          board.set(coords, new Piece({ color, board, coords, type: pieceKey }));
+          const index = coordsToIndex(pieceRank, y);
+          board.set(index, new Piece({ color, board, index, type: pieceKey }));
         }
       }
 
       board.kings[color] = board.getRank(pieceRank).getFile(piecePlacement[Piece.TYPES.KING][0]) as Piece;
 
       for (let y = 0; y < 8; y++) {
-        const coords = Coords(Piece.START_RANKS.PAWN[color], y);
-        board.set(coords, new Piece({ color, board, coords, type: Piece.TYPES.PAWN }));
+        const index = coordsToIndex(Piece.START_RANKS.PAWN[color], y);
+        board.set(index, new Piece({ color, board, index, type: Piece.TYPES.PAWN }));
       }
     }
 
@@ -56,11 +56,11 @@ export default class Board extends Map<Coords, Piece> {
             .forEach((item, y) => {
               if (item === Board.#nullPiece)
                 return;
-              const coords = Coords(x, y);
+              const index = coordsToIndex(x, y);
               const piece = Piece.fromInitial(item as PieceInitial);
               piece.board = this;
-              piece.coords = coords;
-              this.set(coords, piece);
+              piece.index = index;
+              this.set(index, piece);
               if (piece.isKing())
                 this.kings[piece.color] = piece;
             });
@@ -68,30 +68,26 @@ export default class Board extends Map<Coords, Piece> {
     }
   }
 
-  get Coords(): typeof Coords {
-    return Coords;
-  }
-
   getRank(rank: number) {
     return {
-      getFile: (file: number) => this.get(Coords(rank, file))
+      getFile: (file: number) => this.get(coordsToIndex(rank, file))
     };
   }
 
-  transfer(srcCoords: Coords, destCoords: Coords): this {
-    const srcPiece = this.get(srcCoords) as Piece;
-    this.set(destCoords, srcPiece).delete(srcCoords);
-    srcPiece.coords = destCoords;
+  transfer(srcIndex: number, destIndex: number): this {
+    const srcPiece = this.get(srcIndex) as Piece;
+    this.set(destIndex, srcPiece).delete(srcIndex);
+    srcPiece.index = destIndex;
     return this;
   }
 
-  getCoordsAttackedByColor(color: Color): Set<Coords> {
-    const set = new Set<Coords>();
+  getCoordsAttackedByColor(color: Color): Set<number> {
+    const set = new Set<number>();
 
     for (const piece of this.values())
       if (piece.color === color)
-        for (const destCoords of piece.attackedCoords())
-          set.add(destCoords);
+        for (const destIndex of piece.attackedIndices())
+          set.add(destIndex);
 
     return set;
   }
@@ -101,16 +97,16 @@ export default class Board extends Map<Coords, Piece> {
    */
   clone(): Board {
     const boardClone = new Board();
-    for (const [coords, piece] of this) {
-      boardClone.set(coords, new Piece({
+    for (const [index, piece] of this) {
+      boardClone.set(index, new Piece({
         color: piece.color,
         type: piece.type,
-        coords,
+        index,
         board: boardClone
       }));
     }
-    boardClone.kings[Color.WHITE] = boardClone.get(this.kings[Color.WHITE].coords);
-    boardClone.kings[Color.BLACK] = boardClone.get(this.kings[Color.BLACK].coords);
+    boardClone.kings[Color.WHITE] = boardClone.get(this.kings[Color.WHITE].index);
+    boardClone.kings[Color.BLACK] = boardClone.get(this.kings[Color.BLACK].index);
     return boardClone;
   }
 
@@ -132,7 +128,7 @@ export default class Board extends Map<Coords, Piece> {
   getPieceArray(): (Piece | null)[][] {
     return Array.from({ length: 8 }, (_, x) => {
       return Array.from({ length: 8 }, (_, y) => {
-        return this.get(Coords(x, y)) ?? null;
+        return this.get(coordsToIndex(x, y)) ?? null;
       });
     });
   }
@@ -143,7 +139,7 @@ export default class Board extends Map<Coords, Piece> {
         .from({ length: 8 }, (_, x) => {
           let row = "";
           for (let y = 0; y < 8; y++) {
-            const char = this.get(this.Coords(x, y))?.initial ?? " ";
+            const char = this.get(coordsToIndex(x, y))?.initial ?? " ";
             const bgColor = (x % 2 === y % 2) ? ConsoleColors.BgWhite : ConsoleColors.BgGreen;
             row += `${bgColor + ConsoleColors.FgBlack} ${char} ${ConsoleColors.Reset}`;
           }
@@ -160,7 +156,7 @@ export default class Board extends Map<Coords, Piece> {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array
-          .from({ length: 8 }, (_, y) => this.get(Coords(x, y))?.initial ?? Board.#nullPiece)
+          .from({ length: 8 }, (_, y) => this.get(coordsToIndex(x, y))?.initial ?? Board.#nullPiece)
           .join("")
           .replace(Board.#nullPieceRegex, (zeros) => String(zeros.length));
       })

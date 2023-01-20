@@ -1,7 +1,7 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
-import Coords from "@chacomat/utils/Coords.js";
+import { notationToIndex } from "../utils/Index.js";
 
 describe("Piece", () => {
   it("n should be a black knight", () => {
@@ -26,7 +26,7 @@ describe("Piece", () => {
   });
 });
 
-const c1 = Coords.fromNotation("c1");
+const c1 = notationToIndex("c1");
 
 describe("A king", () => {
   it("should be able to castle with no squares between it and a rook", () => {

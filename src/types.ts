@@ -31,14 +31,8 @@ export type PieceInitial = PieceType | BlackPieceInitial;
 export type PromotedPieceType = Exclude<PieceType, PieceType.KING | PieceType.PAWN>;
 export type NonPawnPieceType = Exclude<PieceType, PieceType.PAWN>;
 
-export type Coords = {
-  readonly x: number;
-  readonly y: number;
-  get notation(): AlgebraicSquareNotation;
-  getPeer: (xOffset: number, yOffset: number) => Coords | null;
-};
-export type CoordsGenerator = Generator<Coords, void, unknown>;
-export type Move = [Coords, Coords];
+export type IndexGenerator = Generator<number, void, unknown>;
+export type Move = [number, number];
 
 export type BlackAndWhite<T> = {
   [K in Color]: T;
@@ -94,5 +88,5 @@ export interface PieceParameters {
   color: Color;
   type: PieceType;
   board?: Board;
-  coords?: Coords;
+  index?: number;
 }

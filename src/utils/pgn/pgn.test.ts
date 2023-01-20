@@ -1,7 +1,7 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Color from "@chacomat/utils/Color.js";
-import Coords from "@chacomat/utils/Coords.js";
 import { playMovesFromPgn } from "@chacomat/utils/pgn/pgn.js";
+import { notationToIndex } from "../Index.js";
 
 describe("PNG reader", () => {
   it("should be able to handle the first few moves", () => {
@@ -36,14 +36,14 @@ describe("An ambiguous move", () => {
   const getGame = () => new ChessGame({
     fenString: "k7/7Q/3R1R2/8/6Q1/8/6K1/3R4 w - - 0 1"
   });
-  const d1 = Coords.fromNotation("d1");
-  const d4 = Coords.fromNotation("d4");
-  const d6 = Coords.fromNotation("d6");
-  const e6 = Coords.fromNotation("e6");
-  const f6 = Coords.fromNotation("f6");
-  const g4 = Coords.fromNotation("g4");
-  const g6 = Coords.fromNotation("g6");
-  const h7 = Coords.fromNotation("h7");
+  const d1 = notationToIndex("d1");
+  const d4 = notationToIndex("d4");
+  const d6 = notationToIndex("d6");
+  const e6 = notationToIndex("e6");
+  const f6 = notationToIndex("f6");
+  const g4 = notationToIndex("g4");
+  const g6 = notationToIndex("g6");
+  const h7 = notationToIndex("h7");
 
   it("should be detected on an ambiguous file", () => {
     const game = getGame();
