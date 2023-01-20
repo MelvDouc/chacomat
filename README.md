@@ -20,8 +20,6 @@ spanishGame
 ## Create a game from an FEN string
 
 ```typescript
-import { ChessGame } from "chacomat";
-
 const spanishGame = new ChessGame({
   fen: "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
   metaInfo: {
@@ -42,7 +40,7 @@ spanishGame.logBoard();
 ## Get the pieces as an array
 
 ```typescript
-const pieceArr = spanishGame.currentPosition.board.getArray();
+const pieceArr = spanishGame.currentPosition.board.toArray();
 console.log(pieceArr);
 ```
 
@@ -53,7 +51,7 @@ Also known as **Fischer random chess**.
 ```typescript
 import { Chess960Game } from "chacomat";
 
-const chess960Game = Chess960Game.getRandomStartPosition();
+const chess960Game = new Chess960Game();
 console.log(chess960Game.currentPosition.toString()); // e.g. "rbkrnqbn/pppppppp/8/8/8/8/PPPPPPPP/RBKRNQBN w ADad - 0 1"
 ```
 

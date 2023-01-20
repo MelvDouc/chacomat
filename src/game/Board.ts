@@ -125,7 +125,7 @@ export default class Board extends Map<number, Piece> {
    * Get an bidimensional array representing the placement of each piece.
    * Empty squares are null.
    */
-  getPieceArray(): (Piece | null)[][] {
+  toArray(): (Piece | null)[][] {
     return Array.from({ length: 8 }, (_, x) => {
       return Array.from({ length: 8 }, (_, y) => {
         return this.atRank(x).atFile(y) ?? null;
