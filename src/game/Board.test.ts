@@ -2,7 +2,7 @@ import ChessGame from "@chacomat/game/ChessGame.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
-import { coordsToIndex } from "../utils/Index.js";
+import { coordsToIndex } from "@chacomat/utils/Index.js";
 
 describe("A board", () => {
   it("should be serializable", () => {
@@ -26,14 +26,12 @@ describe("A piece array from the start position", () => {
   const position = Position.fromFenString(Position.startFenString);
   const pieceArray = position.board.getPieceArray();
   it("should only have pawns rows 1 and 6", () => {
-    expect(pieceArray[1].every((piece) => !!piece?.isPawn())).toBe(true);
-    expect(pieceArray[6].every((piece) => !!piece?.isPawn())).toBe(true);
+    expect(pieceArray[1].every((piece) => piece?.isPawn() === true)).toBe(true);
+    expect(pieceArray[6].every((piece) => piece?.isPawn() === true)).toBe(true);
   });
   it("should have empty rows from row 2 to 5", () => {
     expect(
-      pieceArray.slice(2, 6).every((row) => {
-        return row.every((square) => square === null);
-      })
+      pieceArray.slice(2, 6).every((row) => row.every((square) => square === null))
     ).toBe(true);
   });
 });
