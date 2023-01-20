@@ -5,15 +5,21 @@ const Parenthesis = {
   END: ")"
 } as const;
 
-export function* parsedMoves(str: string) {
-  yield* [...str.matchAll(moveRegex)]
+/**
+ * Yield every full move substring (e.g. "1... c5") one at a time.
+ */
+export function* parsedMoves(movesStr: string) {
+  yield* [...movesStr.matchAll(moveRegex)]
     .map((x, i, arr) => {
-      const endIndex = (arr[i + 1] != null) ? arr[i + 1].index - 1 : str.length;
-      return str.slice(x.index, endIndex);
+      const endIndex = (arr[i + 1] != null) ? arr[i + 1].index - 1 : movesStr.length;
+      return movesStr.slice(x.index, endIndex);
     })
     .values();
 }
 
+/**
+ * Turn a moves string that includes variations into a recursive record.
+ */
 export function parseVariations(movesStr: string): PgnVariations {
   const variations: PgnVariations[] = [];
   let startIndex = movesStr.indexOf(Parenthesis.START);

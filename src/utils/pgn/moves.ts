@@ -90,7 +90,7 @@ const HALF_MOVE_REGEXES: Record<string, {
   }
 };
 
-// TODO: handle lone black half-move
+// TODO: play variations
 export function playMovesFromPgn(movesStr: string, game: ChessGame) {
   const mainLine = parseVariations(movesStr);
 
