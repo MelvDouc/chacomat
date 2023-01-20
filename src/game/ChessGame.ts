@@ -1,6 +1,9 @@
 import Position from "@chacomat/game/Position.js";
 import type {
-  AlgebraicSquareNotation, GameMetaInfo, GameParameters, PromotedPieceType
+  AlgebraicSquareNotation,
+  GameMetaInfo,
+  GameParameters,
+  PromotedPieceType
 } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
@@ -23,8 +26,8 @@ export default class ChessGame {
     InvalidFenError: InvalidFenError
   };
 
-  currentPosition: InstanceType<typeof Position>;
-  readonly metaInfo: GameMetaInfo = {};
+  currentPosition: InstanceType<typeof ChessGame["Position"]>;
+  readonly metaInfo: GameMetaInfo;
 
   constructor({ pgn, fen, positionParams, metaInfo }: GameParameters = {}) {
     const PositionConstructor = (this.constructor as typeof ChessGame).Position;
@@ -41,7 +44,7 @@ export default class ChessGame {
         this.#setPosition(new PositionConstructor(positionParams));
       else
         this.#setPosition(PositionConstructor.fromFenString(Position.startFenString));
-      this.metaInfo = metaInfo;
+      this.metaInfo = metaInfo ?? {};
     }
   }
 

@@ -1,10 +1,21 @@
-import { AlgebraicSquareNotation, Board, ChessFileName, ChessGame, Move, PromotedPieceType } from "@chacomat/types.js";
-import { coordsToIndex, indexToCoords, notationToIndex } from "@chacomat/utils/Index.js";
-import { File } from "../constants.js";
+import {
+  AlgebraicSquareNotation,
+  Board,
+  ChessFileName,
+  ChessGame,
+  Move,
+  PromotedPieceType
+} from "@chacomat/types.js";
+import { File } from "@chacomat/utils/constants.js";
+import {
+  coordsToIndex,
+  indexToCoords,
+  notationToIndex
+} from "@chacomat/utils/Index.js";
 
 const pawnMoveRegex = /[a-h](x[a-h])?[1-8](=?[NBRQ])?/,
   pieceMoveRegex = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/,
-  castlingRegex = /0-0(-0)?/,
+  castlingRegex = /(0-0(-0)?|O-O(-O)?)/,
   checkRegex = /(\+{1,2}|#)?/,
   halfMove = `${pawnMoveRegex.source}|${pieceMoveRegex.source}|${castlingRegex.source}`;
 const moveRegex = new RegExp(`(\\d+\\.\\s*)(?<wmove>${halfMove})${checkRegex.source}(\\s+(?<bmove>${halfMove})${checkRegex.source})?`, "g");
@@ -95,10 +106,9 @@ function findAndPlayMove(moveText: string, game: ChessGame) {
   let key: keyof typeof HALF_MOVE_REGEXES;
 
   for (key in HALF_MOVE_REGEXES) {
-    const { regex, getMove } = HALF_MOVE_REGEXES[key];
-    if (regex.test(moveText)) {
-      const move = getMove(moveText, game.currentPosition.board, game.currentPosition.legalMoves);
-      game.move(move[0], move[1]);
+    if (HALF_MOVE_REGEXES[key].regex.test(moveText)) {
+      const move = HALF_MOVE_REGEXES[key].getMove(moveText, game.currentPosition.board, game.currentPosition.legalMoves);
+      game.move(...move);
       break;
     }
   }

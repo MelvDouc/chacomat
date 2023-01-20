@@ -35,7 +35,7 @@ export function coordsToIndex(x: number, y: number): number {
 }
 
 export function coordsToNotation(x: number, y: number): AlgebraicSquareNotation {
-  return indexToNotation(coordsToIndex(x, y));
+  return notationsByIndex[coordsToIndex(x, y)];
 }
 
 export function notationToIndex(notation: AlgebraicSquareNotation): number {

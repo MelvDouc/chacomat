@@ -1,8 +1,5 @@
 import { pawnOffsets, pieceOffsets } from "@chacomat/pieces/offsets.js";
-import type {
-  IndexGenerator,
-  Piece
-} from "@chacomat/types.js";
+import type { IndexGenerator, Piece } from "@chacomat/types.js";
 import { PieceType } from "@chacomat/utils/constants.js";
 import { coordsToIndex, isSafe } from "@chacomat/utils/Index.js";
 
