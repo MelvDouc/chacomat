@@ -21,29 +21,30 @@ describe("Castling rights", () => {
   });
 
   it("should be unset on king move", () => {
-    const game = new ChessGame();
-    game
+    const whiteCR = new ChessGame()
       .moveWithNotations("e2", "e3")
       .moveWithNotations("e7", "e6")
-      .moveWithNotations("e1", "e2");
+      .moveWithNotations("e1", "e2")
+      .currentPosition
+      .castlingRights[Color.WHITE];
 
-    const whiteCR = game.currentPosition.castlingRights[Color.WHITE];
     expect(whiteCR).not.toContain(Wing.QUEEN_SIDE);
     expect(whiteCR).not.toContain(Wing.KING_SIDE);
   });
 
   it("should be updated on rook capture", () => {
-    const game = new ChessGame();
-    game
+    const blackCR = new ChessGame()
       .moveWithNotations("b1", "c3")
       .moveWithNotations("e7", "e6")
       .moveWithNotations("c3", "a4")
       .moveWithNotations("e6", "e5")
       .moveWithNotations("a4", "b6")
       .moveWithNotations("e5", "e4")
-      .moveWithNotations("b6", "a8");
+      .moveWithNotations("b6", "a8")
+      .currentPosition
+      .castlingRights[Color.BLACK];
 
-    expect(game.currentPosition.castlingRights[Color.BLACK]).not.toContain(Wing.QUEEN_SIDE);
-    expect(game.currentPosition.castlingRights[Color.BLACK]).toContain(Wing.KING_SIDE);
+    expect(blackCR).not.toContain(Wing.QUEEN_SIDE);
+    expect(blackCR).toContain(Wing.KING_SIDE);
   });
 });

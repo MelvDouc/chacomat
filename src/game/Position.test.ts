@@ -11,13 +11,11 @@ describe("FEN string", () => {
   });
 
   it("should be valid after a move", () => {
-    const game = new ChessGame({
-      fen: "r5k1/p3rppp/1p2pn2/PP1bN3/8/2R1PP2/4B1PP/R5K1 b - - 0 24"
-    });
-    const pos1 = game.currentPosition;
-    const pos2 = pos1.createPositionFromMove(17, 24, PieceType.QUEEN, true);
+    const pos = new ChessGame({ fen: "r5k1/p3rppp/1p2pn2/PP1bN3/8/2R1PP2/4B1PP/R5K1 b - - 0 24" })
+      .currentPosition
+      .createPositionFromMove(17, 24, PieceType.QUEEN, true);
 
-    expect(pos2.toString()).toBe("r5k1/p3rppp/4pn2/pP1bN3/8/2R1PP2/4B1PP/R5K1 w - - 0 25");
+    expect(pos.toString()).toBe("r5k1/p3rppp/4pn2/pP1bN3/8/2R1PP2/4B1PP/R5K1 w - - 0 25");
   });
 });
 

@@ -5,27 +5,28 @@ import Piece from "@chacomat/pieces/Piece.js";
 import { notationToIndex } from "@chacomat/utils/Index.js";
 
 describe("Fool's Mate", () => {
-  const game = new ChessGame();
-  game
+  const game = new ChessGame()
     .moveWithNotations("f2", "f3")
     .moveWithNotations("e7", "e6")
     .moveWithNotations("g2", "g4")
     .moveWithNotations("d8", "h4");
+
   it("should be check", () => {
     expect(game.currentPosition.isCheck()).toBe(true);
   });
+
   it("should be checkmate", () => {
     expect(game.status).toBe(GameStatus.CHECKMATE);
   });
 });
 
 describe("en passant", () => {
-  const game1 = new ChessGame();
-  game1
+  const game1 = new ChessGame()
     .moveWithNotations("e2", "e4")
     .moveWithNotations("d7", "d5")
     .moveWithNotations("e4", "d5")
     .moveWithNotations("e7", "e5");
+
   it("#1", () => {
     expect(game1.currentPosition.enPassantFile).toBe(4);
   });
@@ -35,17 +36,18 @@ describe("en passant", () => {
   });
 
   it("the 'ep' pawn should be removed", () => {
-    const game = new ChessGame()
+    const { board } = new ChessGame()
       .moveWithNotations("e2", "e4")
       .moveWithNotations("e7", "e5")
       .moveWithNotations("d2", "d4")
       .moveWithNotations("e5", "d4")
       .moveWithNotations("c2", "c4")
-      .moveWithNotations("d4", "c3");
+      .moveWithNotations("d4", "c3")
+      .currentPosition;
 
-    expect(game.currentPosition.board.get(notationToIndex("c4"))).toBeFalsy();
-    expect(game.currentPosition.board.get(notationToIndex("d4"))).toBeFalsy();
-    expect(game.currentPosition.board.get(notationToIndex("c3"))?.type).toBe(Piece.TYPES.PAWN);
+    expect(board.get(notationToIndex("c4"))).toBeFalsy();
+    expect(board.get(notationToIndex("d4"))).toBeFalsy();
+    expect(board.get(notationToIndex("c3"))?.type).toBe(Piece.TYPES.PAWN);
   });
 });
 
@@ -59,11 +61,8 @@ describe("Stalemate", () => {
   });
 
   it("should be possible after a promotion", () => {
-    const game = new ChessGame({
-      fen: "8/k1P5/2K5/8/8/8/8/8 w - - 0 1"
-    });
-
-    game.moveWithNotations("c7", "c8", Piece.TYPES.QUEEN);
+    const game = new ChessGame({ fen: "8/k1P5/2K5/8/8/8/8/8 w - - 0 1" })
+      .moveWithNotations("c7", "c8", Piece.TYPES.QUEEN);
 
     expect(game.status).toBe(GameStatus.STALEMATE);
   });

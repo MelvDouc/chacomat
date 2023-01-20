@@ -18,8 +18,7 @@ describe("A Chess960 game", () => {
   });
 
   it("should have correct castling rights", () => {
-    const position = new Chess960Game().currentPosition;
-    const { castlingRights } = position;
+    const { castlingRights } = new Chess960Game().currentPosition;
 
     expect(new Set(castlingRights[Color.WHITE]).size).toBe(2);
     expect(new Set(castlingRights[Color.BLACK]).size).toBe(2);

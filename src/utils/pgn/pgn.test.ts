@@ -75,7 +75,6 @@ describe("An ambiguous move", () => {
   it("should be detected on an ambiguous file", () => {
     const game = getGame();
     playMovesFromPgn("1. R6d4", game);
-
     const { board } = game.currentPosition;
 
     expect(board.get(d6)).toBeFalsy();
@@ -88,7 +87,6 @@ describe("An ambiguous move", () => {
   it("should be detected on an ambiguous rank", () => {
     const game = getGame();
     playMovesFromPgn("1. Rfe6", game);
-
     const { board } = game.currentPosition;
 
     expect(board.get(f6)).toBeFalsy();
@@ -101,7 +99,6 @@ describe("An ambiguous move", () => {
   it("should be detected on an ambiguous square", () => {
     const game = getGame();
     playMovesFromPgn("1. Qh7g6", game);
-
     const { board } = game.currentPosition;
 
     expect(board.get(h7)).toBeFalsy();
