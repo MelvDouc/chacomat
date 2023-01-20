@@ -1,7 +1,6 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Position from "@chacomat/game/Position.js";
 import { GameStatus, PieceType } from "@chacomat/utils/constants.js";
-import { coordsToIndex } from "@chacomat/utils/Index.js";
 
 describe("FEN string", () => {
   it("should be produce itself", () => {
@@ -15,12 +14,7 @@ describe("FEN string", () => {
       fenString: "r5k1/p3rppp/1p2pn2/PP1bN3/8/2R1PP2/4B1PP/R5K1 b - - 0 24"
     });
     const pos1 = game.currentPosition;
-    const pos2 = pos1.createPositionFromMove(
-      coordsToIndex(2, 1),
-      coordsToIndex(3, 0),
-      PieceType.QUEEN,
-      true,
-    );
+    const pos2 = pos1.createPositionFromMove(17, 24, PieceType.QUEEN, true);
 
     expect(pos2.toString()).toBe("r5k1/p3rppp/4pn2/pP1bN3/8/2R1PP2/4B1PP/R5K1 w - - 0 25");
   });

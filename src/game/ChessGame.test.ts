@@ -2,7 +2,7 @@ import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
-import { getFile, notationToIndex } from "@chacomat/utils/Index.js";
+import { notationToIndex } from "@chacomat/utils/Index.js";
 
 describe("Fool's Mate", () => {
   const game = new ChessGame();
@@ -27,7 +27,7 @@ describe("en passant", () => {
     .moveWithNotations("e4", "d5")
     .moveWithNotations("e7", "e5");
   it("#1", () => {
-    expect(game1.currentPosition.enPassantFile).toBe(getFile(notationToIndex("e6")));
+    expect(game1.currentPosition.enPassantFile).toBe(4);
   });
 
   it("#2", () => {

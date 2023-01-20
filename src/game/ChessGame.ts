@@ -63,19 +63,13 @@ export default class ChessGame {
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
    * @returns The current instance of a game containing the position after the move.
    */
-  move(
-    srcIndex: number,
-    destIndex: number,
-    promotionType?: PromotedPieceType
-  ): this {
+  move(srcIndex: number, destIndex: number, promotionType?: PromotedPieceType): this {
     const { status } = this;
 
     if (status !== GameStatus.ACTIVE)
       throw new ChessGame.errors.InactiveGameError(status);
 
-    if (!this.currentPosition.legalMoves.some(([src, dest]) =>
-      src === srcIndex && dest === destIndex
-    ))
+    if (!this.currentPosition.legalMoves.some(([src, dest]) => src === srcIndex && dest === destIndex))
       throw new ChessGame.errors.IllegalMoveError(srcIndex, destIndex);
 
     const nextPosition = this.currentPosition.createPositionFromMove(
@@ -99,11 +93,7 @@ export default class ChessGame {
    * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
    * @returns The current instance of a game containing the position after the move.
    */
-  moveWithNotations(
-    srcNotation: AlgebraicSquareNotation,
-    destNotation: AlgebraicSquareNotation,
-    promotionType?: PromotedPieceType
-  ): this {
+  moveWithNotations(srcNotation: AlgebraicSquareNotation, destNotation: AlgebraicSquareNotation, promotionType?: PromotedPieceType): this {
     return this.move(
       notationToIndex(srcNotation),
       notationToIndex(destNotation),

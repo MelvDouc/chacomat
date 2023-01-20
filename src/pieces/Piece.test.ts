@@ -1,7 +1,6 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
-import { notationToIndex } from "@chacomat/utils/Index.js";
 
 describe("Piece", () => {
   it("n should be a black knight", () => {
@@ -26,8 +25,6 @@ describe("Piece", () => {
   });
 });
 
-const c1 = notationToIndex("c1");
-
 describe("A king", () => {
   it("should be able to castle with no squares between it and a rook", () => {
     const { currentPosition } = new ChessGame({
@@ -48,6 +45,6 @@ describe("A king", () => {
       ...Piece.castlingCoords(whiteKing, false)
     ];
 
-    expect(castlingCoords).not.toContain(c1);
+    expect(castlingCoords).not.toContain(58 /* c1 */);
   });
 });

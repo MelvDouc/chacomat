@@ -4,14 +4,14 @@ import type {
   Piece
 } from "@chacomat/types.js";
 import { PieceType } from "@chacomat/utils/constants.js";
-import { coordsToIndex, indexToCoords, isSafe } from "@chacomat/utils/Index.js";
+import { coordsToIndex, isSafe } from "@chacomat/utils/Index.js";
 
 // ===== ===== ===== ===== =====
 // PAWN
 // ===== ===== ===== ===== =====
 
 function* pawnAttackedCoords(pawn: Piece): IndexGenerator {
-  const { x, y } = indexToCoords(pawn.index);
+  const { x, y } = pawn.coords;
 
   for (const xOffset of pawnOffsets.x[pawn.color]) {
     for (const yOffset of pawnOffsets.y) {
@@ -24,7 +24,7 @@ function* pawnAttackedCoords(pawn: Piece): IndexGenerator {
 }
 
 function* forwardPawnMoves(pawn: Piece): IndexGenerator {
-  const { x, y } = indexToCoords(pawn.index);
+  const { x, y } = pawn.coords;
   const index1 = coordsToIndex(x + pawn.direction, y);
 
   if (!pawn.board.has(index1)) {
@@ -56,7 +56,7 @@ function getShortPieceAttackedIndexGenerator(pieceType: PieceType.KNIGHT | Piece
   const { x: xOffsets, y: yOffsets } = pieceOffsets[pieceType];
 
   return function* (piece: Piece): IndexGenerator {
-    const { x, y } = indexToCoords(piece.index);
+    const { x, y } = piece.coords;
 
     for (let i = 0; i < xOffsets.length; i++) {
       const x2 = x + xOffsets[i],
@@ -71,7 +71,7 @@ function getLongPieceAttackedIndexGenerator(pieceType: PieceType.ROOK | PieceTyp
   const { x: xOffsets, y: yOffsets } = pieceOffsets[pieceType];
 
   return function* (piece: Piece): IndexGenerator {
-    const { x, y } = indexToCoords(piece.index);
+    const { x, y } = piece.coords;
 
     for (let i = 0; i < xOffsets.length; i++) {
       let x2 = x, y2 = y;
