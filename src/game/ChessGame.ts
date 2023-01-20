@@ -1,6 +1,6 @@
 import Position from "@chacomat/game/Position.js";
 import type {
-  AlgebraicSquareNotation, ChessGameParameters, GameMetaInfo, PromotedPieceType
+  AlgebraicSquareNotation, ChessGameFenParameter, ChessGamePgnParameter, ChessGamePositionParameter, PgnInfo, PromotedPieceType
 } from "@chacomat/types.js";
 import Color from "@chacomat/utils/Color.js";
 import { GameStatus } from "@chacomat/utils/constants.js";
@@ -10,7 +10,7 @@ import {
   InvalidFenError
 } from "@chacomat/utils/errors.js";
 import { notationToIndex } from "@chacomat/utils/Index.js";
-import { playMovesFromPgn } from "@chacomat/utils/pgn/pgn.js";
+import enterPgn from "@chacomat/utils/pgn/pgn.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -24,16 +24,29 @@ export default class ChessGame {
   };
 
   currentPosition: InstanceType<typeof Position>;
-  readonly metaInfo: Partial<GameMetaInfo>;
+  readonly pgnInfo: PgnInfo = {};
 
-  constructor({ fenString, positionParams: positionInfo, metaInfo }: ChessGameParameters = {}) {
+  constructor();
+  constructor({ pgn }: ChessGamePgnParameter);
+  constructor({ fenString }: ChessGameFenParameter);
+  constructor({ positionParams, pgnInfo }: ChessGamePositionParameter);
+
+  constructor(param: ChessGamePgnParameter | ChessGameFenParameter | ChessGamePositionParameter = {}) {
     const PositionConstructor = (this.constructor as typeof ChessGame).Position;
-    const position = (positionInfo)
-      ? new PositionConstructor(positionInfo)
-      : PositionConstructor.fromFenString(fenString ?? Position.startFenString);
-    position.game = this;
-    this.currentPosition = position;
-    this.metaInfo = metaInfo ?? {};
+
+    if (isPgnParam(param)) {
+      const { pgnInfo, enterMoves } = enterPgn(param.pgn);
+      this.#setPosition(PositionConstructor.fromFenString(pgnInfo.FEN ?? Position.startFenString));
+      this.pgnInfo = pgnInfo;
+      enterMoves(this);
+    } else if (isFenParam(param)) {
+      this.#setPosition(PositionConstructor.fromFenString(param.fenString));
+    } else if (isPositionParam(param)) {
+      this.#setPosition(new PositionConstructor(param.positionParams));
+      this.pgnInfo = param.pgnInfo;
+    } else {
+      this.#setPosition(PositionConstructor.fromFenString(Position.startFenString));
+    }
   }
 
   /**
@@ -54,6 +67,11 @@ export default class ChessGame {
 
   get errors() {
     return (this.constructor as typeof ChessGame).errors;
+  }
+
+  #setPosition(position: Position): void {
+    this.currentPosition = position;
+    position.game = this;
   }
 
   /**
@@ -78,10 +96,9 @@ export default class ChessGame {
       promotionType,
       true
     );
-    nextPosition.game = this;
     nextPosition.prev = this.currentPosition;
     this.currentPosition.next.push(nextPosition);
-    this.currentPosition = nextPosition;
+    this.#setPosition(nextPosition);
 
     return this;
   }
@@ -134,11 +151,6 @@ export default class ChessGame {
     return this;
   }
 
-  enterPgn(pgn: string): this {
-    playMovesFromPgn(pgn, this);
-    return this;
-  }
-
   /**
    * Pretty print this game's current board to the console.
    */
@@ -146,3 +158,7 @@ export default class ChessGame {
     this.currentPosition.board.log();
   }
 }
+
+const isPgnParam = (param: any): param is ChessGamePgnParameter => typeof param?.pgn === "string";
+const isFenParam = (param: any): param is ChessGameFenParameter => typeof param.fenString === "string";
+const isPositionParam = (param: any): param is ChessGamePositionParameter => typeof param.positionParams === "object" && typeof param.pgnInfo === "object";

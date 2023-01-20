@@ -34,6 +34,8 @@ export type NonPawnPieceType = Exclude<PieceType, PieceType.PAWN>;
 export type IndexGenerator = Generator<number, void, unknown>;
 export type Move = [number, number];
 
+export type PgnInfo = Partial<FullPgnInfo>;
+
 export type BlackAndWhite<T> = {
   [K in Color]: T;
 };
@@ -52,28 +54,44 @@ export interface PieceOffsets {
   y: number[];
 }
 
-export interface ChessGameParameters {
-  fenString?: FenString;
-  positionParams?: PositionParameters;
-  metaInfo?: Partial<GameMetaInfo>;
+export interface ChessGamePgnParameter {
+  pgn: string;
 }
+
+export interface ChessGameFenParameter {
+  fenString: FenString;
+}
+
+export interface ChessGamePositionParameter {
+  positionParams?: PositionParameters;
+  pgnInfo?: PgnInfo;
+}
+
 /**
- * Various info that would typically be found in a PGN file.
+ * Various Pascal-cased info that would typically be found in a PGN file.
  */
-export interface GameMetaInfo {
-  whitePlayer: string;
-  blackPlayer: string;
-  whiteElo: number;
-  blackElo: number;
-  whiteTeam: string;
-  blackTeam: string;
-  event: string;
-  site: string;
+interface FullPgnInfo {
+  White: string;
+  Black: string;
+  Result: "1-0" | "0-1" | "0-0" | "1/2-1/2" | "*";
+  FEN: string;
+  WhiteElo: number;
+  BlackElo: number;
+  WhiteTeam: string;
+  BlackTeam: string;
+  Event: string;
+  Site: string;
+  Round: number;
   /**
    * Should be in the format `YYYY.MM.DD`.
   */
-  date: string;
+  Date: string;
+  TimeControl: string;
   ECO: string;
+  Opening: string;
+  Variation: string;
+  PlyCount: number;
+  Annotator: string;
   [x: string]: unknown;
 }
 

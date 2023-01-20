@@ -18,7 +18,6 @@ describe("fenChecker", () => {
   it("should validate a Chess960 starting position FEN string", () => {
     const chess960Fen = new Chess960Game().currentPosition.toString();
 
-    console.log(chess960Fen);
     expect(fenChecker.isValidFenString(chess960Fen)).toBe(true);
   });
 });

@@ -1,7 +1,7 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Color from "@chacomat/utils/Color.js";
-import { playMovesFromPgn } from "@chacomat/utils/pgn/pgn.js";
-import { notationToIndex } from "../Index.js";
+import { notationToIndex } from "@chacomat/utils/Index.js";
+import { playMovesFromPgn } from "@chacomat/utils/pgn/moves.js";
 
 const b2 = notationToIndex("b2");
 const d1 = notationToIndex("d1");
@@ -39,6 +39,32 @@ describe("PNG reader", () => {
     playMovesFromPgn("3. Bd3 4. e5 Nf3 5. Bc5", game);
 
     expect(game.currentPosition.toString()).toBe("rn1qk1nr/pbpp1ppp/1p6/2b1p3/2P1P3/3B1N2/PP1P1PPP/RNBQK2R w KQkq - 2 5");
+  });
+
+  it("should be able to parse PGN info", () => {
+    const game = new ChessGame({
+      pgn: `[Event "N3 2022-23"]
+      [Site "Thionville FRA"]
+      [Date "2023.01.15"]
+      [Round "5"]
+      [White "Espinosa, Enrique"]
+      [Black "Doucet, Melvin"]
+      [Result "0-1"]
+      [WhiteElo "1952"]
+      [BlackElo "1985"]
+      [ECO "D00c"]
+      [TimeControl "5400/40+30:1800+30"]
+      [WhiteTeam "Seichamps"]
+      [BlackTeam "Thionville"]
+      
+      1.d4 d5 2.Bf4 Nf6 3.e3 Bg4 4.f3 Bd7 5.c4 c5 6.Nc3 e6 7.Nh3 Nc6 8.Be5 cxd4 9.exd4 dxc4 10.Bxc4 Rc8 11.Qe2 Be7 12.Bxf6 Bxf6 13.d5 Nd4 14.Qd3 Rxc4 15.Qxc4 Nc2+ 16.Ke2 Nxa1`
+    });
+
+    //  17.Rxa1 exd5 18.Nxd5 O-O 19.Nhf4 Bxb2 20.Rb1 Qe8+ 21.Kf2 Qe5 22.Kf1 Bc6 23.Ne7+ Qxe7 24.Rxb2 Qh4 25.g3 Qf6 26.Rf2 Rd8 27.Qc5 a6 28.Qe3 Qa1+ 29.Kg2 Qd1 30.h4 Re8 31.Qc3 Re1 32.h5 Rg1+ 33.Kh3 Bd7+ 34.g4 Rh1+ 35.Rh2 Bc6 36.Rxh1 Qxh1+ 37.Kg3 h6 38.Qd3 Qe1+ 39.Kg2 Qa5 40.a3 Qc7 41.Qd4 Qe7 42.Qc3 Qh4 43.Kf1 Qg3 44.Nd5 Bb5+
+
+    expect(game.pgnInfo.Black).toBe("Doucet, Melvin");
+    expect(game.pgnInfo.BlackElo).toBe(1985);
+    // expect(game.currentPosition.isCheck()).toBe(true);
   });
 });
 
