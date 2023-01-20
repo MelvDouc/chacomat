@@ -13,7 +13,7 @@ import type {
 import Color, { colorAbbreviations, ReversedColor } from "@chacomat/utils/Color.js";
 import { InvalidFenError } from "@chacomat/utils/errors.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
-import { coordsToIndex, coordsToNotation, getFile, getRank, indexToCoords, indexToNotation, notationToIndex } from "../utils/Index.js";
+import { coordsToIndex, coordsToNotation, getFile, getRank, indexToCoords, indexToNotation, notationToIndex } from "@chacomat/utils/Index.js";
 /**
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.
  */
@@ -43,7 +43,7 @@ export default class Position implements PositionParameters {
       colorToMove: colorAbbreviations[color as keyof object] as Color,
       enPassantFile: (enPassant === fenChecker.nullCharacter)
         ? -1
-        : notationToIndex(enPassant as AlgebraicSquareNotation) % 8,
+        : getFile(notationToIndex(enPassant as AlgebraicSquareNotation)),
       halfMoveClock: +halfMoveClock,
       fullMoveNumber: +fullMoveNumber
     });
@@ -69,15 +69,11 @@ export default class Position implements PositionParameters {
   }
 
   // ===== ===== ===== ===== =====
-  // STATE
+  // ATTACKED INDICES
   // ===== ===== ===== ===== =====
 
-  get inactiveColor(): Color {
-    return ReversedColor[this.colorToMove];
-  }
-
   get attackedIndicesSet(): Set<number> {
-    this.#attackedIndicesSet ??= this.board.getCoordsAttackedByColor(this.inactiveColor);
+    this.#attackedIndicesSet ??= this.board.getCoordsAttackedByColor(ReversedColor[this.colorToMove]);
     return this.#attackedIndicesSet;
   }
 
@@ -177,7 +173,7 @@ export default class Position implements PositionParameters {
 
   isEnPassantCapture(srcIndex: number, destIndex: number): boolean {
     return indexToCoords(destIndex).y === this.enPassantFile
-      && indexToCoords(srcIndex).x === Piece.MIDDLE_RANKS[this.inactiveColor];
+      && indexToCoords(srcIndex).x === Piece.MIDDLE_RANKS[ReversedColor[this.colorToMove]];
   }
 
   /**
@@ -245,12 +241,12 @@ export default class Position implements PositionParameters {
       (this.board.get(srcIndex) as Piece).isPawn()
       && this.isEnPassantCapture(srcIndex, destIndex)
     )
-      ? this.board.get(coordsToIndex(getRank(srcIndex), getFile(destIndex))) as Piece
+      ? this.board.atRank(getRank(srcIndex)).atFile(getFile(destIndex)) as Piece
       : this.board.get(destIndex);
     capturedPiece && this.board.delete(capturedPiece.index);
     this.board.transfer(srcIndex, destIndex);
 
-    const isCheck = this.board.getCoordsAttackedByColor(this.inactiveColor).has(
+    const isCheck = this.board.getCoordsAttackedByColor(ReversedColor[this.colorToMove]).has(
       this.board.kings[this.colorToMove].index
     );
 
@@ -295,7 +291,7 @@ export default class Position implements PositionParameters {
       enPassantFile: (isSrcPiecePawn && Math.abs(getRank(destIndex) - getRank(srcIndex)) > 1)
         ? getFile(srcIndex)
         : -1,
-      colorToMove: (updateColorAndMoveNumber) ? this.inactiveColor : this.colorToMove,
+      colorToMove: (updateColorAndMoveNumber) ? ReversedColor[this.colorToMove] : this.colorToMove,
       halfMoveClock: (isCaptureOrPawnMove) ? 0 : this.halfMoveClock + 1,
       fullMoveNumber: this.fullMoveNumber + Number(updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
     });

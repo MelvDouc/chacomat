@@ -4,7 +4,7 @@ import type {
   Piece
 } from "@chacomat/types.js";
 import { PieceType } from "@chacomat/utils/constants.js";
-import { coordsToIndex, indexToCoords, isSafe } from "../utils/Index.js";
+import { coordsToIndex, indexToCoords, isSafe } from "@chacomat/utils/Index.js";
 
 // ===== ===== ===== ===== =====
 // PAWN

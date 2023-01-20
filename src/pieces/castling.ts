@@ -1,7 +1,7 @@
 import { castledFiles } from "@chacomat/pieces/placements.js";
 import type { Piece } from "@chacomat/types.js";
 import { Wing } from "@chacomat/utils/constants.js";
-import { coordsToIndex } from "../utils/Index.js";
+import { coordsToIndex } from "@chacomat/utils/Index.js";
 
 /**
  * This assumes that the king's coordinates are in keeping with the position's castling rights.

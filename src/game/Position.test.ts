@@ -1,7 +1,7 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Position from "@chacomat/game/Position.js";
 import { GameStatus, PieceType } from "@chacomat/utils/constants.js";
-import { coordsToIndex } from "../utils/Index.js";
+import { coordsToIndex } from "@chacomat/utils/Index.js";
 
 describe("FEN string", () => {
   it("should be produce itself", () => {

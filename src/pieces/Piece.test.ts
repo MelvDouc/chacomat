@@ -1,7 +1,7 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import Color from "@chacomat/utils/Color.js";
-import { notationToIndex } from "../utils/Index.js";
+import { notationToIndex } from "@chacomat/utils/Index.js";
 
 describe("Piece", () => {
   it("n should be a black knight", () => {

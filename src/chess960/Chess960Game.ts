@@ -6,8 +6,8 @@ export default class Chess960Game extends ChessGame {
   static override readonly Position = Chess960Position;
 
   constructor(chessGameParameters: ChessGameParameters = {}) {
-    if (!chessGameParameters.fenString && !chessGameParameters.positionInfo)
-      chessGameParameters.positionInfo = Chess960Position.getStartPositionInfo();
+    if (!chessGameParameters.fenString && !chessGameParameters.positionParams)
+      chessGameParameters.positionParams = Chess960Position.getStartPositionInfo();
     super(chessGameParameters);
   }
 }

@@ -19,7 +19,7 @@ import type {
 } from "@chacomat/types.js";
 import Color, { ReversedColor } from "@chacomat/utils/Color.js";
 import { PieceType } from "@chacomat/utils/constants.js";
-import { coordsToIndex, indexToCoords } from "../utils/Index.js";
+import { coordsToIndex, indexToCoords } from "@chacomat/utils/Index.js";
 
 export default class Piece {
   static readonly TYPES = PieceType;

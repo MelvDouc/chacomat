@@ -9,8 +9,8 @@ import {
   InactiveGameError,
   InvalidFenError
 } from "@chacomat/utils/errors.js";
+import { notationToIndex } from "@chacomat/utils/Index.js";
 import { playMovesFromPgn } from "@chacomat/utils/pgn/pgn.js";
-import { notationToIndex } from "../utils/Index.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -26,7 +26,7 @@ export default class ChessGame {
   currentPosition: InstanceType<typeof Position>;
   readonly metaInfo: Partial<GameMetaInfo>;
 
-  constructor({ fenString, positionInfo, metaInfo }: ChessGameParameters = {}) {
+  constructor({ fenString, positionParams: positionInfo, metaInfo }: ChessGameParameters = {}) {
     const PositionConstructor = (this.constructor as typeof ChessGame).Position;
     const position = (positionInfo)
       ? new PositionConstructor(positionInfo)
