@@ -42,6 +42,11 @@ export type Wings<T> = {
   [W in Wing]: T;
 };
 
+export interface Coords {
+  x: number;
+  y: number;
+}
+
 export interface PieceOffsets {
   x: number[];
   y: number[];
@@ -49,7 +54,7 @@ export interface PieceOffsets {
 
 export interface ChessGameParameters {
   fenString?: FenString;
-  positionInfo?: PositionParameters;
+  positionParams?: PositionParameters;
   metaInfo?: Partial<GameMetaInfo>;
 }
 /**
