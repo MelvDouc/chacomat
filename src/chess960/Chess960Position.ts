@@ -1,4 +1,5 @@
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
+import { getChess960PiecePlacement } from "@chacomat/chess960/random-placements.js";
 import Color from "@chacomat/constants/Color.js";
 import Board from "@chacomat/game/Board.js";
 import Position from "@chacomat/game/Position.js";
@@ -8,7 +9,6 @@ import type {
   IndexGenerator,
   PositionParameters
 } from "@chacomat/types.local.js";
-import { getChess960PiecePlacement } from "@chacomat/utils/fischer-random.js";
 
 export default class Chess960Position extends Position {
   static override CastlingRights = Chess960CastlingRights;
