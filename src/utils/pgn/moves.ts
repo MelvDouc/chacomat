@@ -1,87 +1,72 @@
 import File from "@chacomat/constants/File.js";
 import {
-  AlgebraicSquareNotation,
-  Board, ChessFileName, ChessGame,
+  Board,
+  ChessFileName,
+  ChessGame,
   Move,
+  PieceType,
   PromotedPieceType
 } from "@chacomat/types.local.js";
 import {
-  coordsToIndex,
-  indexToCoords,
-  notationToIndex
+  coordsToIndex
 } from "@chacomat/utils/Index.js";
 import { parsedMoves, parseVariations } from "@chacomat/utils/pgn/variations.js";
 
-const castlingRegex = /(0-0(-0)?|O-O(-O)?)/;
 const checkRegex = /(\+{1,2}|#)?/;
 
 // TODO: include promotion
 const HALF_MOVE_REGEXES: Record<string, {
   regex: RegExp;
-  getMove: (moveText: string, board: Board, legalMoves: Move[]) => [...Move, PromotedPieceType?];
+  getMove: MoveFinder;
 }> = {
-  STRAIGHT_PAWN_MOVE: {
-    regex: /^[a-h][1-8](\+{1,2}|#)?$/,
-    getMove: (moveText, board, legalMoves) => {
-      const destIndex = notationToIndex(moveText[0] + moveText[1] as AlgebraicSquareNotation);
-      return legalMoves.find(([src, dest]) => dest === destIndex && board.get(src)?.isPawn());
+  PAWN_MOVE: {
+    regex: new RegExp(`^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRNB]))?${checkRegex.source}$`),
+    getMove: (match, board, legalMoves) => {
+      const { sf, df, dr, pt } = match;
+      const srcY = File[sf as ChessFileName];
+      const destX = getRank(dr);
+      const destY = (df) ? File[df as ChessFileName] : srcY;
+      const destIndex = coordsToIndex(destX, destY);
+
+      const move = legalMoves.find(([src, dest]) => {
+        const srcPiece = board.get(src);
+        return srcPiece?.isPawn()
+          && srcPiece.coords.y === srcY
+          && dest === destIndex;
+      });
+
+      return (pt != null)
+        ? [...move, pt as PromotedPieceType]
+        : move;
     }
   },
-  PAWN_CAPTURE: {
-    regex: /^[a-h]x[a-h][1-8](\+{1,2}|#)?$/,
-    getMove: (moveText, board, legalMoves) => {
-      const srcY = File[moveText[0] as ChessFileName];
-      const destIndex = notationToIndex(moveText[2] + moveText[3] as AlgebraicSquareNotation);
+  PIECE_MOVE: {
+    regex: new RegExp(`^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<df>[a-h])(?<dr>[1-8])${checkRegex.source}$`),
+    getMove: (match, board, legalMoves) => {
+      const { pt, sf, sr, df, dr } = match;
+      const pieceType = pt as PieceType;
+      const srcX = sr ? getRank(sr) : null;
+      const srcY = sf ? File[sf as ChessFileName] : null;
+      const destX = getRank(dr);
+      const destY = File[df as ChessFileName];
+      const destIndex = coordsToIndex(destX, destY);
+
       return legalMoves.find(([src, dest]) => {
-        return dest === destIndex
-          && indexToCoords(src).y === srcY
-          && board.get(src)?.isPawn();
+        const srcPiece = board.get(src);
+        return srcPiece?.type === pieceType
+          && (srcX == null || srcPiece.coords.x === srcX)
+          && (srcY == null || srcPiece.coords.y === srcY)
+          && dest === destIndex;
       });
     }
   },
-  CLEAR_PIECE_MOVE: {
-    regex: /^[NBRQK]x?[a-h][1-8](\+{1,2}|#)?$/,
-    getMove: (moveText, board, legalMoves) => {
-      moveText = moveText.replace("x", "");
-      const destIndex = notationToIndex(moveText[1] + moveText[2] as AlgebraicSquareNotation);
-      return legalMoves.find(([src, dest]) => dest === destIndex && board.get(src)?.type === moveText[0]);
-    }
-  },
-  AMBIGUOUS_PIECE_MOVE: {
-    regex: /^[NBRQK][a-h]?[1-8]?x?[a-h][1-8](\+{1,2}|#)?$/,
-    getMove: (moveText, board, legalMoves) => {
-      const chars = moveText.replace("x", "").replace(checkRegex, "").split("");
-      const destX = getRank(chars.at(-1));
-      const destY = File[chars.at(-2) as ChessFileName];
-      const destCoords = coordsToIndex(destX, destY);
-      let srcX: number | undefined,
-        srcY: number | undefined;
-
-      if (chars.length === 5) {
-        srcX = getRank(chars[2]);
-        srcY = File[chars[1] as ChessFileName];
-      } else {
-        !isNaN(+chars[1])
-          ? srcX = getRank(chars[1])
-          : srcY = File[chars[1] as ChessFileName];
-      }
-
-      return legalMoves.find(([src, dest]) => {
-        return destCoords === dest
-          && board.get(src)?.type === moveText[0]
-          && (srcX == null || srcX === indexToCoords(src).x)
-          && (srcY == null || srcY === indexToCoords(src).y);
-      });
-    }
-  },
+  // },
   CASTLING: {
-    regex: new RegExp(`^${castlingRegex.source + checkRegex.source}$`),
-    getMove: (moveText, board, legalMoves) => {
+    regex: new RegExp(`^(?<t>O|0)-\\k<t>(?<t2>-\\k<t>)?${checkRegex.source}$`),
+    getMove: (match, board, legalMoves) => {
       const kingIndex = board.kings[board.position.colorToMove].index;
       const destIndex = [...board.position.castlingCoords()].find((index) => {
-        return (moveText.length === 3)
-          ? index > kingIndex
-          : index < kingIndex;
+        return (match["t2"]) ? index < kingIndex : index > kingIndex;
       });
       return legalMoves.find(([src, dest]) => src === kingIndex && dest === destIndex);
     }
@@ -111,8 +96,13 @@ function findAndPlayMove(moveText: string, game: ChessGame) {
   let key: keyof typeof HALF_MOVE_REGEXES;
 
   for (key in HALF_MOVE_REGEXES) {
-    if (HALF_MOVE_REGEXES[key].regex.test(moveText)) {
-      const move = HALF_MOVE_REGEXES[key].getMove(moveText, game.currentPosition.board, game.currentPosition.legalMoves);
+    const match = moveText.match(HALF_MOVE_REGEXES[key].regex);
+    if (match) {
+      const move = HALF_MOVE_REGEXES[key].getMove(
+        match.groups,
+        game.currentPosition.board,
+        game.currentPosition.legalMoves
+      );
       game.move(...move);
       break;
     }
@@ -122,3 +112,9 @@ function findAndPlayMove(moveText: string, game: ChessGame) {
 function getRank(rankStr: string): number {
   return 8 - +rankStr;
 }
+
+type MoveMatch = {
+  [x: string]: string | undefined;
+};
+
+type MoveFinder = (match: MoveMatch, board: Board, legalMoves: Move[]) => [...Move, PromotedPieceType?];
