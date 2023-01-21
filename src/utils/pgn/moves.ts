@@ -12,6 +12,7 @@ import { parsedMoves, parseVariations } from "@chacomat/utils/pgn/variations.js"
 
 const checkRegex = /(\+{1,2}|#)?/;
 
+// TODO: error handling
 const HALF_MOVE_REGEXES: Record<string, {
   regex: RegExp;
   getMove: MoveFinder;
