@@ -1,5 +1,4 @@
 import Color from "@chacomat/constants/Color.js";
-import GameStatus from "@chacomat/constants/GameStatus.js";
 import Position from "@chacomat/game/Position.js";
 import type {
   AlgebraicSquareNotation,
@@ -20,6 +19,14 @@ import enterPgn from "@chacomat/utils/pgn/pgn.js";
  */
 export default class ChessGame {
   static readonly Position = Position;
+  static readonly statuses = {
+    ACTIVE: "active",
+    CHECKMATE: "checkmate",
+    STALEMATE: "stalemate",
+    TRIPLE_REPETITION: "triple repetition",
+    FIFTY_MOVE_DRAW: "draw by fifty-move rule",
+    INSUFFICIENT_MATERIAL: "insufficient material"
+  } as const;
   static readonly errors = {
     IllegalMoveError: IllegalMoveError,
     InactiveGameError: InactiveGameError,
@@ -51,17 +58,17 @@ export default class ChessGame {
   /**
    * Determine whether the position is active, checkmate or a draw and what kind of draw.
    */
-  get status(): GameStatus {
+  get status(): string {
     const position = this.currentPosition;
     if (!position.legalMoves.length)
-      return (position.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
+      return (position.isCheck()) ? ChessGame.statuses.CHECKMATE : ChessGame.statuses.STALEMATE;
     if (position.isInsufficientMaterial())
-      return GameStatus.INSUFFICIENT_MATERIAL;
+      return ChessGame.statuses.INSUFFICIENT_MATERIAL;
     if (position.halfMoveClock > 50)
-      return GameStatus.FIFTY_MOVE_DRAW;
+      return ChessGame.statuses.FIFTY_MOVE_DRAW;
     if (position.isTripleRepetition())
-      return GameStatus.TRIPLE_REPETITION;
-    return GameStatus.ACTIVE;
+      return ChessGame.statuses.TRIPLE_REPETITION;
+    return ChessGame.statuses.ACTIVE;
   }
 
   get errors() {
@@ -83,7 +90,7 @@ export default class ChessGame {
   move(srcIndex: number, destIndex: number, promotionType?: PromotedPieceType): this {
     const { status } = this;
 
-    if (status !== GameStatus.ACTIVE)
+    if (status !== ChessGame.statuses.ACTIVE)
       throw new ChessGame.errors.InactiveGameError(status);
 
     if (!this.currentPosition.legalMoves.some(([src, dest]) => src === srcIndex && dest === destIndex))

@@ -1,4 +1,3 @@
-import GameStatus from "@chacomat/constants/GameStatus.js";
 import PieceType from "@chacomat/constants/PieceType.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Position from "@chacomat/game/Position.js";
@@ -34,7 +33,7 @@ describe("A triple repetition", () => {
     repeat();
     repeat();
 
-    expect(game.status).toBe(GameStatus.TRIPLE_REPETITION);
+    expect(game.status).toBe(ChessGame.statuses.TRIPLE_REPETITION);
   });
 });
 
@@ -42,6 +41,6 @@ describe("A board with only kings", () => {
   it("should be insufficient material", () => {
     const game = new ChessGame({ fen: "k7/8/8/8/8/8/8/7K w - - 0 1" });
 
-    expect(game.status).toBe(GameStatus.INSUFFICIENT_MATERIAL);
+    expect(game.status).toBe(ChessGame.statuses.INSUFFICIENT_MATERIAL);
   });
 });

@@ -1,4 +1,4 @@
-import { FenString, GameStatus } from "@chacomat/types.local.js";
+import { FenString } from "@chacomat/types.local.js";
 
 export class IllegalMoveError extends Error {
   constructor(src: unknown, dest: unknown) {
@@ -7,7 +7,7 @@ export class IllegalMoveError extends Error {
 }
 
 export class InactiveGameError extends Error {
-  constructor(status: GameStatus) {
+  constructor(status: string) {
     super(`Game is inactive: ${status}`);
   }
 }

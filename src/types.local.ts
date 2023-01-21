@@ -1,10 +1,10 @@
-import GameStatus from "./constants/GameStatus.js";
+import ChessGame from "./game/ChessGame.js";
 import PieceType from "./constants/PieceType.js";
 import Wing from "./constants/Wing.js";
 
 export type {
+  ChessGame,
   GameParameters,
-  GameStatus,
   PieceType,
   Wing
 };
@@ -18,7 +18,6 @@ export type ChessFileName = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
 export type ChessRankName = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 export type AlgebraicSquareNotation = `${ChessFileName}${ChessRankName}`;
 
-export type ChessGame = import("./game/ChessGame.js").default;
 export type Position = import("./game/Position.js").default;
 export type Board = import("./game/Board.js").default;
 export type CastlingRights = import("./game/CastlingRights.js").default;

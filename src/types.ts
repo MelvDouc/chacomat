@@ -10,7 +10,6 @@ export type {
   FenString,
   GameMetaInfo,
   GameParameters,
-  GameStatus,
   Move,
   Piece,
   PieceInitial,
