@@ -1,14 +1,5 @@
-import Color from "@chacomat/constants/Color.js";
 import PieceType from "@chacomat/constants/PieceType.js";
-import type { NonPawnPieceType, PieceOffsets } from "@chacomat/types.local.js";
-
-export const pawnOffsets = {
-  x: {
-    [Color.WHITE]: [-1, -1],
-    [Color.BLACK]: [1, 1]
-  },
-  y: [-1, 1]
-};
+import type { PieceOffsets } from "@chacomat/types.local.js";
 
 const rookOffsets: PieceOffsets = {
   x: [0, -1, 0, 1],
@@ -25,7 +16,11 @@ const adjacentOffsets: PieceOffsets = {
   y: rookOffsets.y.concat(bishopOffsets.y)
 };
 
-export const pieceOffsets: Readonly<Record<NonPawnPieceType, PieceOffsets>> = {
+const pieceOffsets: Readonly<Record<PieceType, PieceOffsets>> = {
+  [PieceType.PAWN]: {
+    x: [1, 1],
+    y: [-1, 1]
+  },
   [PieceType.KNIGHT]: {
     x: [-1, -2, -2, -1, 1, 2, 2, 1],
     y: [-2, -1, 1, 2, 2, 1, -1, -2]
@@ -35,3 +30,5 @@ export const pieceOffsets: Readonly<Record<NonPawnPieceType, PieceOffsets>> = {
   [PieceType.QUEEN]: adjacentOffsets,
   [PieceType.KING]: adjacentOffsets
 };
+
+export default pieceOffsets;

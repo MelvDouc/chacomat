@@ -1,24 +1,11 @@
 import PieceType from "@chacomat/constants/PieceType.js";
-import { pawnOffsets, pieceOffsets } from "@chacomat/pieces/offsets.js";
+import pieceOffsets from "@chacomat/pieces/offsets.js";
 import type { IndexGenerator, Piece } from "@chacomat/types.local.js";
 import { coordsToIndex, isSafe } from "@chacomat/utils/Index.js";
 
 // ===== ===== ===== ===== =====
 // PAWN
 // ===== ===== ===== ===== =====
-
-function* pawnAttackedCoords(pawn: Piece): IndexGenerator {
-  const { x, y } = pawn.coords;
-
-  for (const xOffset of pawnOffsets.x[pawn.color]) {
-    for (const yOffset of pawnOffsets.y) {
-      const x2 = x + xOffset,
-        y2 = y + yOffset;
-      if (isSafe(x2) && isSafe(y2))
-        yield coordsToIndex(x2, y2);
-    }
-  }
-}
 
 function* forwardPawnMoves(pawn: Piece): IndexGenerator {
   const { x, y } = pawn.coords;
@@ -49,14 +36,15 @@ function* pawnCaptures(pawn: Piece): IndexGenerator {
 // PIECES
 // ===== ===== ===== ===== =====
 
-function getShortPieceAttackedIndexGenerator(pieceType: PieceType.KNIGHT | PieceType.KING) {
+function getShortPieceAttackedIndexGenerator(pieceType: PieceType.PAWN | PieceType.KNIGHT | PieceType.KING) {
   const { x: xOffsets, y: yOffsets } = pieceOffsets[pieceType];
 
   return function* (piece: Piece): IndexGenerator {
     const { x, y } = piece.coords;
+    const mult = (piece.isPawn()) ? piece.direction : 1;
 
     for (let i = 0; i < xOffsets.length; i++) {
-      const x2 = x + xOffsets[i],
+      const x2 = x + xOffsets[i] * mult,
         y2 = y + yOffsets[i];
       if (isSafe(x2) && isSafe(y2))
         yield coordsToIndex(x2, y2);
@@ -87,7 +75,7 @@ function getLongPieceAttackedIndexGenerator(pieceType: PieceType.ROOK | PieceTyp
 // ===== ===== ===== ===== =====
 
 export const attackedIndexGenerators: Record<PieceType, (piece: Piece) => IndexGenerator> = {
-  [PieceType.PAWN]: pawnAttackedCoords,
+  [PieceType.PAWN]: getShortPieceAttackedIndexGenerator(PieceType.PAWN),
   [PieceType.KNIGHT]: getShortPieceAttackedIndexGenerator(PieceType.KNIGHT),
   [PieceType.KING]: getShortPieceAttackedIndexGenerator(PieceType.KING),
   [PieceType.ROOK]: getLongPieceAttackedIndexGenerator(PieceType.ROOK),
