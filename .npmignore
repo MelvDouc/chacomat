@@ -1,7 +1,7 @@
 **/node_modules
 **/.vscode
+**/*.local.*
 dist/**/*.test.*
-**/*.local
 
 src
 test

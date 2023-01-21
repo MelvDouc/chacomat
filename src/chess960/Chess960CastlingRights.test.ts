@@ -16,9 +16,9 @@ describe("Chess960CastlingRights", () => {
     const castlingRights = Chess960CastlingRights.fromString("De");
 
     expect(castlingRights[Color.WHITE]).toContain(3);
-    expect(castlingRights[Color.WHITE].length).toBe(1);
+    expect(castlingRights[Color.WHITE]).toHaveLength(1);
     expect(castlingRights[Color.BLACK]).toContain(4);
-    expect(castlingRights[Color.BLACK].length).toBe(1);
+    expect(castlingRights[Color.BLACK]).toHaveLength(1);
   });
 
   it("should be stringifiable #1", () => {
