@@ -33,8 +33,8 @@ export default class Chess960Position extends Position {
   override game: Chess960Game;
 
   override isCastling(king: Piece, destIndex: number): boolean {
-    return !!this.board.get(destIndex)?.isRook()
-      && this.board.get(destIndex).color === king.color;
+    const possibleRook = this.board.get(destIndex);
+    return possibleRook?.isRook() && possibleRook.color === king.color;
   }
 
   override *castlingCoords(): IndexGenerator {
