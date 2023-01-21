@@ -64,6 +64,9 @@ describe("PNG reader", () => {
     expect(game.metaInfo.BlackElo).toBe(1985);
     expect(game.metaInfo.Round).toBeCloseTo(5.3);
     expect(game.currentPosition.legalMoves).toHaveLength(2);
+
+    console.log(game.metaInfo);
+    game.logBoard();
   });
 });
 

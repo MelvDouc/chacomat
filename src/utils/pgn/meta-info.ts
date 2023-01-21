@@ -25,7 +25,7 @@ function getMetaInfo(pgn: string): {
 }
 
 function isNumeric(str: string) {
-  return !isNaN(parseFloat(str));
+  return str.trim() !== "" && !isNaN(+str);
 }
 
 export default getMetaInfo;

@@ -7,14 +7,11 @@ import {
   PieceType,
   PromotedPieceType
 } from "@chacomat/types.local.js";
-import {
-  coordsToIndex
-} from "@chacomat/utils/Index.js";
+import { coordsToIndex } from "@chacomat/utils/Index.js";
 import { parsedMoves, parseVariations } from "@chacomat/utils/pgn/variations.js";
 
 const checkRegex = /(\+{1,2}|#)?/;
 
-// TODO: include promotion
 const HALF_MOVE_REGEXES: Record<string, {
   regex: RegExp;
   getMove: MoveFinder;
@@ -25,7 +22,7 @@ const HALF_MOVE_REGEXES: Record<string, {
       const { sf, df, dr, pt } = match;
       const srcY = File[sf as ChessFileName];
       const destX = getRank(dr);
-      const destY = (df) ? File[df as ChessFileName] : srcY;
+      const destY = df ? File[df as ChessFileName] : srcY;
       const destIndex = coordsToIndex(destX, destY);
 
       const move = legalMoves.find(([src, dest]) => {
@@ -60,15 +57,14 @@ const HALF_MOVE_REGEXES: Record<string, {
       });
     }
   },
-  // },
   CASTLING: {
     regex: new RegExp(`^(?<t>O|0)-\\k<t>(?<t2>-\\k<t>)?${checkRegex.source}$`),
-    getMove: (match, board, legalMoves) => {
+    getMove: (match, board) => {
       const kingIndex = board.kings[board.position.colorToMove].index;
       const destIndex = [...board.position.castlingCoords()].find((index) => {
         return (match["t2"]) ? index < kingIndex : index > kingIndex;
       });
-      return legalMoves.find(([src, dest]) => src === kingIndex && dest === destIndex);
+      return [kingIndex, destIndex];
     }
   }
 };
@@ -117,4 +113,4 @@ type MoveMatch = {
   [x: string]: string | undefined;
 };
 
-type MoveFinder = (match: MoveMatch, board: Board, legalMoves: Move[]) => [...Move, PromotedPieceType?];
+type MoveFinder = (match: MoveMatch, board: Board, legalMoves?: Move[]) => [...Move, PromotedPieceType?];
