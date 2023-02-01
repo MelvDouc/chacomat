@@ -1,4 +1,3 @@
-import Color from "@chacomat/constants/Color.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import { notationToIndex } from "@chacomat/utils/Index.js";
 import { playMovesFromPgn } from "@chacomat/utils/pgn/moves.js";
@@ -56,7 +55,7 @@ describe("PNG reader", () => {
       [TimeControl "5400/40+30:1800+30"]
       [WhiteTeam "Seichamps"]
       [BlackTeam "Thionville"]
-      
+
       1.d4 d5 2.Bf4 Nf6 3.e3 Bg4 4.f3 Bd7 5.c4 c5 6.Nc3 e6 7.Nh3 Nc6 8.Be5 cxd4 9.exd4 dxc4 10.Bxc4 Rc8 11.Qe2 Be7 12.Bxf6 Bxf6 13.d5 Nd4 14.Qd3 Rxc4 15.Qxc4 Nc2+ 16.Ke2 Nxa1 17.Rxa1 exd5 18.Nxd5 0-0 19.Nhf4 Bxb2 20.Rb1 Qe8+ 21.Kf2 Qe5 22.Kf1 Bc6 (22... Kh8) 23.Ne7+ Qxe7 24.Rxb2 Qh4 25.g3 Qf6 26.Rf2 Rd8 27.Qc5 a6 28.Qe3 Qa1+ 29.Kg2 Qd1 30.h4 Re8 31.Qc3 Re1 32.h5 Rg1+ 33.Kh3 Bd7+ 34.g4 Rh1+ 35.Rh2 Bc6 36.Rxh1 Qxh1+ 37.Kg3 h6 38.Qd3 Qe1+ 39.Kg2 Qa5 40.a3 Qc7 41.Qd4 Qe7 42.Qc3 Qh4 43.Kf1 Qg3 44.Nd5 Bb5+`
     });
 
@@ -82,9 +81,9 @@ describe("An ambiguous move", () => {
 
     expect(board.get(d6)).toBeFalsy();
     expect(board.get(d4)?.isRook()).toBe(true);
-    expect(board.get(d4)?.color).toBe(Color.WHITE);
+    expect(board.get(d4)?.color).toBe("WHITE");
     expect(board.get(d1)?.isRook()).toBe(true);
-    expect(board.get(d1)?.color).toBe(Color.WHITE);
+    expect(board.get(d1)?.color).toBe("WHITE");
   });
 
   it("should be detected on an ambiguous rank", () => {
@@ -94,9 +93,9 @@ describe("An ambiguous move", () => {
 
     expect(board.get(f6)).toBeFalsy();
     expect(board.get(e6)?.isRook()).toBe(true);
-    expect(board.get(e6)?.color).toBe(Color.WHITE);
+    expect(board.get(e6)?.color).toBe("WHITE");
     expect(board.get(d6)?.isRook()).toBe(true);
-    expect(board.get(d6)?.color).toBe(Color.WHITE);
+    expect(board.get(d6)?.color).toBe("WHITE");
   });
 
   it("should be detected on an ambiguous square", () => {
@@ -106,9 +105,9 @@ describe("An ambiguous move", () => {
 
     expect(board.get(h7)).toBeFalsy();
     expect(board.get(g6)?.isQueen()).toBe(true);
-    expect(board.get(g6)?.color).toBe(Color.WHITE);
+    expect(board.get(g6)?.color).toBe("WHITE");
     expect(board.get(g4)?.isQueen()).toBe(true);
-    expect(board.get(g4)?.color).toBe(Color.WHITE);
+    expect(board.get(g4)?.color).toBe("WHITE");
   });
 });
 
@@ -125,6 +124,6 @@ describe("Castling", () => {
 
     expect(game.currentPosition.isCheck()).toBe(false);
     expect(game.currentPosition.board.get(b2)?.isKing()).toBe(true);
-    expect(game.currentPosition.board.getNonKingPiecesByColor()[Color.BLACK].length).toBe(0);
+    expect(game.currentPosition.board.getNonKingPiecesByColor()["BLACK"].length).toBe(0);
   });
 });

@@ -1,7 +1,6 @@
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
 import Chess960Game from "@chacomat/chess960/Chess960Game.js";
 import Chess960Position from "@chacomat/chess960/Chess960Position.js";
-import Color from "@chacomat/constants/Color.js";
 
 describe("A Chess960 game", () => {
   it("should detect check", () => {
@@ -20,8 +19,8 @@ describe("A Chess960 game", () => {
   it("should have correct castling rights", () => {
     const { castlingRights } = new Chess960Game().currentPosition;
 
-    expect(new Set(castlingRights[Color.WHITE]).size).toBe(2);
-    expect(new Set(castlingRights[Color.BLACK]).size).toBe(2);
+    expect(new Set(castlingRights.WHITE).size).toBe(2);
+    expect(new Set(castlingRights.BLACK).size).toBe(2);
   });
 
   it("should allow castling", () => {

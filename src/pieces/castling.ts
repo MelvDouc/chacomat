@@ -1,6 +1,5 @@
-import Wing from "@chacomat/constants/Wing.js";
 import { castledFiles } from "@chacomat/pieces/placements.js";
-import type { Piece } from "@chacomat/types.local.js";
+import type { Piece, Wing } from "@chacomat/types.local.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
 
 /**
@@ -13,7 +12,7 @@ export function canCastleToFile(king: Piece, srcRookY: number): boolean {
 
   // The squares traversed by the king must not be attacked,
   // and they must be either empty or occupied by the castling rook.
-  const destKingY = castledFiles.KING[wing];
+  const destKingY = castledFiles.KING[wing as keyof object];
   const kingDirection = Math.sign(destKingY - kingY);
 
   if (kingDirection !== 0) {
@@ -30,7 +29,7 @@ export function canCastleToFile(king: Piece, srcRookY: number): boolean {
   }
 
   // The squares traversed by the rook must be empty or occupied the king.
-  const destRookY = castledFiles.ROOK[wing];
+  const destRookY = castledFiles.ROOK[wing as keyof object];
   const rookDirection = Math.sign(destRookY - srcRookY);
 
   if (rookDirection !== 0) {
@@ -47,7 +46,5 @@ export function canCastleToFile(king: Piece, srcRookY: number): boolean {
 }
 
 export function getWing(kingY: number, compareY: number): Wing {
-  return (compareY < kingY)
-    ? Wing.QUEEN_SIDE
-    : Wing.KING_SIDE;
+  return (compareY < kingY) ? 0 : 7;
 }

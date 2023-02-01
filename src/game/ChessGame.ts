@@ -1,7 +1,7 @@
-import Color from "@chacomat/constants/Color.js";
 import Position from "@chacomat/game/Position.js";
 import type {
   AlgebraicSquareNotation,
+  Color,
   GameMetaInfo,
   GameParameters,
   PromotedPieceType
@@ -139,17 +139,17 @@ export default class ChessGame {
     return this;
   }
 
-  goToMove(moveNumber: number, color: Color = Color.WHITE): this {
+  goToMove(moveNumber: number, color: Color = "WHITE"): this {
     if (moveNumber < this.currentPosition.fullMoveNumber)
       return this.#goToMoveWithCallback(moveNumber, color, (pos) => pos.prev);
 
     if (moveNumber > this.currentPosition.fullMoveNumber)
       return this.#goToMoveWithCallback(moveNumber, color, (pos) => pos.next[0]);
 
-    if (color === Color.WHITE && this.currentPosition.colorToMove === Color.BLACK) {
+    if (color === "WHITE" && this.currentPosition.colorToMove === "BLACK") {
       if (this.currentPosition.prev)
         this.currentPosition = this.currentPosition.prev;
-    } else if (color === Color.BLACK && this.currentPosition.colorToMove === Color.WHITE) {
+    } else if (color === "BLACK" && this.currentPosition.colorToMove === "WHITE") {
       if (this.currentPosition.next[0])
         this.currentPosition = this.currentPosition.next[0];
     }

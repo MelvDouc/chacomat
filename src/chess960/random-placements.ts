@@ -1,4 +1,3 @@
-import PieceType from "@chacomat/constants/PieceType.js";
 import type { NonPawnPieceType } from "@chacomat/types.local.js";
 
 function randomInt(min: number, max: number): number {
@@ -15,11 +14,11 @@ export function getChess960PiecePlacement(): Record<NonPawnPieceType, number[]> 
   files.delete(queenFile);
 
   return {
-    [PieceType.KING]: [kingFile],
-    [PieceType.QUEEN]: [queenFile],
-    [PieceType.ROOK]: rookFiles,
-    [PieceType.BISHOP]: bishopFiles,
-    [PieceType.KNIGHT]: [...files]
+    K: [kingFile],
+    Q: [queenFile],
+    R: rookFiles,
+    B: bishopFiles,
+    N: [...files]
   };
 }
 

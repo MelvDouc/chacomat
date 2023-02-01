@@ -1,7 +1,7 @@
-import Color from "@chacomat/constants/Color.js";
-import Wing from "@chacomat/constants/Wing.js";
+import { colors } from "@chacomat/constants/Color.js";
 import type {
   BlackAndWhite,
+  Color,
   Wings
 } from "@chacomat/types.local.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
@@ -15,13 +15,13 @@ export default class CastlingRights {
    * The characters used in an FEN string to represent castling rights.
    */
   static readonly #initials: BlackAndWhite<Wings<string>> = {
-    [Color.BLACK]: {
-      [Wing.KING_SIDE]: "k",
-      [Wing.QUEEN_SIDE]: "q"
+    BLACK: {
+      7: "k",
+      0: "q"
     },
-    [Color.WHITE]: {
-      [Wing.KING_SIDE]: "K",
-      [Wing.QUEEN_SIDE]: "Q"
+    WHITE: {
+      7: "K",
+      0: "Q"
     }
   };
 
@@ -30,26 +30,26 @@ export default class CastlingRights {
    */
   static fromString(str: string): CastlingRights {
     const castlingRights = new CastlingRights();
-    let colorKey: keyof typeof Color;
+    let wing: string;
 
-    for (colorKey in Color) {
-      const color = Color[colorKey];
-      if (str.includes(this.#initials[color][Wing.QUEEN_SIDE]))
-        castlingRights[Color[colorKey]].push(Wing.QUEEN_SIDE);
-      if (str.includes(this.#initials[color][Wing.KING_SIDE]))
-        castlingRights[Color[colorKey]].push(Wing.KING_SIDE);
-    }
+    colors.forEach((color) => {
+      for (wing in this.#initials[color]) {
+        const initial = this.#initials[color][wing as keyof object];
+        if (str.includes(initial))
+          castlingRights[color].push(+wing);
+      }
+    });
 
     return castlingRights;
   }
 
-  readonly [Color.WHITE]: number[] = [];
-  readonly [Color.BLACK]: number[] = [];
+  readonly WHITE: number[] = [];
+  readonly BLACK: number[] = [];
 
   clone(): CastlingRights {
     const clone = Reflect.construct(this.constructor, []);
-    clone[Color.WHITE].push(...this[Color.WHITE]);
-    clone[Color.BLACK].push(...this[Color.BLACK]);
+    clone.WHITE.push(...this.WHITE);
+    clone.BLACK.push(...this.BLACK);
     return clone;
   }
 
@@ -59,15 +59,13 @@ export default class CastlingRights {
 
   toString(): string {
     let str = "";
-    let colorKey: keyof typeof Color;
 
-    for (colorKey in Color) {
-      const color = Color[colorKey];
-      if (this[color].includes(Wing.KING_SIDE))
-        str += CastlingRights.#initials[color][Wing.KING_SIDE];
-      if (this[color].includes(Wing.QUEEN_SIDE))
-        str += CastlingRights.#initials[color][Wing.QUEEN_SIDE];
-    }
+    colors.forEach((color) => {
+      if (this[color].includes(7))
+        str += CastlingRights.#initials[color][7];
+      if (this[color].includes(0))
+        str += CastlingRights.#initials[color][0];
+    });
 
     return str || fenChecker.nullCharacter;
   }

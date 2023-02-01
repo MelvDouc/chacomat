@@ -1,7 +1,8 @@
-import Color, { ConsoleColors } from "@chacomat/constants/Color.js";
+import { colors, ConsoleColors } from "@chacomat/constants/Color.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
   BlackAndWhite,
+  Color,
   NonPawnPieceType,
   PieceInitial,
   Position
@@ -15,11 +16,9 @@ export default class Board extends Map<number, Piece> {
 
   static getChess960InitialBoard(piecePlacement: Record<NonPawnPieceType, number[]>): Board {
     const board = new Board();
-    let colorKey: keyof typeof Color,
-      pieceKey: keyof typeof piecePlacement;
+    let pieceKey: keyof typeof piecePlacement;
 
-    for (colorKey in Color) {
-      const color = Color[colorKey];
+    for (const color of colors) {
       const pieceRank = Piece.START_RANKS.PIECE[color];
 
       for (pieceKey in piecePlacement) {
@@ -29,11 +28,11 @@ export default class Board extends Map<number, Piece> {
         }
       }
 
-      board.kings[color] = board.atRank(pieceRank).atFile(piecePlacement[Piece.TYPES.KING][0]) as Piece;
+      board.kings[color] = board.atRank(pieceRank).atFile(piecePlacement["K"][0]) as Piece;
 
       for (let y = 0; y < 8; y++) {
         const index = coordsToIndex(Piece.START_RANKS.PAWN[color], y);
-        board.set(index, new Piece({ color, board, index, type: Piece.TYPES.PAWN }));
+        board.set(index, new Piece({ color, board, index, type: "P" }));
       }
     }
 
@@ -105,8 +104,8 @@ export default class Board extends Map<number, Piece> {
         board: boardClone
       }));
     }
-    boardClone.kings[Color.WHITE] = boardClone.get(this.kings[Color.WHITE].index);
-    boardClone.kings[Color.BLACK] = boardClone.get(this.kings[Color.BLACK].index);
+    boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.index);
+    boardClone.kings.BLACK = boardClone.get(this.kings.BLACK.index);
     return boardClone;
   }
 
@@ -116,8 +115,8 @@ export default class Board extends Map<number, Piece> {
         acc[piece.color].push(piece);
       return acc;
     }, {
-      [Color.WHITE]: [] as Piece[],
-      [Color.BLACK]: [] as Piece[]
+      WHITE: [] as Piece[],
+      BLACK: [] as Piece[]
     });
   }
 

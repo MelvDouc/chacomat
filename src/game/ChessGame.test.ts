@@ -1,6 +1,4 @@
-import Color from "@chacomat/constants/Color.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
-import Piece from "@chacomat/pieces/Piece.js";
 import { notationToIndex } from "@chacomat/utils/Index.js";
 
 describe("Fool's Mate", () => {
@@ -46,7 +44,7 @@ describe("en passant", () => {
 
     expect(board.get(notationToIndex("c4"))).toBeFalsy();
     expect(board.get(notationToIndex("d4"))).toBeFalsy();
-    expect(board.get(notationToIndex("c3"))?.type).toBe(Piece.TYPES.PAWN);
+    expect(board.get(notationToIndex("c3"))?.type).toBe("P");
   });
 });
 
@@ -61,7 +59,7 @@ describe("Stalemate", () => {
 
   it("should be possible after a promotion", () => {
     const game = new ChessGame({ fen: "8/k1P5/2K5/8/8/8/8/8 w - - 0 1" })
-      .moveWithNotations("c7", "c8", Piece.TYPES.QUEEN);
+      .moveWithNotations("c7", "c8", "Q");
 
     expect(game.status).toBe(ChessGame.statuses.STALEMATE);
   });
@@ -85,7 +83,7 @@ describe("The goToMove() method", () => {
   });
 
   it("should work forwards", () => {
-    game.goToMove(3, Color.BLACK);
+    game.goToMove(3, "BLACK");
     expect(game.currentPosition).toBe(posAfterNc3);
   });
 });

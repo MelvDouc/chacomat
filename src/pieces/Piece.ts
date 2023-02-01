@@ -1,5 +1,4 @@
-import Color, { ReversedColor } from "@chacomat/constants/Color.js";
-import PieceType from "@chacomat/constants/PieceType.js";
+import { ReversedColor } from "@chacomat/constants/Color.js";
 import { canCastleToFile, getWing } from "@chacomat/pieces/castling.js";
 import {
   attackedIndexGenerators,
@@ -15,32 +14,37 @@ import type {
   BlackPieceInitial,
   Board,
   CastlingRights,
+  Color,
   IndexGenerator,
   PieceInitial,
-  PieceParameters
+  PieceParameters,
+  PieceType,
+  WhitePieceInitial
 } from "@chacomat/types.local.js";
 import { coordsToIndex, indexToCoords } from "@chacomat/utils/Index.js";
 
 export default class Piece {
-  static readonly TYPES = PieceType;
   static readonly START_RANKS = startRanks;
   static readonly MIDDLE_RANKS = middleRanks;
   static readonly CASTLED_FILES = castledFiles;
   static readonly DIRECTIONS = directions;
-  static readonly #blackInitials: Record<PieceType, BlackPieceInitial> = {
-    [PieceType.PAWN]: "p",
-    [PieceType.KNIGHT]: "n",
-    [PieceType.BISHOP]: "b",
-    [PieceType.ROOK]: "r",
-    [PieceType.QUEEN]: "q",
-    [PieceType.KING]: "k"
-  };
+  static readonly INITIALS: {
+    WHITE: Record<PieceType, WhitePieceInitial>;
+    BLACK: Record<PieceType, BlackPieceInitial>;
+  } = {
+      WHITE: {
+        P: "P", N: "N", B: "B", R: "R", Q: "Q", K: "K"
+      },
+      BLACK: {
+        P: "p", N: "n", B: "b", R: "r", Q: "q", K: "k"
+      }
+    };
 
   static fromInitial(initial: PieceInitial): Piece {
     const type = initial.toUpperCase() as PieceType;
 
     return new Piece({
-      color: (initial === type) ? Color.WHITE : Color.BLACK,
+      color: (initial === type) ? "WHITE" : "BLACK",
       type
     });
   }
@@ -92,9 +96,7 @@ export default class Piece {
   }
 
   get initial(): PieceInitial {
-    return (this.color === Color.WHITE)
-      ? this.type
-      : Piece.#blackInitials[this.type];
+    return Piece.INITIALS[this.color][this.type];
   }
 
   get oppositeColor(): Color {
@@ -106,7 +108,7 @@ export default class Piece {
   }
 
   get startRank(): number {
-    if (this.type === PieceType.PAWN)
+    if (this.type === "P")
       return startRanks.PAWN[this.color];
     return startRanks.PIECE[this.color];
   }
@@ -116,7 +118,7 @@ export default class Piece {
   }
 
   *pseudoLegalMoves(): IndexGenerator {
-    if (this.type === PieceType.PAWN) {
+    if (this.type === "P") {
       yield* pseudoLegalPawnMoves(this);
       return;
     }
@@ -127,26 +129,26 @@ export default class Piece {
   }
 
   isKing(): boolean {
-    return this.type === PieceType.KING;
+    return this.type === "K";
   }
 
   isRook(): boolean {
-    return this.type === PieceType.ROOK;
+    return this.type === "R";
   }
 
   isBishop(): boolean {
-    return this.type === PieceType.BISHOP;
+    return this.type === "B";
   }
 
   isQueen(): boolean {
-    return this.type === PieceType.QUEEN;
+    return this.type === "Q";
   }
 
   isKnight(): boolean {
-    return this.type === PieceType.KNIGHT;
+    return this.type === "N";
   }
 
   isPawn(): boolean {
-    return this.type === PieceType.PAWN;
+    return this.type === "P";
   }
 }

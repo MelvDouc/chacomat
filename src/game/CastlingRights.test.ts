@@ -1,5 +1,3 @@
-import Color from "@chacomat/constants/Color.js";
-import Wing from "@chacomat/constants/Wing.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 
@@ -7,15 +5,15 @@ describe("Castling rights", () => {
   it("should be convertible from string to object", () => {
     const castlingRights = CastlingRights.fromString("KQk");
 
-    expect(castlingRights[Color.WHITE]).toContain(Wing.KING_SIDE);
-    expect(castlingRights[Color.WHITE]).toContain(Wing.QUEEN_SIDE);
-    expect(castlingRights[Color.BLACK]).not.toContain(Wing.QUEEN_SIDE);
-    expect(castlingRights[Color.BLACK]).toContain(Wing.KING_SIDE);
+    expect(castlingRights.WHITE).toContain(7);
+    expect(castlingRights.WHITE).toContain(0);
+    expect(castlingRights.BLACK).not.toContain(0);
+    expect(castlingRights.BLACK).toContain(7);
   });
 
   it("should be convertible from object to string", () => {
     const castlingRights = CastlingRights.fromString("KQkq");
-    castlingRights.unset(Color.WHITE, Wing.KING_SIDE);
+    castlingRights.unset("WHITE", 7);
 
     expect(castlingRights.toString()).toBe("Qkq");
   });
@@ -26,10 +24,10 @@ describe("Castling rights", () => {
       .moveWithNotations("e7", "e6")
       .moveWithNotations("e1", "e2")
       .currentPosition
-      .castlingRights[Color.WHITE];
+      .castlingRights.WHITE;
 
-    expect(whiteCR).not.toContain(Wing.QUEEN_SIDE);
-    expect(whiteCR).not.toContain(Wing.KING_SIDE);
+    expect(whiteCR).not.toContain(0);
+    expect(whiteCR).not.toContain(7);
   });
 
   it("should be updated on rook capture", () => {
@@ -42,9 +40,9 @@ describe("Castling rights", () => {
       .moveWithNotations("e5", "e4")
       .moveWithNotations("b6", "a8")
       .currentPosition
-      .castlingRights[Color.BLACK];
+      .castlingRights.BLACK;
 
-    expect(blackCR).not.toContain(Wing.QUEEN_SIDE);
-    expect(blackCR).toContain(Wing.KING_SIDE);
+    expect(blackCR).not.toContain(0);
+    expect(blackCR).toContain(7);
   });
 });

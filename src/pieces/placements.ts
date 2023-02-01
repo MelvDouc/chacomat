@@ -1,35 +1,39 @@
-import Color from "@chacomat/constants/Color.js";
-import Wing from "@chacomat/constants/Wing.js";
-import { BlackAndWhite } from "@chacomat/types.local.js";
+import { BlackAndWhite, Wings } from "@chacomat/types.local.js";
 
-export const castledFiles = {
+export const castledFiles: {
+  KING: Wings<number>;
+  ROOK: Wings<number>;
+} = {
   KING: {
-    [Wing.QUEEN_SIDE]: 2,
-    [Wing.KING_SIDE]: 6
+    0: 2,
+    7: 6
   },
   ROOK: {
-    [Wing.QUEEN_SIDE]: 3,
-    [Wing.KING_SIDE]: 5
+    0: 3,
+    7: 5
   }
 } as const;
 
-export const startRanks = {
+export const startRanks: {
+  PIECE: BlackAndWhite<number>;
+  PAWN: BlackAndWhite<number>;
+} = {
   PIECE: {
-    [Color.WHITE]: 7,
-    [Color.BLACK]: 0
+    WHITE: 7,
+    BLACK: 0
   },
   PAWN: {
-    [Color.WHITE]: 6,
-    [Color.BLACK]: 1
+    WHITE: 6,
+    BLACK: 1
   }
 } as const;
 
 export const middleRanks: BlackAndWhite<number> = {
-  [Color.WHITE]: 4,
-  [Color.BLACK]: 3
+  WHITE: 4,
+  BLACK: 3
 };
 
 export const directions: BlackAndWhite<number> = {
-  [Color.WHITE]: -1,
-  [Color.BLACK]: 1
+  WHITE: -1,
+  BLACK: 1
 };

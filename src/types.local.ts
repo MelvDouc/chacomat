@@ -1,12 +1,8 @@
 import ChessGame from "./game/ChessGame.js";
-import PieceType from "./constants/PieceType.js";
-import Wing from "./constants/Wing.js";
 
 export type {
   ChessGame,
-  GameParameters,
-  PieceType,
-  Wing
+  GameParameters
 };
 
 /**
@@ -26,13 +22,16 @@ export type Chess960Game = import("./chess960/Chess960Game.js").default;
 export type Chess960Position = import("./chess960/Chess960Position.js").default;
 export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.js").default;
 
-export type Color = import("./constants/Color.js").default;
+export type Color = "WHITE" | "BLACK";
+export type Wing = 0 | 7;
 
 export type Piece = import("./pieces/Piece.js").default;
-export type BlackPieceInitial = Lowercase<PieceType>;
-export type PieceInitial = PieceType | BlackPieceInitial;
-export type PromotedPieceType = Exclude<PieceType, PieceType.KING | PieceType.PAWN>;
-export type NonPawnPieceType = Exclude<PieceType, PieceType.PAWN>;
+export type WhitePieceInitial = "P" | "N" | "B" | "R" | "Q" | "K";
+export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
+export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
+export type PieceType = WhitePieceInitial;
+export type PromotedPieceType = Exclude<PieceType, "P" | "K">;
+export type NonPawnPieceType = Exclude<PieceType, "P">;
 
 export type IndexGenerator = Generator<number, void, unknown>;
 export type Move = [number, number];

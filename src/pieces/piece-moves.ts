@@ -1,6 +1,5 @@
-import PieceType from "@chacomat/constants/PieceType.js";
 import pieceOffsets from "@chacomat/pieces/offsets.js";
-import type { IndexGenerator, Piece } from "@chacomat/types.local.js";
+import type { IndexGenerator, Piece, PieceType } from "@chacomat/types.local.js";
 import { coordsToIndex, isSafe } from "@chacomat/utils/Index.js";
 
 // ===== ===== ===== ===== =====
@@ -36,7 +35,7 @@ function* pawnCaptures(pawn: Piece): IndexGenerator {
 // PIECES
 // ===== ===== ===== ===== =====
 
-function getShortPieceAttackedIndexGenerator(pieceType: PieceType.PAWN | PieceType.KNIGHT | PieceType.KING) {
+function getShortPieceAttackedIndexGenerator(pieceType: "P" | "N" | "K") {
   const { x: xOffsets, y: yOffsets } = pieceOffsets[pieceType];
 
   return function* (piece: Piece): IndexGenerator {
@@ -52,7 +51,7 @@ function getShortPieceAttackedIndexGenerator(pieceType: PieceType.PAWN | PieceTy
   };
 }
 
-function getLongPieceAttackedIndexGenerator(pieceType: PieceType.ROOK | PieceType.BISHOP | PieceType.QUEEN) {
+function getLongPieceAttackedIndexGenerator(pieceType: "R" | "B" | "Q") {
   const { x: xOffsets, y: yOffsets } = pieceOffsets[pieceType];
 
   return function* (piece: Piece): IndexGenerator {
@@ -75,12 +74,12 @@ function getLongPieceAttackedIndexGenerator(pieceType: PieceType.ROOK | PieceTyp
 // ===== ===== ===== ===== =====
 
 export const attackedIndexGenerators: Record<PieceType, (piece: Piece) => IndexGenerator> = {
-  [PieceType.PAWN]: getShortPieceAttackedIndexGenerator(PieceType.PAWN),
-  [PieceType.KNIGHT]: getShortPieceAttackedIndexGenerator(PieceType.KNIGHT),
-  [PieceType.KING]: getShortPieceAttackedIndexGenerator(PieceType.KING),
-  [PieceType.ROOK]: getLongPieceAttackedIndexGenerator(PieceType.ROOK),
-  [PieceType.BISHOP]: getLongPieceAttackedIndexGenerator(PieceType.BISHOP),
-  [PieceType.QUEEN]: getLongPieceAttackedIndexGenerator(PieceType.QUEEN)
+  P: getShortPieceAttackedIndexGenerator("P"),
+  N: getShortPieceAttackedIndexGenerator("N"),
+  K: getShortPieceAttackedIndexGenerator("K"),
+  R: getLongPieceAttackedIndexGenerator("R"),
+  B: getLongPieceAttackedIndexGenerator("B"),
+  Q: getLongPieceAttackedIndexGenerator("Q")
 } as const;
 
 export function* pseudoLegalPawnMoves(pawn: Piece): IndexGenerator {

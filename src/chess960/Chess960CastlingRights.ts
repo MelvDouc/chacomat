@@ -1,4 +1,3 @@
-import Color from "@chacomat/constants/Color.js";
 import File from "@chacomat/constants/File.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import type { ChessFileName } from "@chacomat/types.local.js";
@@ -9,7 +8,7 @@ export default class Chess960CastlingRights extends CastlingRights {
     const castlingRights = new Chess960CastlingRights();
     [...str].forEach((char) => {
       const initial = char.toLowerCase() as ChessFileName;
-      const color = (initial === char) ? Color.BLACK : Color.WHITE;
+      const color = (initial === char) ? "BLACK" : "WHITE";
       castlingRights[color].push(File[initial]);
     });
     return castlingRights;
@@ -18,8 +17,8 @@ export default class Chess960CastlingRights extends CastlingRights {
   public override toString(): string {
     let str = "";
 
-    this[Color.WHITE].forEach((fileIndex) => str += File[fileIndex].toUpperCase());
-    this[Color.BLACK].forEach((fileIndex) => str += File[fileIndex]);
+    this.WHITE.forEach((fileIndex) => str += File[fileIndex].toUpperCase());
+    this.BLACK.forEach((fileIndex) => str += File[fileIndex]);
 
     return str || fenChecker.nullCharacter;
   }

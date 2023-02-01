@@ -1,5 +1,4 @@
-import PieceType from "@chacomat/constants/PieceType.js";
-import type { PieceOffsets } from "@chacomat/types.local.js";
+import type { PieceOffsets, PieceType } from "@chacomat/types.local.js";
 
 const rookOffsets: PieceOffsets = {
   x: [0, -1, 0, 1],
@@ -17,18 +16,18 @@ const adjacentOffsets: PieceOffsets = {
 };
 
 const pieceOffsets: Readonly<Record<PieceType, PieceOffsets>> = {
-  [PieceType.PAWN]: {
+  P: {
     x: [1, 1],
     y: [-1, 1]
   },
-  [PieceType.KNIGHT]: {
+  N: {
     x: [-1, -2, -2, -1, 1, 2, 2, 1],
     y: [-2, -1, 1, 2, 2, 1, -1, -2]
   },
-  [PieceType.BISHOP]: bishopOffsets,
-  [PieceType.ROOK]: rookOffsets,
-  [PieceType.QUEEN]: adjacentOffsets,
-  [PieceType.KING]: adjacentOffsets
+  B: bishopOffsets,
+  R: rookOffsets,
+  Q: adjacentOffsets,
+  K: adjacentOffsets
 };
 
 export default pieceOffsets;

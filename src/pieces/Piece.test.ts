@@ -1,4 +1,3 @@
-import Color from "@chacomat/constants/Color.js";
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Piece from "@chacomat/pieces/Piece.js";
 
@@ -6,20 +5,20 @@ describe("Piece", () => {
   it("n should be a black knight", () => {
     const piece = Piece.fromInitial("n");
 
-    expect(piece.color).toBe(Color.BLACK);
+    expect(piece.color).toBe("BLACK");
     expect(piece.isKnight()).toBe(true);
   });
 
   it("P should be a white pawn", () => {
-    const piece = Piece.fromInitial(Piece.TYPES.PAWN);
+    const piece = Piece.fromInitial("P");
 
-    expect(piece.color).toBe(Color.WHITE);
+    expect(piece.color).toBe("WHITE");
     expect(piece.isPawn()).toBe(true);
   });
 
   it("Q should produce a queen", () => {
-    const pawn = new Piece({ color: Color.WHITE, type: Piece.TYPES.PAWN });
-    pawn.type = Piece.TYPES.QUEEN;
+    const pawn = new Piece({ color: "WHITE", type: "P" });
+    pawn.type = "Q";
 
     expect(pawn.isQueen()).toBe(true);
   });
@@ -40,7 +39,7 @@ describe("A king", () => {
     const game = new ChessGame({
       fen: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
     });
-    const whiteKing = game.currentPosition.board.kings[Color.WHITE];
+    const whiteKing = game.currentPosition.board.kings["WHITE"];
     const castlingCoords = [
       ...Piece.castlingCoords(whiteKing, false)
     ];

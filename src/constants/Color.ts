@@ -1,21 +1,17 @@
-enum Color {
-  WHITE = "WHITE",
-  BLACK = "BLACK"
-}
+import { BlackAndWhite, Color } from "../types.local.js";
 
-export const ReversedColor: Readonly<{
-  [Color.WHITE]: Color;
-  [Color.BLACK]: Color;
-}> = {
-  WHITE: Color.BLACK,
-  BLACK: Color.WHITE
-};
+export const colors: Color[] = ["WHITE", "BLACK"];
+
+export const ReversedColor = {
+  WHITE: "BLACK",
+  BLACK: "WHITE"
+} as BlackAndWhite<Color>;
 
 export const colorAbbreviations = {
-  w: Color.WHITE,
-  b: Color.BLACK,
-  [Color.WHITE]: "w",
-  [Color.BLACK]: "b",
+  w: "WHITE",
+  b: "BLACK",
+  WHITE: "w",
+  BLACK: "b",
 } as const;
 
 export const ConsoleColors = {
@@ -24,5 +20,3 @@ export const ConsoleColors = {
   BgWhite: "\x1b[47m",
   BgGreen: "\x1b[42m"
 } as const;
-
-export default Color;

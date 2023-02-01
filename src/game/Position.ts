@@ -1,10 +1,11 @@
-import Color, { colorAbbreviations, ReversedColor } from "@chacomat/constants/Color.js";
+import { colorAbbreviations, ReversedColor } from "@chacomat/constants/Color.js";
 import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
   AlgebraicSquareNotation,
   ChessGame,
+  Color,
   FenString,
   IndexGenerator,
   Move,
@@ -99,11 +100,11 @@ export default class Position implements PositionParameters {
 
     const pieces = this.board.getNonKingPiecesByColor();
 
-    if (pieces[Color.WHITE].length > 1 || pieces[Color.BLACK].length > 1)
+    if (pieces.WHITE.length > 1 || pieces.BLACK.length > 1)
       return false;
 
-    const [whitePiece] = pieces[Color.WHITE];
-    const [blackPiece] = pieces[Color.BLACK];
+    const [whitePiece] = pieces.WHITE;
+    const [blackPiece] = pieces.BLACK;
     return (!whitePiece || whitePiece.isKnight() || whitePiece.isBishop())
       && (
         !blackPiece
@@ -201,7 +202,7 @@ export default class Position implements PositionParameters {
     rook.board.transfer(rook.index, destIndex);
   }
 
-  #handlePawnMove(pawn: Piece, destIndex: number, promotionType: PromotedPieceType = Piece.TYPES.QUEEN): void {
+  #handlePawnMove(pawn: Piece, destIndex: number, promotionType: PromotedPieceType = "Q"): void {
     if (this.isEnPassantCapture(pawn.index, destIndex)) {
       pawn.board.delete(coordsToIndex(pawn.coords.x, getFile(destIndex)));
       pawn.board.transfer(pawn.index, destIndex);
@@ -271,7 +272,7 @@ export default class Position implements PositionParameters {
   createPositionFromMove(
     srcIndex: number,
     destIndex: number,
-    promotionType: PromotedPieceType = Piece.TYPES.QUEEN,
+    promotionType: PromotedPieceType = "Q",
     updateColorAndMoveNumber = false
   ): Position {
     const board = this.board.clone(),
@@ -301,7 +302,7 @@ export default class Position implements PositionParameters {
         : -1,
       colorToMove: (updateColorAndMoveNumber) ? ReversedColor[this.colorToMove] : this.colorToMove,
       halfMoveClock: (isCaptureOrPawnMove) ? 0 : this.halfMoveClock + 1,
-      fullMoveNumber: this.fullMoveNumber + Number(updateColorAndMoveNumber && this.colorToMove === Color.BLACK)
+      fullMoveNumber: this.fullMoveNumber + Number(updateColorAndMoveNumber && this.colorToMove === "BLACK")
     });
   }
 
