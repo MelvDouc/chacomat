@@ -40,10 +40,10 @@ function getShortPieceAttackedIndexGenerator(pieceType: "P" | "N" | "K") {
 
   return function* (piece: Piece): IndexGenerator {
     const { x, y } = piece.coords;
-    const mult = (piece.isPawn()) ? piece.direction : 1;
+    const multiplier = (piece.isPawn()) ? piece.direction : 1;
 
     for (let i = 0; i < xOffsets.length; i++) {
-      const x2 = x + xOffsets[i] * mult,
+      const x2 = x + xOffsets[i] * multiplier,
         y2 = y + yOffsets[i];
       if (isSafe(x2) && isSafe(y2))
         yield coordsToIndex(x2, y2);

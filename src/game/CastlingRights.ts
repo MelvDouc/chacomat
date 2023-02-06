@@ -8,7 +8,7 @@ import fenChecker from "@chacomat/utils/fen-checker.js";
 
 /**
  * @classdesc Create an object that represents the castling rights in a position.
- * It is clonable and stringifiable.
+ * It is cloneable and stringifiable.
  */
 export default class CastlingRights {
   /**
