@@ -6,11 +6,16 @@ import type {
   Coords,
   IndexGenerator,
   PieceInitial,
+  PieceName,
   PieceOffsets,
   WhitePieceInitial,
   Wings
 } from "@chacomat/types.local.js";
-import { coordsToIndex, indexToCoords, isSafe } from "@chacomat/utils/Index.js";
+import {
+  coordsToIndex,
+  indexToCoords,
+  isSafe
+} from "@chacomat/utils/Index.js";
 
 export default abstract class Piece {
   static readonly whiteInitial: WhitePieceInitial;
@@ -40,31 +45,31 @@ export default abstract class Piece {
     this.color = color;
   }
 
-  get pieceType(): typeof Piece {
+  get pieceClass(): typeof Piece {
     return this.constructor as typeof Piece;
   }
 
   get initial(): PieceInitial {
-    const initial = this.pieceType.whiteInitial;
+    const initial = this.pieceClass.whiteInitial;
     return (this.color === "WHITE")
       ? initial
       : initial.toLowerCase() as BlackPieceInitial;
   }
 
-  get pieceName(): string {
-    return this.pieceType.name;
+  get pieceName(): PieceName {
+    return this.pieceClass.name as PieceName;
   }
 
   get direction(): number {
-    return this.pieceType.DIRECTIONS[this.color];
+    return this.pieceClass.DIRECTIONS[this.color];
   }
 
   get offsets() {
-    return this.pieceType.offsets;
+    return this.pieceClass.offsets;
   }
 
   get startRank(): number {
-    return this.pieceType.START_RANKS[this.color];
+    return this.pieceClass.START_RANKS[this.color];
   }
 
   get oppositeColor(): Color {
@@ -100,10 +105,9 @@ export default abstract class Piece {
 
   *attackedIndices(): IndexGenerator {
     const { x, y } = this.getCoords();
-    const multiplier = this.pieceName === "Pawn" ? this.direction : 1;
 
     for (let i = 0; i < this.offsets.x.length; i++) {
-      const x2 = x + this.offsets.x[i] * multiplier,
+      const x2 = x + this.offsets.x[i],
         y2 = y + this.offsets.y[i];
       if (isSafe(x2) && isSafe(y2))
         yield coordsToIndex(x2, y2);

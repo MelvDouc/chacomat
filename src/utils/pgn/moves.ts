@@ -4,16 +4,16 @@ import {
   ChessFileName,
   ChessGame,
   Move,
-  PieceType,
   PromotedPieceType
 } from "@chacomat/types.local.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
 import { parsedMoves, parseVariations } from "@chacomat/utils/pgn/variations.js";
+import { Piece } from "../../index.js";
 
 const checkRegex = /(\+{1,2}|#)?/;
 
 // TODO: error handling
-const HALF_MOVE_REGEXES: Record<string, {
+const HALF_MOVE_REGEXPS: Record<string, {
   regex: RegExp;
   getMove: MoveFinder;
 }> = {
@@ -28,8 +28,8 @@ const HALF_MOVE_REGEXES: Record<string, {
 
       const move = legalMoves.find(([src, dest]) => {
         const srcPiece = board.get(src);
-        return srcPiece?.isPawn()
-          && srcPiece.coords.y === srcY
+        return srcPiece?.pieceName === "Pawn"
+          && srcPiece.getCoords().y === srcY
           && dest === destIndex;
       });
 
@@ -42,7 +42,7 @@ const HALF_MOVE_REGEXES: Record<string, {
     regex: new RegExp(`^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<df>[a-h])(?<dr>[1-8])${checkRegex.source}$`),
     getMove: (match, board, legalMoves) => {
       const { pt, sf, sr, df, dr } = match;
-      const pieceType = pt as PieceType;
+      const pieceType = pt;
       const srcX = sr ? getRank(sr) : null;
       const srcY = sf ? File[sf as ChessFileName] : null;
       const destX = getRank(dr);
@@ -51,9 +51,9 @@ const HALF_MOVE_REGEXES: Record<string, {
 
       return legalMoves.find(([src, dest]) => {
         const srcPiece = board.get(src);
-        return srcPiece?.type === pieceType
-          && (srcX == null || srcPiece.coords.x === srcX)
-          && (srcY == null || srcPiece.coords.y === srcY)
+        return (<typeof Piece>srcPiece?.constructor)?.whiteInitial === pieceType
+          && (srcX == null || srcPiece.getCoords().x === srcX)
+          && (srcY == null || srcPiece.getCoords().y === srcY)
           && dest === destIndex;
       });
     }
@@ -61,11 +61,13 @@ const HALF_MOVE_REGEXES: Record<string, {
   CASTLING: {
     regex: new RegExp(`^(?<t>O|0)-\\k<t>(?<t2>-\\k<t>)?${checkRegex.source}$`),
     getMove: (match, board) => {
-      const kingIndex = board.kings[board.position.colorToMove].#index;
-      const destIndex = [...board.position.castlingCoords()].find((index) => {
-        return (match["t2"]) ? index < kingIndex : index > kingIndex;
+      const king = board.kings[board.position.colorToMove];
+      const destIndex = [...king.castlingIndices()].find((index) => {
+        return (match["t2"])
+          ? index < king.getIndex()
+          : index > king.getIndex();
       });
-      return [kingIndex, destIndex];
+      return [king.getIndex(), destIndex];
     }
   }
 };
@@ -90,12 +92,12 @@ export function playMovesFromPgn(movesStr: string, game: ChessGame) {
 }
 
 function findAndPlayMove(moveText: string, game: ChessGame) {
-  let key: keyof typeof HALF_MOVE_REGEXES;
+  let key: keyof typeof HALF_MOVE_REGEXPS;
 
-  for (key in HALF_MOVE_REGEXES) {
-    const match = moveText.match(HALF_MOVE_REGEXES[key].regex);
+  for (key in HALF_MOVE_REGEXPS) {
+    const match = moveText.match(HALF_MOVE_REGEXPS[key].regex);
     if (match) {
-      const move = HALF_MOVE_REGEXES[key].getMove(
+      const move = HALF_MOVE_REGEXPS[key].getMove(
         match.groups,
         game.currentPosition.board,
         game.currentPosition.legalMoves

@@ -80,10 +80,10 @@ describe("An ambiguous move", () => {
     const { board } = game.currentPosition;
 
     expect(board.get(d6)).toBeFalsy();
-    expect(board.get(d4)?.isRook()).toBe(true);
-    expect(board.get(d4)?.#color).toBe("WHITE");
-    expect(board.get(d1)?.isRook()).toBe(true);
-    expect(board.get(d1)?.#color).toBe("WHITE");
+    expect(board.get(d4)?.pieceName).toBe("Rook");
+    expect(board.get(d4)?.color).toBe("WHITE");
+    expect(board.get(d1)?.pieceName).toBe("Rook");
+    expect(board.get(d1)?.color).toBe("WHITE");
   });
 
   it("should be detected on an ambiguous rank", () => {
@@ -92,10 +92,10 @@ describe("An ambiguous move", () => {
     const { board } = game.currentPosition;
 
     expect(board.get(f6)).toBeFalsy();
-    expect(board.get(e6)?.isRook()).toBe(true);
-    expect(board.get(e6)?.#color).toBe("WHITE");
-    expect(board.get(d6)?.isRook()).toBe(true);
-    expect(board.get(d6)?.#color).toBe("WHITE");
+    expect(board.get(e6)?.pieceName).toBe("Rook");
+    expect(board.get(e6)?.color).toBe("WHITE");
+    expect(board.get(d6)?.pieceName).toBe("Rook");
+    expect(board.get(d6)?.color).toBe("WHITE");
   });
 
   it("should be detected on an ambiguous square", () => {
@@ -104,10 +104,10 @@ describe("An ambiguous move", () => {
     const { board } = game.currentPosition;
 
     expect(board.get(h7)).toBeFalsy();
-    expect(board.get(g6)?.isQueen()).toBe(true);
-    expect(board.get(g6)?.#color).toBe("WHITE");
-    expect(board.get(g4)?.isQueen()).toBe(true);
-    expect(board.get(g4)?.#color).toBe("WHITE");
+    expect(board.get(g6)?.pieceName).toBe("Queen");
+    expect(board.get(g6)?.color).toBe("WHITE");
+    expect(board.get(g4)?.pieceName).toBe("Queen");
+    expect(board.get(g4)?.color).toBe("WHITE");
   });
 });
 
@@ -123,7 +123,7 @@ describe("Castling", () => {
     playMovesFromPgn("1. 0-0-0 Ke7 2. Kxb2", game);
 
     expect(game.currentPosition.isCheck()).toBe(false);
-    expect(game.currentPosition.board.get(b2)?.isKing()).toBe(true);
+    expect(game.currentPosition.board.get(b2)?.pieceName).toBe("King");
     expect(game.currentPosition.board.getNonKingPiecesByColor()["BLACK"].length).toBe(0);
   });
 });

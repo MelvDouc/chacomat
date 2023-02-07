@@ -43,11 +43,11 @@ export default class Board extends Map<number, Piece> {
         }
       }
 
-      board.kings[color] = board.atRank(pieceRank).atFile(piecePlacement["K"][0]) as Piece;
+      board.kings[color] = board.atRank(pieceRank).atFile(piecePlacement["K"][0]) as King;
 
       for (let y = 0; y < 8; y++) {
         const index = coordsToIndex(Pawn.START_RANKS[color], y);
-        board.set(index, new Pawn(color).setBoard(board).setIndex(index));
+        board.set(index, new Pawn(color).setIndex(index).setBoard(board));
       }
     }
 
@@ -56,7 +56,7 @@ export default class Board extends Map<number, Piece> {
 
   position: Position;
   #enPassantIndex = -1;
-  readonly kings = {} as BlackAndWhite<Piece>;
+  readonly kings = {} as BlackAndWhite<King>;
 
   constructor(pieceStr?: string) {
     super();
@@ -77,7 +77,7 @@ export default class Board extends Map<number, Piece> {
               const piece = new (pieceType)(color).setBoard(this).setIndex(index);
               this.set(index, piece);
               if (piece.pieceName === "King")
-                this.kings[piece.color] = piece;
+                this.kings[piece.color] = piece as King;
             });
         });
     }
@@ -126,8 +126,8 @@ export default class Board extends Map<number, Piece> {
         piece.clone().setIndex(index).setBoard(boardClone)
       );
     }
-    boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.getIndex());
-    boardClone.kings.BLACK = boardClone.get(this.kings.BLACK.getIndex());
+    boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.getIndex()) as King;
+    boardClone.kings.BLACK = boardClone.get(this.kings.BLACK.getIndex()) as King;
     return boardClone;
   }
 

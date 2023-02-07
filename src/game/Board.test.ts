@@ -23,8 +23,8 @@ describe("A piece array from the start position", () => {
     .toArray();
 
   it("should only have pawns rows 1 and 6", () => {
-    expect(pieceArray[1].every((piece) => piece?.isPawn() === true)).toBe(true);
-    expect(pieceArray[6].every((piece) => piece?.isPawn() === true)).toBe(true);
+    expect(pieceArray[1].every((piece) => piece?.pieceName === "Pawn")).toBe(true);
+    expect(pieceArray[6].every((piece) => piece?.pieceName === "Pawn")).toBe(true);
   });
 
   it("should have empty rows from row 2 to 5", () => {

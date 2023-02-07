@@ -1,6 +1,6 @@
 import Piece from "@chacomat/pieces/Piece.js";
-import { IndexGenerator } from "../types.local.js";
-import { coordsToIndex } from "../utils/Index.js";
+import { IndexGenerator } from "@chacomat/types.local.js";
+import { coordsToIndex, isSafe } from "@chacomat/utils/Index.js";
 
 export default class Knight extends Piece {
   static override readonly whiteInitial = "P";
@@ -12,6 +12,17 @@ export default class Knight extends Piece {
     "WHITE": 6,
     "BLACK": 1
   };
+
+  override *attackedIndices(): IndexGenerator {
+    const { x, y } = this.getCoords();
+
+    for (let i = 0; i < this.offsets.x.length; i++) {
+      const x2 = x + this.offsets.x[i] * this.direction,
+        y2 = y + this.offsets.y[i];
+      if (isSafe(x2) && isSafe(y2))
+        yield coordsToIndex(x2, y2);
+    }
+  }
 
   *#forwardMoves(): IndexGenerator {
     const { x, y } = this.getCoords();

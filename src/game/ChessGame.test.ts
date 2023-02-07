@@ -1,5 +1,5 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
-import { notationToIndex } from "@chacomat/utils/Index.js";
+import { indexToCoords, notationToIndex } from "@chacomat/utils/Index.js";
 
 describe("Fool's Mate", () => {
   const game = new ChessGame()
@@ -25,7 +25,7 @@ describe("en passant", () => {
     .moveWithNotations("e7", "e5");
 
   it("#1", () => {
-    expect(game1.currentPosition.enPassantFile).toBe(4);
+    expect(indexToCoords(game1.currentPosition.board.getEnPassantIndex()).y).toBe(4);
   });
 
   it("#2", () => {
@@ -44,7 +44,7 @@ describe("en passant", () => {
 
     expect(board.get(notationToIndex("c4"))).toBeFalsy();
     expect(board.get(notationToIndex("d4"))).toBeFalsy();
-    expect(board.get(notationToIndex("c3"))?.type).toBe("P");
+    expect(board.get(notationToIndex("c3"))?.pieceName).toBe("Pawn");
   });
 });
 

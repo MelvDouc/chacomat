@@ -1,11 +1,13 @@
-import { adjacentOffsets } from "@chacomat/pieces/offsets.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import { IndexGenerator, Wing } from "../types.local.js";
-import { coordsToIndex } from "../utils/Index.js";
+import { IndexGenerator, Wing } from "@chacomat/types.local.js";
+import { coordsToIndex } from "@chacomat/utils/Index.js";
 
-export default class Knight extends Piece {
+export default class King extends Piece {
   static override readonly whiteInitial = "K";
-  static override readonly offsets = adjacentOffsets;
+  static override readonly offsets = {
+    x: [0, -1, -1, -1, 0, 1, 1, 1],
+    y: [-1, -1, 0, 1, 1, -1, 0, 1]
+  };
 
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.

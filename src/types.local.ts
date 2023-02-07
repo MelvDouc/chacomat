@@ -33,6 +33,7 @@ export type Bishop = import("./pieces/sliding/Bishop.js").default;
 export type Rook = import("./pieces/sliding/Rook.js").default;
 export type Queen = import("./pieces/sliding/Queen.js").default;
 
+export type PieceName = "Pawn" | "Knight" | "Bishop" | "Rook" | "Queen" | "King";
 export type WhitePieceInitial = "P" | "N" | "B" | "R" | "Q" | "K";
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
 export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
