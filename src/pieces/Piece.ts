@@ -1,154 +1,123 @@
 import { ReversedColor } from "@chacomat/constants/Color.js";
-import { canCastleToFile, getWing } from "@chacomat/pieces/castling.js";
-import {
-  attackedIndexGenerators,
-  pseudoLegalPawnMoves
-} from "@chacomat/pieces/piece-moves.js";
-import {
-  castledFiles,
-  directions,
-  middleRanks,
-  startRanks
-} from "@chacomat/pieces/placements.js";
 import type {
   BlackPieceInitial,
   Board,
-  CastlingRights,
   Color,
+  Coords,
   IndexGenerator,
   PieceInitial,
-  PieceParameters,
-  PieceType,
-  WhitePieceInitial
+  PieceOffsets,
+  WhitePieceInitial,
+  Wings
 } from "@chacomat/types.local.js";
-import { coordsToIndex, indexToCoords } from "@chacomat/utils/Index.js";
+import { coordsToIndex, indexToCoords, isSafe } from "@chacomat/utils/Index.js";
 
-export default class Piece {
-  static readonly START_RANKS = startRanks;
-  static readonly MIDDLE_RANKS = middleRanks;
-  static readonly CASTLED_FILES = castledFiles;
-  static readonly DIRECTIONS = directions;
-  static readonly INITIALS: {
-    WHITE: Record<PieceType, WhitePieceInitial>;
-    BLACK: Record<PieceType, BlackPieceInitial>;
-  } = {
-      WHITE: {
-        P: "P", N: "N", B: "B", R: "R", Q: "Q", K: "K"
-      },
-      BLACK: {
-        P: "p", N: "n", B: "b", R: "r", Q: "q", K: "k"
-      }
-    };
-
-  static fromInitial(initial: PieceInitial): Piece {
-    const type = initial.toUpperCase() as PieceType;
-
-    return new Piece({
-      color: (initial === type) ? "WHITE" : "BLACK",
-      type
-    });
-  }
-
-  static getWingRelativeToKing(kingY: number, compareY: number) {
-    return getWing(kingY, compareY);
-  }
-
-  static *castlingCoords(king: Piece, useChess960Rules: boolean): IndexGenerator {
-    const coords = king.coords;
-
-    for (const srcRookY of king.board.position.castlingRights[king.color])
-      if (canCastleToFile(king, srcRookY))
-        // Yield an empty file in regular chess and the castling rook's file in Chess960.
-        yield (useChess960Rules)
-          ? coordsToIndex(coords.x, srcRookY)
-          : coordsToIndex(coords.x, castledFiles.KING[getWing(coords.y, srcRookY)]);
-  }
-
-  static isRookOnInitialSquare({ coords: { x, y }, color }: Piece, castlingRights: CastlingRights): boolean {
-    return x === startRanks.PIECE[color] && castlingRights[color].includes(y);
-  }
-
-  /**
-   * Determine what color complex a bishop belongs to.
-   * @returns Whether a bishop is on a light square (0) or a dark square (1)
-   */
-  static getBishopSquareParity(bishop: Piece | null | undefined): 0 | 1 | typeof NaN {
-    if (!bishop)
-      return NaN;
-    const { x, y } = indexToCoords(bishop.index);
-    return (x % 2 === y % 2) ? 0 : 1;
-  }
+export default abstract class Piece {
+  static readonly whiteInitial: WhitePieceInitial;
+  static readonly offsets: PieceOffsets;
+  static readonly START_RANKS = {
+    WHITE: 6,
+    BLACK: 1
+  };
+  static readonly CASTLED_KING_FILES: Wings<number> = {
+    0: 2,
+    7: 6
+  };
+  static readonly CASTLED_ROOK_FILES: Wings<number> = {
+    0: 3,
+    7: 5
+  };
+  static readonly DIRECTIONS = {
+    WHITE: -1,
+    BLACK: 1
+  };
 
   readonly color: Color;
-  type: PieceType;
-  board: Board;
-  index: number;
+  #index: number;
+  #board: Board;
 
-  constructor({ color, board, type, index }: PieceParameters) {
+  constructor(color: Color) {
     this.color = color;
-    this.type = type;
-    board && (this.board = board);
-    index !== undefined && (this.index = index);
   }
 
-  get coords(): { x: number; y: number; } {
-    return indexToCoords(this.index);
+  get pieceType(): typeof Piece {
+    return this.constructor as typeof Piece;
   }
 
   get initial(): PieceInitial {
-    return Piece.INITIALS[this.color][this.type];
+    const initial = this.pieceType.whiteInitial;
+    return (this.color === "WHITE")
+      ? initial
+      : initial.toLowerCase() as BlackPieceInitial;
+  }
+
+  get pieceName(): string {
+    return this.pieceType.name;
+  }
+
+  get direction(): number {
+    return this.pieceType.DIRECTIONS[this.color];
+  }
+
+  get offsets() {
+    return this.pieceType.offsets;
+  }
+
+  get startRank(): number {
+    return this.pieceType.START_RANKS[this.color];
   }
 
   get oppositeColor(): Color {
     return ReversedColor[this.color];
   }
 
-  get direction(): number {
-    return directions[this.color];
+  getIndex(): number {
+    return this.#index;
   }
 
-  get startRank(): number {
-    if (this.type === "P")
-      return startRanks.PAWN[this.color];
-    return startRanks.PIECE[this.color];
+  setIndex(index: number): this {
+    this.#index = index;
+    return this;
+  }
+
+  getCoords(): Coords {
+    return indexToCoords(this.#index);
+  }
+
+  setCoords(coords: Coords): this {
+    this.#index = coordsToIndex(coords.x, coords.y);
+    return this;
+  }
+
+  getBoard(): Board {
+    return this.#board;
+  }
+
+  setBoard(board: Board): this {
+    this.#board = board;
+    return this;
   }
 
   *attackedIndices(): IndexGenerator {
-    yield* attackedIndexGenerators[this.type](this);
+    const { x, y } = this.getCoords();
+    const multiplier = this.pieceName === "Pawn" ? this.direction : 1;
+
+    for (let i = 0; i < this.offsets.x.length; i++) {
+      const x2 = x + this.offsets.x[i] * multiplier,
+        y2 = y + this.offsets.y[i];
+      if (isSafe(x2) && isSafe(y2))
+        yield coordsToIndex(x2, y2);
+    }
   }
 
   *pseudoLegalMoves(): IndexGenerator {
-    if (this.type === "P") {
-      yield* pseudoLegalPawnMoves(this);
-      return;
-    }
-
     for (const targetIndex of this.attackedIndices())
-      if (this.board.get(targetIndex)?.color !== this.color)
+      if (this.#board.get(targetIndex)?.color !== this.color)
         yield targetIndex;
   }
 
-  isKing(): boolean {
-    return this.type === "K";
-  }
-
-  isRook(): boolean {
-    return this.type === "R";
-  }
-
-  isBishop(): boolean {
-    return this.type === "B";
-  }
-
-  isQueen(): boolean {
-    return this.type === "Q";
-  }
-
-  isKnight(): boolean {
-    return this.type === "N";
-  }
-
-  isPawn(): boolean {
-    return this.type === "P";
+  clone(): Piece {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new (this as any)(this.color);
   }
 }

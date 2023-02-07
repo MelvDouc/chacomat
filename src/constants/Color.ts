@@ -7,13 +7,6 @@ export const ReversedColor = {
   BLACK: "WHITE"
 } as BlackAndWhite<Color>;
 
-export const colorAbbreviations = {
-  w: "WHITE",
-  b: "BLACK",
-  WHITE: "w",
-  BLACK: "b",
-} as const;
-
 export const ConsoleColors = {
   Reset: "\x1b[0m",
   FgBlack: "\x1b[30m",

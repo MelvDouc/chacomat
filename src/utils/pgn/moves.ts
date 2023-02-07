@@ -61,7 +61,7 @@ const HALF_MOVE_REGEXES: Record<string, {
   CASTLING: {
     regex: new RegExp(`^(?<t>O|0)-\\k<t>(?<t2>-\\k<t>)?${checkRegex.source}$`),
     getMove: (match, board) => {
-      const kingIndex = board.kings[board.position.colorToMove].index;
+      const kingIndex = board.kings[board.position.colorToMove].#index;
       const destIndex = [...board.position.castlingCoords()].find((index) => {
         return (match["t2"]) ? index < kingIndex : index > kingIndex;
       });

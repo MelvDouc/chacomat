@@ -1,16 +1,15 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
-import Piece from "@chacomat/pieces/Piece.js";
+import Pawn from "@chacomat/pieces/Pawn.js";
 
 describe("A board", () => {
   it("should be serializable", () => {
     const { board } = new ChessGame({ fen: "k7/8/8/8/8/8/8/7K w - - 0 1" }).currentPosition;
-    const type = "P";
 
     for (let y = 0; y < 8; y++) {
       const bIndex = 8 + y;
-      board.set(bIndex, new Piece({ color: "BLACK", type, index: bIndex, board }));
+      board.set(bIndex, new Pawn("BLACK").setIndex(bIndex));
       const wIndex = 48 + y;
-      board.set(wIndex, new Piece({ color: "WHITE", type, index: wIndex, board }));
+      board.set(wIndex, new Pawn("WHITE").setIndex(wIndex));
     }
 
     expect("k7/pppppppp/8/8/8/8/PPPPPPPP/7K").toBe(board.toString());

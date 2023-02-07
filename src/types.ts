@@ -13,7 +13,6 @@ export type {
   Move,
   Piece,
   PieceInitial,
-  PieceType,
   Position,
   PositionParameters,
   PromotedPieceType,

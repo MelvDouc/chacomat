@@ -1,11 +1,17 @@
 import { colors, ConsoleColors } from "@chacomat/constants/Color.js";
+import King from "@chacomat/pieces/King.js";
+import Knight from "@chacomat/pieces/Knight.js";
+import Pawn from "@chacomat/pieces/Pawn.js";
 import Piece from "@chacomat/pieces/Piece.js";
+import Bishop from "@chacomat/pieces/sliding/Bishop.js";
+import Queen from "@chacomat/pieces/sliding/Queen.js";
+import Rook from "@chacomat/pieces/sliding/Rook.js";
 import type {
   BlackAndWhite,
   Color,
   NonPawnPieceType,
-  PieceInitial,
-  Position
+  Position,
+  WhitePieceInitial
 } from "@chacomat/types.local.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
@@ -13,26 +19,35 @@ import { coordsToIndex } from "@chacomat/utils/Index.js";
 export default class Board extends Map<number, Piece> {
   static readonly #nullPiece = "0";
   static readonly #nullPieceRegex = /0+/g;
+  static readonly pieceTypesByInitial = {
+    [Pawn.whiteInitial]: Pawn,
+    [Knight.whiteInitial]: Knight,
+    [King.whiteInitial]: King,
+    [Bishop.whiteInitial]: Bishop,
+    [Rook.whiteInitial]: Rook,
+    [Queen.whiteInitial]: Queen
+  };
 
   static getChess960InitialBoard(piecePlacement: Record<NonPawnPieceType, number[]>): Board {
     const board = new Board();
     let pieceKey: keyof typeof piecePlacement;
 
     for (const color of colors) {
-      const pieceRank = Piece.START_RANKS.PIECE[color];
+      const pieceRank = Piece.START_RANKS[color];
 
       for (pieceKey in piecePlacement) {
         for (const y of piecePlacement[pieceKey]) {
           const index = coordsToIndex(pieceRank, y);
-          board.set(index, new Piece({ color, board, index, type: pieceKey }));
+          const type = this.pieceTypesByInitial[pieceKey];
+          board.set(index, new (type)(color).setIndex(index).setBoard(board));
         }
       }
 
       board.kings[color] = board.atRank(pieceRank).atFile(piecePlacement["K"][0]) as Piece;
 
       for (let y = 0; y < 8; y++) {
-        const index = coordsToIndex(Piece.START_RANKS.PAWN[color], y);
-        board.set(index, new Piece({ color, board, index, type: "P" }));
+        const index = coordsToIndex(Pawn.START_RANKS[color], y);
+        board.set(index, new Pawn(color).setBoard(board).setIndex(index));
       }
     }
 
@@ -40,6 +55,7 @@ export default class Board extends Map<number, Piece> {
   }
 
   position: Position;
+  #enPassantIndex = -1;
   readonly kings = {} as BlackAndWhite<Piece>;
 
   constructor(pieceStr?: string) {
@@ -56,15 +72,24 @@ export default class Board extends Map<number, Piece> {
               if (item === Board.#nullPiece)
                 return;
               const index = coordsToIndex(x, y);
-              const piece = Piece.fromInitial(item as PieceInitial);
-              piece.board = this;
-              piece.index = index;
+              const pieceType = Board.pieceTypesByInitial[item as WhitePieceInitial];
+              const color = item === item.toUpperCase() ? "WHITE" : "BLACK";
+              const piece = new (pieceType)(color).setBoard(this).setIndex(index);
               this.set(index, piece);
-              if (piece.isKing())
+              if (piece.pieceName === "King")
                 this.kings[piece.color] = piece;
             });
         });
     }
+  }
+
+  getEnPassantIndex(): number {
+    return this.#enPassantIndex;
+  }
+
+  setEnPassantIndex(index: number): this {
+    this.#enPassantIndex = index;
+    return this;
   }
 
   atRank(rank: number) {
@@ -75,8 +100,7 @@ export default class Board extends Map<number, Piece> {
 
   transfer(srcIndex: number, destIndex: number): this {
     const srcPiece = this.get(srcIndex) as Piece;
-    this.set(destIndex, srcPiece).delete(srcIndex);
-    srcPiece.index = destIndex;
+    this.set(destIndex, srcPiece.setIndex(destIndex)).delete(srcIndex);
     return this;
   }
 
@@ -97,21 +121,19 @@ export default class Board extends Map<number, Piece> {
   clone(): Board {
     const boardClone = new Board();
     for (const [index, piece] of this) {
-      boardClone.set(index, new Piece({
-        color: piece.color,
-        type: piece.type,
+      boardClone.set(
         index,
-        board: boardClone
-      }));
+        piece.clone().setIndex(index).setBoard(boardClone)
+      );
     }
-    boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.index);
-    boardClone.kings.BLACK = boardClone.get(this.kings.BLACK.index);
+    boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.getIndex());
+    boardClone.kings.BLACK = boardClone.get(this.kings.BLACK.getIndex());
     return boardClone;
   }
 
   getNonKingPiecesByColor(): BlackAndWhite<Piece[]> {
     return [...this.values()].reduce((acc, piece) => {
-      if (!piece.isKing())
+      if (piece.pieceName !== "King")
         acc[piece.color].push(piece);
       return acc;
     }, {

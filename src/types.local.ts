@@ -26,12 +26,18 @@ export type Color = "WHITE" | "BLACK";
 export type Wing = 0 | 7;
 
 export type Piece = import("./pieces/Piece.js").default;
+export type Pawn = import("./pieces/Pawn.js").default;
+export type King = import("./pieces/King.js").default;
+export type Knight = import("./pieces/Knight.js").default;
+export type Bishop = import("./pieces/sliding/Bishop.js").default;
+export type Rook = import("./pieces/sliding/Rook.js").default;
+export type Queen = import("./pieces/sliding/Queen.js").default;
+
 export type WhitePieceInitial = "P" | "N" | "B" | "R" | "Q" | "K";
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
 export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
-export type PieceType = WhitePieceInitial;
-export type PromotedPieceType = Exclude<PieceType, "P" | "K">;
-export type NonPawnPieceType = Exclude<PieceType, "P">;
+export type PromotedPieceType = Exclude<WhitePieceInitial, "P" | "K">;
+export type NonPawnPieceType = Exclude<WhitePieceInitial, "P">;
 
 export type IndexGenerator = Generator<number, void, unknown>;
 export type Move = [number, number];
@@ -82,16 +88,9 @@ export interface PositionParameters {
   board: Board;
   castlingRights: CastlingRights;
   colorToMove: Color;
-  enPassantFile: number;
+  enPassantIndex: number;
   halfMoveClock: number;
   fullMoveNumber: number;
-}
-
-export interface PieceParameters {
-  color: Color;
-  type: PieceType;
-  board?: Board;
-  index?: number;
 }
 
 /**

@@ -5,14 +5,14 @@ describe("Piece", () => {
   it("n should be a black knight", () => {
     const piece = Piece.fromInitial("n");
 
-    expect(piece.color).toBe("BLACK");
+    expect(piece.#color).toBe("BLACK");
     expect(piece.isKnight()).toBe(true);
   });
 
   it("P should be a white pawn", () => {
     const piece = Piece.fromInitial("P");
 
-    expect(piece.color).toBe("WHITE");
+    expect(piece.#color).toBe("WHITE");
     expect(piece.isPawn()).toBe(true);
   });
 

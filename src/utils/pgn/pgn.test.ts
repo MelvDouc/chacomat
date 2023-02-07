@@ -81,9 +81,9 @@ describe("An ambiguous move", () => {
 
     expect(board.get(d6)).toBeFalsy();
     expect(board.get(d4)?.isRook()).toBe(true);
-    expect(board.get(d4)?.color).toBe("WHITE");
+    expect(board.get(d4)?.#color).toBe("WHITE");
     expect(board.get(d1)?.isRook()).toBe(true);
-    expect(board.get(d1)?.color).toBe("WHITE");
+    expect(board.get(d1)?.#color).toBe("WHITE");
   });
 
   it("should be detected on an ambiguous rank", () => {
@@ -93,9 +93,9 @@ describe("An ambiguous move", () => {
 
     expect(board.get(f6)).toBeFalsy();
     expect(board.get(e6)?.isRook()).toBe(true);
-    expect(board.get(e6)?.color).toBe("WHITE");
+    expect(board.get(e6)?.#color).toBe("WHITE");
     expect(board.get(d6)?.isRook()).toBe(true);
-    expect(board.get(d6)?.color).toBe("WHITE");
+    expect(board.get(d6)?.#color).toBe("WHITE");
   });
 
   it("should be detected on an ambiguous square", () => {
@@ -105,9 +105,9 @@ describe("An ambiguous move", () => {
 
     expect(board.get(h7)).toBeFalsy();
     expect(board.get(g6)?.isQueen()).toBe(true);
-    expect(board.get(g6)?.color).toBe("WHITE");
+    expect(board.get(g6)?.#color).toBe("WHITE");
     expect(board.get(g4)?.isQueen()).toBe(true);
-    expect(board.get(g4)?.color).toBe("WHITE");
+    expect(board.get(g4)?.#color).toBe("WHITE");
   });
 });
 
