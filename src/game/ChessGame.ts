@@ -61,7 +61,9 @@ export default class ChessGame {
   get status(): string {
     const position = this.currentPosition;
     if (!position.legalMoves.length)
-      return (position.isCheck()) ? ChessGame.statuses.CHECKMATE : ChessGame.statuses.STALEMATE;
+      return (position.isCheck())
+        ? ChessGame.statuses.CHECKMATE
+        : ChessGame.statuses.STALEMATE;
     if (position.isInsufficientMaterial())
       return ChessGame.statuses.INSUFFICIENT_MATERIAL;
     if (position.halfMoveClock > 50)

@@ -106,7 +106,7 @@ export default class Board extends Map<number, Piece> {
    * Clones this instance and every piece it contains.
    */
   clone(): Board {
-    const boardClone = new Board();
+    const boardClone = new Board().setEnPassantIndex(this.#enPassantIndex);
     for (const [index, piece] of this) {
       boardClone.set(
         index,

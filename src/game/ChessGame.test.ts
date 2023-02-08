@@ -33,18 +33,17 @@ describe("en passant", () => {
   });
 
   it("the 'ep' pawn should be removed", () => {
-    const { board } = new ChessGame()
+    let game = new ChessGame()
       .moveWithNotations("e2", "e4")
       .moveWithNotations("e7", "e5")
       .moveWithNotations("d2", "d4")
       .moveWithNotations("e5", "d4")
-      .moveWithNotations("c2", "c4")
-      .moveWithNotations("d4", "c3")
-      .currentPosition;
+      .moveWithNotations("c2", "c4");
+    game = game.moveWithNotations("d4", "c3");
 
-    expect(board.get(notationToIndex("c4"))).toBeFalsy();
-    expect(board.get(notationToIndex("d4"))).toBeFalsy();
-    expect(board.get(notationToIndex("c3"))?.pieceName).toBe("Pawn");
+    expect(game.currentPosition.board.get(notationToIndex("c4"))).toBeFalsy();
+    expect(game.currentPosition.board.get(notationToIndex("d4"))).toBeFalsy();
+    expect(game.currentPosition.board.get(notationToIndex("c3"))?.pieceName).toBe("Pawn");
   });
 });
 
@@ -58,8 +57,8 @@ describe("Stalemate", () => {
   });
 
   it("should be possible after a promotion", () => {
-    const game = new ChessGame({ fen: "8/k1P5/2K5/8/8/8/8/8 w - - 0 1" })
-      .moveWithNotations("c7", "c8", "Q");
+    const fen = "8/k1P5/2K5/8/8/8/8/8 w - - 0 1";
+    const game = new ChessGame({ fen }).moveWithNotations("c7", "c8", "Q");
 
     expect(game.status).toBe(ChessGame.statuses.STALEMATE);
   });
