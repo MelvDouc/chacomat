@@ -31,16 +31,15 @@ describe("Castling rights", () => {
   });
 
   it("should be updated on rook capture", () => {
-    const blackCR = new ChessGame()
+    const game = new ChessGame()
       .moveWithNotations("b1", "c3")
       .moveWithNotations("e7", "e6")
       .moveWithNotations("c3", "a4")
       .moveWithNotations("e6", "e5")
       .moveWithNotations("a4", "b6")
       .moveWithNotations("e5", "e4")
-      .moveWithNotations("b6", "a8")
-      .currentPosition
-      .castlingRights.BLACK;
+      .moveWithNotations("b6", "a8");
+    const blackCR = game.currentPosition.castlingRights.BLACK;
 
     expect(blackCR).not.toContain(0);
     expect(blackCR).toContain(7);

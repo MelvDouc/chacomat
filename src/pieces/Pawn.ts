@@ -2,15 +2,14 @@ import Piece from "@chacomat/pieces/Piece.js";
 import { IndexGenerator } from "@chacomat/types.local.js";
 import { coordsToIndex, isSafe } from "@chacomat/utils/Index.js";
 
-export default class Knight extends Piece {
-  static override readonly whiteInitial = "P";
+export default class Pawn extends Piece {
   static override readonly offsets = {
     x: [1, 1],
     y: [-1, 1]
   };
   static override readonly START_RANKS = {
-    "WHITE": 6,
-    "BLACK": 1
+    WHITE: 6,
+    BLACK: 1
   };
 
   override *attackedIndices(): IndexGenerator {

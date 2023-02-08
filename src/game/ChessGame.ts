@@ -66,7 +66,7 @@ export default class ChessGame {
       return ChessGame.statuses.INSUFFICIENT_MATERIAL;
     if (position.halfMoveClock > 50)
       return ChessGame.statuses.FIFTY_MOVE_DRAW;
-    if (position.isTripleRepetition())
+    if (this.isTripleRepetition())
       return ChessGame.statuses.TRIPLE_REPETITION;
     return ChessGame.statuses.ACTIVE;
   }
@@ -78,6 +78,22 @@ export default class ChessGame {
   #setPosition(position: Position): void {
     this.currentPosition = position;
     position.game = this;
+  }
+
+  isTripleRepetition(): boolean {
+    const pieceStr = this.currentPosition.board.toString();
+    let repetitionCount = 0;
+
+    for (
+      let pos = this.currentPosition.prev;
+      pos !== null && repetitionCount < 3;
+      pos = pos.prev
+    ) {
+      if (pos.colorToMove === this.currentPosition.colorToMove && pos.board.toString() === pieceStr)
+        repetitionCount++;
+    }
+
+    return repetitionCount === 3;
   }
 
   /**

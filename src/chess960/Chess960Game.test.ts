@@ -24,10 +24,8 @@ describe("A Chess960 game", () => {
   });
 
   it("should allow castling", () => {
-    const { currentPosition } = new Chess960Game({
-      fen: "k7/pppppppp/8/8/8/8/PPPPPPPP/1R4KR b BH - 0 1"
-    })
-      .moveWithNotations("a8", "b8");
+    const fen = "k7/pppppppp/8/8/8/8/PPPPPPPP/1R4KR b BH - 0 1";
+    const { currentPosition } = new Chess960Game({ fen }).moveWithNotations("a8", "b8");
     const { castlingRights, colorToMove, legalMovesAsNotation } = currentPosition;
 
     expect(currentPosition).toBeInstanceOf(Chess960Position);

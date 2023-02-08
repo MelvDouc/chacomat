@@ -1,17 +1,11 @@
 import { colors, ConsoleColors } from "@chacomat/constants/Color.js";
-import King from "@chacomat/pieces/King.js";
-import Knight from "@chacomat/pieces/Knight.js";
-import Pawn from "@chacomat/pieces/Pawn.js";
-import Piece from "@chacomat/pieces/Piece.js";
-import Bishop from "@chacomat/pieces/sliding/Bishop.js";
-import Queen from "@chacomat/pieces/sliding/Queen.js";
-import Rook from "@chacomat/pieces/sliding/Rook.js";
+import Piece, { King, Pawn } from "@chacomat/pieces/index.js";
 import type {
   BlackAndWhite,
   Color,
   NonPawnPieceType,
-  Position,
-  WhitePieceInitial
+  PieceInitial,
+  Position
 } from "@chacomat/types.local.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
@@ -19,26 +13,44 @@ import { coordsToIndex } from "@chacomat/utils/Index.js";
 export default class Board extends Map<number, Piece> {
   static readonly #nullPiece = "0";
   static readonly #nullPieceRegex = /0+/g;
-  static readonly pieceTypesByInitial = {
-    [Pawn.whiteInitial]: Pawn,
-    [Knight.whiteInitial]: Knight,
-    [King.whiteInitial]: King,
-    [Bishop.whiteInitial]: Bishop,
-    [Rook.whiteInitial]: Rook,
-    [Queen.whiteInitial]: Queen
-  };
+
+  static fromString(pieceStr: string): Board {
+    const board = new Board();
+    const rows = pieceStr.split(fenChecker.rowSeparator);
+
+    for (let x = 0; x < 8; x++) {
+      const row = rows[x].replace(/\d+/g, (n) => Board.#nullPiece.repeat(+n));
+
+      for (let y = 0; y < 8; y++) {
+        const initial = row[y];
+        if (initial === Board.#nullPiece) continue;
+        const index = coordsToIndex(x, y);
+        const piece = Piece.fromInitial(initial as PieceInitial);
+        board.set(index, piece.setBoard(board).setIndex(index));
+        if (piece instanceof King)
+          board.kings[piece.color] = piece;
+      }
+    }
+
+    if (!board.kings.WHITE)
+      throw new Error("Board is missing a white king.");
+    if (!board.kings.BLACK)
+      throw new Error("Board is missing a black king.");
+
+    return board;
+  }
 
   static getChess960InitialBoard(piecePlacement: Record<NonPawnPieceType, number[]>): Board {
     const board = new Board();
-    let pieceKey: keyof typeof piecePlacement;
+    let pieceInitial: keyof typeof piecePlacement;
 
     for (const color of colors) {
       const pieceRank = Piece.START_RANKS[color];
 
-      for (pieceKey in piecePlacement) {
-        for (const y of piecePlacement[pieceKey]) {
+      for (pieceInitial in piecePlacement) {
+        for (const y of piecePlacement[pieceInitial]) {
           const index = coordsToIndex(pieceRank, y);
-          const type = this.pieceTypesByInitial[pieceKey];
+          const type = Piece.pieceClassesByInitial.get(pieceInitial) as typeof King;
           board.set(index, new (type)(color).setIndex(index).setBoard(board));
         }
       }
@@ -57,31 +69,6 @@ export default class Board extends Map<number, Piece> {
   position: Position;
   #enPassantIndex = -1;
   readonly kings = {} as BlackAndWhite<King>;
-
-  constructor(pieceStr?: string) {
-    super();
-
-    if (pieceStr) {
-      pieceStr
-        .split(fenChecker.rowSeparator)
-        .forEach((row, x) => {
-          row
-            .replace(/\d+/g, (num) => Board.#nullPiece.repeat(+num))
-            .split("")
-            .forEach((item, y) => {
-              if (item === Board.#nullPiece)
-                return;
-              const index = coordsToIndex(x, y);
-              const pieceType = Board.pieceTypesByInitial[item as WhitePieceInitial];
-              const color = item === item.toUpperCase() ? "WHITE" : "BLACK";
-              const piece = new (pieceType)(color).setBoard(this).setIndex(index);
-              this.set(index, piece);
-              if (piece.pieceName === "King")
-                this.kings[piece.color] = piece as King;
-            });
-        });
-    }
-  }
 
   getEnPassantIndex(): number {
     return this.#enPassantIndex;
@@ -129,17 +116,6 @@ export default class Board extends Map<number, Piece> {
     boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.getIndex()) as King;
     boardClone.kings.BLACK = boardClone.get(this.kings.BLACK.getIndex()) as King;
     return boardClone;
-  }
-
-  getNonKingPiecesByColor(): BlackAndWhite<Piece[]> {
-    return [...this.values()].reduce((acc, piece) => {
-      if (piece.pieceName !== "King")
-        acc[piece.color].push(piece);
-      return acc;
-    }, {
-      WHITE: [] as Piece[],
-      BLACK: [] as Piece[]
-    });
   }
 
   /**

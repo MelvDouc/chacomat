@@ -63,9 +63,6 @@ describe("PNG reader", () => {
     expect(game.metaInfo.BlackElo).toBe(1985);
     expect(game.metaInfo.Round).toBeCloseTo(5.3);
     expect(game.currentPosition.legalMoves).toHaveLength(2);
-
-    console.log(game.metaInfo);
-    game.logBoard();
   });
 });
 
@@ -124,6 +121,6 @@ describe("Castling", () => {
 
     expect(game.currentPosition.isCheck()).toBe(false);
     expect(game.currentPosition.board.get(b2)?.pieceName).toBe("King");
-    expect(game.currentPosition.board.getNonKingPiecesByColor()["BLACK"].length).toBe(0);
+    expect([...game.currentPosition.board.values()]).toHaveLength(3);
   });
 });

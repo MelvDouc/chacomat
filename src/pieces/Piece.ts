@@ -18,11 +18,10 @@ import {
 } from "@chacomat/utils/Index.js";
 
 export default abstract class Piece {
-  static readonly whiteInitial: WhitePieceInitial;
   static readonly offsets: PieceOffsets;
   static readonly START_RANKS = {
-    WHITE: 6,
-    BLACK: 1
+    WHITE: 7,
+    BLACK: 0
   };
   static readonly CASTLED_KING_FILES: Wings<number> = {
     0: 2,
@@ -36,6 +35,20 @@ export default abstract class Piece {
     WHITE: -1,
     BLACK: 1
   };
+  static readonly pieceClassesByInitial = new Map<WhitePieceInitial, typeof Piece>();
+  static readonly pieceInitialsByClass = new Map<typeof Piece, WhitePieceInitial>();
+
+
+  static get whiteInitial(): WhitePieceInitial {
+    return this.pieceInitialsByClass.get(this);
+  }
+
+  static fromInitial(initial: PieceInitial) {
+    const whiteInitial = initial.toUpperCase() as WhitePieceInitial;
+    return Reflect.construct(this.pieceClassesByInitial.get(whiteInitial), [
+      (initial === whiteInitial) ? "WHITE" : "BLACK"
+    ]);
+  }
 
   readonly color: Color;
   #index: number;
@@ -49,15 +62,14 @@ export default abstract class Piece {
     return this.constructor as typeof Piece;
   }
 
-  get initial(): PieceInitial {
-    const initial = this.pieceClass.whiteInitial;
-    return (this.color === "WHITE")
-      ? initial
-      : initial.toLowerCase() as BlackPieceInitial;
-  }
-
   get pieceName(): PieceName {
     return this.pieceClass.name as PieceName;
+  }
+
+  get initial(): PieceInitial {
+    if (this.color === "WHITE")
+      return this.pieceClass.whiteInitial;
+    return this.pieceClass.whiteInitial.toLowerCase() as BlackPieceInitial;
   }
 
   get direction(): number {
@@ -121,7 +133,8 @@ export default abstract class Piece {
   }
 
   clone(): Piece {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (this as any)(this.color);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return new (this.pieceClass)(this.color);
   }
 }

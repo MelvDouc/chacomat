@@ -3,7 +3,6 @@ import { IndexGenerator, Wing } from "@chacomat/types.local.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
 
 export default class King extends Piece {
-  static override readonly whiteInitial = "K";
   static override readonly offsets = {
     x: [0, -1, -1, -1, 0, 1, 1, 1],
     y: [-1, -1, 0, 1, 1, -1, 0, 1]
@@ -13,18 +12,18 @@ export default class King extends Piece {
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
    */
   canCastleToFile(srcRookY: number): boolean {
-    const { x: kingX, y: kingY } = this.getCoords();
-    const wing = this.#getWing(kingY, srcRookY);
-    const rookIndex = coordsToIndex(kingX, srcRookY);
+    const { x: srcKingX, y: srcKingY } = this.getCoords();
+    const wing = this.#getWing(srcKingY, srcRookY);
+    const rookIndex = coordsToIndex(srcKingX, srcRookY);
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
     const destKingY = Piece.CASTLED_KING_FILES[wing];
-    const kingDirection = Math.sign(destKingY - kingY);
+    const kingDirection = Math.sign(destKingY - srcKingY);
 
     if (kingDirection !== 0) {
-      for (let y = kingY + kingDirection; ; y += kingDirection) {
-        const destIndex = coordsToIndex(kingX, y);
+      for (let y = srcKingY + kingDirection; ; y += kingDirection) {
+        const destIndex = coordsToIndex(srcKingX, y);
         if (
           this.getBoard().position.attackedIndicesSet.has(destIndex)
           || destIndex !== rookIndex && this.getBoard().has(destIndex)
@@ -41,7 +40,7 @@ export default class King extends Piece {
 
     if (rookDirection !== 0) {
       for (let y = srcRookY + rookDirection; ; y += rookDirection) {
-        const destIndex = coordsToIndex(kingX, y);
+        const destIndex = coordsToIndex(srcKingX, y);
         if (destIndex !== this.getIndex() && this.getBoard().has(destIndex))
           return false;
         if (y === destRookY)
@@ -52,10 +51,14 @@ export default class King extends Piece {
     return true;
   }
 
-  *castlingIndices(): IndexGenerator {
-    for (const y of this.getBoard().position.castlingRights[this.color]) {
-      if (this.canCastleToFile(y))
+  *castlingIndices(useChess960Rules: boolean): IndexGenerator {
+    for (const wing of this.getBoard().position.castlingRights[this.color]) {
+      if (this.canCastleToFile(wing)) {
+        const y = useChess960Rules
+          ? wing
+          : Piece.CASTLED_KING_FILES[wing as Wing];
         yield coordsToIndex(this.getCoords().x, y);
+      }
     }
   }
 

@@ -1,26 +1,19 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
-import Piece from "@chacomat/pieces/Piece.js";
+import Piece, { Knight, Pawn } from "@chacomat/pieces/index.js";
 
 describe("Piece", () => {
   it("n should be a black knight", () => {
-    const piece = Piece.fromInitial("n");
+    const piece = new Knight("BLACK");
 
-    expect(piece.#color).toBe("BLACK");
-    expect(piece.isKnight()).toBe(true);
+    expect(piece.color).toBe("BLACK");
+    expect(piece.pieceName).toBe("Knight");
   });
 
   it("P should be a white pawn", () => {
-    const piece = Piece.fromInitial("P");
+    const piece = new (Piece.pieceClassesByInitial.get("P") as typeof Pawn)("WHITE");
 
-    expect(piece.#color).toBe("WHITE");
-    expect(piece.isPawn()).toBe(true);
-  });
-
-  it("Q should produce a queen", () => {
-    const pawn = new Piece({ color: "WHITE", type: "P" });
-    pawn.type = "Q";
-
-    expect(pawn.isQueen()).toBe(true);
+    expect(piece.color).toBe("WHITE");
+    expect(piece.pieceName).toBe("Pawn");
   });
 });
 
@@ -40,10 +33,6 @@ describe("A king", () => {
       fen: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
     });
     const whiteKing = game.currentPosition.board.kings["WHITE"];
-    const castlingCoords = [
-      ...Piece.castlingCoords(whiteKing, false)
-    ];
-
-    expect(castlingCoords).not.toContain(58 /* c1 */);
+    expect([...whiteKing.castlingIndices(false)]).not.toContain(58 /* c1 */);
   });
 });

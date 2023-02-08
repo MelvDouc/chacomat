@@ -4,9 +4,7 @@ import Board from "@chacomat/game/Board.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
-  Chess960Game,
-  IndexGenerator,
-  PositionParameters
+  Chess960Game, PositionParameters
 } from "@chacomat/types.local.js";
 
 export default class Chess960Position extends Position {
@@ -21,7 +19,7 @@ export default class Chess960Position extends Position {
     return {
       board: Board.getChess960InitialBoard(piecePlacement),
       castlingRights,
-      enPassantFile: -1,
+      enPassantIndex: -1,
       colorToMove: "WHITE",
       halfMoveClock: 0,
       fullMoveNumber: 1
@@ -33,10 +31,10 @@ export default class Chess960Position extends Position {
 
   override isCastling(king: Piece, destIndex: number): boolean {
     const possibleRook = this.board.get(destIndex);
-    return possibleRook?.isRook() && possibleRook.#color === king.#color;
+    return possibleRook?.pieceName === "Rook" && possibleRook.color === king.color;
   }
 
-  override *castlingCoords(): IndexGenerator {
-    yield* Piece.castlingCoords(this.board.kings[this.colorToMove], true);
+  override *castlingIndices() {
+    yield* this.board.kings[this.colorToMove].castlingIndices(true);
   }
 }

@@ -8,7 +8,6 @@ import {
 } from "@chacomat/types.local.js";
 import { coordsToIndex } from "@chacomat/utils/Index.js";
 import { parsedMoves, parseVariations } from "@chacomat/utils/pgn/variations.js";
-import { Piece } from "../../index.js";
 
 const checkRegex = /(\+{1,2}|#)?/;
 
@@ -51,7 +50,7 @@ const HALF_MOVE_REGEXPS: Record<string, {
 
       return legalMoves.find(([src, dest]) => {
         const srcPiece = board.get(src);
-        return (<typeof Piece>srcPiece?.constructor)?.whiteInitial === pieceType
+        return srcPiece?.pieceClass.whiteInitial === pieceType
           && (srcX == null || srcPiece.getCoords().x === srcX)
           && (srcY == null || srcPiece.getCoords().y === srcY)
           && dest === destIndex;
@@ -62,7 +61,7 @@ const HALF_MOVE_REGEXPS: Record<string, {
     regex: new RegExp(`^(?<t>O|0)-\\k<t>(?<t2>-\\k<t>)?${checkRegex.source}$`),
     getMove: (match, board) => {
       const king = board.kings[board.position.colorToMove];
-      const destIndex = [...king.castlingIndices()].find((index) => {
+      const destIndex = [...board.position.castlingIndices()].find((index) => {
         return (match["t2"])
           ? index < king.getIndex()
           : index > king.getIndex();

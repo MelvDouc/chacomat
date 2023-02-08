@@ -1,8 +1,18 @@
 import ChessGame from "./game/ChessGame.js";
+import Piece, {
+  Bishop, King, Knight, Pawn, Queen, Rook
+} from "./pieces/index.js";
 
 export type {
   ChessGame,
-  GameParameters
+  GameParameters,
+  Piece,
+  Pawn,
+  Knight,
+  Bishop,
+  Rook,
+  Queen,
+  King
 };
 
 /**
@@ -24,14 +34,6 @@ export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.j
 
 export type Color = "WHITE" | "BLACK";
 export type Wing = 0 | 7;
-
-export type Piece = import("./pieces/Piece.js").default;
-export type Pawn = import("./pieces/Pawn.js").default;
-export type King = import("./pieces/King.js").default;
-export type Knight = import("./pieces/Knight.js").default;
-export type Bishop = import("./pieces/sliding/Bishop.js").default;
-export type Rook = import("./pieces/sliding/Rook.js").default;
-export type Queen = import("./pieces/sliding/Queen.js").default;
 
 export type PieceName = "Pawn" | "Knight" | "Bishop" | "Rook" | "Queen" | "King";
 export type WhitePieceInitial = "P" | "N" | "B" | "R" | "Q" | "K";
