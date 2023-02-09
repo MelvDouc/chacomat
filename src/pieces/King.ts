@@ -1,5 +1,6 @@
 import Piece from "@chacomat/pieces/Piece.js";
 import { CoordsGenerator, Wing } from "@chacomat/types.local.js";
+import Coords from "@chacomat/utils/Coords.js";
 
 export default class King extends Piece {
   static override readonly offsets = {
@@ -13,7 +14,7 @@ export default class King extends Piece {
   canCastleToFile(srcRookY: number): boolean {
     const { x: srcKingX, y: srcKingY } = this.coords;
     const wing = this.#getWing(srcKingY, srcRookY);
-    const rookCoords = { x: srcKingX, y: srcRookY };
+    const rookCoords = Coords.get(srcKingX, srcRookY);
     const attackedCoords = this.board.getCoordsAttackedByColor(this.oppositeColor);
 
     // The squares traversed by the king must not be attacked,
@@ -23,9 +24,9 @@ export default class King extends Piece {
 
     if (kingDirection !== 0) {
       for (let y = srcKingY + kingDirection; ; y += kingDirection) {
-        const destCoords = { x: srcKingX, y };
+        const destCoords = Coords.get(srcKingX, y);
         if (
-          attackedCoords[destCoords.x]?.has(y)
+          attackedCoords.has(destCoords)
           || y !== rookCoords.y && this.board.has(destCoords)
         )
           return false;
@@ -40,7 +41,7 @@ export default class King extends Piece {
 
     if (rookDirection !== 0) {
       for (let y = srcRookY + rookDirection; ; y += rookDirection) {
-        const destCoords = { x: srcKingX, y };
+        const destCoords = Coords.get(srcKingX, y);
         if (y !== this.y && this.board.has(destCoords))
           return false;
         if (y === destRookY)
@@ -57,7 +58,7 @@ export default class King extends Piece {
         const y = useChess960Rules
           ? wing
           : Piece.CASTLED_KING_FILES[wing as Wing];
-        yield { x: this.x, y };
+        yield Coords.get(this.x, y);
       }
     }
   }

@@ -1,14 +1,16 @@
 import { colors, ConsoleColors } from "@chacomat/constants/Color.js";
 import Piece, { King, Pawn } from "@chacomat/pieces/index.js";
 import type {
-  BlackAndWhite, Color, Coords,
+  BlackAndWhite,
+  Color,
   NonPawnPieceType,
   PieceInitial,
   Position
 } from "@chacomat/types.local.js";
+import Coords from "@chacomat/utils/Coords.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
 
-export default class Board {
+export default class Board extends Map<Coords, Piece> {
   static readonly #nullPiece = "0";
   static readonly #nullPieceRegex = /0+/g;
 
@@ -22,7 +24,7 @@ export default class Board {
       for (let y = 0; y < 8; y++) {
         const initial = row[y];
         if (initial === Board.#nullPiece) continue;
-        const coords = { x, y };
+        const coords = Coords.get(x, y);
         const piece = Piece.fromInitial(initial as PieceInitial) as Piece;
         piece.coords = coords;
         piece.board = board;
@@ -49,7 +51,7 @@ export default class Board {
 
       for (pieceInitial in piecePlacement) {
         for (const y of piecePlacement[pieceInitial]) {
-          const coords = { x: pieceRank, y };
+          const coords = Coords.get(pieceRank, y);
           const type = Piece.pieceClassesByInitial.get(pieceInitial) as typeof King;
           const piece = new (type)(color);
           piece.coords = coords;
@@ -61,7 +63,7 @@ export default class Board {
       board.kings[color] = board.atX(pieceRank).atY(piecePlacement["K"][0]) as King;
 
       for (let y = 0; y < 8; y++) {
-        const coords = { x: Pawn.START_RANKS[color], y };
+        const coords = Coords.get(Pawn.START_RANKS[color], y);
         const pawn = new Pawn(color);
         pawn.coords = coords;
         pawn.board = board;
@@ -72,62 +74,14 @@ export default class Board {
     return board;
   }
 
-
-  #squares: Record<number, Record<number, Piece>>;
+  #squares = new Map<Coords, Piece>();
   enPassantY = -1;
   position: Position;
   readonly kings = {} as BlackAndWhite<King>;
 
-  constructor() {
-    this.#squares = {};
-    for (let x = 0; x < 8; x++)
-      this.#squares[x] = {};
-  }
-
-  get size(): number {
-    let size = 0;
-    let Y: string;
-
-    for (let x = 0; x < 8; x++) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      for (Y in this.#squares[x])
-        size++;
-    }
-
-    return size;
-  }
-
-  *values() {
-    let y: string;
-
-    for (let x = 0; x < 8; x++)
-      for (y in this.#squares[x])
-        yield this.#squares[x][y];
-  }
-
-  has(coords: Coords): boolean {
-    return coords.x in this.#squares
-      && coords.y in this.#squares[coords.x];
-  }
-
-  get(coords: Coords): Piece | undefined {
-    if (coords.x in this.#squares)
-      return this.#squares[coords.x][coords.y];
-  }
-
-  set(coords: Coords, piece: Piece) {
-    this.#squares[coords.x][coords.y] = piece;
-    return this;
-  }
-
-  delete(coords: Coords) {
-    delete this.#squares[coords.x][coords.y];
-    return this;
-  }
-
   atX(x: number) {
     return {
-      atY: (y: number) => this.get({ x, y })
+      atY: (y: number) => this.get(Coords.get(x, y))
     };
   }
 
@@ -138,17 +92,15 @@ export default class Board {
     return this;
   }
 
-  getCoordsAttackedByColor(color: Color): Record<number, Set<number>> {
-    const record = {} as Record<number, Set<number>>;
+  getCoordsAttackedByColor(color: Color): Set<Coords> {
+    const set = new Set<Coords>();
 
     for (const piece of this.values())
       if (piece.color === color)
-        for (const destCoords of piece.attackedCoords()) {
-          record[destCoords.x] ??= new Set();
-          record[destCoords.x].add(destCoords.y);
-        }
+        for (const destCoords of piece.attackedCoords())
+          set.add(destCoords);
 
-    return record;
+    return set;
   }
 
   /**
@@ -157,18 +109,12 @@ export default class Board {
   clone(): Board {
     const boardClone = new Board();
     boardClone.enPassantY = this.enPassantY;
-    let y: string;
-
-    for (let x = 0; x < 8; x++) {
-      for (y in this.#squares[x]) {
-        const coords = { x, y: +y };
-        const piece = this.#squares[x][y] as Piece;
-        piece.coords = coords;
-        piece.board = boardClone;
-        boardClone.set(coords, piece);
-      }
-    }
-
+    this.forEach((piece, coords) => {
+      const pieceClone = piece.clone();
+      pieceClone.coords = coords;
+      pieceClone.board = boardClone;
+      boardClone.set(coords, pieceClone);
+    });
     boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.coords) as King;
     boardClone.kings.BLACK = boardClone.get(this.kings.BLACK.coords) as King;
     return boardClone;
@@ -205,7 +151,7 @@ export default class Board {
   /**
    * The board portion of an FEN string.
    */
-  toString(): string {
+  override toString(): string {
     return Array
       .from({ length: 8 }, (_, x) => {
         return Array

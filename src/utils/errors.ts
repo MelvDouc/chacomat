@@ -1,9 +1,8 @@
 import { Coords, FenString } from "@chacomat/types.local.js";
-import { coordsToNotation } from "@chacomat/utils/Index.js";
 
 export class IllegalMoveError extends Error {
-  constructor(src: Coords, dest: Coords) {
-    super(`Illegal move from ${coordsToNotation(src)} to ${coordsToNotation(dest)}`);
+  constructor(srcCoords: Coords | null | undefined, destCoords: Coords | null | undefined) {
+    super(`Illegal move from ${srcCoords?.notation} to ${destCoords?.notation}`);
   }
 }
 

@@ -1,14 +1,14 @@
 import Piece from "@chacomat/pieces/Piece.js";
-import { isSafe } from "@chacomat/utils/Index.js";
 
 export default abstract class SlidingPiece extends Piece {
   override *attackedCoords() {
     for (let i = 0; i < this.offsets.x.length; i++) {
-      const destCoords = this.coords;
+      let { coords: destCoords } = this;
 
-      while (isSafe(destCoords.x += this.offsets.x[i]) && isSafe(destCoords.y += this.offsets.y[i])) {
-        yield { ...destCoords };
-        if (this.board.has(destCoords)) break;
+      while ((destCoords = destCoords.getPeer(this.offsets.x[i], this.offsets.y[i])) !== null) {
+        yield destCoords;
+        if (this.board.has(destCoords))
+          break;
       }
     }
   }

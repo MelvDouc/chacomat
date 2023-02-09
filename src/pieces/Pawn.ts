@@ -1,6 +1,5 @@
 import Piece from "@chacomat/pieces/Piece.js";
 import { Coords, CoordsGenerator } from "@chacomat/types.local.js";
-import { isSafe } from "@chacomat/utils/Index.js";
 
 export default class Pawn extends Piece {
   static override readonly offsets = {
@@ -14,27 +13,23 @@ export default class Pawn extends Piece {
 
   override *attackedCoords(): CoordsGenerator {
     for (let i = 0; i < this.offsets.x.length; i++) {
-      const x = this.x + this.offsets.x[i] * this.direction,
-        y = this.y + this.offsets.y[i];
-      if (isSafe(x) && isSafe(y))
-        yield { x, y };
+      const attackedCoords = this.coords.getPeer(
+        this.offsets.x[i] * this.direction,
+        this.offsets.y[i]
+      );
+      if (attackedCoords)
+        yield attackedCoords;
     }
   }
 
   *#forwardMoves(): CoordsGenerator {
-    const coords1 = {
-      x: this.x + this.direction,
-      y: this.y
-    };
+    const coords1 = this.coords.getPeer(this.direction, 0);
 
     if (!this.board.has(coords1)) {
       yield coords1;
 
       if (this.x === this.startRank) {
-        const coords2 = {
-          x: coords1.x + this.direction,
-          y: coords1.y
-        };
+        const coords2 = coords1.getPeer(this.direction, 0);
 
         if (!this.board.has(coords2))
           yield coords2;

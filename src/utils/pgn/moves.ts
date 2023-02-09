@@ -6,8 +6,8 @@ import {
   Move,
   PromotedPieceType
 } from "@chacomat/types.local.js";
+import Coords from "@chacomat/utils/Coords.js";
 import { parsedMoves, parseVariations } from "@chacomat/utils/pgn/variations.js";
-import { rankNameToX } from "../Index.js";
 
 const checkRegex = /(\+{1,2}|#)?/;
 
@@ -20,7 +20,7 @@ const HALF_MOVE_REGEXPS: Record<string, {
     regex: new RegExp(`^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRNB]))?${checkRegex.source}$`),
     getMove: ({ sf, df, dr, pt }, board, legalMoves) => {
       const srcY = File[sf as ChessFileName];
-      const destX = rankNameToX(dr);
+      const destX = Coords.rankNameToX(dr);
       const destY = df ? File[df as ChessFileName] : srcY;
 
       const move = legalMoves.find(([src, dest]) => {
@@ -39,9 +39,9 @@ const HALF_MOVE_REGEXPS: Record<string, {
   PIECE_MOVE: {
     regex: new RegExp(`^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<df>[a-h])(?<dr>[1-8])${checkRegex.source}$`),
     getMove: ({ pt, sf, sr, df, dr }, board, legalMoves) => {
-      const srcX = sr ? rankNameToX(sr) : null;
+      const srcX = sr ? Coords.rankNameToX(sr) : null;
       const srcY = sf ? File[sf as ChessFileName] : null;
-      const destX = rankNameToX(dr);
+      const destX = Coords.rankNameToX(dr);
       const destY = File[df as ChessFileName];
 
       return legalMoves.find(([src, dest]) => {

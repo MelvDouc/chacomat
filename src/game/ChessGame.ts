@@ -2,17 +2,16 @@ import Position from "@chacomat/game/Position.js";
 import type {
   AlgebraicSquareNotation,
   Color,
-  Coords,
   GameMetaInfo,
   GameParameters,
   PromotedPieceType
 } from "@chacomat/types.local.js";
+import Coords from "@chacomat/utils/Coords.js";
 import {
   IllegalMoveError,
   InactiveGameError,
   InvalidFenError
 } from "@chacomat/utils/errors.js";
-import { notationToCoords } from "@chacomat/utils/Index.js";
 import enterPgn from "@chacomat/utils/pgn/pgn.js";
 
 /**
@@ -129,11 +128,13 @@ export default class ChessGame {
    * @returns The current instance of a game containing the position after the move.
    */
   moveWithNotations(srcNotation: AlgebraicSquareNotation, destNotation: AlgebraicSquareNotation, promotionType?: PromotedPieceType): this {
-    return this.move(
-      notationToCoords(srcNotation),
-      notationToCoords(destNotation),
-      promotionType
-    );
+    const srcCoords = Coords.fromNotation(srcNotation);
+    const destCoords = Coords.fromNotation(destNotation);
+
+    if (!srcCoords) throw new Error("Invalid src notation");
+    if (!destCoords) throw new Error("Invalid dest notation");
+
+    return this.move(srcCoords, destCoords, promotionType);
   }
 
   #goToMoveWithCallback(moveNumber: number, color: Color, callback: (position: Position) => Position | null | undefined): this {

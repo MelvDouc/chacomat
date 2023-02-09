@@ -1,24 +1,24 @@
 import { ReversedColor } from "@chacomat/constants/Color.js";
 import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
-import Piece, { Queen } from "@chacomat/pieces/index.js";
+import Piece from "@chacomat/pieces/index.js";
 import type {
   AlgebraicSquareNotation,
   Bishop,
   ChessGame,
   Color,
-  Coords,
-  FenString, Move,
+  FenString,
+  Move,
   Pawn,
   PositionParameters,
   PromotedPieceType,
+  Queen,
   Rook
 } from "@chacomat/types.local.js";
+import Coords from "@chacomat/utils/Coords.js";
 import { InvalidFenError } from "@chacomat/utils/errors.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
-import {
-  coordsToNotation, notationToCoords
-} from "@chacomat/utils/Index.js";
+
 /**
  * @classdesc An instance of this class is an immutable description of a position in a game. Its status cannot be altered.
  */
@@ -49,7 +49,7 @@ export default class Position {
       castlingRights: this.CastlingRights.fromString(castlingStr),
       enPassantY: (enPassant === fenChecker.nullCharacter)
         ? -1
-        : notationToCoords(enPassant as AlgebraicSquareNotation).y,
+        : Coords.fromNotation(enPassant as AlgebraicSquareNotation).y,
       halfMoveClock: +halfMoveClock,
       fullMoveNumber: +fullMoveNumber
     });
@@ -79,8 +79,8 @@ export default class Position {
   // ===== ===== ===== ===== =====
 
   isCheck(): boolean {
-    const king = this.board.kings[this.colorToMove];
-    return !!this.board.getCoordsAttackedByColor(king.oppositeColor)[king.x]?.has(king.y);
+    const { coords, oppositeColor } = this.board.kings[this.colorToMove];
+    return this.board.getCoordsAttackedByColor(oppositeColor).has(coords);
   }
 
   isInsufficientMaterial(): boolean {
@@ -118,8 +118,9 @@ export default class Position {
 
   get legalMoves(): Move[] {
     const legalMoves: Move[] = [];
+    const pieces = [...this.board.values()];
 
-    for (const piece of this.board.values()) {
+    for (const piece of pieces) {
       if (piece.color !== this.colorToMove)
         continue;
 
@@ -157,7 +158,7 @@ export default class Position {
    */
   get legalMovesAsNotation(): string[] {
     return this.legalMoves.map(([srcCoords, destCoords]) => {
-      return `${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`;
+      return `${srcCoords.notation}-${destCoords.notation}`;
     });
   }
 
@@ -194,8 +195,10 @@ export default class Position {
       return;
     }
 
-    if (pawn.isEnPassantCapture(destCoords))
-      board.delete({ x: srcCoords.x, y: destCoords.y });
+    if (pawn.isEnPassantCapture(destCoords)) {
+      const enPassantPawnCoords = Coords.get(srcCoords.x, destCoords.y);
+      board.delete(enPassantPawnCoords);
+    }
 
     board.transfer(srcCoords, destCoords);
   }
@@ -212,15 +215,16 @@ export default class Position {
   }
 
   #castle(king: Piece, destCoords: Coords): void {
-    const board = king.board,
-      srcCoords = king.coords;
+    const board = king.board;
+    const srcCoords = king.coords;
     const wing = (destCoords.y < srcCoords.y) ? 0 : 7;
     // These are distinct from `destCoords` as the latter may point to a same-colored rook in the case of castling.
-    const kingDestCoords = { x: srcCoords.x, y: Piece.CASTLED_KING_FILES[wing] };
+    const kingDestCoords = Coords.get(srcCoords.x, Piece.CASTLED_KING_FILES[wing]);
     const rookSrcCoords = (board.get(destCoords)?.pieceName === "Rook")
       ? destCoords
-      : { x: destCoords.x, y: wing };
-    const rookDestCoords = { x: srcCoords.x, y: Piece.CASTLED_ROOK_FILES[wing] };
+      : Coords.get(destCoords.x, wing);
+    const rookDestCoords = Coords.get(srcCoords.x, Piece.CASTLED_ROOK_FILES[wing]);
+
     board
       .transfer(srcCoords, kingDestCoords)
       .transfer(rookSrcCoords, rookDestCoords);
@@ -291,7 +295,7 @@ export default class Position {
       this.castlingRights.toString(),
       (this.board.enPassantY === -1)
         ? fenChecker.nullCharacter
-        : coordsToNotation({ x: enPassantX, y: this.board.enPassantY }),
+        : Coords.get(enPassantX, this.board.enPassantY).notation,
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
     ].join(" ");

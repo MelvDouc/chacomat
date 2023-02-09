@@ -60,6 +60,7 @@ export type Wing = 0 | 7;
 // COORDS
 // ===== ===== ===== ===== =====
 
+export type Coords = import("./utils/Coords.js").default;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
 
@@ -77,11 +78,6 @@ export type BlackAndWhite<T> = {
 export type Wings<T> = {
   [W in Wing]: T;
 };
-
-export interface Coords {
-  x: number;
-  y: number;
-}
 
 interface GameParameters {
   /**

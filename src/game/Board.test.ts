@@ -1,16 +1,17 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Pawn from "@chacomat/pieces/Pawn.js";
+import Coords from "@chacomat/utils/Coords.js";
 
 describe("A board", () => {
   it("should be serializable", () => {
     const { board } = new ChessGame({ fen: "k7/8/8/8/8/8/8/7K w - - 0 1" }).currentPosition;
 
     for (let y = 0; y < 8; y++) {
-      const bCoords = { x: 1, y };
+      const bCoords = Coords.get(1, y);
       const bPawn = new Pawn("BLACK");
       bPawn.coords = bCoords;
       board.set(bCoords, bPawn);
-      const wCoords = { x: 6, y };
+      const wCoords = Coords.get(6, y);
       const wPawn = new Pawn("WHITE");
       wPawn.coords = wCoords;
       board.set(wCoords, wPawn);
