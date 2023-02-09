@@ -7,7 +7,6 @@ export default class Bishop extends SlidingPiece {
   };
 
   get colorComplex(): 0 | 1 {
-    const { x, y } = this.getCoords();
-    return Number(x % 2 === y % 2) as 0 | 1;
+    return Number(this.x % 2 === this.y % 2) as 0 | 1;
   }
 }

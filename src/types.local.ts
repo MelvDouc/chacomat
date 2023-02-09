@@ -15,26 +15,17 @@ export type {
   King
 };
 
+// ===== ===== ===== ===== =====
+// STRING TYPES
+// ===== ===== ===== ===== =====
+
 /**
  * https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation for more info.
  */
 export type FenString = string;
-
 export type ChessFileName = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
 export type ChessRankName = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 export type AlgebraicSquareNotation = `${ChessFileName}${ChessRankName}`;
-
-export type Position = import("./game/Position.js").default;
-export type Board = import("./game/Board.js").default;
-export type CastlingRights = import("./game/CastlingRights.js").default;
-
-export type Chess960Game = import("./chess960/Chess960Game.js").default;
-export type Chess960Position = import("./chess960/Chess960Position.js").default;
-export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.js").default;
-
-export type Color = "WHITE" | "BLACK";
-export type Wing = 0 | 7;
-
 export type PieceName = "Pawn" | "Knight" | "Bishop" | "Rook" | "Queen" | "King";
 export type WhitePieceInitial = "P" | "N" | "B" | "R" | "Q" | "K";
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
@@ -42,8 +33,35 @@ export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
 export type PromotedPieceType = Exclude<WhitePieceInitial, "P" | "K">;
 export type NonPawnPieceType = Exclude<WhitePieceInitial, "P">;
 
-export type IndexGenerator = Generator<number, void, unknown>;
-export type Move = [number, number];
+// ===== ===== ===== ===== =====
+// GAME COMPONENTS
+// ===== ===== ===== ===== =====
+
+export type Position = import("./game/Position.js").default;
+export type Board = import("./game/Board.js").default;
+export type CastlingRights = import("./game/CastlingRights.js").default;
+
+// ===== ===== ===== ===== =====
+// CHESS960
+// ===== ===== ===== ===== =====
+
+export type Chess960Game = import("./chess960/Chess960Game.js").default;
+export type Chess960Position = import("./chess960/Chess960Position.js").default;
+export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.js").default;
+
+// ===== ===== ===== ===== =====
+// GAME CONSTANTS
+// ===== ===== ===== ===== =====
+
+export type Color = "WHITE" | "BLACK";
+export type Wing = 0 | 7;
+
+// ===== ===== ===== ===== =====
+// COORDS
+// ===== ===== ===== ===== =====
+
+export type CoordsGenerator = Generator<Coords, void, unknown>;
+export type Move = [Coords, Coords];
 
 export interface PieceOffsets {
   x: number[];
@@ -91,7 +109,7 @@ export interface PositionParameters {
   board: Board;
   castlingRights: CastlingRights;
   colorToMove: Color;
-  enPassantIndex: number;
+  enPassantY: number;
   halfMoveClock: number;
   fullMoveNumber: number;
 }
@@ -113,7 +131,7 @@ export interface FullGameMetaInfo {
   Round: number;
   /**
    * Should be in the format `YYYY.MM.DD`.
-  */
+   */
   Date: string;
   TimeControl: string;
   ECO: string;
@@ -124,8 +142,7 @@ export interface FullGameMetaInfo {
   [x: string]: unknown;
 }
 
-
 export interface PgnVariations {
-  movesStr: string;
+  movesAsString: string;
   variations?: PgnVariations[];
 }

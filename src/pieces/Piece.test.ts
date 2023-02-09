@@ -33,6 +33,6 @@ describe("A king", () => {
       fen: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
     });
     const whiteKing = game.currentPosition.board.kings["WHITE"];
-    expect([...whiteKing.castlingIndices(false)]).not.toContain(58 /* c1 */);
+    expect([...whiteKing.castlingCoords(false)]).not.toContain(58 /* c1 */);
   });
 });

@@ -1,16 +1,16 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
-import { notationToIndex } from "@chacomat/utils/Index.js";
+import { notationToCoords } from "@chacomat/utils/Index.js";
 import { playMovesFromPgn } from "@chacomat/utils/pgn/moves.js";
 
-const b2 = notationToIndex("b2");
-const d1 = notationToIndex("d1");
-const d4 = notationToIndex("d4");
-const d6 = notationToIndex("d6");
-const e6 = notationToIndex("e6");
-const f6 = notationToIndex("f6");
-const g4 = notationToIndex("g4");
-const g6 = notationToIndex("g6");
-const h7 = notationToIndex("h7");
+const b2 = notationToCoords("b2");
+const d1 = notationToCoords("d1");
+const d4 = notationToCoords("d4");
+const d6 = notationToCoords("d6");
+const e6 = notationToCoords("e6");
+const f6 = notationToCoords("f6");
+const g4 = notationToCoords("g4");
+const g6 = notationToCoords("g6");
+const h7 = notationToCoords("h7");
 
 describe("PNG reader", () => {
   it("should be able to handle the first few moves", () => {

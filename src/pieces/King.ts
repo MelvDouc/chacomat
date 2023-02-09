@@ -1,6 +1,5 @@
 import Piece from "@chacomat/pieces/Piece.js";
-import { IndexGenerator, Wing } from "@chacomat/types.local.js";
-import { coordsToIndex } from "@chacomat/utils/Index.js";
+import { CoordsGenerator, Wing } from "@chacomat/types.local.js";
 
 export default class King extends Piece {
   static override readonly offsets = {
@@ -12,9 +11,10 @@ export default class King extends Piece {
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
    */
   canCastleToFile(srcRookY: number): boolean {
-    const { x: srcKingX, y: srcKingY } = this.getCoords();
+    const { x: srcKingX, y: srcKingY } = this.coords;
     const wing = this.#getWing(srcKingY, srcRookY);
-    const rookIndex = coordsToIndex(srcKingX, srcRookY);
+    const rookCoords = { x: srcKingX, y: srcRookY };
+    const attackedCoords = this.board.getCoordsAttackedByColor(this.oppositeColor);
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
@@ -23,10 +23,10 @@ export default class King extends Piece {
 
     if (kingDirection !== 0) {
       for (let y = srcKingY + kingDirection; ; y += kingDirection) {
-        const destIndex = coordsToIndex(srcKingX, y);
+        const destCoords = { x: srcKingX, y };
         if (
-          this.getBoard().position.attackedIndicesSet.has(destIndex)
-          || destIndex !== rookIndex && this.getBoard().has(destIndex)
+          attackedCoords[destCoords.x]?.has(y)
+          || y !== rookCoords.y && this.board.has(destCoords)
         )
           return false;
         if (y === destKingY)
@@ -40,8 +40,8 @@ export default class King extends Piece {
 
     if (rookDirection !== 0) {
       for (let y = srcRookY + rookDirection; ; y += rookDirection) {
-        const destIndex = coordsToIndex(srcKingX, y);
-        if (destIndex !== this.getIndex() && this.getBoard().has(destIndex))
+        const destCoords = { x: srcKingX, y };
+        if (y !== this.y && this.board.has(destCoords))
           return false;
         if (y === destRookY)
           break;
@@ -51,13 +51,13 @@ export default class King extends Piece {
     return true;
   }
 
-  *castlingIndices(useChess960Rules: boolean): IndexGenerator {
-    for (const wing of this.getBoard().position.castlingRights[this.color]) {
+  *castlingCoords(useChess960Rules: boolean): CoordsGenerator {
+    for (const wing of this.board.position.castlingRights[this.color]) {
       if (this.canCastleToFile(wing)) {
         const y = useChess960Rules
           ? wing
           : Piece.CASTLED_KING_FILES[wing as Wing];
-        yield coordsToIndex(this.getCoords().x, y);
+        yield { x: this.x, y };
       }
     }
   }

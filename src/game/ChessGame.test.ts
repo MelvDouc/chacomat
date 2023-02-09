@@ -1,12 +1,12 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
-import { indexToCoords, notationToIndex } from "@chacomat/utils/Index.js";
+import { notationToCoords } from "@chacomat/utils/Index.js";
 
 describe("Fool's Mate", () => {
-  const game = new ChessGame()
-    .moveWithNotations("f2", "f3")
-    .moveWithNotations("e7", "e6")
-    .moveWithNotations("g2", "g4")
-    .moveWithNotations("d8", "h4");
+  const game = new ChessGame();
+  game.moveWithNotations("f2", "f3");
+  game.moveWithNotations("e7", "e6");
+  game.moveWithNotations("g2", "g4");
+  game.moveWithNotations("d8", "h4");
 
   it("should be check", () => {
     expect(game.currentPosition.isCheck()).toBe(true);
@@ -18,14 +18,14 @@ describe("Fool's Mate", () => {
 });
 
 describe("en passant", () => {
-  const game1 = new ChessGame()
-    .moveWithNotations("e2", "e4")
-    .moveWithNotations("d7", "d5")
-    .moveWithNotations("e4", "d5")
-    .moveWithNotations("e7", "e5");
+  const game1 = new ChessGame();
+  game1.moveWithNotations("e2", "e4");
+  game1.moveWithNotations("d7", "d5");
+  game1.moveWithNotations("e4", "d5");
+  game1.moveWithNotations("e7", "e5");
 
   it("#1", () => {
-    expect(indexToCoords(game1.currentPosition.board.getEnPassantIndex()).y).toBe(4);
+    expect(game1.currentPosition.board.enPassantY).toBe(4);
   });
 
   it("#2", () => {
@@ -41,9 +41,9 @@ describe("en passant", () => {
       .moveWithNotations("c2", "c4");
     game = game.moveWithNotations("d4", "c3");
 
-    expect(game.currentPosition.board.get(notationToIndex("c4"))).toBeFalsy();
-    expect(game.currentPosition.board.get(notationToIndex("d4"))).toBeFalsy();
-    expect(game.currentPosition.board.get(notationToIndex("c3"))?.pieceName).toBe("Pawn");
+    expect(game.currentPosition.board.get(notationToCoords("c4"))).toBeFalsy();
+    expect(game.currentPosition.board.get(notationToCoords("d4"))).toBeFalsy();
+    expect(game.currentPosition.board.get(notationToCoords("c3"))?.pieceName).toBe("Pawn");
   });
 });
 
@@ -91,8 +91,8 @@ describe("full games", () => {
   it("The Opera game", () => {
     const game = new ChessGame();
 
+    game.moveWithNotations("e2", "e4");
     game
-      .moveWithNotations("e2", "e4")
       .moveWithNotations("e7", "e5")
       .moveWithNotations("g1", "f3")
       .moveWithNotations("d7", "d6")

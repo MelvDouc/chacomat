@@ -1,6 +1,6 @@
 import Piece from "@chacomat/pieces/Piece.js";
-import { IndexGenerator } from "@chacomat/types.local.js";
-import { coordsToIndex, isSafe } from "@chacomat/utils/Index.js";
+import { Coords, CoordsGenerator } from "@chacomat/types.local.js";
+import { isSafe } from "@chacomat/utils/Index.js";
 
 export default class Pawn extends Piece {
   static override readonly offsets = {
@@ -12,44 +12,52 @@ export default class Pawn extends Piece {
     BLACK: 1
   };
 
-  override *attackedIndices(): IndexGenerator {
-    const { x, y } = this.getCoords();
-
+  override *attackedCoords(): CoordsGenerator {
     for (let i = 0; i < this.offsets.x.length; i++) {
-      const x2 = x + this.offsets.x[i] * this.direction,
-        y2 = y + this.offsets.y[i];
-      if (isSafe(x2) && isSafe(y2))
-        yield coordsToIndex(x2, y2);
+      const x = this.x + this.offsets.x[i] * this.direction,
+        y = this.y + this.offsets.y[i];
+      if (isSafe(x) && isSafe(y))
+        yield { x, y };
     }
   }
 
-  *#forwardMoves(): IndexGenerator {
-    const { x, y } = this.getCoords();
-    const index1 = coordsToIndex(x + this.direction, y);
+  *#forwardMoves(): CoordsGenerator {
+    const coords1 = {
+      x: this.x + this.direction,
+      y: this.y
+    };
 
-    if (!this.getBoard().has(index1)) {
-      yield index1;
+    if (!this.board.has(coords1)) {
+      yield coords1;
 
-      if (x === this.startRank) {
-        const index2 = coordsToIndex(x + this.direction * 2, y);
+      if (this.x === this.startRank) {
+        const coords2 = {
+          x: coords1.x + this.direction,
+          y: coords1.y
+        };
 
-        if (!this.getBoard().has(index2))
-          yield index2;
+        if (!this.board.has(coords2))
+          yield coords2;
       }
     }
   }
 
-  *#captures(): IndexGenerator {
-    for (const destIndex of this.attackedIndices())
+  *#captures(): CoordsGenerator {
+    for (const destCoords of this.attackedCoords())
       if (
-        this.getBoard().get(destIndex)?.color === this.oppositeColor
-        || destIndex === this.getBoard().getEnPassantIndex()
+        this.board.get(destCoords)?.color === this.oppositeColor
+        || this.isEnPassantCapture(destCoords)
       )
-        yield destIndex;
+        yield destCoords;
   }
 
-  override *pseudoLegalMoves(): IndexGenerator {
+  override *pseudoLegalMoves(): CoordsGenerator {
     yield* this.#forwardMoves();
     yield* this.#captures();
+  }
+
+  isEnPassantCapture(destCoords: Coords) {
+    return this.x === Piece.MIDDLE_RANKS[this.oppositeColor]
+      && destCoords.y === this.board.enPassantY;
   }
 }

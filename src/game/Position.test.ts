@@ -11,7 +11,7 @@ describe("FEN string", () => {
   it("should be valid after a move", () => {
     const pos = new ChessGame({ fen: "r5k1/p3rppp/1p2pn2/PP1bN3/8/2R1PP2/4B1PP/R5K1 b - - 0 24" })
       .currentPosition
-      .createPositionFromMove(17, 24, "Q", true);
+      .createPositionFromMove({ x: 2, y: 1 }, { x: 3, y: 0 }, "Q");
 
     expect(pos.toString()).toBe("r5k1/p3rppp/4pn2/pP1bN3/8/2R1PP2/4B1PP/R5K1 w - - 0 25");
   });

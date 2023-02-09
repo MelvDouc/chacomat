@@ -4,7 +4,7 @@ import Board from "@chacomat/game/Board.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
-  Chess960Game, PositionParameters
+  Chess960Game, Coords, PositionParameters
 } from "@chacomat/types.local.js";
 
 export default class Chess960Position extends Position {
@@ -13,13 +13,13 @@ export default class Chess960Position extends Position {
   static getStartPositionInfo(): PositionParameters {
     const piecePlacement = getChess960PiecePlacement();
     const castlingRights = new Chess960CastlingRights();
-    castlingRights.WHITE.push(...piecePlacement["R"]);
-    castlingRights.BLACK.push(...piecePlacement["R"]);
+    castlingRights.WHITE.push(...piecePlacement.R);
+    castlingRights.BLACK.push(...piecePlacement.R);
 
     return {
       board: Board.getChess960InitialBoard(piecePlacement),
       castlingRights,
-      enPassantIndex: -1,
+      enPassantY: -1,
       colorToMove: "WHITE",
       halfMoveClock: 0,
       fullMoveNumber: 1
@@ -29,12 +29,12 @@ export default class Chess960Position extends Position {
   override readonly castlingRights: Chess960CastlingRights;
   override game: Chess960Game;
 
-  override isCastling(king: Piece, destIndex: number): boolean {
-    const possibleRook = this.board.get(destIndex);
+  override isCastling(king: Piece, destCoords: Coords): boolean {
+    const possibleRook = this.board.get(destCoords);
     return possibleRook?.pieceName === "Rook" && possibleRook.color === king.color;
   }
 
-  override *castlingIndices() {
-    yield* this.board.kings[this.colorToMove].castlingIndices(true);
+  override *castlingCoords() {
+    yield* this.board.kings[this.colorToMove].castlingCoords(true);
   }
 }

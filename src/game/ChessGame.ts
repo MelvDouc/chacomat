@@ -2,6 +2,7 @@ import Position from "@chacomat/game/Position.js";
 import type {
   AlgebraicSquareNotation,
   Color,
+  Coords,
   GameMetaInfo,
   GameParameters,
   PromotedPieceType
@@ -11,7 +12,7 @@ import {
   InactiveGameError,
   InvalidFenError
 } from "@chacomat/utils/errors.js";
-import { notationToIndex } from "@chacomat/utils/Index.js";
+import { notationToCoords } from "@chacomat/utils/Index.js";
 import enterPgn from "@chacomat/utils/pgn/pgn.js";
 
 /**
@@ -98,28 +99,21 @@ export default class ChessGame {
     return repetitionCount === 3;
   }
 
-  /**
-   * Play a move using board indices whereby a8 is 0, h8 is 7 and h1 is 63.
-   * @param srcIndex The index of the source square. Must contain a piece which can legally move in the current position.
-   * @param destIndex The index of the square the source piece will move to.
-   * @param promotionType Optional. Will default to 'Q' if no argument was passed during a promotion.
-   * @returns The current instance of a game containing the position after the move.
-   */
-  move(srcIndex: number, destIndex: number, promotionType?: PromotedPieceType): this {
+  move(srcCoords: Coords, destCoords: Coords, promotionType?: PromotedPieceType): this {
     const { status } = this;
 
     if (status !== ChessGame.statuses.ACTIVE)
       throw new ChessGame.errors.InactiveGameError(status);
 
-    if (!this.currentPosition.legalMoves.some(([src, dest]) => src === srcIndex && dest === destIndex))
-      throw new ChessGame.errors.IllegalMoveError(srcIndex, destIndex);
+    if (!this.currentPosition.legalMoves.some(([src, dest]) => {
+      return src.x == srcCoords.x
+        && src.y === srcCoords.y
+        && dest.x == destCoords.x
+        && dest.y === destCoords.y;
+    }))
+      throw new ChessGame.errors.IllegalMoveError(srcCoords, destCoords);
 
-    const nextPosition = this.currentPosition.createPositionFromMove(
-      srcIndex,
-      destIndex,
-      promotionType,
-      true
-    );
+    const nextPosition = this.currentPosition.createPositionFromMove(srcCoords, destCoords, promotionType);
     nextPosition.prev = this.currentPosition;
     this.currentPosition.next.push(nextPosition);
     this.#setPosition(nextPosition);
@@ -136,8 +130,8 @@ export default class ChessGame {
    */
   moveWithNotations(srcNotation: AlgebraicSquareNotation, destNotation: AlgebraicSquareNotation, promotionType?: PromotedPieceType): this {
     return this.move(
-      notationToIndex(srcNotation),
-      notationToIndex(destNotation),
+      notationToCoords(srcNotation),
+      notationToCoords(destNotation),
       promotionType
     );
   }

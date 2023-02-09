@@ -39,8 +39,8 @@ export function parseVariations(movesStr: string): PgnVariations {
   }
 
   return (variations.length)
-    ? { movesStr, variations }
-    : { movesStr };
+    ? { movesAsString: movesStr, variations }
+    : { movesAsString: movesStr };
 }
 
 function findClosingParenIndex(str: string, firstParenIndex: number): number {

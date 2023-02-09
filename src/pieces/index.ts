@@ -13,6 +13,7 @@ Piece.pieceClassesByInitial
   .set("R", Rook)
   .set("Q", Queen)
   .set("K", King);
+
 Piece.pieceInitialsByClass
   .set(Pawn, "P")
   .set(Knight, "N")

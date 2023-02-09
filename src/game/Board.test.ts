@@ -6,10 +6,14 @@ describe("A board", () => {
     const { board } = new ChessGame({ fen: "k7/8/8/8/8/8/8/7K w - - 0 1" }).currentPosition;
 
     for (let y = 0; y < 8; y++) {
-      const bIndex = 8 + y;
-      board.set(bIndex, new Pawn("BLACK").setIndex(bIndex));
-      const wIndex = 48 + y;
-      board.set(wIndex, new Pawn("WHITE").setIndex(wIndex));
+      const bCoords = { x: 1, y };
+      const bPawn = new Pawn("BLACK");
+      bPawn.coords = bCoords;
+      board.set(bCoords, bPawn);
+      const wCoords = { x: 6, y };
+      const wPawn = new Pawn("WHITE");
+      wPawn.coords = wCoords;
+      board.set(wCoords, wPawn);
     }
 
     expect("k7/pppppppp/8/8/8/8/PPPPPPPP/7K").toBe(board.toString());
