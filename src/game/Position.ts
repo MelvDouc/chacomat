@@ -25,6 +25,7 @@ import fenChecker from "@chacomat/utils/fen-checker.js";
 export default class Position {
   static readonly startFenString: FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   static readonly CastlingRights: typeof CastlingRights = CastlingRights;
+  static readonly Board: typeof Board = Board;
 
   /**
    * Create a new position using only an FEN string.
@@ -44,7 +45,7 @@ export default class Position {
     const colorToMove: Color = (color === "w") ? "WHITE" : "BLACK";
 
     return new this({
-      board: Board.fromString(pieceStr),
+      board: this.Board.fromString(pieceStr),
       colorToMove,
       castlingRights: this.CastlingRights.fromString(castlingStr),
       enPassantY: (enPassant === fenChecker.nullCharacter)
@@ -60,6 +61,7 @@ export default class Position {
   readonly colorToMove: Color;
   readonly halfMoveClock: number;
   readonly fullMoveNumber: number;
+  #legalMoves: Move[];
   game: ChessGame;
   prev: Position | null = null;
   next: Position[] = [];
@@ -117,14 +119,15 @@ export default class Position {
   // ===== ===== ===== ===== =====
 
   get legalMoves(): Move[] {
-    const legalMoves: Move[] = [];
-    const pieces = [...this.board.values()];
+    if (this.#legalMoves)
+      return this.#legalMoves;
 
-    for (const piece of pieces) {
+    const legalMoves: Move[] = [];
+    const entries = [...this.board.entries()];
+
+    for (const [srcCoords, piece] of entries) {
       if (piece.color !== this.colorToMove)
         continue;
-
-      const srcCoords = piece.coords;
 
       for (const destCoords of piece.pseudoLegalMoves()) {
         const capturedPiece = piece.pieceName === "Pawn" && (<Pawn>piece).isEnPassantCapture(destCoords)
@@ -150,7 +153,7 @@ export default class Position {
         legalMoves.push([king.coords, destCoords]);
     }
 
-    return legalMoves;
+    return (this.#legalMoves = legalMoves);
   }
 
   /**

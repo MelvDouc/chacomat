@@ -1,10 +1,8 @@
-import { colors, ConsoleColors } from "@chacomat/constants/Color.js";
-import Piece, { King, Pawn } from "@chacomat/pieces/index.js";
+import { ConsoleColors } from "@chacomat/constants/Color.js";
+import Piece, { King } from "@chacomat/pieces/index.js";
 import type {
   BlackAndWhite,
-  Color,
-  NonPawnPieceType,
-  PieceInitial,
+  Color, PieceInitial,
   Position
 } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
@@ -15,7 +13,7 @@ export default class Board extends Map<Coords, Piece> {
   static readonly #nullPieceRegex = /0+/g;
 
   static fromString(pieceStr: string): Board {
-    const board = new Board();
+    const board = new this();
     const rows = pieceStr.split(fenChecker.rowSeparator);
 
     for (let x = 0; x < 8; x++) {
@@ -42,39 +40,6 @@ export default class Board extends Map<Coords, Piece> {
     return board;
   }
 
-  static getChess960InitialBoard(piecePlacement: Record<NonPawnPieceType, number[]>): Board {
-    const board = new Board();
-    let pieceInitial: keyof typeof piecePlacement;
-
-    for (const color of colors) {
-      const pieceRank = Piece.START_RANKS[color];
-
-      for (pieceInitial in piecePlacement) {
-        for (const y of piecePlacement[pieceInitial]) {
-          const coords = Coords.get(pieceRank, y);
-          const type = Piece.pieceClassesByInitial.get(pieceInitial) as typeof King;
-          const piece = new (type)(color);
-          piece.coords = coords;
-          piece.board = board;
-          board.set(coords, piece);
-        }
-      }
-
-      board.kings[color] = board.atX(pieceRank).atY(piecePlacement["K"][0]) as King;
-
-      for (let y = 0; y < 8; y++) {
-        const coords = Coords.get(Pawn.START_RANKS[color], y);
-        const pawn = new Pawn(color);
-        pawn.coords = coords;
-        pawn.board = board;
-        board.set(coords, new Pawn(color));
-      }
-    }
-
-    return board;
-  }
-
-  #squares = new Map<Coords, Piece>();
   enPassantY = -1;
   position: Position;
   readonly kings = {} as BlackAndWhite<King>;
@@ -92,8 +57,8 @@ export default class Board extends Map<Coords, Piece> {
     return this;
   }
 
-  getCoordsAttackedByColor(color: Color): Set<Coords> {
-    const set = new Set<Coords>();
+  getCoordsAttackedByColor(color: Color): WeakSet<Coords> {
+    const set = new WeakSet<Coords>();
 
     for (const piece of this.values())
       if (piece.color === color)
@@ -107,7 +72,7 @@ export default class Board extends Map<Coords, Piece> {
    * Clones this instance and every piece it contains.
    */
   clone(): Board {
-    const boardClone = new Board();
+    const boardClone = new (<typeof Board>this.constructor)();
     boardClone.enPassantY = this.enPassantY;
     this.forEach((piece, coords) => {
       const pieceClone = piece.clone();
