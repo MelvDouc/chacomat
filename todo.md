@@ -1,3 +1,3 @@
 # Tasks
 
-- Use map inside board
+- random placements in board
