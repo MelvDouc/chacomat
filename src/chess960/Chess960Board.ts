@@ -1,7 +1,7 @@
 import { colors } from "@chacomat/constants/Color.js";
 import Board from "@chacomat/game/Board.js";
 import Piece, { Pawn } from "@chacomat/pieces/index.js";
-import { King, NonPawnPieceType } from "@chacomat/types.local.js";
+import type { King, NonPawnPieceType } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
 
 export default class Chess960Board extends Board {
