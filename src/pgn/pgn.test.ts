@@ -1,6 +1,6 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
+import { playMovesFromPgn } from "@chacomat/pgn/moves.js";
 import Coords from "@chacomat/utils/Coords.js";
-import { playMovesFromPgn } from "@chacomat/utils/pgn/moves.js";
 
 const b2 = Coords.fromNotation("b2");
 const d1 = Coords.fromNotation("d1");

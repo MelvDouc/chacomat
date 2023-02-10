@@ -1,11 +1,12 @@
 import ChessGame from "@chacomat/game/ChessGame.js";
 import Position from "@chacomat/game/Position.js";
+import { IllegalMoveError, InactiveGameError, InvalidFenError } from "@chacomat/utils/errors.js";
 
 describe("IllegalMoveError", () => {
   it("should be thrown on an illegal move", () => {
     const game = new ChessGame();
 
-    expect(() => game.moveWithNotations("e2", "e5")).toThrow(ChessGame.errors.IllegalMoveError);
+    expect(() => game.moveWithNotations("e2", "e5")).toThrow(IllegalMoveError);
   });
 });
 
@@ -21,10 +22,10 @@ describe("InactiveGameError", () => {
       .moveWithNotations("g8", "f6")
       .moveWithNotations("h5", "f7");
 
-    expect(() => game.moveWithNotations("c6", "d4")).toThrow(ChessGame.errors.InactiveGameError);
+    expect(() => game.moveWithNotations("c6", "d4")).toThrow(InactiveGameError);
   });
 });
 
 describe("InvalidFenError", () => {
-  expect(() => Position.fromFenString(Position.startFenString.replace("8", "9"))).toThrow(ChessGame.errors.InvalidFenError);
+  expect(() => Position.fromFenString(Position.startFenString.replace("8", "9"))).toThrow(InvalidFenError);
 });

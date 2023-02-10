@@ -74,48 +74,6 @@ export default class Position {
     this.board.position = this;
   }
 
-  // ===== ===== ===== ===== =====
-  // STATUS
-  // ===== ===== ===== ===== =====
-
-  isCheck(): boolean {
-    const { coords, oppositeColor } = this.board.kings[this.colorToMove];
-    return this.board.getCoordsAttackedByColor(oppositeColor).has(coords);
-  }
-
-  isInsufficientMaterial(): boolean {
-    if (this.board.size > 4)
-      return false;
-
-    const nonKingPieces = [...this.board.values()].reduce((acc, piece) => {
-      if (!piece.isKing())
-        acc[piece.color].push(piece);
-      return acc;
-    }, {
-      WHITE: [] as Piece[],
-      BLACK: [] as Piece[]
-    });
-
-    const [whitePiece] = nonKingPieces.WHITE;
-    const [blackPiece] = nonKingPieces.BLACK;
-
-    if (!whitePiece)
-      return !blackPiece || blackPiece.isBishop() || blackPiece.isKnight();
-
-    if (whitePiece.isBishop())
-      return !blackPiece
-        || (blackPiece.isBishop()) && whitePiece.colorComplex === blackPiece.colorComplex;
-
-    if (whitePiece.isKnight())
-      return !blackPiece || blackPiece.isKnight();
-
-    return false;
-  }
-
-  // ===== ===== ===== ===== =====
-  // LEGAL MOVES
-  // ===== ===== ===== ===== =====
-
   get legalMoves(): Move[] {
     if (this.#legalMoves)
       return this.#legalMoves;
@@ -163,25 +121,15 @@ export default class Position {
     });
   }
 
-  /**
-   * A different method is used in Chess960 to determine if a move is castling.
-   */
-  isCastling(king: Piece, destCoords: Coords): boolean {
-    return Math.abs(destCoords.y - king.y) === 2;
-  }
+  #handleKingMove(king: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
+    castlingRights[king.color].length = 0;
 
-  *castlingCoords() {
-    yield* this.board.kings[this.colorToMove].castlingCoords(false);
-  }
+    if (!this.isCastling(king, destCoords)) {
+      king.board.transfer(king.coords, destCoords);
+      return;
+    }
 
-  // ===== ===== ===== ===== =====
-  // PIECE MOVES
-  // ===== ===== ===== ===== =====
-
-  #handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
-    if (rook.isOnStartRank() && castlingRights[rook.color].includes(rook.y))
-      castlingRights.unset(rook.color, rook.y);
-    rook.board.transfer(rook.coords, destCoords);
+    this.castle(king, destCoords);
   }
 
   #handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceType = "Q"): void {
@@ -204,31 +152,22 @@ export default class Position {
     board.transfer(srcCoords, destCoords);
   }
 
-  #handleKingMove(king: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
-    castlingRights[king.color].length = 0;
-
-    if (!this.isCastling(king, destCoords)) {
-      king.board.transfer(king.coords, destCoords);
-      return;
-    }
-
-    this.#castle(king, destCoords);
+  #handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
+    if (rook.isOnStartRank() && castlingRights[rook.color].includes(rook.y))
+      castlingRights.unset(rook.color, rook.y);
+    rook.board.transfer(rook.coords, destCoords);
   }
 
-  #castle(king: Piece, destCoords: Coords): void {
-    const board = king.board;
-    const srcCoords = king.coords;
-    const wing = (destCoords.y < srcCoords.y) ? 0 : 7;
-    // These are distinct from `destCoords` as the latter may point to a same-colored rook in the case of castling.
-    const kingDestCoords = Coords.get(srcCoords.x, Piece.CASTLED_KING_FILES[wing]);
-    const rookSrcCoords = (board.get(destCoords)?.isRook())
-      ? destCoords
-      : Coords.get(destCoords.x, wing);
-    const rookDestCoords = Coords.get(srcCoords.x, Piece.CASTLED_ROOK_FILES[wing]);
+  castle(king: Piece, destCoords: Coords): void {
+    const wing = destCoords.y < king.y ? 0 : 7;
+    const rookSrcCoords = Coords.get(king.x, wing);
+    const rookDestCoords = Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]);
+    king.board.transfer(king.coords, destCoords);
+    king.board.transfer(rookSrcCoords, rookDestCoords);
+  }
 
-    board
-      .transfer(srcCoords, kingDestCoords)
-      .transfer(rookSrcCoords, rookDestCoords);
+  *castlingCoords() {
+    yield* this.board.kings[this.colorToMove].castlingCoords(false);
   }
 
   /**
@@ -255,11 +194,11 @@ export default class Position {
       castlingRights.unset(destPiece.color, destPiece.y);
 
     if (isSrcPiecePawn)
-      this.#handlePawnMove(srcPiece as Pawn, destCoords, promotionType);
+      this.#handlePawnMove(srcPiece, destCoords, promotionType);
     else if (srcPiece.isKing())
       this.#handleKingMove(srcPiece, destCoords, castlingRights);
     else if (srcPiece.isRook())
-      this.#handleRookMove(srcPiece as Rook, destCoords, castlingRights);
+      this.#handleRookMove(srcPiece, destCoords, castlingRights);
     else
       board.transfer(srcCoords, destCoords);
 
@@ -275,9 +214,46 @@ export default class Position {
     });
   }
 
-  // ===== ===== ===== ===== =====
-  // MISC
-  // ===== ===== ===== ===== =====
+  /**
+   * A different method is used in Chess960 to determine if a move is castling.
+   */
+  isCastling(king: Piece, destCoords: Coords): boolean {
+    return Math.abs(destCoords.y - king.y) === 2;
+  }
+
+  isCheck(): boolean {
+    const { coords, oppositeColor } = this.board.kings[this.colorToMove];
+    return this.board.getCoordsAttackedByColor(oppositeColor).has(coords);
+  }
+
+  isInsufficientMaterial(): boolean {
+    if (this.board.size > 4)
+      return false;
+
+    const nonKingPieces = [...this.board.values()].reduce((acc, piece) => {
+      if (!piece.isKing())
+        acc[piece.color].push(piece);
+      return acc;
+    }, {
+      WHITE: [] as Piece[],
+      BLACK: [] as Piece[]
+    });
+
+    const [whitePiece] = nonKingPieces.WHITE;
+    const [blackPiece] = nonKingPieces.BLACK;
+
+    if (!whitePiece)
+      return !blackPiece || blackPiece.isBishop() || blackPiece.isKnight();
+
+    if (whitePiece.isBishop())
+      return !blackPiece
+        || (blackPiece.isBishop()) && whitePiece.colorComplex === blackPiece.colorComplex;
+
+    if (whitePiece.isKnight())
+      return !blackPiece || blackPiece.isKnight();
+
+    return false;
+  }
 
   /**
    * @returns The FEN string of this position.

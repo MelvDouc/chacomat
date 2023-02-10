@@ -1,4 +1,5 @@
 import Position from "@chacomat/game/Position.js";
+import enterPgn from "@chacomat/pgn/pgn.js";
 import type {
   AlgebraicSquareNotation,
   Color,
@@ -10,9 +11,8 @@ import Coords from "@chacomat/utils/Coords.js";
 import {
   IllegalMoveError,
   InactiveGameError,
-  InvalidFenError
+  InvalidAlgebraicNotationError
 } from "@chacomat/utils/errors.js";
-import enterPgn from "@chacomat/utils/pgn/pgn.js";
 
 /**
  * @classdesc Represents a sequence of positions and variations in a chess game. New positions are created by playing moves.
@@ -27,11 +27,6 @@ export default class ChessGame {
     FIFTY_MOVE_DRAW: "draw by fifty-move rule",
     INSUFFICIENT_MATERIAL: "insufficient material"
   } as const;
-  static readonly errors = {
-    IllegalMoveError: IllegalMoveError,
-    InactiveGameError: InactiveGameError,
-    InvalidFenError: InvalidFenError
-  };
 
   currentPosition: InstanceType<typeof ChessGame["Position"]>;
   readonly metaInfo: GameMetaInfo;
@@ -73,10 +68,6 @@ export default class ChessGame {
     return ChessGame.statuses.ACTIVE;
   }
 
-  get errors() {
-    return (this.constructor as typeof ChessGame).errors;
-  }
-
   #setPosition(position: Position): void {
     this.currentPosition = position;
     position.game = this;
@@ -102,7 +93,7 @@ export default class ChessGame {
     const { status } = this;
 
     if (status !== ChessGame.statuses.ACTIVE)
-      throw new ChessGame.errors.InactiveGameError(status);
+      throw new InactiveGameError(status);
 
     if (!this.currentPosition.legalMoves.some(([src, dest]) => {
       return src.x == srcCoords.x
@@ -110,7 +101,7 @@ export default class ChessGame {
         && dest.x == destCoords.x
         && dest.y === destCoords.y;
     }))
-      throw new ChessGame.errors.IllegalMoveError(srcCoords, destCoords);
+      throw new IllegalMoveError(JSON.stringify({ srcCoords, destCoords }));
 
     const nextPosition = this.currentPosition.createPositionFromMove(srcCoords, destCoords, promotionType);
     nextPosition.prev = this.currentPosition;
@@ -131,8 +122,8 @@ export default class ChessGame {
     const srcCoords = Coords.fromNotation(srcNotation);
     const destCoords = Coords.fromNotation(destNotation);
 
-    if (!srcCoords) throw new Error("Invalid src notation");
-    if (!destCoords) throw new Error("Invalid dest notation");
+    if (!srcCoords) throw new InvalidAlgebraicNotationError(srcNotation);
+    if (!destCoords) throw new InvalidAlgebraicNotationError(destNotation);
 
     return this.move(srcCoords, destCoords, promotionType);
   }

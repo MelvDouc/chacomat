@@ -1,18 +1,17 @@
 import File from "@chacomat/constants/File.js";
+import { parsedMoves, parseVariations } from "@chacomat/pgn/variations.js";
 import {
-  Board,
   ChessFileName,
   ChessGame,
-  Move,
+  MoveFinder,
   PromotedPieceType
 } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
-import { parsedMoves, parseVariations } from "@chacomat/utils/pgn/variations.js";
+import { IllegalMoveError } from "@chacomat/utils/errors.js";
 
 const checkRegex = /(\+{1,2}|#)?/;
 
-// TODO: error handling
-const HALF_MOVE_REGEXPS: Record<string, {
+const MOVE_FINDERS: Record<string, {
   regex: RegExp;
   getMove: MoveFinder;
 }> = {
@@ -32,6 +31,7 @@ const HALF_MOVE_REGEXPS: Record<string, {
           && dest === destCoords;
       });
 
+      if (!move) return null;
       return (pt != null)
         ? [...move, pt as PromotedPieceType]
         : move;
@@ -63,6 +63,8 @@ const HALF_MOVE_REGEXPS: Record<string, {
       const destCoords = [...board.position.castlingCoords()].find(({ y }) => {
         return (t2) ? (y < king.y) : (y > king.y);
       });
+      if (!destCoords)
+        return null;
       return [king.coords, destCoords];
     }
   }
@@ -88,24 +90,20 @@ export function playMovesFromPgn(movesStr: string, game: ChessGame) {
 }
 
 function findAndPlayMove(moveText: string, game: ChessGame) {
-  let key: keyof typeof HALF_MOVE_REGEXPS;
+  let key: keyof typeof MOVE_FINDERS;
 
-  for (key in HALF_MOVE_REGEXPS) {
-    const match = moveText.match(HALF_MOVE_REGEXPS[key].regex);
+  for (key in MOVE_FINDERS) {
+    const match = moveText.match(MOVE_FINDERS[key].regex);
     if (match) {
-      const move = HALF_MOVE_REGEXPS[key].getMove(
+      const move = MOVE_FINDERS[key].getMove(
         match.groups,
         game.currentPosition.board,
         game.currentPosition.legalMoves
       );
+      if (!move)
+        throw new IllegalMoveError(moveText);
       game.move(...move);
       break;
     }
   }
 }
-
-type MoveMatch = {
-  [x: string]: string | undefined;
-};
-
-type MoveFinder = (match: MoveMatch, board: Board, legalMoves?: Move[]) => [...Move, PromotedPieceType?];

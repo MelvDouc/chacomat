@@ -54,7 +54,13 @@ export type Chess960CastlingRights = import("./chess960/Chess960CastlingRights.j
 // ===== ===== ===== ===== =====
 
 export type Color = "WHITE" | "BLACK";
+export type BlackAndWhite<T> = {
+  [K in Color]: T;
+};
 export type Wing = 0 | 7;
+export type Wings<T> = {
+  [W in Wing]: T;
+};
 
 // ===== ===== ===== ===== =====
 // COORDS
@@ -63,6 +69,10 @@ export type Wing = 0 | 7;
 export type Coords = import("./utils/Coords.js").default;
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
+type MoveMatch = {
+  [x: string]: string | undefined;
+};
+export type MoveFinder = (match: MoveMatch, board: Board, legalMoves?: Move[]) => ([...Move, PromotedPieceType?] | null | undefined);
 
 export interface PieceOffsets {
   x: number[];
@@ -71,29 +81,15 @@ export interface PieceOffsets {
 
 export type GameMetaInfo = Partial<FullGameMetaInfo>;
 
-export type BlackAndWhite<T> = {
-  [K in Color]: T;
-};
-
-export type Wings<T> = {
-  [W in Wing]: T;
-};
-
 interface GameParameters {
   /**
    * If the parameters contain this property, then `positionParams` will be ignored.
    */
   pgn?: string;
-}
-
-interface GameParameters {
   /**
    * If the parameters contain this property, then `positionParams` will be ignored.
    */
   fen?: FenString;
-}
-
-interface GameParameters {
   positionParams?: PositionParameters;
   metaInfo?: GameMetaInfo;
 }
