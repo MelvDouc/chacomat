@@ -20,15 +20,16 @@ const HALF_MOVE_REGEXPS: Record<string, {
     regex: new RegExp(`^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRNB]))?${checkRegex.source}$`),
     getMove: ({ sf, df, dr, pt }, board, legalMoves) => {
       const srcY = File[sf as ChessFileName];
-      const destX = Coords.rankNameToX(dr);
-      const destY = df ? File[df as ChessFileName] : srcY;
+      const destCoords = Coords.get(
+        Coords.rankNameToX(dr),
+        df ? File[df as ChessFileName] : srcY
+      );
 
       const move = legalMoves.find(([src, dest]) => {
         const srcPiece = board.get(src);
-        return srcPiece?.pieceName === "Pawn"
+        return srcPiece?.isPawn()
           && srcPiece.y === srcY
-          && dest.x === destX
-          && dest.y === destY;
+          && dest === destCoords;
       });
 
       return (pt != null)
@@ -41,16 +42,17 @@ const HALF_MOVE_REGEXPS: Record<string, {
     getMove: ({ pt, sf, sr, df, dr }, board, legalMoves) => {
       const srcX = sr ? Coords.rankNameToX(sr) : null;
       const srcY = sf ? File[sf as ChessFileName] : null;
-      const destX = Coords.rankNameToX(dr);
-      const destY = File[df as ChessFileName];
+      const destCoords = Coords.get(
+        Coords.rankNameToX(dr),
+        File[df as ChessFileName]
+      );
 
       return legalMoves.find(([src, dest]) => {
         const srcPiece = board.get(src);
         return srcPiece?.pieceClass.whiteInitial === pt
           && (srcX == null || srcPiece.x === srcX)
           && (srcY == null || srcPiece.y === srcY)
-          && dest.x === destX
-          && dest.y === destY;
+          && dest === destCoords;
       });
     }
   },

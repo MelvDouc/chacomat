@@ -6,14 +6,14 @@ describe("Piece", () => {
     const piece = new Knight("BLACK");
 
     expect(piece.color).toBe("BLACK");
-    expect(piece.pieceName).toBe("Knight");
+    expect(piece.isKnight()).toBe(true);
   });
 
   it("P should be a white pawn", () => {
     const piece = new (Piece.pieceClassesByInitial.get("P") as typeof Pawn)("WHITE");
 
     expect(piece.color).toBe("WHITE");
-    expect(piece.pieceName).toBe("Pawn");
+    expect(piece.isPawn()).toBe(true);
   });
 });
 

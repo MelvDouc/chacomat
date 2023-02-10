@@ -3,9 +3,7 @@ import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import Piece from "@chacomat/pieces/index.js";
 import type {
-  AlgebraicSquareNotation,
-  Bishop,
-  ChessGame,
+  AlgebraicSquareNotation, ChessGame,
   Color,
   FenString,
   Move,
@@ -90,7 +88,7 @@ export default class Position {
       return false;
 
     const nonKingPieces = [...this.board.values()].reduce((acc, piece) => {
-      if (piece.pieceName !== "King")
+      if (!piece.isKing())
         acc[piece.color].push(piece);
       return acc;
     }, {
@@ -102,14 +100,14 @@ export default class Position {
     const [blackPiece] = nonKingPieces.BLACK;
 
     if (!whitePiece)
-      return !blackPiece || blackPiece.pieceName === "Bishop" || blackPiece.pieceName === "Knight";
+      return !blackPiece || blackPiece.isBishop() || blackPiece.isKnight();
 
-    if (whitePiece.pieceName === "Knight")
-      return !blackPiece || blackPiece.pieceName === "Knight";
-
-    if (whitePiece.pieceName === "Bishop")
+    if (whitePiece.isBishop())
       return !blackPiece
-        || (blackPiece.pieceName === "Bishop") && (<Bishop>whitePiece).colorComplex === (<Bishop>blackPiece).colorComplex;
+        || (blackPiece.isBishop()) && whitePiece.colorComplex === blackPiece.colorComplex;
+
+    if (whitePiece.isKnight())
+      return !blackPiece || blackPiece.isKnight();
 
     return false;
   }
@@ -130,7 +128,7 @@ export default class Position {
         continue;
 
       for (const destCoords of piece.pseudoLegalMoves()) {
-        const capturedPiece = piece.pieceName === "Pawn" && (<Pawn>piece).isEnPassantCapture(destCoords)
+        const capturedPiece = piece.isPawn() && piece.isEnPassantCapture(destCoords)
           ? this.board.atX(srcCoords.x).atY(destCoords.y)
           : this.board.get(destCoords);
 
@@ -223,7 +221,7 @@ export default class Position {
     const wing = (destCoords.y < srcCoords.y) ? 0 : 7;
     // These are distinct from `destCoords` as the latter may point to a same-colored rook in the case of castling.
     const kingDestCoords = Coords.get(srcCoords.x, Piece.CASTLED_KING_FILES[wing]);
-    const rookSrcCoords = (board.get(destCoords)?.pieceName === "Rook")
+    const rookSrcCoords = (board.get(destCoords)?.isRook())
       ? destCoords
       : Coords.get(destCoords.x, wing);
     const rookDestCoords = Coords.get(srcCoords.x, Piece.CASTLED_ROOK_FILES[wing]);
@@ -246,29 +244,24 @@ export default class Position {
     const castlingRights = this.castlingRights.clone();
     const srcPiece = board.get(srcCoords) as Piece;
     const destPiece = board.get(destCoords);
-    const isSrcPiecePawn = srcPiece.pieceName === "Pawn";
+    const isSrcPiecePawn = srcPiece.isPawn();
     const isCaptureOrPawnMove = isSrcPiecePawn || !!destPiece;
 
     if (
-      destPiece?.pieceName === "Rook"
+      destPiece?.isRook()
       && destPiece.isOnStartRank()
       && castlingRights[destPiece.color].includes(destPiece.y)
     )
       castlingRights.unset(destPiece.color, destPiece.y);
 
-    switch (srcPiece.pieceName) {
-      case "Pawn":
-        this.#handlePawnMove(srcPiece as Pawn, destCoords, promotionType);
-        break;
-      case "King":
-        this.#handleKingMove(srcPiece, destCoords, castlingRights);
-        break;
-      case "Rook":
-        this.#handleRookMove(srcPiece as Rook, destCoords, castlingRights);
-        break;
-      default:
-        board.transfer(srcCoords, destCoords);
-    }
+    if (isSrcPiecePawn)
+      this.#handlePawnMove(srcPiece as Pawn, destCoords, promotionType);
+    else if (srcPiece.isKing())
+      this.#handleKingMove(srcPiece, destCoords, castlingRights);
+    else if (srcPiece.isRook())
+      this.#handleRookMove(srcPiece as Rook, destCoords, castlingRights);
+    else
+      board.transfer(srcCoords, destCoords);
 
     return new (<typeof Position>this.constructor)({
       board,

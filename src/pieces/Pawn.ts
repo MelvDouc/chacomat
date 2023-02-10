@@ -28,7 +28,7 @@ export default class Pawn extends Piece {
     if (!this.board.has(coords1)) {
       yield coords1;
 
-      if (this.x === this.startRank) {
+      if (this.isOnStartRank()) {
         const coords2 = coords1.getPeer(this.direction, 0);
 
         if (!this.board.has(coords2))

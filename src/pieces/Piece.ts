@@ -1,12 +1,17 @@
 import { ReversedColor } from "@chacomat/constants/Color.js";
 import type {
+  Bishop,
   BlackPieceInitial,
   Board,
   Color,
   CoordsGenerator,
+  King,
+  Knight,
+  Pawn,
   PieceInitial,
-  PieceName,
   PieceOffsets,
+  Queen,
+  Rook,
   WhitePieceInitial,
   Wings
 } from "@chacomat/types.local.js";
@@ -55,7 +60,7 @@ export default abstract class Piece {
 
   readonly color: Color;
   coords: Coords;
-  #board: Board;
+  board: Board;
 
   constructor(color: Color) {
     this.color = color;
@@ -63,10 +68,6 @@ export default abstract class Piece {
 
   get pieceClass(): typeof Piece {
     return this.constructor as typeof Piece;
-  }
-
-  get pieceName(): PieceName {
-    return this.pieceClass.name as PieceName;
   }
 
   get initial(): PieceInitial {
@@ -83,10 +84,6 @@ export default abstract class Piece {
     return this.pieceClass.offsets;
   }
 
-  get startRank(): number {
-    return this.pieceClass.START_RANKS[this.color];
-  }
-
   get oppositeColor(): Color {
     return ReversedColor[this.color];
   }
@@ -97,14 +94,6 @@ export default abstract class Piece {
 
   get y() {
     return this.coords.y;
-  }
-
-  get board(): Board {
-    return this.#board;
-  }
-
-  set board(board: Board) {
-    this.#board = board;
   }
 
   isOnStartRank(): boolean {
@@ -126,8 +115,30 @@ export default abstract class Piece {
   }
 
   clone(): Piece {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return new (this.pieceClass)(this.color);
+    return Reflect.construct(this.pieceClass, [this.color]);
+  }
+
+  isPawn(): this is Pawn {
+    return this.pieceClass.name === "Pawn";
+  }
+
+  isKnight(): this is Knight {
+    return this.pieceClass.name === "Knight";
+  }
+
+  isRook(): this is Rook {
+    return this.pieceClass.name === "Rook";
+  }
+
+  isQueen(): this is Queen {
+    return this.pieceClass.name === "Queen";
+  }
+
+  isBishop(): this is Bishop {
+    return this.pieceClass.name === "Bishop";
+  }
+
+  isKing(): this is King {
+    return this.pieceClass.name === "King";
   }
 }

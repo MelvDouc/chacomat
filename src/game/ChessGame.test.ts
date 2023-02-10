@@ -43,7 +43,7 @@ describe("en passant", () => {
 
     expect(game.currentPosition.board.get(Coords.fromNotation("c4"))).toBeFalsy();
     expect(game.currentPosition.board.get(Coords.fromNotation("d4"))).toBeFalsy();
-    expect(game.currentPosition.board.get(Coords.fromNotation("c3"))?.pieceName).toBe("Pawn");
+    expect(game.currentPosition.board.get(Coords.fromNotation("c3"))?.isPawn()).toBe(true);
   });
 });
 

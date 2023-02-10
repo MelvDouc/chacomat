@@ -2,10 +2,8 @@ import { AlgebraicSquareNotation } from "@chacomat/types.local.js";
 
 export default class Coords {
   static #byXAndY = {} as Record<number, Record<number, Coords>>;
-  static #byIndex = {} as Record<number, Coords>;
   static #byNotation = {} as Record<AlgebraicSquareNotation, Coords>;
-  static #notationsByCoords = new Map<Coords, AlgebraicSquareNotation>();
-  static #indicesByCoords = new Map<Coords, number>();
+  static #notations = {} as Record<number, Record<number, AlgebraicSquareNotation>>;
 
   static get(x: number, y: number) {
     return this.#byXAndY[x][y];
@@ -38,15 +36,13 @@ export default class Coords {
   static {
     for (let x = 0; x < 8; x++) {
       this.#byXAndY[x] = {};
+      this.#notations[x] = {};
       for (let y = 0; y < 8; y++) {
         const coords = new Coords(x, y);
-        const index = x * 8 + y;
         const notation = this.yToFileName(y) + this.xToRankName(x) as AlgebraicSquareNotation;
         this.#byXAndY[x][y] = coords;
-        this.#byIndex[index] = coords;
-        this.#indicesByCoords.set(coords, index);
+        this.#notations[x][y] = notation;
         this.#byNotation[notation] = coords;
-        this.#notationsByCoords.set(coords, notation);
       }
     }
   }
@@ -59,12 +55,8 @@ export default class Coords {
     this.y = y;
   }
 
-  get index(): number {
-    return Coords.#indicesByCoords.get(this);
-  }
-
   get notation(): AlgebraicSquareNotation {
-    return Coords.#notationsByCoords.get(this);
+    return Coords.#notations[this.x][this.y];
   }
 
   getPeer(xOffset: number, yOffset: number): Coords | null {
