@@ -6,8 +6,9 @@ dist/**/*.test.*
 src
 test
 
+.env
+.eslintrc.*
 .gitignore
-.eslint.*
-tsconfig.json
 jest.config.*
+tsconfig.json
 todo.md
