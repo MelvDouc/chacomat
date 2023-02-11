@@ -5,46 +5,31 @@ function randomInt(min: number, max: number): number {
 }
 
 export function getChess960PiecePlacement(): Record<NonPawnPieceType, number[]> {
-  const files = new Set(Array.from({ length: 8 }, (_, i) => i));
+  const files = Array.from({ length: 8 }, (_, i) => i);
 
-  const kingFile = getKingFile(files),
-    rookFiles = getRookFiles(files, kingFile),
-    bishopFiles = getBishopFiles(files);
-  const queenFile = [...files][randomInt(0, files.size - 1)];
-  files.delete(queenFile);
+  const darkSquaredBishopFile = [0, 2, 4, 6][randomInt(0, 3)];
+  files.splice(darkSquaredBishopFile, 1);
+
+  const lightSquaredBishopFile = [1, 3, 5, 7][randomInt(0, 3)];
+  files.splice(files.indexOf(lightSquaredBishopFile), 1);
+
+  const queenFile = files[randomInt(0, files.length - 1)];
+  files.splice(files.indexOf(queenFile), 1);
+
+  const knightFile1 = files[randomInt(0, files.length - 1)];
+  files.splice(files.indexOf(knightFile1), 1);
+
+  const knightFile2 = files[randomInt(0, files.length - 1)];
+  files.splice(files.indexOf(knightFile2), 1);
+
+  const [rookFile1, kingFile, rookFile2] = files;
+
 
   return {
     K: [kingFile],
     Q: [queenFile],
-    R: rookFiles,
-    B: bishopFiles,
-    N: [...files]
+    R: [rookFile1, rookFile2],
+    B: [darkSquaredBishopFile, lightSquaredBishopFile],
+    N: [knightFile1, knightFile2]
   };
-}
-
-function getKingFile(files: Set<number>): number {
-  const kingFile = randomInt(1, 6);
-  files.delete(kingFile);
-  return kingFile;
-}
-
-function getRookFiles(files: Set<number>, kingFile: number): number[] {
-  const rookFiles = [
-    randomInt(0, kingFile - 1),
-    randomInt(kingFile + 1, 7),
-  ];
-  files.delete(rookFiles[0]);
-  files.delete(rookFiles[1]);
-  return rookFiles;
-}
-
-function getBishopFiles(files: Set<number>): number[] {
-  const bishopFile1 = [...files][randomInt(0, files.size - 1)];
-  files.delete(bishopFile1);
-
-  const remainingFiles = [...files].filter((n) => n % 2 !== bishopFile1 % 2);
-  const bishopFile2 = remainingFiles[randomInt(0, remainingFiles.length - 1)];
-  files.delete(bishopFile2);
-
-  return [bishopFile1, bishopFile2];
 }

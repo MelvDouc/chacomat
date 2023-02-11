@@ -1,6 +1,6 @@
 import { BlackAndWhite, Color } from "../types.local.js";
 
-export const colors: Color[] = ["WHITE", "BLACK"];
+export const colors = ["WHITE", "BLACK"] as const;
 
 export const ReversedColor = {
   WHITE: "BLACK",

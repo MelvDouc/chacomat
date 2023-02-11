@@ -88,11 +88,11 @@ export default abstract class Piece {
     return ReversedColor[this.color];
   }
 
-  get x() {
+  get x(): number {
     return this.coords.x;
   }
 
-  get y() {
+  get y(): number {
     return this.coords.y;
   }
 

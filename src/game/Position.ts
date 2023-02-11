@@ -7,11 +7,8 @@ import type {
   Color,
   FenString,
   Move,
-  Pawn,
-  PositionParameters,
-  PromotedPieceType,
-  Queen,
-  Rook
+  Pawn, PositionParameters,
+  PromotedPieceType, Rook
 } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
 import { InvalidFenError } from "@chacomat/utils/errors.js";
@@ -86,20 +83,8 @@ export default class Position {
         continue;
 
       for (const destCoords of piece.pseudoLegalMoves()) {
-        const capturedPiece = piece.isPawn() && piece.isEnPassantCapture(destCoords)
-          ? this.board.atX(srcCoords.x).atY(destCoords.y)
-          : this.board.get(destCoords);
-
-        capturedPiece && this.board.delete(capturedPiece.coords);
-        this.board.set(destCoords, piece).delete(srcCoords);
-        piece.coords = destCoords;
-
-        if (!this.isCheck())
+        if (!this.tryMoveForCheck(srcCoords, destCoords))
           legalMoves.push([srcCoords, destCoords]);
-
-        this.board.set(srcCoords, piece).delete(destCoords);
-        piece.coords = srcCoords;
-        capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
       }
     }
 
@@ -137,7 +122,7 @@ export default class Position {
     const srcCoords = pawn.coords;
 
     if (destCoords.x === Piece.START_RANKS[pawn.oppositeColor]) {
-      const promotedPiece = new (Piece.pieceClassesByInitial.get(promotionType) as typeof Queen)(pawn.color);
+      const promotedPiece = new (Piece.pieceClassesByInitial.get(promotionType) as unknown as { new(color: Color): Piece; })(pawn.color);
       promotedPiece.coords = destCoords;
       promotedPiece.board = board;
       board.set(destCoords, promotedPiece).delete(srcCoords);
@@ -271,5 +256,23 @@ export default class Position {
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
     ].join(" ");
+  }
+
+  tryMoveForCheck(srcCoords: Coords, destCoords: Coords): boolean {
+    const srcPiece = this.board.get(srcCoords) as Piece;
+    const capturedPiece = srcPiece.isPawn() && srcPiece.isEnPassantCapture(destCoords)
+      ? this.board.atX(srcCoords.x).atY(destCoords.y)
+      : this.board.get(destCoords);
+
+    capturedPiece && this.board.delete(capturedPiece.coords);
+    this.board.set(destCoords, srcPiece).delete(srcCoords);
+    srcPiece.coords = destCoords;
+
+    const isCheck = this.isCheck();
+
+    this.board.set(srcCoords, srcPiece).delete(destCoords);
+    srcPiece.coords = srcCoords;
+    capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
+    return isCheck;
   }
 }

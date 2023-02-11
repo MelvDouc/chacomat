@@ -15,15 +15,14 @@ export default class Chess960Board extends Board {
       for (pieceInitial in piecePlacement) {
         for (const y of piecePlacement[pieceInitial]) {
           const coords = Coords.get(pieceRank, y);
-          const type = Piece.pieceClassesByInitial.get(pieceInitial) as typeof King;
-          const piece = new (type)(color);
+          const piece = Reflect.construct(Piece.pieceClassesByInitial.get(pieceInitial), [color]) as Piece;
           piece.coords = coords;
           piece.board = board;
           board.set(coords, piece);
         }
       }
 
-      board.kings[color] = board.atX(pieceRank).atY(piecePlacement["K"][0]) as King;
+      board.kings[color] = board.atX(pieceRank).atY(piecePlacement.K[0]) as King;
 
       for (let y = 0; y < 8; y++) {
         const coords = Coords.get(Pawn.START_RANKS[color], y);

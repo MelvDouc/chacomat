@@ -51,7 +51,7 @@ export default class Pawn extends Piece {
     yield* this.#captures();
   }
 
-  isEnPassantCapture(destCoords: Coords) {
+  isEnPassantCapture(destCoords: Coords): boolean {
     return this.x === Piece.MIDDLE_RANKS[this.oppositeColor]
       && destCoords.y === this.board.enPassantY;
   }
