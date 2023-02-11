@@ -1,8 +1,10 @@
 import { ConsoleColors } from "@chacomat/constants/Color.js";
-import Piece, { King } from "@chacomat/pieces/index.js";
+import Piece from "@chacomat/pieces/index.js";
 import type {
   BlackAndWhite,
-  Color, PieceInitial,
+  Color,
+  King,
+  PieceInitial,
   Position
 } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
@@ -22,12 +24,10 @@ export default class Board extends Map<Coords, Piece> {
       for (let y = 0; y < 8; y++) {
         const initial = row[y];
         if (initial === Board.#nullPiece) continue;
-        const coords = Coords.get(x, y);
-        const piece = Piece.fromInitial(initial as PieceInitial) as Piece;
-        piece.coords = coords;
+        const piece = Piece.fromInitial(initial as PieceInitial);
         piece.board = board;
-        board.set(coords, piece);
-        if (piece instanceof King)
+        board.set(Coords.get(x, y), piece);
+        if (piece.isKing())
           board.kings[piece.color] = piece;
       }
     }
@@ -44,17 +44,20 @@ export default class Board extends Map<Coords, Piece> {
   position: Position;
   readonly kings = {} as BlackAndWhite<King>;
 
+  override set(coords: Coords, piece: Piece): this {
+    piece.coords = coords;
+    return super.set(coords, piece);
+  }
+
   atX(x: number) {
     return {
       atY: (y: number) => this.get(Coords.get(x, y))
     };
   }
 
-  transfer(srcCoords: Coords, destCoords: Coords): this {
-    const srcPiece = this.get(srcCoords) as Piece;
-    srcPiece.coords = destCoords;
-    this.set(destCoords, srcPiece).delete(srcCoords);
-    return this;
+  transfer(piece: Piece, destCoords: Coords): void {
+    this.delete(piece.coords);
+    this.set(destCoords, piece);
   }
 
   getCoordsAttackedByColor(color: Color): WeakSet<Coords> {
@@ -76,7 +79,6 @@ export default class Board extends Map<Coords, Piece> {
     boardClone.enPassantY = this.enPassantY;
     this.forEach((piece, coords) => {
       const pieceClone = piece.clone();
-      pieceClone.coords = coords;
       pieceClone.board = boardClone;
       boardClone.set(coords, pieceClone);
     });

@@ -15,7 +15,6 @@ export default class King extends Piece {
     const { x: srcKingX, y: srcKingY } = this.coords;
     const wing = this.#getWing(srcKingY, srcRookY);
     const rookCoords = Coords.get(srcKingX, srcRookY);
-    const attackedCoords = this.board.getCoordsAttackedByColor(this.oppositeColor);
 
     // The squares traversed by the king must not be attacked,
     // and they must be either empty or occupied by the castling rook.
@@ -26,7 +25,7 @@ export default class King extends Piece {
       for (let y = srcKingY + kingDirection; ; y += kingDirection) {
         const destCoords = Coords.get(srcKingX, y);
         if (
-          attackedCoords.has(destCoords)
+          this.board.position.attackedCoords.has(destCoords)
           || y !== rookCoords.y && this.board.has(destCoords)
         )
           return false;

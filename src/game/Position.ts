@@ -56,6 +56,7 @@ export default class Position {
   readonly colorToMove: Color;
   readonly halfMoveClock: number;
   readonly fullMoveNumber: number;
+  #attackedCoords: WeakSet<Coords>;
   #legalMoves: Move[];
   game: ChessGame;
   prev: Position | null = null;
@@ -71,6 +72,11 @@ export default class Position {
     this.board.position = this;
   }
 
+  get attackedCoords(): WeakSet<Coords> {
+    this.#attackedCoords ??= this.board.getCoordsAttackedByColor(ReversedColor[this.colorToMove]);
+    return this.#attackedCoords;
+  }
+
   get legalMoves(): Move[] {
     if (this.#legalMoves)
       return this.#legalMoves;
@@ -78,18 +84,15 @@ export default class Position {
     const legalMoves: Move[] = [];
     const entries = [...this.board.entries()];
 
-    for (const [srcCoords, piece] of entries) {
-      if (piece.color !== this.colorToMove)
-        continue;
+    for (const [srcCoords, piece] of entries)
+      if (piece.color === this.colorToMove)
+        for (const destCoords of piece.pseudoLegalMoves())
+          if (!this.tryMoveForCheck(piece, destCoords))
+            legalMoves.push([srcCoords, destCoords]);
 
-      for (const destCoords of piece.pseudoLegalMoves()) {
-        if (!this.tryMoveForCheck(srcCoords, destCoords))
-          legalMoves.push([srcCoords, destCoords]);
-      }
-    }
+    const king = this.board.kings[this.colorToMove];
 
-    if (!this.isCheck()) {
-      const king = this.board.kings[this.colorToMove];
+    if (!this.attackedCoords.has(king.coords)) {
       for (const destCoords of this.castlingCoords())
         legalMoves.push([king.coords, destCoords]);
     }
@@ -110,7 +113,7 @@ export default class Position {
     castlingRights[king.color].length = 0;
 
     if (!this.isCastling(king, destCoords)) {
-      king.board.transfer(king.coords, destCoords);
+      king.board.transfer(king, destCoords);
       return;
     }
 
@@ -119,36 +122,34 @@ export default class Position {
 
   #handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceType = "Q"): void {
     const board = pawn.board;
-    const srcCoords = pawn.coords;
 
     if (destCoords.x === Piece.START_RANKS[pawn.oppositeColor]) {
-      const promotedPiece = new (Piece.pieceClassesByInitial.get(promotionType) as unknown as { new(color: Color): Piece; })(pawn.color);
-      promotedPiece.coords = destCoords;
+      const promotedPiece: Piece = Reflect.construct(Piece.pieceClassesByInitial.get(promotionType), [pawn.color]);
       promotedPiece.board = board;
-      board.set(destCoords, promotedPiece).delete(srcCoords);
+      board.delete(pawn.coords);
+      board.set(destCoords, promotedPiece);
       return;
     }
 
     if (pawn.isEnPassantCapture(destCoords)) {
-      const enPassantPawnCoords = Coords.get(srcCoords.x, destCoords.y);
+      const enPassantPawnCoords = Coords.get(pawn.x, destCoords.y);
       board.delete(enPassantPawnCoords);
     }
 
-    board.transfer(srcCoords, destCoords);
+    board.transfer(pawn, destCoords);
   }
 
   #handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
     if (rook.isOnStartRank() && castlingRights[rook.color].includes(rook.y))
       castlingRights.unset(rook.color, rook.y);
-    rook.board.transfer(rook.coords, destCoords);
+    rook.board.transfer(rook, destCoords);
   }
 
   castle(king: Piece, destCoords: Coords): void {
     const wing = destCoords.y < king.y ? 0 : 7;
-    const rookSrcCoords = Coords.get(king.x, wing);
-    const rookDestCoords = Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]);
-    king.board.transfer(king.coords, destCoords);
-    king.board.transfer(rookSrcCoords, rookDestCoords);
+    const rook = king.board.atX(king.x).atY(wing);
+    king.board.transfer(king, destCoords);
+    king.board.transfer(rook, Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]));
   }
 
   *castlingCoords() {
@@ -185,7 +186,7 @@ export default class Position {
     else if (srcPiece.isRook())
       this.#handleRookMove(srcPiece, destCoords, castlingRights);
     else
-      board.transfer(srcCoords, destCoords);
+      board.transfer(srcPiece, destCoords);
 
     return new (<typeof Position>this.constructor)({
       board,
@@ -232,7 +233,7 @@ export default class Position {
 
     if (whitePiece.isBishop())
       return !blackPiece
-        || (blackPiece.isBishop()) && whitePiece.colorComplex === blackPiece.colorComplex;
+        || blackPiece.isBishop() && whitePiece.colorComplex === blackPiece.colorComplex;
 
     if (whitePiece.isKnight())
       return !blackPiece || blackPiece.isKnight();
@@ -258,21 +259,20 @@ export default class Position {
     ].join(" ");
   }
 
-  tryMoveForCheck(srcCoords: Coords, destCoords: Coords): boolean {
-    const srcPiece = this.board.get(srcCoords) as Piece;
-    const capturedPiece = srcPiece.isPawn() && srcPiece.isEnPassantCapture(destCoords)
-      ? this.board.atX(srcCoords.x).atY(destCoords.y)
-      : this.board.get(destCoords);
+  tryMoveForCheck(piece: Piece, destCoords: Coords): boolean {
+    const srcCoords = piece.coords;
+    const capturedPiece = !piece.isPawn() || !piece.isEnPassantCapture(destCoords)
+      ? this.board.get(destCoords)
+      : this.board.atX(piece.x).atY(destCoords.y);
 
     capturedPiece && this.board.delete(capturedPiece.coords);
-    this.board.set(destCoords, srcPiece).delete(srcCoords);
-    srcPiece.coords = destCoords;
+    this.board.transfer(piece, destCoords);
 
     const isCheck = this.isCheck();
 
-    this.board.set(srcCoords, srcPiece).delete(destCoords);
-    srcPiece.coords = srcCoords;
+    this.board.transfer(piece, srcCoords);
     capturedPiece && this.board.set(capturedPiece.coords, capturedPiece);
+
     return isCheck;
   }
 }

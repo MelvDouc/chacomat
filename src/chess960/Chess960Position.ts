@@ -32,11 +32,9 @@ export default class Chess960Position extends Position {
 
   override castle(king: Piece, destCoords: Coords): void {
     const wing = destCoords.y < king.y ? 0 : 7;
-    const kingDestCoords = Coords.get(king.x, Piece.CASTLED_KING_FILES[wing]);
-    const rookSrcCoords = Coords.get(king.x, destCoords.y);
-    const rookDestCoords = Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]);
-    king.board.transfer(king.coords, kingDestCoords);
-    king.board.transfer(rookSrcCoords, rookDestCoords);
+    const rook = king.board.get(destCoords);
+    king.board.transfer(king, Coords.get(king.x, Piece.CASTLED_KING_FILES[wing]));
+    king.board.transfer(rook, Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]));
   }
 
   override *castlingCoords() {
