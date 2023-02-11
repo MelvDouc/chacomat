@@ -1,6 +1,5 @@
 import Chess960Board from "@chacomat/chess960/Chess960Board.js";
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
-import { getChess960PiecePlacement } from "@chacomat/chess960/random-placements.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
 import type {
@@ -13,13 +12,18 @@ export default class Chess960Position extends Position {
   static override Board = Chess960Board;
 
   static getStartPositionInfo(): PositionParameters {
-    const piecePlacement = getChess960PiecePlacement();
+    const board = this.Board.create();
     const castlingRights = new Chess960CastlingRights();
-    castlingRights.WHITE.push(...piecePlacement.R);
-    castlingRights.BLACK.push(...piecePlacement.R);
+    const firstRank = board.atX(0);
+    for (let y = 0; y < 8; y++) {
+      if (firstRank.atY(y)?.isRook()) {
+        castlingRights.WHITE.push(y);
+        castlingRights.BLACK.push(y);
+      }
+    }
 
     return {
-      board: this.Board.create(piecePlacement),
+      board,
       castlingRights,
       enPassantY: -1,
       colorToMove: "WHITE",
