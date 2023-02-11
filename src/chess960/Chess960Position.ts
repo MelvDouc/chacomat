@@ -2,9 +2,7 @@ import Chess960Board from "@chacomat/chess960/Chess960Board.js";
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import type {
-  Chess960Game, PositionParameters
-} from "@chacomat/types.local.js";
+import type { PositionParameters } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
 
 export default class Chess960Position extends Position {
@@ -31,10 +29,6 @@ export default class Chess960Position extends Position {
       fullMoveNumber: 1
     };
   }
-
-  override readonly board: Chess960Board;
-  override readonly castlingRights: Chess960CastlingRights;
-  override game: Chess960Game;
 
   override castle(king: Piece, destCoords: Coords): void {
     const wing = destCoords.y < king.y ? 0 : 7;
