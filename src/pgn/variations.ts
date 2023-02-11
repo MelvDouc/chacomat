@@ -24,9 +24,9 @@ export function* parsedMoves(movesStr: string) {
  */
 export function parseVariations(movesStr: string): PgnVariations {
   const variations: PgnVariations[] = [];
-  let startIndex = movesStr.indexOf(Parenthesis.START);
+  let startIndex: number;
 
-  while (startIndex !== -1) {
+  while ((startIndex = movesStr.indexOf(Parenthesis.START)) !== -1) {
     const endIndex = findClosingParenIndex(movesStr, startIndex);
     if (movesStr[endIndex] !== Parenthesis.END)
       throw new Error(`Unclosed parenthesis at ${movesStr.slice(startIndex, 10)} ...`);
@@ -35,7 +35,6 @@ export function parseVariations(movesStr: string): PgnVariations {
     variations.push(parseVariations(varText));
 
     movesStr = `${movesStr.slice(0, startIndex - 1)} ${movesStr.slice(endIndex + 1)}`.replace(/\s+/g, " ");
-    startIndex = movesStr.indexOf(Parenthesis.START);
   }
 
   return (variations.length)

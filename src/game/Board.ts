@@ -76,27 +76,15 @@ export default class Board extends Map<Coords, Piece> {
    */
   clone(): Board {
     const boardClone = new (<typeof Board>this.constructor)();
-    boardClone.enPassantY = this.enPassantY;
     this.forEach((piece, coords) => {
       const pieceClone = piece.clone();
       pieceClone.board = boardClone;
       boardClone.set(coords, pieceClone);
     });
+    boardClone.enPassantY = this.enPassantY;
     boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.coords) as King;
     boardClone.kings.BLACK = boardClone.get(this.kings.BLACK.coords) as King;
     return boardClone;
-  }
-
-  /**
-   * Get an bidimensional array representing the placement of each piece.
-   * Empty squares are null.
-   */
-  toArray(): (Piece | null)[][] {
-    return Array.from({ length: 8 }, (_, x) => {
-      return Array.from({ length: 8 }, (_, y) => {
-        return this.atX(x).atY(y) ?? null;
-      });
-    });
   }
 
   log(): void {
@@ -113,6 +101,18 @@ export default class Board extends Map<Coords, Piece> {
         })
         .join("\n")
     );
+  }
+
+  /**
+   * Get an bidimensional array representing the placement of each piece.
+   * Empty squares are null.
+   */
+  toArray(): (Piece | null)[][] {
+    return Array.from({ length: 8 }, (_, x) => {
+      return Array.from({ length: 8 }, (_, y) => {
+        return this.atX(x).atY(y) ?? null;
+      });
+    });
   }
 
   /**
