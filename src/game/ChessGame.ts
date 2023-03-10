@@ -102,10 +102,7 @@ export default class ChessGame {
       throw new InactiveGameError(status);
 
     if (!this.currentPosition.legalMoves.some(([src, dest]) => {
-      return src.x == srcCoords.x
-        && src.y === srcCoords.y
-        && dest.x == destCoords.x
-        && dest.y === destCoords.y;
+      return src === srcCoords && dest === destCoords;
     }))
       throw new IllegalMoveError(JSON.stringify({ srcCoords, destCoords }));
 
