@@ -17,15 +17,15 @@ const MOVE_FINDERS: Record<string, {
 }> = {
   PAWN_MOVE: {
     regex: new RegExp(`^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRNB]))?${checkRegex.source}$`),
-    getMove: ({ sf, df, dr, pt }, board, legalMoves) => {
+    getMove: ({ sf, df, dr, pt }, position) => {
       const srcY = File[sf as ChessFileName];
       const destCoords = Coords.get(
         Coords.rankNameToX(dr),
         df ? File[df as ChessFileName] : srcY
       );
 
-      const move = legalMoves.find(([src, dest]) => {
-        const srcPiece = board.get(src);
+      const move = position.legalMoves.find(([src, dest]) => {
+        const srcPiece = position.board.get(src);
         return srcPiece?.isPawn()
           && srcPiece.y === srcY
           && dest === destCoords;
@@ -39,7 +39,7 @@ const MOVE_FINDERS: Record<string, {
   },
   PIECE_MOVE: {
     regex: new RegExp(`^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<df>[a-h])(?<dr>[1-8])${checkRegex.source}$`),
-    getMove: ({ pt, sf, sr, df, dr }, board, legalMoves) => {
+    getMove: ({ pt, sf, sr, df, dr }, position) => {
       const srcX = sr ? Coords.rankNameToX(sr) : null;
       const srcY = sf ? File[sf as ChessFileName] : null;
       const destCoords = Coords.get(
@@ -47,8 +47,8 @@ const MOVE_FINDERS: Record<string, {
         File[df as ChessFileName]
       );
 
-      return legalMoves.find(([src, dest]) => {
-        const srcPiece = board.get(src);
+      return position.legalMoves.find(([src, dest]) => {
+        const srcPiece = position.board.get(src);
         return srcPiece?.pieceClass.whiteInitial === pt
           && (srcX == null || srcPiece.x === srcX)
           && (srcY == null || srcPiece.y === srcY)
@@ -58,9 +58,9 @@ const MOVE_FINDERS: Record<string, {
   },
   CASTLING: {
     regex: new RegExp(`^(?<t>O|0)-\\k<t>(?<t2>-\\k<t>)?${checkRegex.source}$`),
-    getMove: ({ t2 }, board) => {
-      const king = board.kings[board.position.colorToMove];
-      const destCoords = [...board.position.castlingCoords()].find(({ y }) => {
+    getMove: ({ t2 }, position) => {
+      const king = position.board.kings[position.colorToMove];
+      const destCoords = [...position.castlingCoords()].find(({ y }) => {
         return (t2) ? (y < king.y) : (y > king.y);
       });
       if (!destCoords)
@@ -97,8 +97,7 @@ function findAndPlayMove(moveText: string, game: ChessGame) {
     if (match) {
       const move = MOVE_FINDERS[key].getMove(
         match.groups,
-        game.currentPosition.board,
-        game.currentPosition.legalMoves
+        game.currentPosition
       );
       if (!move)
         throw new IllegalMoveError(moveText);

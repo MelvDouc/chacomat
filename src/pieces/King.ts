@@ -1,5 +1,5 @@
 import Piece from "@chacomat/pieces/Piece.js";
-import { Board, CoordsGenerator, Wing } from "@chacomat/types.local.js";
+import { Board, CastlingRights, CoordsGenerator, Wing } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
 
 export default class King extends Piece {
@@ -11,7 +11,7 @@ export default class King extends Piece {
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
    */
-  canCastleToFile(srcRookY: number, board: Board): boolean {
+  canCastleToFile(srcRookY: number, board: Board, attackedCoords: WeakSet<Coords>): boolean {
     const { x: srcKingX, y: srcKingY } = this.coords;
     const wing = this.#getWing(srcKingY, srcRookY);
     const rookCoords = Coords.get(srcKingX, srcRookY);
@@ -25,7 +25,7 @@ export default class King extends Piece {
       for (let y = srcKingY + kingDirection; ; y += kingDirection) {
         const destCoords = Coords.get(srcKingX, y);
         if (
-          board.position.attackedCoords.has(destCoords)
+          attackedCoords.has(destCoords)
           || y !== rookCoords.y && board.has(destCoords)
         )
           return false;
@@ -51,9 +51,14 @@ export default class King extends Piece {
     return true;
   }
 
-  *castlingCoords(useChess960Rules: boolean, board: Board): CoordsGenerator {
-    for (const wing of board.position.castlingRights[this.color]) {
-      if (this.canCastleToFile(wing, board)) {
+  *castlingCoords(
+    useChess960Rules: boolean,
+    castlingRights: CastlingRights,
+    board: Board,
+    attackedCoords: WeakSet<Coords>
+  ): CoordsGenerator {
+    for (const wing of castlingRights[this.color]) {
+      if (this.canCastleToFile(wing, board, attackedCoords)) {
         const y = useChess960Rules
           ? wing
           : Piece.CASTLED_KING_FILES[wing as Wing];

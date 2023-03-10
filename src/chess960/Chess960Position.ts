@@ -38,7 +38,7 @@ export default class Chess960Position extends Position {
   }
 
   override *castlingCoords() {
-    yield* this.board.kings[this.colorToMove].castlingCoords(true, this.board);
+    yield* this.board.kings[this.colorToMove].castlingCoords(true, this.castlingRights, this.board, this.attackedCoords);
   }
 
   override isCastling(king: Piece, destCoords: Coords): boolean {

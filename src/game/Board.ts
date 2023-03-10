@@ -4,8 +4,7 @@ import type {
   BlackAndWhite,
   Color,
   King,
-  PieceInitial,
-  Position
+  PieceInitial
 } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
 import fenChecker from "@chacomat/utils/fen-checker.js";
@@ -40,7 +39,6 @@ export default class Board extends Map<Coords, Piece> {
   }
 
   enPassantY = -1;
-  position: Position;
   readonly kings = {} as BlackAndWhite<King>;
 
   override set(coords: Coords, piece: Piece): this {

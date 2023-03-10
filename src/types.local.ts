@@ -75,7 +75,7 @@ export type Wings<T> = {
 export type CoordsGenerator = Generator<Coords, void, unknown>;
 export type Move = [Coords, Coords];
 type MoveMatch = Record<string, string | undefined>;
-export type MoveFinder = (match: MoveMatch, board: Board, legalMoves?: Move[]) => ([...Move, PromotedPieceType?] | null | undefined);
+export type MoveFinder = (match: MoveMatch, position: Position) => ([...Move, PromotedPieceType?] | null | undefined);
 
 export interface PieceOffsets {
   x: number[];

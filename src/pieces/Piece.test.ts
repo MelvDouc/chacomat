@@ -29,10 +29,10 @@ describe("A king", () => {
   });
 
   it("should not be able to castle through check", () => {
-    const game = new ChessGame({
+    const { currentPosition: { board, castlingRights, attackedCoords } } = new ChessGame({
       fen: "2r1k3/8/8/8/8/8/8/R3KBNR w KQ - 0 1"
     });
-    const whiteKing = game.currentPosition.board.kings["WHITE"];
-    expect([...whiteKing.castlingCoords(false, game.currentPosition.board)]).not.toContain(58 /* c1 */);
+    const whiteKing = board.kings["WHITE"];
+    expect([...whiteKing.castlingCoords(false, castlingRights, board, attackedCoords)]).not.toContain(58 /* c1 */);
   });
 });

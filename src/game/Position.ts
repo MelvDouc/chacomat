@@ -69,7 +69,6 @@ export default class Position {
     this.colorToMove = colorToMove;
     this.halfMoveClock = halfMoveClock;
     this.fullMoveNumber = fullMoveNumber;
-    this.board.position = this;
   }
 
   get attackedCoords(): WeakSet<Coords> {
@@ -150,7 +149,7 @@ export default class Position {
   }
 
   *castlingCoords() {
-    yield* this.board.kings[this.colorToMove].castlingCoords(false, this.board);
+    yield* this.board.kings[this.colorToMove].castlingCoords(false, this.castlingRights, this.board, this.attackedCoords);
   }
 
   /**
