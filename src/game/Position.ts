@@ -3,7 +3,7 @@ import Board from "@chacomat/game/Board.js";
 import CastlingRights from "@chacomat/game/CastlingRights.js";
 import Piece from "@chacomat/pieces/index.js";
 import type {
-  AlgebraicSquareNotation, ChessGame,
+  AlgebraicSquareNotation,
   Color,
   FenString,
   Move,
@@ -58,7 +58,6 @@ export default class Position {
   readonly fullMoveNumber: number;
   #attackedCoords: WeakSet<Coords>;
   #legalMoves: Move[];
-  game: ChessGame;
   prev: Position | null = null;
   next: Position[] = [];
 

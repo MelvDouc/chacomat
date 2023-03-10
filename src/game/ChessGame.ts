@@ -29,25 +29,36 @@ export default class ChessGame {
   } as const;
 
   currentPosition: InstanceType<typeof ChessGame["Position"]>;
-  readonly metaInfo: GameMetaInfo;
+  metaInfo: GameMetaInfo;
 
-  constructor({ pgn, fen, positionParams, metaInfo }: GameParameters = {}) {
+  constructor(gameParameters: GameParameters = {}) {
+    this.#setFirstPosition(gameParameters);
+  }
+
+  #setFirstPosition({ pgn, fen, positionParams, metaInfo }: GameParameters) {
     const PositionConstructor = (this.constructor as typeof ChessGame).Position;
 
     if (typeof pgn === "string") {
       const { pgnInfo, enterMoves } = enterPgn(pgn);
-      this.#setPosition(PositionConstructor.fromFenString(pgnInfo.FEN ?? fen ?? Position.startFenString));
+      this.currentPosition = PositionConstructor.fromFenString(pgnInfo.FEN ?? fen ?? Position.startFenString);
       this.metaInfo = pgnInfo;
       enterMoves(this);
-    } else {
-      if (typeof fen === "string")
-        this.#setPosition(PositionConstructor.fromFenString(fen));
-      else if (positionParams)
-        this.#setPosition(new PositionConstructor(positionParams));
-      else
-        this.#setPosition(PositionConstructor.fromFenString(Position.startFenString));
-      this.metaInfo = metaInfo ?? {};
+      return;
     }
+
+    this.metaInfo = metaInfo ?? {};
+
+    if (typeof fen === "string") {
+      this.currentPosition = PositionConstructor.fromFenString(fen);
+      return;
+    }
+
+    if (positionParams) {
+      this.currentPosition = new PositionConstructor(positionParams);
+      return;
+    }
+
+    this.currentPosition = PositionConstructor.fromFenString(Position.startFenString);
   }
 
   /**
@@ -66,11 +77,6 @@ export default class ChessGame {
     if (this.isTripleRepetition())
       return ChessGame.statuses.TRIPLE_REPETITION;
     return ChessGame.statuses.ACTIVE;
-  }
-
-  #setPosition(position: Position): void {
-    this.currentPosition = position;
-    position.game = this;
   }
 
   isTripleRepetition(): boolean {
@@ -106,7 +112,7 @@ export default class ChessGame {
     const nextPosition = this.currentPosition.createPositionFromMove(srcCoords, destCoords, promotionType);
     nextPosition.prev = this.currentPosition;
     this.currentPosition.next.push(nextPosition);
-    this.#setPosition(nextPosition);
+    this.currentPosition = nextPosition;
 
     return this;
   }
