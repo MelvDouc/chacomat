@@ -40,7 +40,6 @@ export default class Chess960Board extends Board {
         for (const y of pieceFiles[pieceInitial]) {
           const coords = Coords.get(pieceRank, y);
           const piece = Reflect.construct(Piece.pieceClassesByInitial.get(pieceInitial), [color]) as Piece;
-          piece.board = board;
           board.set(coords, piece);
         }
       }
@@ -49,9 +48,7 @@ export default class Chess960Board extends Board {
 
       for (let y = 0; y < 8; y++) {
         const coords = Coords.get(Pawn.START_RANKS[color], y);
-        const pawn = new Pawn(color);
-        pawn.board = board;
-        board.set(coords, pawn);
+        board.set(coords, new Pawn(color));
       }
     }
 
