@@ -25,7 +25,6 @@ export default class Board extends Map<Coords, Piece> {
         const initial = row[y];
         if (initial === Board.#nullPiece) continue;
         const piece = Piece.fromInitial(initial as PieceInitial);
-        piece.board = board;
         board.set(Coords.get(x, y), piece);
         if (piece.isKing())
           board.kings[piece.color] = piece;
@@ -65,7 +64,7 @@ export default class Board extends Map<Coords, Piece> {
 
     for (const piece of this.values())
       if (piece.color === color)
-        for (const destCoords of piece.attackedCoords())
+        for (const destCoords of piece.attackedCoords(this))
           set.add(destCoords);
 
     return set;
@@ -77,9 +76,7 @@ export default class Board extends Map<Coords, Piece> {
   clone(): Board {
     const boardClone = new (<typeof Board>this.constructor)();
     this.forEach((piece, coords) => {
-      const pieceClone = piece.clone();
-      pieceClone.board = boardClone;
-      boardClone.set(coords, pieceClone);
+      boardClone.set(coords, piece.clone());
     });
     boardClone.enPassantY = this.enPassantY;
     boardClone.kings.WHITE = boardClone.get(this.kings.WHITE.coords) as King;

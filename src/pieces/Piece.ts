@@ -60,7 +60,6 @@ export default abstract class Piece {
 
   readonly color: Color;
   coords: Coords;
-  board: Board;
 
   constructor(color: Color) {
     this.color = color;
@@ -100,7 +99,7 @@ export default abstract class Piece {
     return this.x === this.pieceClass.START_RANKS[this.color];
   }
 
-  *attackedCoords(): CoordsGenerator {
+  *attackedCoords(board: Board): CoordsGenerator {
     for (let i = 0; i < this.offsets.x.length; i++) {
       const attackedCoords = this.coords.getPeer(this.offsets.x[i], this.offsets.y[i]);
       if (attackedCoords)
@@ -108,9 +107,9 @@ export default abstract class Piece {
     }
   }
 
-  *pseudoLegalMoves(): CoordsGenerator {
-    for (const targetCoords of this.attackedCoords())
-      if (this.board.get(targetCoords)?.color !== this.color)
+  *pseudoLegalMoves(board: Board): CoordsGenerator {
+    for (const targetCoords of this.attackedCoords(board))
+      if (board.get(targetCoords)?.color !== this.color)
         yield targetCoords;
   }
 

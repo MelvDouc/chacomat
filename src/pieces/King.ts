@@ -1,5 +1,5 @@
 import Piece from "@chacomat/pieces/Piece.js";
-import { CoordsGenerator, Wing } from "@chacomat/types.local.js";
+import { Board, CoordsGenerator, Wing } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
 
 export default class King extends Piece {
@@ -11,7 +11,7 @@ export default class King extends Piece {
   /**
    * This assumes that the king's coordinates are in keeping with the position's castling rights.
    */
-  canCastleToFile(srcRookY: number): boolean {
+  canCastleToFile(srcRookY: number, board: Board): boolean {
     const { x: srcKingX, y: srcKingY } = this.coords;
     const wing = this.#getWing(srcKingY, srcRookY);
     const rookCoords = Coords.get(srcKingX, srcRookY);
@@ -25,8 +25,8 @@ export default class King extends Piece {
       for (let y = srcKingY + kingDirection; ; y += kingDirection) {
         const destCoords = Coords.get(srcKingX, y);
         if (
-          this.board.position.attackedCoords.has(destCoords)
-          || y !== rookCoords.y && this.board.has(destCoords)
+          board.position.attackedCoords.has(destCoords)
+          || y !== rookCoords.y && board.has(destCoords)
         )
           return false;
         if (y === destKingY)
@@ -41,7 +41,7 @@ export default class King extends Piece {
     if (rookDirection !== 0) {
       for (let y = srcRookY + rookDirection; ; y += rookDirection) {
         const destCoords = Coords.get(srcKingX, y);
-        if (y !== this.y && this.board.has(destCoords))
+        if (y !== this.y && board.has(destCoords))
           return false;
         if (y === destRookY)
           break;
@@ -51,9 +51,9 @@ export default class King extends Piece {
     return true;
   }
 
-  *castlingCoords(useChess960Rules: boolean): CoordsGenerator {
-    for (const wing of this.board.position.castlingRights[this.color]) {
-      if (this.canCastleToFile(wing)) {
+  *castlingCoords(useChess960Rules: boolean, board: Board): CoordsGenerator {
+    for (const wing of board.position.castlingRights[this.color]) {
+      if (this.canCastleToFile(wing, board)) {
         const y = useChess960Rules
           ? wing
           : Piece.CASTLED_KING_FILES[wing as Wing];

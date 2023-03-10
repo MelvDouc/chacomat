@@ -2,8 +2,8 @@ import Chess960Board from "@chacomat/chess960/Chess960Board.js";
 import Chess960CastlingRights from "@chacomat/chess960/Chess960CastlingRights.js";
 import Position from "@chacomat/game/Position.js";
 import Piece from "@chacomat/pieces/Piece.js";
-import type { PositionParameters } from "@chacomat/types.local.js";
 import Coords from "@chacomat/utils/Coords.js";
+import type { PositionParameters } from "@chacomat/types.local.js";
 
 export default class Chess960Position extends Position {
   static override CastlingRights = Chess960CastlingRights;
@@ -30,15 +30,15 @@ export default class Chess960Position extends Position {
     };
   }
 
-  override castle(king: Piece, destCoords: Coords): void {
+  override castle(king: Piece, destCoords: Coords, board: Chess960Board): void {
     const wing = destCoords.y < king.y ? 0 : 7;
-    const rook = king.board.get(destCoords);
-    king.board.transfer(king, Coords.get(king.x, Piece.CASTLED_KING_FILES[wing]));
-    king.board.transfer(rook, Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]));
+    const rook = board.get(destCoords);
+    board.transfer(king, Coords.get(king.x, Piece.CASTLED_KING_FILES[wing]));
+    board.transfer(rook, Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]));
   }
 
   override *castlingCoords() {
-    yield* this.board.kings[this.colorToMove].castlingCoords(true);
+    yield* this.board.kings[this.colorToMove].castlingCoords(true, this.board);
   }
 
   override isCastling(king: Piece, destCoords: Coords): boolean {

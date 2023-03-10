@@ -1,5 +1,5 @@
 import Piece from "@chacomat/pieces/Piece.js";
-import { Coords, CoordsGenerator } from "@chacomat/types.local.js";
+import { Board, Coords, CoordsGenerator } from "@chacomat/types.local.js";
 
 export default class Pawn extends Piece {
   static override readonly offsets = {
@@ -22,37 +22,37 @@ export default class Pawn extends Piece {
     }
   }
 
-  *#forwardMoves(): CoordsGenerator {
+  *#forwardMoves(board: Board): CoordsGenerator {
     const coords1 = this.coords.getPeer(this.direction, 0);
 
-    if (!this.board.has(coords1)) {
+    if (!board.has(coords1)) {
       yield coords1;
 
       if (this.isOnStartRank()) {
         const coords2 = coords1.getPeer(this.direction, 0);
 
-        if (!this.board.has(coords2))
+        if (!board.has(coords2))
           yield coords2;
       }
     }
   }
 
-  *#captures(): CoordsGenerator {
+  *#captures(board: Board): CoordsGenerator {
     for (const destCoords of this.attackedCoords())
       if (
-        this.board.get(destCoords)?.color === this.oppositeColor
-        || this.isEnPassantCapture(destCoords)
+        board.get(destCoords)?.color === this.oppositeColor
+        || this.isEnPassantCapture(destCoords, board)
       )
         yield destCoords;
   }
 
-  override *pseudoLegalMoves(): CoordsGenerator {
-    yield* this.#forwardMoves();
-    yield* this.#captures();
+  override *pseudoLegalMoves(board: Board): CoordsGenerator {
+    yield* this.#forwardMoves(board);
+    yield* this.#captures(board);
   }
 
-  isEnPassantCapture(destCoords: Coords): boolean {
+  isEnPassantCapture(destCoords: Coords, board: Board): boolean {
     return this.x === Piece.MIDDLE_RANKS[this.oppositeColor]
-      && destCoords.y === this.board.enPassantY;
+      && destCoords.y === board.enPassantY;
   }
 }

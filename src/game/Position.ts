@@ -86,7 +86,7 @@ export default class Position {
 
     for (const [srcCoords, piece] of entries)
       if (piece.color === this.colorToMove)
-        for (const destCoords of piece.pseudoLegalMoves())
+        for (const destCoords of piece.pseudoLegalMoves(this.board))
           if (!this.tryMoveForCheck(piece, destCoords))
             legalMoves.push([srcCoords, destCoords]);
 
@@ -109,29 +109,26 @@ export default class Position {
     });
   }
 
-  #handleKingMove(king: Piece, destCoords: Coords, castlingRights: CastlingRights): void {
+  #handleKingMove(king: Piece, destCoords: Coords, board: Board, castlingRights: CastlingRights): void {
     castlingRights[king.color].length = 0;
 
     if (!this.isCastling(king, destCoords)) {
-      king.board.transfer(king, destCoords);
+      board.transfer(king, destCoords);
       return;
     }
 
-    this.castle(king, destCoords);
+    this.castle(king, destCoords, board);
   }
 
-  #handlePawnMove(pawn: Pawn, destCoords: Coords, promotionType: PromotedPieceType = "Q"): void {
-    const board = pawn.board;
-
+  #handlePawnMove(pawn: Pawn, destCoords: Coords, board: Board, promotionType: PromotedPieceType = "Q"): void {
     if (destCoords.x === Piece.START_RANKS[pawn.oppositeColor]) {
       const promotedPiece: Piece = Reflect.construct(Piece.pieceClassesByInitial.get(promotionType), [pawn.color]);
-      promotedPiece.board = board;
       board.delete(pawn.coords);
       board.set(destCoords, promotedPiece);
       return;
     }
 
-    if (pawn.isEnPassantCapture(destCoords)) {
+    if (pawn.isEnPassantCapture(destCoords, board)) {
       const enPassantPawnCoords = Coords.get(pawn.x, destCoords.y);
       board.delete(enPassantPawnCoords);
     }
@@ -139,21 +136,21 @@ export default class Position {
     board.transfer(pawn, destCoords);
   }
 
-  #handleRookMove(rook: Rook, destCoords: Coords, castlingRights: CastlingRights): void {
+  #handleRookMove(rook: Rook, destCoords: Coords, board: Board, castlingRights: CastlingRights): void {
     if (rook.isOnStartRank() && castlingRights[rook.color].includes(rook.y))
       castlingRights.unset(rook.color, rook.y);
-    rook.board.transfer(rook, destCoords);
+    board.transfer(rook, destCoords);
   }
 
-  castle(king: Piece, destCoords: Coords): void {
+  castle(king: Piece, destCoords: Coords, board: Board): void {
     const wing = destCoords.y < king.y ? 0 : 7;
-    const rook = king.board.atX(king.x).atY(wing);
-    king.board.transfer(king, destCoords);
-    king.board.transfer(rook, Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]));
+    const rook = board.atX(king.x).atY(wing);
+    board.transfer(king, destCoords);
+    board.transfer(rook, Coords.get(king.x, Piece.CASTLED_ROOK_FILES[wing]));
   }
 
   *castlingCoords() {
-    yield* this.board.kings[this.colorToMove].castlingCoords(false);
+    yield* this.board.kings[this.colorToMove].castlingCoords(false, this.board);
   }
 
   /**
@@ -180,11 +177,11 @@ export default class Position {
       castlingRights.unset(destPiece.color, destPiece.y);
 
     if (isSrcPiecePawn)
-      this.#handlePawnMove(srcPiece, destCoords, promotionType);
+      this.#handlePawnMove(srcPiece, destCoords, board, promotionType);
     else if (srcPiece.isKing())
-      this.#handleKingMove(srcPiece, destCoords, castlingRights);
+      this.#handleKingMove(srcPiece, destCoords, board, castlingRights);
     else if (srcPiece.isRook())
-      this.#handleRookMove(srcPiece, destCoords, castlingRights);
+      this.#handleRookMove(srcPiece, destCoords, board, castlingRights);
     else
       board.transfer(srcPiece, destCoords);
 
@@ -261,7 +258,7 @@ export default class Position {
 
   tryMoveForCheck(piece: Piece, destCoords: Coords): boolean {
     const srcCoords = piece.coords;
-    const capturedPiece = !piece.isPawn() || !piece.isEnPassantCapture(destCoords)
+    const capturedPiece = !piece.isPawn() || !piece.isEnPassantCapture(destCoords, this.board)
       ? this.board.get(destCoords)
       : this.board.atX(piece.x).atY(destCoords.y);
 
