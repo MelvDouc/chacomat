@@ -1,0 +1,14 @@
+**/node_modules
+**/.vscode
+**/*.local.*
+dist/**/*.test.js
+
+src
+test
+
+.env
+.eslintrc.*
+.gitignore
+jest.config.*
+tsconfig.json
+todo.md
