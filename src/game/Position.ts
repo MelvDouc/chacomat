@@ -11,7 +11,7 @@ export default class Position implements PositionInfo {
   public static readonly startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   public static fromFen(fen: string): Position {
-    return new Position(parseFen(fen));
+    return new this(parseFen(fen));
   }
 
   public readonly pieces: Record<Color, PieceMap>;
@@ -38,7 +38,7 @@ export default class Position implements PositionInfo {
     this.enPassantCoords = enPassantCoords;
     this.halfMoveClock = halfMoveClock;
     this.fullMoveNumber = fullMoveNumber;
-    this.halfMoves = this._getHalfMoves();
+    this.halfMoves = this.computeHalfMoves();
     this.boardStr = stringifyBoard(this.pieces);
   }
 
@@ -46,7 +46,7 @@ export default class Position implements PositionInfo {
     return reverseColor(this.activeColor);
   }
 
-  private _getHalfMoves(): HalfMove[] {
+  private computeHalfMoves(): HalfMove[] {
     const moves = [...this.pieces[this.activeColor].keys()].reduce((acc, srcCoords) => {
       for (const destCoords of pseudoLegalMoves(srcCoords, this.activeColor, this.pieces, this.enPassantCoords))
         if (!this.doesMoveCauseCheck(srcCoords, destCoords))
@@ -64,6 +64,7 @@ export default class Position implements PositionInfo {
       if (canCastleTo(rookY, this.activeColor, coordsAttackedByInactiveColor, this))
         moves.push([
           kingCoords,
+          // TODO: update for 960
           getCoords(kingCoords.x, CastledKingFiles[Math.sign(rookY - kingCoords.y) as Wing])
         ]);
     }
@@ -107,12 +108,11 @@ export default class Position implements PositionInfo {
   }
 
   public isTripleRepetition(): boolean {
-    const { boardStr } = this;
     let pos: Position | null | undefined = this.prev?.prev;
     let count = 0;
 
     while (pos && count < 3) {
-      if (pos.boardStr === boardStr)
+      if (pos.boardStr === this.boardStr)
         count++;
       pos = pos.prev?.prev;
     }
@@ -127,15 +127,13 @@ export default class Position implements PositionInfo {
       : destCoords;
     const capturedPiece = this.pieces[this.inactiveColor].get(capturedCoords);
 
-    this.pieces[this.activeColor].delete(srcCoords);
-    this.pieces[this.activeColor].set(destCoords, srcPiece);
+    this.pieces[this.activeColor].set(destCoords, srcPiece).delete(srcCoords);
     (srcPiece === Piece.KING) && (this.kingCoords[this.activeColor] = destCoords);
     capturedPiece && this.pieces[this.inactiveColor].delete(capturedCoords);
 
     const isCheck = this.isCheck();
 
-    this.pieces[this.activeColor].set(srcCoords, srcPiece);
-    this.pieces[this.activeColor].delete(destCoords);
+    this.pieces[this.activeColor].set(srcCoords, srcPiece).delete(destCoords);
     (srcPiece === Piece.KING) && (this.kingCoords[this.activeColor] = srcCoords);
     capturedPiece && this.pieces[this.inactiveColor].set(capturedCoords, capturedPiece);
 

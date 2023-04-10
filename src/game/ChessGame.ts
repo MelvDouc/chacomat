@@ -46,8 +46,7 @@ export default class ChessGame {
     const { pieces, kingCoords, castlingRights, activeColor, inactiveColor } = this.currentPosition.cloneInfo();
     let nextEnPassantCoords: Coordinates | null = null;
     const srcPiece = pieces[activeColor].get(srcCoords) as Piece;
-    const isPawn = srcPiece < Piece.KNIGHT;
-    const destPiece = (!isPawn || destCoords !== this.currentPosition.enPassantCoords)
+    const destPiece = (srcPiece < Piece.KNIGHT || destCoords !== this.currentPosition.enPassantCoords)
       ? pieces[inactiveColor].get(destCoords)
       : pieces[inactiveColor].get(getCoords(srcCoords.x, destCoords.y));
 
@@ -70,7 +69,7 @@ export default class ChessGame {
     pieces[activeColor].set(destCoords, srcPiece).delete(srcCoords);
     pieces[inactiveColor].delete(destCoords);
 
-    if (isPawn) {
+    if (srcPiece < Piece.KNIGHT) {
       if (Math.abs(destCoords.x - srcCoords.x) === 2)
         nextEnPassantCoords = getCoords((srcCoords.x + destCoords.x) / 2, srcCoords.y);
       else if (destCoords.x === InitialPieceRanks[inactiveColor])
@@ -141,52 +140,29 @@ export default class ChessGame {
     return pos;
   }
 
-  public goToPrevMove(moveNumber: number): void {
-    let pos: Position | null | undefined = this.currentPosition;
-
-    while (pos && pos.fullMoveNumber > moveNumber)
-      pos = pos.prev;
-
-    if (!pos)
-      throw new Error("Move not found.");
-    this.currentPosition = pos;
-  }
-
-  public goToNextMove(moveNumber: number): void {
-    let pos: Position | null | undefined = this.currentPosition;
-
-    while (pos && pos.fullMoveNumber < moveNumber)
-      pos = pos.next[0];
-
-    if (!pos)
-      throw new Error("Move not found.");
-    this.currentPosition = pos;
-  }
-
   public goToMove(moveNumber: number, color: Color): void {
-    if (moveNumber < this.currentPosition.fullMoveNumber) {
-      this.goToPrevMove(moveNumber);
-      return this.goToMove(moveNumber, color);
+    let pos: Position | null | undefined = this.currentPosition;
+
+    while (pos && pos.fullMoveNumber !== moveNumber) {
+      pos = (pos.fullMoveNumber < moveNumber)
+        ? pos.next[0]
+        : pos.prev;
     }
 
-    if (moveNumber > this.currentPosition.fullMoveNumber) {
-      this.goToNextMove(moveNumber);
-      return this.goToMove(moveNumber, color);
-    }
+    if (!pos)
+      throw new Error(`No position was found at move number ${moveNumber}.`);
 
-    if (color === this.currentPosition.activeColor)
-      return;
-
-    if (color === Colors.WHITE) {
-      if (!this.currentPosition.next[0])
-        throw new Error("Move not found.");
-      this.currentPosition = this.currentPosition.next[0];
+    if (pos.activeColor === color) {
+      this.currentPosition = pos;
       return;
     }
 
-    if (!this.currentPosition.prev)
-      throw new Error("Move not found.");
-    this.currentPosition = this.currentPosition.prev;
+    const otherPos = (color === Colors.WHITE) ? pos.next[0] : pos.prev;
+
+    if (!otherPos)
+      throw new Error(`No position was found at move number ${moveNumber} for color ${color}.`);
+
+    this.currentPosition = otherPos;
   }
 
   public toString(): string {

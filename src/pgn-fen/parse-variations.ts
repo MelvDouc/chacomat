@@ -1,40 +1,19 @@
-export interface PgnVariations {
-  movesAsString: string;
-  variations?: PgnVariations[];
-}
+export default function parseVariations(movesStr: string): PgnVariations {
+  movesStr = movesStr.trim();
+  const variations: PgnVariations["variations"] = [];
+  let openingParenIndex: number;
 
-const moveRegex = /\d+\.{1,3}/g;
-
-/**
- * Yield every full move substring (e.g. "1... c5") one at a time.
- */
-export function* splitHalfMoveSubstrings(movesStr: string) {
-  yield* [...movesStr.matchAll(moveRegex)]
-    .map((x, i, arr) => {
-      const endIndex = (arr[i + 1] != null) ? arr[i + 1].index - 1 : movesStr.length;
-      return movesStr.slice(x.index, endIndex);
-    })
-    .values();
-}
-
-/**
- * Turn a moves string that includes variations into a recursive record.
- */
-export function getMovesPortionAndVariations(movesStr: string): PgnVariations {
-  const variations: PgnVariations[] = [];
-  let startIndex: number;
-
-  while ((startIndex = movesStr.indexOf("(")) !== -1) {
-    const endIndex = findClosingParenIndex(movesStr, startIndex);
-    const varText = movesStr.slice(startIndex + 1, endIndex);
-    variations.push(getMovesPortionAndVariations(varText));
-
-    movesStr = `${movesStr.slice(0, startIndex - 1)} ${movesStr.slice(endIndex + 1)}`.replace(/\s+/g, " ");
+  while ((openingParenIndex = movesStr.indexOf("(")) !== -1) {
+    const closingParenIndex = findClosingParenIndex(movesStr, openingParenIndex);
+    const varText = movesStr.slice(openingParenIndex + 1, closingParenIndex);
+    variations.push(parseVariations(varText));
+    movesStr = movesStr.slice(0, openingParenIndex) + movesStr.slice(closingParenIndex + 1);
   }
 
-  return (variations.length)
-    ? { movesAsString: movesStr, variations }
-    : { movesAsString: movesStr };
+  return {
+    mainLine: movesStr,
+    variations
+  };
 }
 
 function findClosingParenIndex(str: string, firstParenIndex: number): number {
@@ -43,6 +22,7 @@ function findClosingParenIndex(str: string, firstParenIndex: number): number {
       count++;
       continue;
     }
+
     if (str[i] === ")") {
       count--;
       if (count === 0)
@@ -51,4 +31,9 @@ function findClosingParenIndex(str: string, firstParenIndex: number): number {
   }
 
   throw new Error(`Unclosed parenthesis in string: "${str}"`);
+}
+
+interface PgnVariations {
+  mainLine: string;
+  variations: PgnVariations[];
 }

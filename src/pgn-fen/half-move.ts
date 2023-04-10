@@ -1,7 +1,13 @@
-import { Coords, getCoords } from "@src/constants/Coords.js";
-import Piece, { PiecesByName, PromotedPiece } from "@src/constants/Piece.js";
+import { Coords, coordsToNotation, getCoords } from "@src/constants/Coords.js";
+import Piece, { PieceAbbreviations, PiecesByName, PromotedPiece } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
-import { Wing, HalfMove, HalfMoveWithPromotion, PieceMap, AlgebraicNotation } from "@src/types.js";
+import {
+  Wing,
+  HalfMove,
+  HalfMoveWithPromotion,
+  PieceMap,
+  AlgebraicNotation
+} from "@src/types.js";
 
 const MOVE_FINDERS: Record<string, MoveFinder> = {
   PAWN_MOVE: {
@@ -69,6 +75,41 @@ export default function getHalfMove(halfMoveStr: string, position: Position): Ha
   }
 
   return null;
+}
+
+export function halfMoveToNotation(srcPosition: Position, varIndex = 0): string {
+  const { pieces, activeColor, inactiveColor, next } = srcPosition;
+  const [srcCoords, destCoords, promotedPiece] = next[varIndex].srcMove;
+  const srcPiece = pieces[activeColor].get(srcCoords) as Piece;
+  const destNotation = coordsToNotation(destCoords);
+
+  if (srcPiece < Piece.KNIGHT) {
+    if (srcCoords.y !== destCoords.y)
+      return `${coordsToNotation(srcCoords)[0]}x${destNotation + (PieceAbbreviations[promotedPiece] ?? "")}`;
+    return destNotation + (PieceAbbreviations[promotedPiece] ?? "");
+  }
+
+  if (srcPiece === Piece.KING) {
+    if ((Math.abs(destCoords.y - srcCoords.y) === 2 || pieces[activeColor].get(destCoords) === Piece.ROOK))
+      return (Math.sign(destCoords.y - srcCoords.y) === -1) ? "0-0-0" : "0-0";
+    return `K${(pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation}`;
+  }
+
+  let ambiguousRank = "",
+    ambiguousFile = "";
+
+  for (const [src, dest] of srcPosition.getHalfMoves()) {
+    if (ambiguousFile && ambiguousRank)
+      break;
+    if (dest === destCoords && src !== srcCoords && pieces[activeColor].get(src) === srcPiece) {
+      if (!ambiguousFile && src.y === srcCoords.y)
+        ambiguousFile = coordsToNotation(srcCoords)[0];
+      if (!ambiguousRank && src.x === srcCoords.x)
+        ambiguousRank = coordsToNotation(srcCoords)[1];
+    }
+  }
+
+  return PieceAbbreviations[srcPiece] + ambiguousFile + ambiguousRank + (pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation;
 }
 
 
