@@ -23,11 +23,11 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
           && dest === destCoords;
       });
 
-      if (move)
-        return (pt)
-          ? [...move, PiecesByName[pt as keyof typeof PiecesByName] as PromotedPiece]
-          : move;
-      return null;
+      if (!move)
+        return null;
+      return (pt)
+        ? [...move, PiecesByName[pt as keyof typeof PiecesByName] as PromotedPiece]
+        : move;
     }
   },
   PIECE_MOVE: {
