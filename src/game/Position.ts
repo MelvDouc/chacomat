@@ -167,4 +167,3 @@ export default class Position implements PositionInfo {
     ].join(" ");
   }
 }
-
