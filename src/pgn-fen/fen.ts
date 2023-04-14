@@ -3,7 +3,7 @@ import { Coords, Coordinates, getCoords } from "@src/constants/Coords.js";
 import Piece, { PiecesByName, PieceAbbreviations } from "@src/constants/Piece.js";
 import { AlgebraicNotation, CastlingRights, PositionInfo } from "@src/types.js";
 
-const fenRegex = /^[1-8PNBRQKpnbrqk]{1,8}(\/[1-8PNBRQKpnbrqk]{1,8}){7} (w|b) (([KQkq]|[A-Ha-h]){1,4}|-) ([a-h][1-8]|-) \d+ \d+$/;
+const fenRegex = /^[1-8PNBRQKpnbrqk]{1,8}(\/[1-8PNBRQKpnbrqk]{1,8}){7} (w|b) (?!.*(.).*\1)([KQkq]{1,4}|[a-hA-H]{1,4}|-) ([a-h][1-8]|-) \d+ \d+$/;
 
 // ===== ===== ===== ===== =====
 // PARSE

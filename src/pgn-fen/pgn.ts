@@ -40,7 +40,7 @@ export function enterPgn(pgn: string) {
     enterMoves: (game: ChessGame) => {
       const mainLine = parseVariations(movesStr).mainLine;
       for (const [halfMoveStr] of mainLine.matchAll(halfMoveRegex)) {
-        const halfMove = getHalfMove(halfMoveStr, game.getCurrentPosition());
+        const halfMove = getHalfMove(halfMoveStr, game.currentPosition);
         if (!halfMove)
           throw new Error(`Invalid move: "${halfMoveStr}".`);
         game.playMove(...halfMove);
@@ -68,5 +68,5 @@ export function getPgnFromGame(game: ChessGame): string {
     position = position.next[0];
   }
 
-  return `${pgn} ${game.getResult()}`;
+  return `${pgn} ${game.result}`;
 }

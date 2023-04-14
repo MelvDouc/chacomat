@@ -1,3 +1,4 @@
+import { Observable } from "melv_observable";
 import Colors, { Color } from "@src/constants/Colors.js";
 import { Coords, Coordinates, coordsToNotation, getCoords } from "@src/constants/Coords.js";
 import GameStatus, { GameResults, GameResult } from "@src/constants/GameStatus.js";
@@ -8,8 +9,8 @@ import { enterPgn, getPgnFromGame } from "@src/pgn-fen/pgn.js";
 import { AlgebraicNotation, GameMetaInfo, PieceMap, Wing } from "@src/types.js";
 
 export default class ChessGame {
-  private currentPosition: Position;
-  private result: GameResult;
+  private readonly currentPositionObs = new Observable<Position>();
+  private readonly resultObs = new Observable<GameResult>();
   public readonly metaInfo: Partial<GameMetaInfo> = {};
 
   constructor({ pgn, fen }: {
@@ -19,22 +20,30 @@ export default class ChessGame {
     if (pgn) {
       const { gameMetaInfo, enterMoves } = enterPgn(pgn);
       this.metaInfo = gameMetaInfo;
-      this.currentPosition = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
-      this.result = this.metaInfo.Result ?? GameResults.ONGOING;
+      this.currentPositionObs.value = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
+      this.resultObs.value = this.metaInfo.Result ?? GameResults.ONGOING;
       enterMoves(this);
     } else {
-      this.currentPosition = Position.fromFen(fen);
+      this.currentPositionObs.value = Position.fromFen(fen);
       this.metaInfo.FEN = fen;
-      this.result = GameResults.ONGOING;
+      this.resultObs.value = GameResults.ONGOING;
     }
   }
 
-  public getCurrentPosition(): Position {
-    return this.currentPosition;
+  public get currentPosition(): Position {
+    return this.currentPositionObs.value;
   }
 
-  public getResult(): GameResult {
-    return this.result;
+  public onPositionChange(subscription: (position: Position) => void): void {
+    this.currentPositionObs.subscribe(subscription);
+  }
+
+  public get result(): GameResult {
+    return this.resultObs.value;
+  }
+
+  public onResultChange(subscription: (result: GameResult) => void): void {
+    this.resultObs.subscribe(subscription);
   }
 
   public playMove(srcCoords: Coordinates, destCoords: Coordinates, promotedPiece?: PromotedPiece): this {
@@ -90,7 +99,7 @@ export default class ChessGame {
     nextPosition.srcMove = [srcCoords, destCoords, promotedPiece];
     nextPosition.prev = this.currentPosition;
     this.currentPosition.next.push(nextPosition);
-    this.currentPosition = nextPosition;
+    this.currentPositionObs.value = nextPosition;
     return this;
   }
 
@@ -101,12 +110,12 @@ export default class ChessGame {
   private checkStatus(status: GameStatus, activeColor: Color): void {
     switch (status) {
       case GameStatus.CHECKMATE:
-        this.result = (activeColor === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;
+        this.resultObs.value = (activeColor === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;
         break;
       case GameStatus.STALEMATE:
       case GameStatus.TRIPLE_REPETITION:
       case GameStatus.DRAW_BY_FIFTY_MOVE_RULE:
-        this.result = GameResults.DRAW;
+        this.resultObs.value = GameResults.DRAW;
         break;
     }
   }
@@ -127,7 +136,7 @@ export default class ChessGame {
    * @param color The camp that resigns.
    */
   public resign(color: Color): void {
-    this.result = (color === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;
+    this.resultObs.value = (color === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;
     this.metaInfo.Termination = "resignation";
   }
 
@@ -153,7 +162,7 @@ export default class ChessGame {
       throw new Error(`No position was found at move number ${moveNumber}.`);
 
     if (pos.activeColor === color) {
-      this.currentPosition = pos;
+      this.currentPositionObs.value = pos;
       return;
     }
 
@@ -162,7 +171,7 @@ export default class ChessGame {
     if (!otherPos)
       throw new Error(`No position was found at move number ${moveNumber} for color ${color}.`);
 
-    this.currentPosition = otherPos;
+    this.currentPositionObs.value = otherPos;
   }
 
   public toString(): string {
