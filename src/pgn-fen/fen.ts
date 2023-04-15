@@ -1,7 +1,7 @@
 import Colors, { Color } from "@src/constants/Colors.js";
-import { Coords, Coordinates, getCoords } from "@src/constants/Coords.js";
+import { Coordinates, File, getCoords } from "@src/constants/Coords.js";
 import Piece, { PiecesByName, PieceAbbreviations } from "@src/constants/Piece.js";
-import { AlgebraicNotation, CastlingRights, PositionInfo } from "@src/types.js";
+import { CastlingRights, PositionInfo } from "@src/types.js";
 
 const fenRegex = /^[1-8PNBRQKpnbrqk]{1,8}(\/[1-8PNBRQKpnbrqk]{1,8}){7} (w|b) (?!.*(.).*\1)([KQkq]{1,4}|[a-hA-H]{1,4}|-) ([a-h][1-8]|-) \d+ \d+$/;
 
@@ -9,23 +9,7 @@ const fenRegex = /^[1-8PNBRQKpnbrqk]{1,8}(\/[1-8PNBRQKpnbrqk]{1,8}){7} (w|b) (?!
 // PARSE
 // ===== ===== ===== ===== =====
 
-export function parseFen(fen: string): PositionInfo {
-  if (!fenRegex.test(fen))
-    throw new Error(`Invalid FEN string: "${fen}"`);
-
-  const [pieceStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
-
-  return {
-    ...getPieceMaps(pieceStr),
-    activeColor: (color === "w") ? Colors.WHITE : Colors.BLACK,
-    castlingRights: getCastlingRights(castlingStr),
-    enPassantCoords: Coords[enPassant as AlgebraicNotation] ?? null,
-    halfMoveClock: +halfMoveClock,
-    fullMoveNumber: +fullMoveNumber
-  };
-}
-
-function getPieceMaps(pieceStr: string): {
+export function getPieceMaps(pieceStr: string): {
   pieces: PositionInfo["pieces"];
   kingCoords: PositionInfo["kingCoords"];
 } {
@@ -57,22 +41,33 @@ function getPieceMaps(pieceStr: string): {
   return { pieces, kingCoords };
 }
 
-function getCastlingRights(str: string): CastlingRights {
+export function getCastlingRights(castlingStr: string): CastlingRights {
   const castlingRights: CastlingRights = {
     [Colors.WHITE]: new Set(),
     [Colors.BLACK]: new Set()
   };
 
-  if (str === "-")
+  if (castlingStr === "-")
     return castlingRights;
 
-  if (str.includes("K"))
+  if (/[a-hA-H]/.test(castlingStr)) {
+    for (const char of castlingStr) {
+      if (char === char.toUpperCase())
+        castlingRights[Colors.WHITE].add(File[char.toLowerCase() as keyof typeof File]);
+      else
+        castlingRights[Colors.BLACK].add(File[char as keyof typeof File]);
+    }
+
+    return castlingRights;
+  }
+
+  if (castlingStr.includes("K"))
     castlingRights[Colors.WHITE].add(0);
-  if (str.includes("Q"))
+  if (castlingStr.includes("Q"))
     castlingRights[Colors.WHITE].add(7);
-  if (str.includes("k"))
+  if (castlingStr.includes("k"))
     castlingRights[Colors.BLACK].add(0);
-  if (str.includes("q"))
+  if (castlingStr.includes("q"))
     castlingRights[Colors.BLACK].add(7);
 
   return castlingRights;
@@ -83,7 +78,9 @@ function getCastlingRights(str: string): CastlingRights {
 // ===== ===== ===== ===== =====
 
 export function stringifyBoard(pieces: PositionInfo["pieces"]): string {
-  return Array.from({ length: 8 }, (_, x) => {
+  let boardStr = "";
+
+  for (let x = 0; x < 8; x++) {
     let row = "";
 
     for (let y = 0; y < 8; y++) {
@@ -102,11 +99,18 @@ export function stringifyBoard(pieces: PositionInfo["pieces"]): string {
       row += "0";
     }
 
-    return row.replace(/0+/g, (zeros) => String(zeros.length));
-  }).join("/");
+    boardStr += row.replace(/0+/g, (zeros) => String(zeros.length));
+    if (x !== 8 - 1)
+      boardStr += "/";
+  }
+
+  return boardStr;
 }
 
-export function stringifyCastlingRights(castlingRights: CastlingRights): string {
+export function stringifyCastlingRights(castlingRights: CastlingRights, isChess960: boolean): string {
+  if (isChess960)
+    return stringifyChess960CastlingRights(castlingRights);
+
   let result = "";
 
   if (castlingRights[Colors.WHITE].has(0))
@@ -119,4 +123,21 @@ export function stringifyCastlingRights(castlingRights: CastlingRights): string 
     result += "q";
 
   return result || "-";
+}
+
+function stringifyChess960CastlingRights(castlingRights: CastlingRights): string {
+  let result = "";
+
+  castlingRights[Colors.WHITE].forEach((y) => result += File[y].toUpperCase());
+  castlingRights[Colors.BLACK].forEach((y) => result += File[y]);
+
+  return result || "-";
+}
+
+// ===== ===== ===== ===== =====
+// VALIDATE
+// ===== ===== ===== ===== =====
+
+export function isValidFen(fen: string): boolean {
+  return fenRegex.test(fen);
 }

@@ -1,4 +1,4 @@
-import { Coords, coordsToNotation, getCoords } from "@src/constants/Coords.js";
+import { Coords, coordsToNotation, File, getCoords } from "@src/constants/Coords.js";
 import Piece, { PieceAbbreviations, PiecesByName, PromotedPiece } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
 import {
@@ -13,7 +13,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
   PAWN_MOVE: {
     regex: /^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRNB]))?$/,
     getHalfMove: ({ sf, df, dr, pt }, halfMoves, pieceMap) => {
-      const srcY = sf.charCodeAt(0) - 97;
+      const srcY = File[sf as keyof typeof File];
       const destCoords = (df)
         ? Coords[(df + dr) as AlgebraicNotation]
         : getCoords(8 - +dr, srcY);
@@ -34,7 +34,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
     regex: /^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<df>[a-h])(?<dr>[1-8])$/,
     getHalfMove: ({ pt, sf, sr, df, dr }, halfMoves, pieceMap) => {
       const srcX = (sr) ? (8 - +sr) : null;
-      const srcY = (sf) ? (sf.charCodeAt(0) - 97) : null;
+      const srcY = (sf) ? File[sf as keyof typeof File] : null;
       const destCoords = Coords[(df + dr) as AlgebraicNotation];
 
       return halfMoves.find(([src, dest]) => {
@@ -90,26 +90,26 @@ export function halfMoveToNotation(srcPosition: Position, varIndex = 0): string 
   }
 
   if (srcPiece === Piece.KING) {
-    if ((Math.abs(destCoords.y - srcCoords.y) === 2 || pieces[activeColor].get(destCoords) === Piece.ROOK))
+    if (Math.abs(destCoords.y - srcCoords.y) === 2 || pieces[activeColor].get(destCoords) === Piece.ROOK)
       return (Math.sign(destCoords.y - srcCoords.y) === -1) ? "0-0-0" : "0-0";
     return `K${(pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation}`;
   }
 
-  let ambiguousRank = "",
-    ambiguousFile = "";
+  let srcRank = "",
+    srcFile = "";
 
   for (const [src, dest] of srcPosition.getHalfMoves()) {
-    if (ambiguousFile && ambiguousRank)
+    if (srcFile && srcRank)
       break;
     if (dest === destCoords && src !== srcCoords && pieces[activeColor].get(src) === srcPiece) {
-      if (!ambiguousFile && src.y === srcCoords.y)
-        ambiguousFile = coordsToNotation(srcCoords)[0];
-      if (!ambiguousRank && src.x === srcCoords.x)
-        ambiguousRank = coordsToNotation(srcCoords)[1];
+      if (!srcFile && src.y === srcCoords.y)
+        srcFile = coordsToNotation(srcCoords)[0];
+      if (!srcRank && src.x === srcCoords.x)
+        srcRank = coordsToNotation(srcCoords)[1];
     }
   }
 
-  return PieceAbbreviations[srcPiece] + ambiguousFile + ambiguousRank + (pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation;
+  return PieceAbbreviations[srcPiece] + srcFile + srcRank + (pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation;
 }
 
 

@@ -3,13 +3,32 @@ export interface Coordinates {
   readonly y: number;
 }
 
+export enum File {
+  // eslint-disable-next-line no-unused-vars
+  a,
+  // eslint-disable-next-line no-unused-vars
+  b,
+  // eslint-disable-next-line no-unused-vars
+  c,
+  // eslint-disable-next-line no-unused-vars
+  d,
+  // eslint-disable-next-line no-unused-vars
+  e,
+  // eslint-disable-next-line no-unused-vars
+  f,
+  // eslint-disable-next-line no-unused-vars
+  g,
+  // eslint-disable-next-line no-unused-vars
+  h
+}
+
 const coordsTable = Array.from({ length: 8 }, (_, x) => {
   return Array.from({ length: 8 }, (_, y) => Object.freeze({ x, y }));
 }) as readonly Coordinates[][];
 
 const allNotations = coordsTable.map((row, x) => {
   const rank = String(8 - x);
-  return row.map(({ y }) => String.fromCharCode(97 + y) + rank);
+  return row.map(({ y }) => File[y] + rank);
 });
 
 /**

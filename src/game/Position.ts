@@ -1,17 +1,48 @@
 import GameStatus from "@src/constants/GameStatus.js";
 import Colors, { Color, reverseColor } from "@src/constants/Colors.js";
-import { Coordinates, coordsToNotation, getCoords } from "@src/constants/Coords.js";
+import {
+  Coordinates,
+  Coords,
+  coordsToNotation,
+  getCoords
+} from "@src/constants/Coords.js";
 import Piece from "@src/constants/Piece.js";
 import { CastledKingFiles } from "@src/constants/placement.js";
 import { attackedCoords, canCastleTo, pseudoLegalMoves } from "@src/moves/moves.js";
-import { parseFen, stringifyBoard, stringifyCastlingRights } from "@src/pgn-fen/fen.js";
-import { CastlingRights, HalfMove, HalfMoveWithPromotion, PieceMap, PositionInfo, Wing } from "@src/types.js";
+import {
+  getCastlingRights,
+  getPieceMaps,
+  isValidFen,
+  stringifyBoard,
+  stringifyCastlingRights
+} from "@src/pgn-fen/fen.js";
+import {
+  AlgebraicNotation,
+  CastlingRights,
+  HalfMove,
+  HalfMoveWithPromotion,
+  PieceMap,
+  PositionInfo,
+  Wing
+} from "@src/types.js";
 
 export default class Position implements PositionInfo {
   public static readonly startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   public static fromFen(fen: string): Position {
-    return new this(parseFen(fen));
+    if (!isValidFen(fen))
+      throw new Error(`Invalid FEN string: "${fen}"`);
+
+    const [pieceStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
+
+    return new this({
+      ...getPieceMaps(pieceStr),
+      activeColor: (color === "w") ? Colors.WHITE : Colors.BLACK,
+      castlingRights: getCastlingRights(castlingStr),
+      enPassantCoords: Coords[enPassant as AlgebraicNotation] ?? null,
+      halfMoveClock: +halfMoveClock,
+      fullMoveNumber: +fullMoveNumber
+    });
   }
 
   public readonly pieces: Record<Color, PieceMap>;
@@ -29,6 +60,7 @@ export default class Position implements PositionInfo {
   public srcMove: HalfMoveWithPromotion | null = null;
   public prev: Position | null = null;
   public next: Position[] = [];
+  protected readonly isChess960 = false;
 
   constructor({ pieces, kingCoords, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: PositionInfo) {
     this.pieces = pieces;
@@ -64,8 +96,9 @@ export default class Position implements PositionInfo {
       if (canCastleTo(rookY, this.activeColor, coordsAttackedByInactiveColor, this))
         moves.push([
           kingCoords,
-          // TODO: update for 960
-          getCoords(kingCoords.x, CastledKingFiles[Math.sign(rookY - kingCoords.y) as Wing])
+          this.isChess960
+            ? getCoords(kingCoords.x, rookY)
+            : getCoords(kingCoords.x, CastledKingFiles[Math.sign(rookY - kingCoords.y) as Wing])
         ]);
     }
 
@@ -87,11 +120,9 @@ export default class Position implements PositionInfo {
   }
 
   public isCheck(): boolean {
-    const kingCoords = this.kingCoords[this.activeColor];
-
     for (const srcCoords of this.pieces[this.inactiveColor].keys())
       for (const destCoords of attackedCoords(srcCoords, this.inactiveColor, this.pieces))
-        if (destCoords === kingCoords)
+        if (destCoords === this.kingCoords[this.activeColor])
           return true;
 
     return false;
@@ -160,7 +191,7 @@ export default class Position implements PositionInfo {
     return [
       this.boardStr,
       (this.activeColor === Colors.WHITE) ? "w" : "b",
-      stringifyCastlingRights(this.castlingRights),
+      stringifyCastlingRights(this.castlingRights, this.isChess960),
       (this.enPassantCoords) ? coordsToNotation(this.enPassantCoords) : "-",
       String(this.halfMoveClock),
       String(this.fullMoveNumber)

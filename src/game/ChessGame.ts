@@ -34,12 +34,12 @@ export default class ChessGame {
     return this.currentPositionObs.value;
   }
 
-  public onPositionChange(subscription: (position: Position) => void): void {
-    this.currentPositionObs.subscribe(subscription);
-  }
-
   public get result(): GameResult {
     return this.resultObs.value;
+  }
+
+  public onPositionChange(subscription: (position: Position) => void): void {
+    this.currentPositionObs.subscribe(subscription);
   }
 
   public onResultChange(subscription: (result: GameResult) => void): void {
