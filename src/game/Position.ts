@@ -1,4 +1,3 @@
-import GameStatus from "@src/constants/GameStatus.js";
 import Colors, { Color, reverseColor } from "@src/constants/Colors.js";
 import {
   Coordinates,
@@ -6,8 +5,10 @@ import {
   coordsToNotation,
   getCoords
 } from "@src/constants/Coords.js";
+import GameStatus from "@src/constants/GameStatus.js";
 import Piece from "@src/constants/Piece.js";
 import { CastledKingFiles } from "@src/constants/placement.js";
+import PieceMap from "@src/game/PieceMap.js";
 import { attackedCoords, canCastleTo, pseudoLegalMoves } from "@src/moves/moves.js";
 import {
   getCastlingRights,
@@ -21,7 +22,6 @@ import {
   CastlingRights,
   HalfMove,
   HalfMoveWithPromotion,
-  PieceMap,
   PositionInfo,
   Wing
 } from "@src/types.js";
@@ -36,7 +36,7 @@ export default class Position implements PositionInfo {
     const [pieceStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
     return new this({
-      ...getPieceMaps(pieceStr),
+      pieces: getPieceMaps(pieceStr),
       activeColor: (color === "w") ? Colors.WHITE : Colors.BLACK,
       castlingRights: getCastlingRights(castlingStr),
       enPassantCoords: Coords[enPassant as AlgebraicNotation] ?? null,
@@ -46,25 +46,21 @@ export default class Position implements PositionInfo {
   }
 
   public readonly pieces: Record<Color, PieceMap>;
-  public readonly kingCoords: Record<Color, Coordinates>;
   public readonly activeColor: Color;
   public readonly castlingRights: CastlingRights;
   public readonly enPassantCoords: Coordinates | null;
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
   private readonly halfMoves: HalfMove[];
-  /**
-   * Used when checking for a triple repetition.
-   */
+  /** Used when checking for a triple repetition. */
   private readonly boardStr: string;
   public srcMove: HalfMoveWithPromotion | null = null;
   public prev: Position | null = null;
   public next: Position[] = [];
   protected readonly isChess960 = false;
 
-  constructor({ pieces, kingCoords, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: PositionInfo) {
+  constructor({ pieces, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: PositionInfo) {
     this.pieces = pieces;
-    this.kingCoords = kingCoords;
     this.activeColor = activeColor;
     this.castlingRights = castlingRights;
     this.enPassantCoords = enPassantCoords;
@@ -87,7 +83,7 @@ export default class Position implements PositionInfo {
     }, [] as HalfMove[]);
 
     const coordsAttackedByInactiveColor = this.getCoordsAttackedByColor(this.inactiveColor);
-    const kingCoords = this.kingCoords[this.activeColor];
+    const { kingCoords } = this.pieces[this.activeColor];
 
     if (coordsAttackedByInactiveColor.has(kingCoords))
       return moves;
@@ -122,7 +118,7 @@ export default class Position implements PositionInfo {
   public isCheck(): boolean {
     for (const srcCoords of this.pieces[this.inactiveColor].keys())
       for (const destCoords of attackedCoords(srcCoords, this.inactiveColor, this.pieces))
-        if (destCoords === this.kingCoords[this.activeColor])
+        if (destCoords === this.pieces[this.activeColor].kingCoords)
           return true;
 
     return false;
@@ -159,13 +155,11 @@ export default class Position implements PositionInfo {
     const capturedPiece = this.pieces[this.inactiveColor].get(capturedCoords);
 
     this.pieces[this.activeColor].set(destCoords, srcPiece).delete(srcCoords);
-    (srcPiece === Piece.KING) && (this.kingCoords[this.activeColor] = destCoords);
     capturedPiece && this.pieces[this.inactiveColor].delete(capturedCoords);
 
     const isCheck = this.isCheck();
 
     this.pieces[this.activeColor].set(srcCoords, srcPiece).delete(destCoords);
-    (srcPiece === Piece.KING) && (this.kingCoords[this.activeColor] = srcCoords);
     capturedPiece && this.pieces[this.inactiveColor].set(capturedCoords, capturedPiece);
 
     return isCheck;
@@ -174,10 +168,9 @@ export default class Position implements PositionInfo {
   public cloneInfo(): PositionInfo & { inactiveColor: Color; } {
     return {
       pieces: {
-        [Colors.WHITE]: new Map([...this.pieces[Colors.WHITE]]),
-        [Colors.BLACK]: new Map([...this.pieces[Colors.BLACK]])
+        [Colors.WHITE]: this.pieces[Colors.WHITE].clone(),
+        [Colors.BLACK]: this.pieces[Colors.BLACK].clone()
       },
-      kingCoords: { ...this.kingCoords },
       activeColor: this.activeColor,
       inactiveColor: this.inactiveColor,
       castlingRights: structuredClone(this.castlingRights),

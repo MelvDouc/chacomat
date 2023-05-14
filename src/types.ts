@@ -1,9 +1,11 @@
 import { Color } from "@src/constants/Colors.js";
-import { GameResult } from "@src/constants/GameStatus.js";
-import Piece, { PromotedPiece } from "@src/constants/Piece.js";
 import { Coordinates, Coords } from "@src/constants/Coords.js";
+import { GameResult } from "@src/constants/GameStatus.js";
+import { PromotedPiece } from "@src/constants/Piece.js";
+import type PieceMap from "@src/game/PieceMap.js";
 
-export type PieceMap = Map<Coordinates, Piece>;
+export { PieceMap };
+
 export type CastlingRights = Record<Color, Set<number>>;
 export type Wing = -1 | 1;
 export type HalfMove = [Coordinates, Coordinates];
@@ -12,7 +14,6 @@ export type AlgebraicNotation = keyof typeof Coords;
 
 export interface PositionInfo {
   pieces: Record<Color, PieceMap>;
-  kingCoords: Record<Color, Coordinates>;
   activeColor: Color;
   /**
    * Contains initial rook files.

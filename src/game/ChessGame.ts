@@ -1,12 +1,12 @@
-import { Observable } from "melv_observable";
 import Colors, { Color } from "@src/constants/Colors.js";
-import { Coords, Coordinates, coordsToNotation, getCoords } from "@src/constants/Coords.js";
-import GameStatus, { GameResults, GameResult } from "@src/constants/GameStatus.js";
+import { Coordinates, Coords, coordsToNotation, getCoords } from "@src/constants/Coords.js";
+import GameStatus, { GameResult, GameResults } from "@src/constants/GameStatus.js";
 import Piece, { PromotedPiece } from "@src/constants/Piece.js";
 import { CastledRookFiles, InitialPieceRanks } from "@src/constants/placement.js";
 import Position from "@src/game/Position.js";
 import { enterPgn, getPgnFromGame } from "@src/pgn-fen/pgn.js";
 import { AlgebraicNotation, GameMetaInfo, PieceMap, Wing } from "@src/types.js";
+import { Observable } from "melv_observable";
 
 export default class ChessGame {
   private readonly currentPositionObs = new Observable<Position>();
@@ -52,7 +52,7 @@ export default class ChessGame {
     if (!moves.some(([src, dest]) => src === srcCoords && dest === destCoords))
       throw new Error(`Illegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
 
-    const { pieces, kingCoords, castlingRights, activeColor, inactiveColor } = this.currentPosition.cloneInfo();
+    const { pieces, castlingRights, activeColor, inactiveColor } = this.currentPosition.cloneInfo();
     let nextEnPassantCoords: Coordinates | null = null;
     const srcPiece = pieces[activeColor].get(srcCoords) as Piece;
     const destPiece = (srcPiece < Piece.KNIGHT || destCoords !== this.currentPosition.enPassantCoords)
@@ -70,7 +70,6 @@ export default class ChessGame {
       if (this.isCastling(srcCoords, destCoords, pieces[activeColor]))
         this.castleRook(srcCoords, destCoords, pieces[activeColor], castlingRights[activeColor]);
 
-      kingCoords[activeColor] = destCoords;
       castlingRights[activeColor].clear();
     }
 
@@ -87,7 +86,6 @@ export default class ChessGame {
 
     const nextPosition = new Position({
       pieces,
-      kingCoords,
       castlingRights,
       activeColor: inactiveColor,
       enPassantCoords: nextEnPassantCoords,

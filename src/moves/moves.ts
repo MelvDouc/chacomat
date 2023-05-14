@@ -1,9 +1,9 @@
-import offsets from "@src/moves/offsets.js";
 import { Color, reverseColor } from "@src/constants/Colors.js";
 import { Coordinates, getCoords } from "@src/constants/Coords.js";
 import Piece from "@src/constants/Piece.js";
-import { InitialPawnRanks, InitialPieceRanks, CastledKingFiles, CastledRookFiles } from "@src/constants/placement.js";
+import { CastledKingFiles, CastledRookFiles, InitialPawnRanks, InitialPieceRanks } from "@src/constants/placement.js";
 import type Position from "@src/game/Position.js";
+import offsets from "@src/moves/offsets.js";
 import { PieceMap, Wing } from "@src/types.js";
 
 
@@ -64,7 +64,7 @@ export function* pseudoLegalMoves(
 }
 
 export function canCastleTo(rookY: number, color: Color, coordsAttackedByInactiveColor: Set<Coordinates>, pos: Position): boolean {
-  const kingY = pos.kingCoords[color].y;
+  const kingY = pos.pieces[color].kingCoords.y;
   const wing = Math.sign(rookY - kingY) as Wing;
   const kingYOffset = Math.sign(CastledKingFiles[wing] - kingY);
   const rookYOffset = Math.sign(CastledRookFiles[wing] - kingY);

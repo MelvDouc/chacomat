@@ -1,6 +1,7 @@
-import Colors, { Color } from "@src/constants/Colors.js";
-import { Coordinates, File, getCoords } from "@src/constants/Coords.js";
-import Piece, { PiecesByName, PieceAbbreviations } from "@src/constants/Piece.js";
+import Colors from "@src/constants/Colors.js";
+import { File, getCoords } from "@src/constants/Coords.js";
+import Piece, { PieceAbbreviations, PiecesByName } from "@src/constants/Piece.js";
+import PieceMap from "@src/game/PieceMap.js";
 import { CastlingRights, PositionInfo } from "@src/types.js";
 
 const fenRegex = /^[1-8PNBRQKpnbrqk]{1,8}(\/[1-8PNBRQKpnbrqk]{1,8}){7} (w|b) (?!.*(.).*\1)([KQkq]{1,4}|[a-hA-H]{1,4}|-) ([a-h][1-8]|-) \d+ \d+$/;
@@ -9,15 +10,11 @@ const fenRegex = /^[1-8PNBRQKpnbrqk]{1,8}(\/[1-8PNBRQKpnbrqk]{1,8}){7} (w|b) (?!
 // PARSE
 // ===== ===== ===== ===== =====
 
-export function getPieceMaps(pieceStr: string): {
-  pieces: PositionInfo["pieces"];
-  kingCoords: PositionInfo["kingCoords"];
-} {
+export function getPieceMaps(pieceStr: string): PositionInfo["pieces"] {
   const pieces = {
-    [Colors.WHITE]: new Map<Coordinates, Piece>(),
-    [Colors.BLACK]: new Map<Coordinates, Piece>()
+    [Colors.WHITE]: new PieceMap(),
+    [Colors.BLACK]: new PieceMap()
   };
-  const kingCoords = {} as Record<Color, Coordinates>;
 
   pieceStr
     .split("/")
@@ -33,12 +30,10 @@ export function getPieceMaps(pieceStr: string): {
           const piece = PiecesByName[char as keyof typeof PiecesByName];
           const color = (char === char.toUpperCase()) ? Colors.WHITE : Colors.BLACK;
           pieces[color].set(coords, piece);
-          if (piece === Piece.KING)
-            kingCoords[color] = coords;
         });
     });
 
-  return { pieces, kingCoords };
+  return pieces;
 }
 
 export function getCastlingRights(castlingStr: string): CastlingRights {
