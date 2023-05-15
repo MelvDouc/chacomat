@@ -11,29 +11,24 @@ const fenRegex = /^[1-8PNBRQKpnbrqk]{1,8}(\/[1-8PNBRQKpnbrqk]{1,8}){7} (w|b) (?!
 // ===== ===== ===== ===== =====
 
 export function getPieceMaps(pieceStr: string): PositionInfo["pieces"] {
-  const pieces = {
-    [Colors.WHITE]: new PieceMap(),
-    [Colors.BLACK]: new PieceMap()
-  };
-
-  pieceStr
+  return pieceStr
     .split("/")
-    .forEach((row, x) => {
+    .reduce((acc, row, x) => {
       row
         .replace(/\d+/g, (n) => "0".repeat(+n))
         .split("")
         .forEach((char, y) => {
-          if (char === "0")
-            return;
-
-          const coords = getCoords(x, y);
-          const piece = PiecesByName[char as keyof typeof PiecesByName];
-          const color = (char === char.toUpperCase()) ? Colors.WHITE : Colors.BLACK;
-          pieces[color].set(coords, piece);
+          if (char !== "0")
+            acc[(char === char.toUpperCase()) ? Colors.WHITE : Colors.BLACK].set(
+              getCoords(x, y),
+              PiecesByName[char as keyof typeof PiecesByName]
+            );
         });
+      return acc;
+    }, {
+      [Colors.WHITE]: new PieceMap(),
+      [Colors.BLACK]: new PieceMap()
     });
-
-  return pieces;
 }
 
 export function getCastlingRights(castlingStr: string): CastlingRights {

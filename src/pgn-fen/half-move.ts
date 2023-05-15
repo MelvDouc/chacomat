@@ -2,11 +2,11 @@ import { Coords, coordsToNotation, File, getCoords } from "@src/constants/Coords
 import Piece, { PieceAbbreviations, PiecesByName, PromotedPiece } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
 import {
-  Wing,
+  AlgebraicNotation,
   HalfMove,
   HalfMoveWithPromotion,
   PieceMap,
-  AlgebraicNotation
+  Wing
 } from "@src/types.js";
 
 const MOVE_FINDERS: Record<string, MoveFinder> = {
@@ -108,7 +108,6 @@ export function halfMoveToNotation(srcPosition: Position, varIndex = 0): string 
         srcRank = coordsToNotation(srcCoords)[1];
     }
   }
-
   return PieceAbbreviations[srcPiece] + srcFile + srcRank + (pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation;
 }
 
