@@ -1,19 +1,21 @@
-import ChessGame from "@src/game/ChessGame.js";
 import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
+import ChessGame from "@src/game/ChessGame.js";
+import assert from "node:assert";
+import { describe, it } from "node:test";
 
 describe("Various checkmates", () => {
   it("fool's mate", () => {
     const game = new ChessGame({
       pgn: "1. f3 e5 2. g4 Qh4#"
     });
-    expect(game.result).toBe(GameResults.BLACK_WIN);
+    assert.strictEqual(game.result, GameResults.BLACK_WIN);
   });
 
   it("scholar's mate", () => {
     const game = new ChessGame({
       pgn: "1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7#"
     });
-    expect(game.currentPosition.getStatus()).toBe(GameStatus.CHECKMATE);
+    assert.strictEqual(game.currentPosition.getStatus(), GameStatus.CHECKMATE);
   });
 
   it("the Opera Game", () => {
@@ -30,6 +32,6 @@ describe("Various checkmates", () => {
         13.Rxd7 Rxd7 14.Rd1 Qe6 15.Bxd7+ Nxd7 16.Qb8+ Nxb8 17.Rd8# 1-0
       `
     });
-    expect(game.currentPosition.getStatus()).toBe(GameStatus.CHECKMATE);
+    assert.strictEqual(game.currentPosition.getStatus(), GameStatus.CHECKMATE);
   });
 });
