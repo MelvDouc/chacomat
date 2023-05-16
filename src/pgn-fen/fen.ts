@@ -97,30 +97,6 @@ export function stringifyBoard(pieces: PositionInfo["pieces"]): string {
   return boardStr;
 }
 
-export function stringifyCastlingRights(castlingRights: CastlingRights): string {
-  let castlingStr = "";
-
-  if (castlingRights[Colors.WHITE].has(0))
-    castlingStr += "K";
-  if (castlingRights[Colors.WHITE].has(7))
-    castlingStr += "Q";
-  if (castlingRights[Colors.BLACK].has(0))
-    castlingStr += "k";
-  if (castlingRights[Colors.BLACK].has(7))
-    castlingStr += "q";
-
-  return castlingStr || "-";
-}
-
-export function stringifyChess960CastlingRights(castlingRights: CastlingRights): string {
-  let result = "";
-
-  castlingRights[Colors.WHITE].forEach((y) => result += File[y].toUpperCase());
-  castlingRights[Colors.BLACK].forEach((y) => result += File[y]);
-
-  return result || "-";
-}
-
 // ===== ===== ===== ===== =====
 // VALIDATE
 // ===== ===== ===== ===== =====

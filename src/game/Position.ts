@@ -14,8 +14,7 @@ import {
   getCastlingRights,
   getPieceMaps,
   isValidFen,
-  stringifyBoard,
-  stringifyCastlingRights
+  stringifyBoard
 } from "@src/pgn-fen/fen.js";
 import {
   AlgebraicNotation,
@@ -45,6 +44,21 @@ export default class Position implements PositionInfo {
     });
   }
 
+  protected static stringifyCastlingRights(castlingRights: CastlingRights): string {
+    let castlingStr = "";
+
+    if (castlingRights[Colors.WHITE].has(0))
+      castlingStr += "K";
+    if (castlingRights[Colors.WHITE].has(7))
+      castlingStr += "Q";
+    if (castlingRights[Colors.BLACK].has(0))
+      castlingStr += "k";
+    if (castlingRights[Colors.BLACK].has(7))
+      castlingStr += "q";
+
+    return castlingStr || "-";
+  }
+
   public readonly pieces: Record<Color, PieceMap>;
   public readonly activeColor: Color;
   public readonly castlingRights: CastlingRights;
@@ -69,10 +83,6 @@ export default class Position implements PositionInfo {
 
   public get inactiveColor(): Color {
     return reverseColor(this.activeColor);
-  }
-
-  protected get castlingStr(): string {
-    return stringifyCastlingRights(this.castlingRights);
   }
 
   private computeLegalMoves(): HalfMove[] {
@@ -186,7 +196,7 @@ export default class Position implements PositionInfo {
     return [
       stringifyBoard(this.pieces),
       (this.activeColor === Colors.WHITE) ? "w" : "b",
-      this.castlingStr,
+      (this.constructor as typeof Position).stringifyCastlingRights(this.castlingRights),
       (this.enPassantCoords) ? coordsToNotation(this.enPassantCoords) : "-",
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
