@@ -1,4 +1,4 @@
-import { Coords, coordsToNotation, File, getCoords } from "@src/constants/Coords.js";
+import { Coordinates, Coords, coordsToNotation, File, getCoords } from "@src/constants/Coords.js";
 import Piece, { PieceAbbreviations, PiecesByName, PromotedPiece } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
 import {
@@ -23,11 +23,9 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
           && dest === destCoords;
       });
 
-      if (!move)
-        return null;
-      return (pt)
-        ? [...move, PiecesByName[pt as keyof typeof PiecesByName] as PromotedPiece]
-        : move;
+      if (move && pt)
+        return [...move, PiecesByName[pt as keyof typeof PiecesByName] as PromotedPiece];
+      return move;
     }
   },
   PIECE_MOVE: {
@@ -42,7 +40,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
           && pieceMap.get(src) === PiecesByName[pt as keyof typeof PiecesByName]
           && (srcX === null || src.x === srcX)
           && (srcY === null || src.y === srcY);
-      }) ?? null;
+      });
     }
   },
   CASTLING: {
@@ -53,7 +51,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
         return pieceMap.get(src) === Piece.KING
           && Math.sign(dest.y - src.y) === wing
           && (Math.abs(dest.y - src.y) === 2 || pieceMap.get(dest) === Piece.ROOK);
-      }) ?? null;
+      });
     }
   }
 } as const;
@@ -95,24 +93,30 @@ export function halfMoveToNotation(srcPosition: Position, varIndex = 0): string 
     return `K${(pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation}`;
   }
 
+  const { srcRank, srcFile } = getAmbiguousRankAndFile(srcPosition.getHalfMoves(), srcCoords, destCoords, pieces[activeColor]);
+  return PieceAbbreviations[srcPiece] + srcFile + srcRank + (pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation;
+}
+
+function getAmbiguousRankAndFile(halfMoves: HalfMove[], srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap) {
   let srcRank = "",
     srcFile = "";
 
-  for (const [src, dest] of srcPosition.getHalfMoves()) {
+  for (const [src, dest] of halfMoves) {
     if (srcFile && srcRank)
       break;
-    if (dest === destCoords && src !== srcCoords && pieces[activeColor].get(src) === srcPiece) {
-      if (!srcFile && src.y === srcCoords.y)
-        srcFile = coordsToNotation(srcCoords)[0];
-      if (!srcRank && src.x === srcCoords.x)
-        srcRank = coordsToNotation(srcCoords)[1];
+    if (src !== srcCoords && dest === destCoords && pieceMap.get(src) === pieceMap.get(srcCoords)) {
+      if (src.y === srcCoords.y)
+        srcFile ||= coordsToNotation(srcCoords)[0];
+      if (src.x === srcCoords.x)
+        srcRank ||= coordsToNotation(srcCoords)[1];
     }
   }
-  return PieceAbbreviations[srcPiece] + srcFile + srcRank + (pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation;
+
+  return { srcRank, srcFile };
 }
 
 
 interface MoveFinder {
   regex: RegExp;
-  getHalfMove: (groups: Record<string, string | undefined>, halfMoves: HalfMove[], pieceMap: PieceMap) => HalfMoveWithPromotion | null;
+  getHalfMove: (groups: Record<string, string | undefined>, halfMoves: HalfMove[], pieceMap: PieceMap) => HalfMoveWithPromotion | undefined;
 }
