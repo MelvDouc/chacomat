@@ -9,6 +9,6 @@ describe("PGN", () => {
       fen: "K7/8/8/3p1Q2/8/3Q1Q2/8/6k1 w - - 0 1"
     });
     game.playMoveWithNotations("f3", "d5");
-    assert(game.toString().includes("Qf3xd5"));
+    assert(game.toString().includes("f3-d5"));
   });
 });

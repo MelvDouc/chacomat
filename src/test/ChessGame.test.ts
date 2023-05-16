@@ -32,6 +32,7 @@ describe("Various checkmates", () => {
         13.Rxd7 Rxd7 14.Rd1 Qe6 15.Bxd7+ Nxd7 16.Qb8+ Nxb8 17.Rd8# 1-0
       `
     });
+    console.log(game.toString());
     assert.strictEqual(game.currentPosition.getStatus(), GameStatus.CHECKMATE);
   });
 });
