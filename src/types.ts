@@ -22,6 +22,7 @@ export interface PositionInfo {
   enPassantCoords: Coordinates | null;
   halfMoveClock: number;
   fullMoveNumber: number;
+  boardStr?: string;
 }
 
 export interface GameMetaInfo {

@@ -27,15 +27,16 @@ export default class Position implements PositionInfo {
     if (!isValidFen(fen))
       throw new Error(`Invalid FEN string: "${fen}"`);
 
-    const [pieceStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
+    const [boardStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
     return new this({
-      pieces: PieceMap.parseBoard(pieceStr),
+      pieces: PieceMap.parseBoard(boardStr),
       activeColor: (color === "w") ? Colors.WHITE : Colors.BLACK,
       castlingRights: this.parseCastlingRights(castlingStr),
       enPassantCoords: Coords[enPassant as AlgebraicNotation] ?? null,
       halfMoveClock: +halfMoveClock,
-      fullMoveNumber: +fullMoveNumber
+      fullMoveNumber: +fullMoveNumber,
+      boardStr
     });
   }
 
@@ -67,12 +68,13 @@ export default class Position implements PositionInfo {
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
   public readonly legalMoves: HalfMove[];
+  public readonly boardStr: string;
   public srcMove?: HalfMoveWithPromotion;
   public prev?: Position;
   public next?: Position;
   public variation?: Position;
 
-  constructor({ pieces, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: PositionInfo) {
+  constructor({ pieces, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber, boardStr }: PositionInfo) {
     this.pieces = pieces;
     this.activeColor = activeColor;
     this.castlingRights = castlingRights;
@@ -80,6 +82,7 @@ export default class Position implements PositionInfo {
     this.halfMoveClock = halfMoveClock;
     this.fullMoveNumber = fullMoveNumber;
     this.legalMoves = this.computeLegalMoves();
+    this.boardStr = boardStr ?? PieceMap.stringifyBoard(pieces);
   }
 
   public get inactiveColor(): Color {
@@ -145,7 +148,6 @@ export default class Position implements PositionInfo {
   }
 
   public isTripleRepetition(): boolean {
-    const boardStr = PieceMap.stringifyBoard(this.pieces);
     let count = 0;
 
     for (
@@ -153,7 +155,7 @@ export default class Position implements PositionInfo {
       pos && count < 3;
       pos = pos.prev?.prev
     ) {
-      if (PieceMap.stringifyBoard(pos.pieces) === boardStr)
+      if (pos.boardStr === this.boardStr)
         count++;
     }
 
@@ -200,7 +202,7 @@ export default class Position implements PositionInfo {
 
   public toString(): string {
     return [
-      PieceMap.stringifyBoard(this.pieces),
+      this.boardStr,
       (this.activeColor === Colors.WHITE) ? "w" : "b",
       (this.constructor as typeof Position).stringifyCastlingRights(this.castlingRights),
       (this.enPassantCoords) ? coordsToNotation(this.enPassantCoords) : "-",
