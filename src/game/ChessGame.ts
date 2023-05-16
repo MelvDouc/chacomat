@@ -180,16 +180,18 @@ export default class ChessGame {
   }
 
   public toString(): string {
-    let pgn = this.stringifyMetaInfo();
+    let pgn = `${this.stringifyMetaInfo()}\n`;
     let position: Position | undefined = this.getFirstPosition();
 
     while (position.next) {
       if (position.activeColor === Colors.WHITE)
         pgn += ` ${position.fullMoveNumber}.`;
 
-      // const [srcCoords, destCoords,promotedPiece] = position.next.srcMove as HalfMoveWithPromotion;
-      // pgn += ` ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`;
-      pgn += halfMoveToNotation(position, position.next.srcMove as HalfMoveWithPromotion);
+      pgn += ` ${halfMoveToNotation(position, position.next.srcMove as HalfMoveWithPromotion)}`;
+      if (position.next.getStatus() === GameStatus.CHECKMATE)
+        pgn += "#";
+      else if (position.next.isCheck())
+        pgn += "+";
       position = position.next;
     }
 

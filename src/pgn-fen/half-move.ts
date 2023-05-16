@@ -101,16 +101,28 @@ export function halfMoveToNotation(
   return PieceAbbreviations[srcPiece] + srcFile + srcRank + captureMarker + destNotation;
 }
 
-function getAmbiguousRankAndFile(legalMoves: HalfMove[], srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap) {
+function getAmbiguousRankAndFile(legalMoves: HalfMove[], srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap): {
+  srcFile: string;
+  srcRank: string;
+} {
   const similarMoves = legalMoves.filter(([src, dest]) => {
     return src !== srcCoords
       && dest === destCoords
       && pieceMap.get(src) === pieceMap.get(srcCoords);
   });
-  return {
-    srcRank: similarMoves.some(([src]) => src.y === srcCoords.y) ? coordsToNotation(srcCoords)[1] : "",
-    srcFile: similarMoves.some(([src]) => src.x === srcCoords.x) ? coordsToNotation(srcCoords)[0] : "",
-  };
+
+  if (!similarMoves.length)
+    return { srcRank: "", srcFile: "" };
+
+  const [srcFileNotation, srcRankNotation] = coordsToNotation(srcCoords);
+
+  if (similarMoves.every(([src]) => src.y !== srcCoords.y))
+    return { srcFile: srcFileNotation, srcRank: "" };
+
+  if (similarMoves.every(([src]) => src.x !== srcCoords.x))
+    return { srcFile: "", srcRank: srcRankNotation };
+
+  return { srcFile: srcFileNotation, srcRank: srcRankNotation };
 }
 
 
