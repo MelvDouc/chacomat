@@ -97,25 +97,22 @@ export function stringifyBoard(pieces: PositionInfo["pieces"]): string {
   return boardStr;
 }
 
-export function stringifyCastlingRights(castlingRights: CastlingRights, isChess960: boolean): string {
-  if (isChess960)
-    return stringifyChess960CastlingRights(castlingRights);
-
-  let result = "";
+export function stringifyCastlingRights(castlingRights: CastlingRights): string {
+  let castlingStr = "";
 
   if (castlingRights[Colors.WHITE].has(0))
-    result += "K";
+    castlingStr += "K";
   if (castlingRights[Colors.WHITE].has(7))
-    result += "Q";
+    castlingStr += "Q";
   if (castlingRights[Colors.BLACK].has(0))
-    result += "k";
+    castlingStr += "k";
   if (castlingRights[Colors.BLACK].has(7))
-    result += "q";
+    castlingStr += "q";
 
-  return result || "-";
+  return castlingStr || "-";
 }
 
-function stringifyChess960CastlingRights(castlingRights: CastlingRights): string {
+export function stringifyChess960CastlingRights(castlingRights: CastlingRights): string {
   let result = "";
 
   castlingRights[Colors.WHITE].forEach((y) => result += File[y].toUpperCase());

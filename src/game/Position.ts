@@ -52,12 +52,9 @@ export default class Position implements PositionInfo {
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
   private readonly halfMoves: HalfMove[];
-  /** Used when checking for a triple repetition. */
-  private readonly boardStr: string;
   public srcMove: HalfMoveWithPromotion | null = null;
   public prev: Position | null = null;
   public next: Position[] = [];
-  protected readonly isChess960 = false;
 
   constructor({ pieces, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: PositionInfo) {
     this.pieces = pieces;
@@ -67,11 +64,14 @@ export default class Position implements PositionInfo {
     this.halfMoveClock = halfMoveClock;
     this.fullMoveNumber = fullMoveNumber;
     this.halfMoves = this.computeHalfMoves();
-    this.boardStr = stringifyBoard(this.pieces);
   }
 
   public get inactiveColor(): Color {
     return reverseColor(this.activeColor);
+  }
+
+  protected get castlingStr(): string {
+    return stringifyCastlingRights(this.castlingRights);
   }
 
   private computeHalfMoves(): HalfMove[] {
@@ -90,15 +90,17 @@ export default class Position implements PositionInfo {
 
     for (const rookY of this.castlingRights[this.activeColor]) {
       if (canCastleTo(rookY, this.activeColor, coordsAttackedByInactiveColor, this))
-        moves.push([
-          kingCoords,
-          this.isChess960
-            ? getCoords(kingCoords.x, rookY)
-            : getCoords(kingCoords.x, CastledKingFiles[Math.sign(rookY - kingCoords.y) as Wing])
-        ]);
+        moves.push(this.getCastlingMove(kingCoords, rookY));
     }
 
     return moves;
+  }
+
+  protected getCastlingMove(kingCoords: Coordinates, rookY: number): HalfMove {
+    return [
+      kingCoords,
+      getCoords(kingCoords.x, CastledKingFiles[Math.sign(rookY - kingCoords.y) as Wing])
+    ];
   }
 
   public getHalfMoves(): HalfMove[] {
@@ -135,13 +137,16 @@ export default class Position implements PositionInfo {
   }
 
   public isTripleRepetition(): boolean {
-    let pos: Position | null | undefined = this.prev?.prev;
+    const boardStr = stringifyBoard(this.pieces);
     let count = 0;
 
-    while (pos && count < 3) {
-      if (pos.boardStr === this.boardStr)
+    for (
+      let pos: Position | null | undefined = this.prev?.prev;
+      pos && count < 3;
+      pos = pos.prev?.prev
+    ) {
+      if (stringifyBoard(pos.pieces) === boardStr)
         count++;
-      pos = pos.prev?.prev;
     }
 
     return count === 3;
@@ -182,9 +187,9 @@ export default class Position implements PositionInfo {
 
   public toString(): string {
     return [
-      this.boardStr,
+      stringifyBoard(this.pieces),
       (this.activeColor === Colors.WHITE) ? "w" : "b",
-      stringifyCastlingRights(this.castlingRights, this.isChess960),
+      this.castlingStr,
       (this.enPassantCoords) ? coordsToNotation(this.enPassantCoords) : "-",
       String(this.halfMoveClock),
       String(this.fullMoveNumber)
