@@ -160,7 +160,7 @@ export default class Position implements PositionInfo {
     return count === 3;
   }
 
-  private doesMoveCauseCheck(srcCoords: Coordinates, destCoords: Coordinates): boolean {
+  private tryMove(srcCoords: Coordinates, destCoords: Coordinates): () => void {
     const srcPiece = this.pieces[this.activeColor].get(srcCoords) as Piece;
     const capturedCoords = (srcPiece < Piece.KNIGHT && destCoords === this.enPassantCoords)
       ? getCoords(srcCoords.x, destCoords.y)
@@ -170,11 +170,16 @@ export default class Position implements PositionInfo {
     this.pieces[this.activeColor].set(destCoords, srcPiece).delete(srcCoords);
     capturedPiece && this.pieces[this.inactiveColor].delete(capturedCoords);
 
+    return () => {
+      this.pieces[this.activeColor].set(srcCoords, srcPiece).delete(destCoords);
+      capturedPiece && this.pieces[this.inactiveColor].set(capturedCoords, capturedPiece);
+    };
+  }
+
+  private doesMoveCauseCheck(srcCoords: Coordinates, destCoords: Coordinates): boolean {
+    const undo = this.tryMove(srcCoords, destCoords);
     const isCheck = this.isCheck();
-
-    this.pieces[this.activeColor].set(srcCoords, srcPiece).delete(destCoords);
-    capturedPiece && this.pieces[this.inactiveColor].set(capturedCoords, capturedPiece);
-
+    undo();
     return isCheck;
   }
 
