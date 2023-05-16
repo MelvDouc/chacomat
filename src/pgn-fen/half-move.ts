@@ -63,7 +63,7 @@ export default function getHalfMove(halfMoveStr: string, position: Position): Ha
     if (match) {
       const halfMove = MOVE_FINDERS[key].getHalfMove(
         match.groups,
-        position.getHalfMoves(),
+        position.legalMoves,
         position.pieces[position.activeColor]
       );
 
@@ -75,9 +75,9 @@ export default function getHalfMove(halfMoveStr: string, position: Position): Ha
   return null;
 }
 
-export function halfMoveToNotation(srcPosition: Position, varIndex = 0): string {
+export function halfMoveToNotation(srcPosition: Position): string {
   const { pieces, activeColor, inactiveColor, next } = srcPosition;
-  const [srcCoords, destCoords, promotedPiece] = next[varIndex].srcMove;
+  const [srcCoords, destCoords, promotedPiece] = next.srcMove;
   const srcPiece = pieces[activeColor].get(srcCoords) as Piece;
   const destNotation = coordsToNotation(destCoords);
 
@@ -93,7 +93,7 @@ export function halfMoveToNotation(srcPosition: Position, varIndex = 0): string 
     return `K${(pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation}`;
   }
 
-  const { srcRank, srcFile } = getAmbiguousRankAndFile(srcPosition.getHalfMoves(), srcCoords, destCoords, pieces[activeColor]);
+  const { srcRank, srcFile } = getAmbiguousRankAndFile(srcPosition.legalMoves, srcCoords, destCoords, pieces[activeColor]);
   return PieceAbbreviations[srcPiece] + srcFile + srcRank + (pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation;
 }
 

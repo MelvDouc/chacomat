@@ -1,7 +1,5 @@
-import Colors from "@src/constants/Colors.js";
 import ChessGame from "@src/game/ChessGame.js";
-import Position from "@src/game/Position.js";
-import getHalfMove, { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
+import getHalfMove from "@src/pgn-fen/half-move.js";
 import parseVariations from "@src/pgn-fen/parse-variations.js";
 import { GameMetaInfo } from "@src/types.js";
 
@@ -39,6 +37,7 @@ export function enterPgn(pgn: string) {
     gameMetaInfo,
     enterMoves: (game: ChessGame) => {
       const mainLine = parseVariations(movesStr).mainLine;
+
       for (const [halfMoveStr] of mainLine.matchAll(halfMoveRegex)) {
         const halfMove = getHalfMove(halfMoveStr, game.currentPosition);
         if (!halfMove)
@@ -47,26 +46,4 @@ export function enterPgn(pgn: string) {
       }
     }
   };
-}
-
-// ===== ===== ===== ===== =====
-// STRINGIFY
-// ===== ===== ===== ===== =====
-
-export function getPgnFromGame(game: ChessGame): string {
-  let position: Position | undefined = game.getFirstPosition();
-  let pgn = "";
-
-  for (const key in game.metaInfo) {
-    pgn += `[${key} "${game.metaInfo[key]}"]`;
-  }
-
-  while (position?.next[0]) {
-    if (position.activeColor === Colors.WHITE)
-      pgn += ` ${position.fullMoveNumber}.`;
-    pgn += ` ${halfMoveToNotation(position)}`;
-    position = position.next[0];
-  }
-
-  return `${pgn} ${game.result}`;
 }

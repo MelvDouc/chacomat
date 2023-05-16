@@ -51,10 +51,11 @@ export default class Position implements PositionInfo {
   public readonly enPassantCoords: Coordinates | null;
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
-  private readonly halfMoves: HalfMove[];
-  public srcMove: HalfMoveWithPromotion | null = null;
-  public prev: Position | null = null;
-  public next: Position[] = [];
+  public readonly legalMoves: HalfMove[];
+  public srcMove?: HalfMoveWithPromotion;
+  public prev?: Position;
+  public next?: Position;
+  public variation?: Position;
 
   constructor({ pieces, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: PositionInfo) {
     this.pieces = pieces;
@@ -63,7 +64,7 @@ export default class Position implements PositionInfo {
     this.enPassantCoords = enPassantCoords;
     this.halfMoveClock = halfMoveClock;
     this.fullMoveNumber = fullMoveNumber;
-    this.halfMoves = this.computeHalfMoves();
+    this.legalMoves = this.computeLegalMoves();
   }
 
   public get inactiveColor(): Color {
@@ -74,7 +75,7 @@ export default class Position implements PositionInfo {
     return stringifyCastlingRights(this.castlingRights);
   }
 
-  private computeHalfMoves(): HalfMove[] {
+  private computeLegalMoves(): HalfMove[] {
     const moves = [...this.pieces[this.activeColor].keys()].reduce((acc, srcCoords) => {
       for (const destCoords of pseudoLegalMoves(srcCoords, this.activeColor, this.pieces, this.enPassantCoords))
         if (!this.doesMoveCauseCheck(srcCoords, destCoords))
@@ -103,10 +104,6 @@ export default class Position implements PositionInfo {
     ];
   }
 
-  public getHalfMoves(): HalfMove[] {
-    return this.halfMoves;
-  }
-
   private getCoordsAttackedByColor(color: Color): Set<Coordinates> {
     const set = new Set<Coordinates>();
 
@@ -127,7 +124,7 @@ export default class Position implements PositionInfo {
   }
 
   public getStatus(): GameStatus {
-    if (!this.halfMoves.length)
+    if (!this.legalMoves.length)
       return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
     if (this.halfMoveClock >= 50)
       return GameStatus.DRAW_BY_FIFTY_MOVE_RULE;

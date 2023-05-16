@@ -2,9 +2,9 @@ import { Color } from "@src/constants/Colors.js";
 import { Coordinates, Coords } from "@src/constants/Coords.js";
 import { GameResult } from "@src/constants/GameStatus.js";
 import { PromotedPiece } from "@src/constants/Piece.js";
-import type PieceMap from "@src/game/PieceMap.js";
+import PieceMap from "@src/game/PieceMap.js";
 
-export { PieceMap };
+export type { PieceMap };
 
 export type CastlingRights = Record<Color, Set<number>>;
 export type Wing = -1 | 1;

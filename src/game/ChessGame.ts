@@ -4,7 +4,7 @@ import GameStatus, { GameResult, GameResults } from "@src/constants/GameStatus.j
 import Piece, { PromotedPiece } from "@src/constants/Piece.js";
 import { CastledRookFiles, InitialPieceRanks } from "@src/constants/placement.js";
 import Position from "@src/game/Position.js";
-import { enterPgn, getPgnFromGame } from "@src/pgn-fen/pgn.js";
+import { enterPgn } from "@src/pgn-fen/pgn.js";
 import { AlgebraicNotation, GameMetaInfo, PieceMap, Wing } from "@src/types.js";
 import { Observable } from "melv_observable";
 
@@ -47,7 +47,7 @@ export default class ChessGame {
   }
 
   public playMove(srcCoords: Coordinates, destCoords: Coordinates, promotedPiece?: PromotedPiece): this {
-    const moves = this.currentPosition.getHalfMoves();
+    const moves = this.currentPosition.legalMoves;
 
     if (!moves.some(([src, dest]) => src === srcCoords && dest === destCoords))
       throw new Error(`Illegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
@@ -96,7 +96,7 @@ export default class ChessGame {
     this.checkStatus(nextPosition.getStatus(), activeColor);
     nextPosition.srcMove = [srcCoords, destCoords, promotedPiece];
     nextPosition.prev = this.currentPosition;
-    this.currentPosition.next.push(nextPosition);
+    this.currentPosition.next = nextPosition;
     this.currentPositionObs.value = nextPosition;
     return this;
   }
@@ -152,7 +152,7 @@ export default class ChessGame {
 
     while (pos && pos.fullMoveNumber !== moveNumber) {
       pos = (pos.fullMoveNumber < moveNumber)
-        ? pos.next[0]
+        ? pos.next
         : pos.prev;
     }
 
@@ -164,7 +164,7 @@ export default class ChessGame {
       return;
     }
 
-    const otherPos = (color === Colors.WHITE) ? pos.next[0] : pos.prev;
+    const otherPos = (color === Colors.WHITE) ? pos.next : pos.prev;
 
     if (!otherPos)
       throw new Error(`No position was found at move number ${moveNumber} for color ${color}.`);
@@ -172,7 +172,25 @@ export default class ChessGame {
     this.currentPositionObs.value = otherPos;
   }
 
+  protected stringifyMetaInfo(): string {
+    return Object.entries(this.metaInfo).reduce((acc, [key, value]) => {
+      return acc + `[${key} "${value}"]`;
+    }, "");
+  }
+
   public toString(): string {
-    return getPgnFromGame(this);
+    let pgn = this.stringifyMetaInfo();
+    let position: Position | undefined = this.getFirstPosition();
+
+    while (position.next) {
+      if (position.activeColor === Colors.WHITE)
+        pgn += ` ${position.fullMoveNumber}.`;
+
+      const [srcCoords, destCoords] = position.next.srcMove;
+      pgn += ` ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`;
+      position = position.next;
+    }
+
+    return `${pgn} ${this.result}`;
   }
 }
