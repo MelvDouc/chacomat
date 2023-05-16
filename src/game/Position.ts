@@ -7,15 +7,10 @@ import {
 } from "@src/constants/Coords.js";
 import GameStatus from "@src/constants/GameStatus.js";
 import Piece from "@src/constants/Piece.js";
-import { CastledKingFiles } from "@src/constants/placement.js";
+import { CastledKingFiles, CastlingFilesByColorAndWing } from "@src/constants/placement.js";
 import PieceMap from "@src/game/PieceMap.js";
 import { attackedCoords, canCastleTo, pseudoLegalMoves } from "@src/moves/moves.js";
-import {
-  getCastlingRights,
-  getPieceMaps,
-  isValidFen,
-  stringifyBoard
-} from "@src/pgn-fen/fen.js";
+import { isValidFen } from "@src/pgn-fen/fen.js";
 import {
   AlgebraicNotation,
   CastlingRights,
@@ -35,28 +30,34 @@ export default class Position implements PositionInfo {
     const [pieceStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
     return new this({
-      pieces: getPieceMaps(pieceStr),
+      pieces: PieceMap.parseBoard(pieceStr),
       activeColor: (color === "w") ? Colors.WHITE : Colors.BLACK,
-      castlingRights: getCastlingRights(castlingStr),
+      castlingRights: this.parseCastlingRights(castlingStr),
       enPassantCoords: Coords[enPassant as AlgebraicNotation] ?? null,
       halfMoveClock: +halfMoveClock,
       fullMoveNumber: +fullMoveNumber
     });
   }
 
+  protected static parseCastlingRights(castlingStr: string): CastlingRights {
+    return [...CastlingFilesByColorAndWing].reduce((acc, [color, filesByWing]) => {
+      for (const key in filesByWing)
+        if (castlingStr.includes(key))
+          acc[color].add(filesByWing[key]);
+      return acc;
+    }, {
+      [Colors.WHITE]: new Set<number>(),
+      [Colors.BLACK]: new Set<number>()
+    });
+  }
+
   protected static stringifyCastlingRights(castlingRights: CastlingRights): string {
-    let castlingStr = "";
-
-    if (castlingRights[Colors.WHITE].has(0))
-      castlingStr += "K";
-    if (castlingRights[Colors.WHITE].has(7))
-      castlingStr += "Q";
-    if (castlingRights[Colors.BLACK].has(0))
-      castlingStr += "k";
-    if (castlingRights[Colors.BLACK].has(7))
-      castlingStr += "q";
-
-    return castlingStr || "-";
+    return [...CastlingFilesByColorAndWing].reduce((acc, [color, filesByWing]) => {
+      for (const key in filesByWing)
+        if (castlingRights[color].has(filesByWing[key]))
+          acc += key;
+      return acc;
+    }, "") || "-";
   }
 
   public readonly pieces: Record<Color, PieceMap>;
@@ -144,7 +145,7 @@ export default class Position implements PositionInfo {
   }
 
   public isTripleRepetition(): boolean {
-    const boardStr = stringifyBoard(this.pieces);
+    const boardStr = PieceMap.stringifyBoard(this.pieces);
     let count = 0;
 
     for (
@@ -152,7 +153,7 @@ export default class Position implements PositionInfo {
       pos && count < 3;
       pos = pos.prev?.prev
     ) {
-      if (stringifyBoard(pos.pieces) === boardStr)
+      if (PieceMap.stringifyBoard(pos.pieces) === boardStr)
         count++;
     }
 
@@ -194,7 +195,7 @@ export default class Position implements PositionInfo {
 
   public toString(): string {
     return [
-      stringifyBoard(this.pieces),
+      PieceMap.stringifyBoard(this.pieces),
       (this.activeColor === Colors.WHITE) ? "w" : "b",
       (this.constructor as typeof Position).stringifyCastlingRights(this.castlingRights),
       (this.enPassantCoords) ? coordsToNotation(this.enPassantCoords) : "-",

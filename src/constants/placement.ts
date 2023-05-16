@@ -20,3 +20,14 @@ export const CastledRookFiles: Record<Wing, number> = {
   [-1]: 3,
   [1]: 5
 } as const;
+
+export const CastlingFilesByColorAndWing = new Map<Color, Record<string, number>>([
+  [Colors.WHITE, {
+    "K": 0,
+    "Q": 7
+  }],
+  [Colors.BLACK, {
+    "k": 0,
+    "q": 7
+  }]
+]);

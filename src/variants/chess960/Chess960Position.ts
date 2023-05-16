@@ -4,6 +4,23 @@ import Position from "@src/game/Position.js";
 import { CastlingRights, HalfMove } from "@src/types.js";
 
 export default class Chess690Position extends Position {
+  protected static override parseCastlingRights(castlingStr: string): CastlingRights {
+    const castlingRights: CastlingRights = {
+      [Colors.WHITE]: new Set(),
+      [Colors.BLACK]: new Set()
+    };
+
+    if (castlingStr !== "-") {
+      for (const char of castlingStr) {
+        (char !== char.toLowerCase())
+          ? castlingRights[Colors.WHITE].add(File[char.toLowerCase() as keyof typeof File])
+          : castlingRights[Colors.BLACK].add(File[char as keyof typeof File]);
+      }
+    }
+
+    return castlingRights;
+  }
+
   protected static override stringifyCastlingRights(castlingRights: CastlingRights): string {
     let castlingStr = "";
 
