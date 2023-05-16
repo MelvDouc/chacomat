@@ -33,10 +33,10 @@ export default class PieceMap extends Map<Coordinates, Piece> {
             const coords = getCoords(x, y);
 
             if (board[Colors.WHITE].has(coords))
-              return PieceAbbreviations[board[Colors.WHITE].get(coords)];
+              return PieceAbbreviations[board[Colors.WHITE].get(coords) as Piece];
 
             if (board[Colors.BLACK].has(coords))
-              return PieceAbbreviations[board[Colors.BLACK].get(coords)].toLowerCase();
+              return PieceAbbreviations[board[Colors.BLACK].get(coords) as Piece].toLowerCase();
 
             return "0";
           })
@@ -58,6 +58,6 @@ export default class PieceMap extends Map<Coordinates, Piece> {
   public clone(): PieceMap {
     const clone = new PieceMap([...this]);
     clone.kingCoords = this.kingCoords;
-    return this;
+    return clone;
   }
 }

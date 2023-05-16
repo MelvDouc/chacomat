@@ -16,9 +16,9 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
       const srcY = File[sf as keyof typeof File];
       const destCoords = (df)
         ? Coords[(df + dr) as AlgebraicNotation]
-        : getCoords(8 - +dr, srcY);
+        : getCoords(8 - Number(dr), srcY);
       const move = halfMoves.find(([src, dest]) => {
-        return pieceMap.get(src) < Piece.KNIGHT
+        return (pieceMap.get(src) as Piece) < Piece.KNIGHT
           && src.y === srcY
           && dest === destCoords;
       });
@@ -33,7 +33,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
     getHalfMove: ({ pt, sf, sr, df, dr }, halfMoves, pieceMap) => {
       const srcX = (sr) ? (8 - +sr) : null;
       const srcY = (sf) ? File[sf as keyof typeof File] : null;
-      const destCoords = Coords[(df + dr) as AlgebraicNotation];
+      const destCoords = Coords[((df as string) + (dr as string)) as AlgebraicNotation];
 
       return halfMoves.find(([src, dest]) => {
         return dest === destCoords
@@ -62,7 +62,7 @@ export default function getHalfMove(halfMoveStr: string, position: Position): Ha
 
     if (match) {
       const halfMove = MOVE_FINDERS[key].getHalfMove(
-        match.groups,
+        match.groups as Record<string, string>,
         position.legalMoves,
         position.pieces[position.activeColor]
       );
@@ -75,44 +75,42 @@ export default function getHalfMove(halfMoveStr: string, position: Position): Ha
   return null;
 }
 
-export function halfMoveToNotation(srcPosition: Position): string {
-  const { pieces, activeColor, inactiveColor, next } = srcPosition;
-  const [srcCoords, destCoords, promotedPiece] = next.srcMove;
+export function halfMoveToNotation(
+  { pieces, activeColor, inactiveColor, legalMoves }: Position,
+  [srcCoords, destCoords, promotedPiece]: HalfMoveWithPromotion
+): string {
   const srcPiece = pieces[activeColor].get(srcCoords) as Piece;
   const destNotation = coordsToNotation(destCoords);
 
   if (srcPiece < Piece.KNIGHT) {
-    if (srcCoords.y !== destCoords.y)
-      return `${coordsToNotation(srcCoords)[0]}x${destNotation + (PieceAbbreviations[promotedPiece] ?? "")}`;
-    return destNotation + (PieceAbbreviations[promotedPiece] ?? "");
+    const promotedPieceAbbrev = (promotedPiece) ? PieceAbbreviations[promotedPiece] : "";
+    return (srcCoords.y !== destCoords.y)
+      ? `${coordsToNotation(srcCoords)[0]}x${destNotation + promotedPieceAbbrev}`
+      : destNotation + promotedPieceAbbrev;
   }
+
+  const captureMarker = pieces[inactiveColor].has(destCoords) ? "x" : "";
 
   if (srcPiece === Piece.KING) {
     if (Math.abs(destCoords.y - srcCoords.y) === 2 || pieces[activeColor].get(destCoords) === Piece.ROOK)
       return (Math.sign(destCoords.y - srcCoords.y) === -1) ? "0-0-0" : "0-0";
-    return `K${(pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation}`;
+    return `K${captureMarker + destNotation}`;
   }
 
-  const { srcRank, srcFile } = getAmbiguousRankAndFile(srcPosition.legalMoves, srcCoords, destCoords, pieces[activeColor]);
-  return PieceAbbreviations[srcPiece] + srcFile + srcRank + (pieces[inactiveColor].has(destCoords) ? "x" : "") + destNotation;
+  const { srcRank, srcFile } = getAmbiguousRankAndFile(legalMoves, srcCoords, destCoords, pieces[activeColor]);
+  return PieceAbbreviations[srcPiece] + srcFile + srcRank + captureMarker + destNotation;
 }
 
-function getAmbiguousRankAndFile(halfMoves: HalfMove[], srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap) {
-  let srcRank = "",
-    srcFile = "";
-
-  for (const [src, dest] of halfMoves) {
-    if (srcFile && srcRank)
-      break;
-    if (src !== srcCoords && dest === destCoords && pieceMap.get(src) === pieceMap.get(srcCoords)) {
-      if (src.y === srcCoords.y)
-        srcFile ||= coordsToNotation(srcCoords)[0];
-      if (src.x === srcCoords.x)
-        srcRank ||= coordsToNotation(srcCoords)[1];
-    }
-  }
-
-  return { srcRank, srcFile };
+function getAmbiguousRankAndFile(legalMoves: HalfMove[], srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap) {
+  const similarMoves = legalMoves.filter(([src, dest]) => {
+    return src !== srcCoords
+      && dest === destCoords
+      && pieceMap.get(src) === pieceMap.get(srcCoords);
+  });
+  return {
+    srcRank: similarMoves.some(([src]) => src.y === srcCoords.y) ? coordsToNotation(srcCoords)[1] : "",
+    srcFile: similarMoves.some(([src]) => src.x === srcCoords.x) ? coordsToNotation(srcCoords)[0] : "",
+  };
 }
 
 

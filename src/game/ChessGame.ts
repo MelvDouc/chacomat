@@ -4,8 +4,9 @@ import GameStatus, { GameResult, GameResults } from "@src/constants/GameStatus.j
 import Piece, { PromotedPiece } from "@src/constants/Piece.js";
 import { CastledRookFiles, InitialPieceRanks } from "@src/constants/placement.js";
 import Position from "@src/game/Position.js";
+import { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
 import { enterPgn } from "@src/pgn-fen/pgn.js";
-import { AlgebraicNotation, GameMetaInfo, PieceMap, Wing } from "@src/types.js";
+import { AlgebraicNotation, GameMetaInfo, HalfMoveWithPromotion, PieceMap, Wing } from "@src/types.js";
 import { Observable } from "melv_observable";
 
 export default class ChessGame {
@@ -24,7 +25,7 @@ export default class ChessGame {
       this.resultObs.value = this.metaInfo.Result ?? GameResults.ONGOING;
       enterMoves(this);
     } else {
-      this.currentPositionObs.value = Position.fromFen(fen);
+      this.currentPositionObs.value = Position.fromFen(fen as string);
       this.metaInfo.FEN = fen;
       this.resultObs.value = GameResults.ONGOING;
     }
@@ -81,7 +82,7 @@ export default class ChessGame {
       if (Math.abs(destCoords.x - srcCoords.x) === 2)
         nextEnPassantCoords = getCoords((srcCoords.x + destCoords.x) / 2, srcCoords.y);
       else if (destCoords.x === InitialPieceRanks[inactiveColor])
-        pieces[activeColor].set(destCoords, promotedPiece);
+        pieces[activeColor].set(destCoords, promotedPiece ?? Piece.QUEEN);
     }
 
     const nextPosition = new Position({
@@ -186,8 +187,9 @@ export default class ChessGame {
       if (position.activeColor === Colors.WHITE)
         pgn += ` ${position.fullMoveNumber}.`;
 
-      const [srcCoords, destCoords] = position.next.srcMove;
-      pgn += ` ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`;
+      // const [srcCoords, destCoords,promotedPiece] = position.next.srcMove as HalfMoveWithPromotion;
+      // pgn += ` ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`;
+      pgn += halfMoveToNotation(position, position.next.srcMove as HalfMoveWithPromotion);
       position = position.next;
     }
 
