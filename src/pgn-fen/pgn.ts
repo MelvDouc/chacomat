@@ -2,11 +2,10 @@ import Colors from "@src/constants/Colors.js";
 import GameStatus from "@src/constants/GameStatus.js";
 import ChessGame from "@src/game/ChessGame.js";
 import Position from "@src/game/Position.js";
-import getHalfMove, { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
+import { notationToHalfMove } from "@src/pgn-fen/half-move.js";
 import parseVariations from "@src/pgn-fen/parse-variations.js";
 import {
-  GameMetaInfo,
-  HalfMoveWithPromotion
+  GameMetaInfo
 } from "@src/types.js";
 
 
@@ -46,7 +45,7 @@ export function enterPgn(pgn: string) {
       const mainLine = parseVariations(movesStr).mainLine;
 
       for (const [halfMoveStr] of mainLine.matchAll(halfMoveRegex)) {
-        const halfMove = getHalfMove(halfMoveStr, game.currentPosition);
+        const halfMove = notationToHalfMove(halfMoveStr, game.currentPosition);
         if (!halfMove)
           throw new Error(`Invalid move: "${halfMoveStr}".`);
         game.playMove(...halfMove);
@@ -65,21 +64,22 @@ export function stringifyMetaInfo(metaInfo: ChessGame["metaInfo"]): string {
     .join("\n");
 }
 
-export function stringifyMoves(game: ChessGame): string {
-  let position: Position | undefined = game.getFirstPosition();
+export function stringifyMoves(position: Position, varIndex = 0): string {
   let movesStr = "";
 
-  while (position.next) {
+  while (position.next && position.next[varIndex]) {
     if (position.activeColor === Colors.WHITE)
       movesStr += `${position.fullMoveNumber}. `;
 
-    movesStr += halfMoveToNotation(position, position.next.srcMove as HalfMoveWithPromotion);
-    if (position.next.getStatus() === GameStatus.CHECKMATE)
+    const next = position.next[varIndex];
+    movesStr += next.notation;
+    if (next.position.getStatus() === GameStatus.CHECKMATE)
       movesStr += "#";
-    else if (position.next.isCheck())
+    else if (next.position.isCheck())
       movesStr += "+";
+    // position.next.slice(1).forEach((_, i) => movesStr += `\n(${stringifyMoves(position, i + 1)})`);
     movesStr += " ";
-    position = position.next;
+    position = next.position;
   }
 
   return movesStr;

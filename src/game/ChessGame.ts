@@ -13,6 +13,7 @@ import {
   PromotedPiece
 } from "@src/types.js";
 import { Observable } from "melv_observable";
+import { halfMoveToNotation } from "../pgn-fen/half-move.js";
 
 
 export default class ChessGame {
@@ -35,6 +36,8 @@ export default class ChessGame {
       this.metaInfo.FEN = fen;
       this.resultObs.value = GameResults.ONGOING;
     }
+
+    this.resultObs.subscribe((result) => this.metaInfo.Result = result);
   }
 
   public get currentPosition(): Position {
@@ -58,9 +61,11 @@ export default class ChessGame {
     const nextPosition = new Position(nextPositionInfo);
 
     this.checkStatus(nextPosition.getStatus(), this.currentPosition.activeColor);
-    nextPosition.srcMove = [srcCoords, destCoords, promotedPiece];
     nextPosition.prev = this.currentPosition;
-    this.currentPosition.next = nextPosition;
+    this.currentPosition.next.push({
+      notation: halfMoveToNotation(this.currentPosition, [srcCoords, destCoords, promotedPiece]),
+      position: nextPosition
+    });
     this.currentPositionObs.value = nextPosition;
     return this;
   }
@@ -100,12 +105,12 @@ export default class ChessGame {
     return pos;
   }
 
-  public goToMove(moveNumber: number, color: Color): void {
+  public goToMove(moveNumber: number, color: Color, varIndex = 0): void {
     let pos: Position | null | undefined = this.currentPosition;
 
     while (pos && pos.fullMoveNumber !== moveNumber) {
       pos = (pos.fullMoveNumber < moveNumber)
-        ? pos.next
+        ? pos.next[varIndex].position
         : pos.prev;
     }
 
@@ -117,7 +122,7 @@ export default class ChessGame {
       return;
     }
 
-    const otherPos = (color === Colors.WHITE) ? pos.next : pos.prev;
+    const otherPos = (color === Colors.WHITE) ? pos.next[varIndex].position : pos.prev;
 
     if (!otherPos)
       throw new Error(`No position was found at move number ${moveNumber} for color ${color}.`);
@@ -126,6 +131,6 @@ export default class ChessGame {
   }
 
   public toString(): string {
-    return `${stringifyMetaInfo(this.metaInfo)}\n${stringifyMoves(this)} ${this.result}`;
+    return `${stringifyMetaInfo(this.metaInfo)}\n\n${stringifyMoves(this.getFirstPosition())} ${this.result}`;
   }
 }

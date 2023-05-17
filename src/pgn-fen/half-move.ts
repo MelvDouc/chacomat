@@ -12,6 +12,9 @@ import {
   Wing
 } from "@src/types.js";
 
+// ===== ===== ===== ===== =====
+// TO MOVE ARRAY
+// ===== ===== ===== ===== =====
 
 const MOVE_FINDERS: Record<string, MoveFinder> = {
   PAWN_MOVE: {
@@ -60,9 +63,9 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
   }
 } as const;
 
-export default function getHalfMove(halfMoveStr: string, position: Position): HalfMoveWithPromotion | null {
+export function notationToHalfMove(notation: string, position: Position): HalfMoveWithPromotion | null {
   for (const key in MOVE_FINDERS) {
-    const match = halfMoveStr.match(MOVE_FINDERS[key].regex);
+    const match = notation.match(MOVE_FINDERS[key].regex);
 
     if (match) {
       const halfMove = MOVE_FINDERS[key].getHalfMove(
@@ -79,31 +82,48 @@ export default function getHalfMove(halfMoveStr: string, position: Position): Ha
   return null;
 }
 
+// ===== ===== ===== ===== =====
+// TO NOTATION
+// ===== ===== ===== ===== =====
+
 export function halfMoveToNotation(
   { pieces, activeColor, inactiveColor, legalMoves }: Position,
   [srcCoords, destCoords, promotedPiece]: HalfMoveWithPromotion
 ): string {
   const srcPiece = pieces[activeColor].get(srcCoords) as Piece;
+
+  if (srcPiece < Piece.KNIGHT)
+    return halfPawnMoveToNotation(srcCoords, destCoords, promotedPiece);
+
+  const isCapture = pieces[inactiveColor].has(destCoords);
+
+  if (srcPiece === Piece.KING)
+    return halfKingMoveToNotation(srcCoords, destCoords, pieces[activeColor], isCapture);
+
+  const destNotation = coordsToNotation(destCoords);
+  const { srcRank, srcFile } = getAmbiguousRankAndFile(legalMoves, srcCoords, destCoords, pieces[activeColor]);
+  return PieceInitials[Colors.WHITE][srcPiece] + srcFile + srcRank + (isCapture ? "x" : "") + destNotation;
+}
+
+
+function halfPawnMoveToNotation(srcCoords: Coordinates, destCoords: Coordinates, promotedPiece?: PromotedPiece) {
+  const destNotation = coordsToNotation(destCoords);
+  const promotedPieceAbbrev = (promotedPiece) ? PieceInitials[Colors.WHITE][promotedPiece] : "";
+
+  return (srcCoords.y !== destCoords.y)
+    ? `${coordsToNotation(srcCoords)[0]}x${destNotation + promotedPieceAbbrev}`
+    : destNotation + promotedPieceAbbrev;
+}
+
+
+function halfKingMoveToNotation(srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap, isCapture: boolean) {
   const destNotation = coordsToNotation(destCoords);
 
-  if (srcPiece < Piece.KNIGHT) {
-    const promotedPieceAbbrev = (promotedPiece) ? PieceInitials[Colors.WHITE][promotedPiece] : "";
-    return (srcCoords.y !== destCoords.y)
-      ? `${coordsToNotation(srcCoords)[0]}x${destNotation + promotedPieceAbbrev}`
-      : destNotation + promotedPieceAbbrev;
-  }
-
-  const captureMarker = pieces[inactiveColor].has(destCoords) ? "x" : "";
-
-  if (srcPiece === Piece.KING) {
-    if (Math.abs(destCoords.y - srcCoords.y) === 2 || pieces[activeColor].get(destCoords) === Piece.ROOK)
-      return (Math.sign(destCoords.y - srcCoords.y) === -1) ? "0-0-0" : "0-0";
-    return `K${captureMarker + destNotation}`;
-  }
-
-  const { srcRank, srcFile } = getAmbiguousRankAndFile(legalMoves, srcCoords, destCoords, pieces[activeColor]);
-  return PieceInitials[Colors.WHITE][srcPiece] + srcFile + srcRank + captureMarker + destNotation;
+  if (Math.abs(destCoords.y - srcCoords.y) === 2 || pieceMap.get(destCoords) === Piece.ROOK)
+    return (Math.sign(destCoords.y - srcCoords.y) === -1) ? "0-0-0" : "0-0";
+  return `K${(isCapture ? "x" : "") + destNotation}`;
 }
+
 
 function getAmbiguousRankAndFile(legalMoves: HalfMove[], srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap): {
   srcFile: string;
@@ -129,6 +149,9 @@ function getAmbiguousRankAndFile(legalMoves: HalfMove[], srcCoords: Coordinates,
   return { srcFile: srcFileNotation, srcRank: srcRankNotation };
 }
 
+// ===== ===== ===== ===== =====
+// TYPES
+// ===== ===== ===== ===== =====
 
 interface MoveFinder {
   regex: RegExp;

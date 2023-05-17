@@ -19,7 +19,6 @@ describe("PGN", () => {
   });
 
   it("should recognize an ambiguous file and rank", () => {
-    // w: Ka1, Qf5, Qd3, Qf3; b: Kg1
     const game = new ChessGame({ fen });
     game.playMoveWithNotations("f3", "d5");
     assert(game.toString().includes("Qf3xd5"));

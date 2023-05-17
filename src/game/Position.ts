@@ -16,7 +16,6 @@ import {
   Color,
   Coordinates,
   HalfMove,
-  HalfMoveWithPromotion,
   PositionInfo,
   Wing
 } from "@src/types.js";
@@ -71,10 +70,11 @@ export default class Position implements PositionInfo {
   public readonly fullMoveNumber: number;
   public readonly legalMoves: HalfMove[];
   public readonly boardStr: string;
-  public srcMove?: HalfMoveWithPromotion;
   public prev?: Position;
-  public next?: Position;
-  public variation?: Position;
+  public next: {
+    notation: string;
+    position: Position;
+  }[] = [];
 
   constructor({ pieces, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber, boardStr }: PositionInfo) {
     this.pieces = pieces;
