@@ -1,5 +1,5 @@
-import Colors, { Color } from "@src/constants/Colors.js";
-import { Wing } from "@src/types.js";
+import Colors from "@src/constants/Colors.js";
+import { Color, Wing } from "@src/types.js";
 
 export const InitialPieceRanks: Record<Color, number> = {
   [Colors.WHITE]: 7,

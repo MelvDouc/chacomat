@@ -14,5 +14,4 @@ export const GameResults = {
   DOUBLE_LOSS: "0-0"
 } as const;
 
-export type GameResult = typeof GameResults[keyof typeof GameResults];
 export default GameStatus;

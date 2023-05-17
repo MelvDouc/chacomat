@@ -1,7 +1,4 @@
-export interface Coordinates {
-  readonly x: number;
-  readonly y: number;
-}
+import { Coordinates } from "@src/types.js";
 
 export enum File {
   // eslint-disable-next-line no-unused-vars

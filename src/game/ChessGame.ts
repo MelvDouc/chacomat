@@ -1,12 +1,22 @@
-import Colors, { Color } from "@src/constants/Colors.js";
-import { Coordinates, Coords, coordsToNotation, getCoords } from "@src/constants/Coords.js";
-import GameStatus, { GameResult, GameResults } from "@src/constants/GameStatus.js";
-import Piece, { PromotedPiece } from "@src/constants/Piece.js";
+import Colors from "@src/constants/Colors.js";
+import { Coords, coordsToNotation, getCoords } from "@src/constants/Coords.js";
+import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
+import Piece from "@src/constants/Piece.js";
 import { CastledRookFiles, InitialPieceRanks } from "@src/constants/placement.js";
 import Position from "@src/game/Position.js";
 import { enterPgn, stringifyMetaInfo, stringifyMoves } from "@src/pgn-fen/pgn.js";
-import { AlgebraicNotation, GameMetaInfo, PieceMap, Wing } from "@src/types.js";
+import {
+  AlgebraicNotation,
+  Color,
+  Coordinates,
+  GameMetaInfo,
+  GameResult,
+  PieceMap,
+  PromotedPiece,
+  Wing
+} from "@src/types.js";
 import { Observable } from "melv_observable";
+
 
 export default class ChessGame {
   private readonly currentPositionObs = new Observable<Position>();

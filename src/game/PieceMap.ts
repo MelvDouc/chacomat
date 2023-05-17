@@ -1,7 +1,9 @@
 import Colors from "@src/constants/Colors.js";
-import { Coordinates, getCoords } from "@src/constants/Coords.js";
+import { getCoords } from "@src/constants/Coords.js";
 import Piece, { PieceAbbreviations, PiecesByName } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
+import { Coordinates } from "@src/types.js";
+
 
 export default class PieceMap extends Map<Coordinates, Piece> {
   public static parseBoard(pieceStr: string): Position["pieces"] {

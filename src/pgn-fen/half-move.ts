@@ -1,13 +1,16 @@
-import { Coordinates, Coords, coordsToNotation, File, getCoords } from "@src/constants/Coords.js";
-import Piece, { PieceAbbreviations, PiecesByName, PromotedPiece } from "@src/constants/Piece.js";
+import { Coords, coordsToNotation, File, getCoords } from "@src/constants/Coords.js";
+import Piece, { PieceAbbreviations, PiecesByName } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
 import {
   AlgebraicNotation,
+  Coordinates,
   HalfMove,
   HalfMoveWithPromotion,
   PieceMap,
+  PromotedPiece,
   Wing
 } from "@src/types.js";
+
 
 const MOVE_FINDERS: Record<string, MoveFinder> = {
   PAWN_MOVE: {

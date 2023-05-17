@@ -4,7 +4,11 @@ import ChessGame from "@src/game/ChessGame.js";
 import Position from "@src/game/Position.js";
 import getHalfMove, { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
 import parseVariations from "@src/pgn-fen/parse-variations.js";
-import { GameMetaInfo, HalfMoveWithPromotion } from "@src/types.js";
+import {
+  GameMetaInfo,
+  HalfMoveWithPromotion
+} from "@src/types.js";
+
 
 const infoRegex = /^\[(?<k>\w+)\s+"(?<v>[^"]*)"\]/;
 const halfMoveRegex = /([NBRQK][a-h]?[1-8]?x?[a-h][1-8]|[a-h](x[a-h])?[1-8](=?[NBRQ])?|O-O(-O)?|0-0(-0)?)/g;

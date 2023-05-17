@@ -1,10 +1,15 @@
-import { Color, reverseColor } from "@src/constants/Colors.js";
-import { Coordinates, getCoords } from "@src/constants/Coords.js";
+import { reverseColor } from "@src/constants/Colors.js";
+import { getCoords } from "@src/constants/Coords.js";
 import Piece from "@src/constants/Piece.js";
 import { CastledKingFiles, CastledRookFiles, InitialPawnRanks, InitialPieceRanks } from "@src/constants/placement.js";
 import type Position from "@src/game/Position.js";
 import offsets from "@src/moves/offsets.js";
-import { PieceMap, Wing } from "@src/types.js";
+import {
+  Color,
+  Coordinates,
+  PieceMap,
+  Wing
+} from "@src/types.js";
 
 
 export function* attackedCoords(srcCoords: Coordinates, color: Color, pieces: Record<Color, PieceMap>): Generator<Coordinates> {

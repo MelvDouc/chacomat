@@ -33,5 +33,4 @@ export const PieceAbbreviations = {
   [Piece.KING]: "K"
 } as const;
 
-export type PromotedPiece = Piece.KNIGHT | Piece.BISHOP | Piece.ROOK | Piece.QUEEN;
 export default Piece;

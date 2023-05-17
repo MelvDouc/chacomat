@@ -1,6 +1,5 @@
-import Colors, { Color, reverseColor } from "@src/constants/Colors.js";
+import Colors, { reverseColor } from "@src/constants/Colors.js";
 import {
-  Coordinates,
   Coords,
   coordsToNotation,
   getCoords
@@ -14,11 +13,14 @@ import { isValidFen } from "@src/pgn-fen/fen.js";
 import {
   AlgebraicNotation,
   CastlingRights,
+  Color,
+  Coordinates,
   HalfMove,
   HalfMoveWithPromotion,
   PositionInfo,
   Wing
 } from "@src/types.js";
+
 
 export default class Position implements PositionInfo {
   public static readonly startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
