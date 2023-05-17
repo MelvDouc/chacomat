@@ -1,9 +1,8 @@
 import Colors from "@src/constants/Colors.js";
-import { Coords, coordsToNotation, getCoords } from "@src/constants/Coords.js";
+import { Coords } from "@src/constants/Coords.js";
 import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
-import Piece from "@src/constants/Piece.js";
-import { CastledRookFiles, InitialPieceRanks } from "@src/constants/placement.js";
 import Position from "@src/game/Position.js";
+import playMove from "@src/moves/play-move.js";
 import { enterPgn, stringifyMetaInfo, stringifyMoves } from "@src/pgn-fen/pgn.js";
 import {
   AlgebraicNotation,
@@ -11,9 +10,7 @@ import {
   Coordinates,
   GameMetaInfo,
   GameResult,
-  PieceMap,
-  PromotedPiece,
-  Wing
+  PromotedPiece
 } from "@src/types.js";
 import { Observable } from "melv_observable";
 
@@ -57,49 +54,9 @@ export default class ChessGame {
   }
 
   public playMove(srcCoords: Coordinates, destCoords: Coordinates, promotedPiece?: PromotedPiece): this {
-    if (!this.currentPosition.legalMoves.some(([src, dest]) => src === srcCoords && dest === destCoords))
-      throw new Error(`Illegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
+    const nextPosition = playMove(this.currentPosition, srcCoords, destCoords, promotedPiece);
 
-    const { pieces, castlingRights, activeColor, halfMoveClock, fullMoveNumber } = this.currentPosition.cloneInfo();
-    const { inactiveColor } = this.currentPosition;
-    let srcPiece = pieces[activeColor].get(srcCoords) as Piece;
-    const isPawn = srcPiece < Piece.KNIGHT;
-    const captureCoords = (!isPawn || destCoords !== this.currentPosition.enPassantCoords)
-      ? destCoords
-      : getCoords(srcCoords.x, destCoords.y);
-    const capturedPiece = pieces[inactiveColor].get(captureCoords);
-
-    if (srcPiece === Piece.ROOK && srcCoords.x === InitialPieceRanks[activeColor])
-      castlingRights[activeColor].delete(srcCoords.y);
-
-    // unset castling rights on rook capture
-    if (capturedPiece === Piece.ROOK && destCoords.x === InitialPieceRanks[inactiveColor])
-      castlingRights[inactiveColor].delete(destCoords.y);
-
-    if (srcPiece === Piece.KING) {
-      if (this.isCastling(srcCoords, destCoords, pieces[activeColor]))
-        this.castleRook(srcCoords, destCoords, pieces[activeColor], castlingRights[activeColor]);
-      castlingRights[activeColor].clear();
-    }
-
-    if (isPawn && destCoords.x === InitialPieceRanks[inactiveColor])
-      srcPiece = promotedPiece ?? Piece.QUEEN;
-
-    pieces[activeColor].set(destCoords, srcPiece).delete(srcCoords);
-    pieces[inactiveColor].delete(captureCoords);
-
-    const nextPosition = new Position({
-      pieces,
-      castlingRights,
-      activeColor: inactiveColor,
-      enPassantCoords: (isPawn && Math.abs(destCoords.x - srcCoords.x) === 2)
-        ? getCoords((srcCoords.x + destCoords.x) / 2, srcCoords.y)
-        : null,
-      halfMoveClock: (isPawn || capturedPiece !== undefined) ? 0 : (halfMoveClock + 1),
-      fullMoveNumber: fullMoveNumber + Number(inactiveColor === Colors.WHITE)
-    });
-
-    this.checkStatus(nextPosition.getStatus(), activeColor);
+    this.checkStatus(nextPosition.getStatus(), this.currentPosition.activeColor);
     nextPosition.srcMove = [srcCoords, destCoords, promotedPiece];
     nextPosition.prev = this.currentPosition;
     this.currentPosition.next = nextPosition;
@@ -122,17 +79,6 @@ export default class ChessGame {
         this.resultObs.value = GameResults.DRAW;
         break;
     }
-  }
-
-  private isCastling(srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap): boolean {
-    return Math.abs(srcCoords.y - destCoords.y) === 2 || pieceMap.get(destCoords) === Piece.ROOK;
-  }
-
-  private castleRook(srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap, castlingRights: Set<number>): void {
-    const wing = Math.sign(destCoords.y - srcCoords.y) as Wing;
-    const rookY = [...castlingRights].find((y) => Math.sign(y - srcCoords.y) === wing) as number;
-    pieceMap.delete(getCoords(srcCoords.x, rookY));
-    pieceMap.set(getCoords(srcCoords.x, CastledRookFiles[wing]), Piece.ROOK);
   }
 
   /**

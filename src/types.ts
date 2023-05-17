@@ -2,11 +2,15 @@ import Colors from "@src/constants/Colors.js";
 import { Coords } from "@src/constants/Coords.js";
 import { GameResults } from "@src/constants/GameStatus.js";
 import Piece from "@src/constants/Piece.js";
+import ChessGame from "@src/game/ChessGame.js";
 import PieceMap from "@src/game/PieceMap.js";
+import Position from "@src/game/Position.js";
 
 export type {
+  ChessGame,
   Piece,
-  PieceMap
+  PieceMap,
+  Position
 };
 
 export type AlgebraicNotation = keyof typeof Coords;

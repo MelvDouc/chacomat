@@ -8,7 +8,7 @@ import GameStatus from "@src/constants/GameStatus.js";
 import Piece from "@src/constants/Piece.js";
 import { CastledKingFiles, CastlingFilesByColorAndWing } from "@src/constants/placement.js";
 import PieceMap from "@src/game/PieceMap.js";
-import { attackedCoords, canCastleTo, pseudoLegalMoves } from "@src/moves/moves.js";
+import { attackedCoords, canCastleTo, pseudoLegalMoves } from "@src/moves/legal-moves.js";
 import { isValidFen } from "@src/pgn-fen/fen.js";
 import {
   AlgebraicNotation,
