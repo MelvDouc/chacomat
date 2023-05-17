@@ -4,9 +4,8 @@ import GameStatus, { GameResult, GameResults } from "@src/constants/GameStatus.j
 import Piece, { PromotedPiece } from "@src/constants/Piece.js";
 import { CastledRookFiles, InitialPieceRanks } from "@src/constants/placement.js";
 import Position from "@src/game/Position.js";
-import { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
-import { enterPgn } from "@src/pgn-fen/pgn.js";
-import { AlgebraicNotation, GameMetaInfo, HalfMoveWithPromotion, PieceMap, Wing } from "@src/types.js";
+import { enterPgn, stringifyMetaInfo, stringifyMoves } from "@src/pgn-fen/pgn.js";
+import { AlgebraicNotation, GameMetaInfo, PieceMap, Wing } from "@src/types.js";
 import { Observable } from "melv_observable";
 
 export default class ChessGame {
@@ -173,28 +172,7 @@ export default class ChessGame {
     this.currentPositionObs.value = otherPos;
   }
 
-  protected stringifyMetaInfo(): string {
-    return Object.entries(this.metaInfo).reduce((acc, [key, value]) => {
-      return acc + `[${key} "${value}"]`;
-    }, "");
-  }
-
   public toString(): string {
-    let pgn = `${this.stringifyMetaInfo()}\n`;
-    let position: Position | undefined = this.getFirstPosition();
-
-    while (position.next) {
-      if (position.activeColor === Colors.WHITE)
-        pgn += ` ${position.fullMoveNumber}.`;
-
-      pgn += ` ${halfMoveToNotation(position, position.next.srcMove as HalfMoveWithPromotion)}`;
-      if (position.next.getStatus() === GameStatus.CHECKMATE)
-        pgn += "#";
-      else if (position.next.isCheck())
-        pgn += "+";
-      position = position.next;
-    }
-
-    return `${pgn} ${this.result}`;
+    return `${stringifyMetaInfo(this.metaInfo)}\n${stringifyMoves(this)} ${this.result}`;
   }
 }
