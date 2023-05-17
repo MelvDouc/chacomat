@@ -102,12 +102,11 @@ export default class Position implements PositionInfo {
     const coordsAttackedByInactiveColor = this.getCoordsAttackedByColor(this.inactiveColor);
     const { kingCoords } = this.pieces[this.activeColor];
 
-    if (coordsAttackedByInactiveColor.has(kingCoords))
-      return moves;
-
-    for (const rookY of this.castlingRights[this.activeColor]) {
-      if (canCastleTo(rookY, this.activeColor, coordsAttackedByInactiveColor, this))
-        moves.push(this.getCastlingMove(kingCoords, rookY));
+    if (!coordsAttackedByInactiveColor.has(kingCoords)) {
+      for (const rookY of this.castlingRights[this.activeColor]) {
+        if (canCastleTo(rookY, this.activeColor, this.pieces, coordsAttackedByInactiveColor))
+          moves.push(this.getCastlingMove(kingCoords, rookY));
+      }
     }
 
     return moves;
