@@ -6,24 +6,32 @@ import {
   Coordinates,
   PieceMap,
   Position,
+  PositionInfo,
   PromotedPiece,
   Wing
 } from "@src/types.js";
 
 export default function playMove(
-  currentPosition: Position,
+  {
+    pieces,
+    castlingRights,
+    activeColor,
+    inactiveColor,
+    enPassantCoords,
+    halfMoveClock,
+    fullMoveNumber,
+    legalMoves
+  }: ReturnType<Position["cloneInfo"]>,
   srcCoords: Coordinates,
   destCoords: Coordinates,
   promotedPiece?: PromotedPiece
-): Position {
-  if (!currentPosition.legalMoves.some(([src, dest]) => src === srcCoords && dest === destCoords))
+): PositionInfo {
+  if (!legalMoves.some(([src, dest]) => src === srcCoords && dest === destCoords))
     throw new Error(`Illegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
 
-  const { pieces, castlingRights, activeColor, halfMoveClock, fullMoveNumber } = currentPosition.cloneInfo();
-  const { inactiveColor } = currentPosition;
   let srcPiece = pieces[activeColor].get(srcCoords) as Piece;
   const isPawn = srcPiece < Piece.KNIGHT;
-  const captureCoords = (!isPawn || destCoords !== currentPosition.enPassantCoords)
+  const captureCoords = (!isPawn || destCoords !== enPassantCoords)
     ? destCoords
     : getCoords(srcCoords.x, destCoords.y);
   const capturedPiece = pieces[inactiveColor].get(captureCoords);
@@ -44,7 +52,7 @@ export default function playMove(
   pieces[activeColor].set(destCoords, srcPiece).delete(srcCoords);
   pieces[inactiveColor].delete(captureCoords);
 
-  return new (currentPosition.constructor as typeof Position)({
+  return {
     pieces,
     castlingRights,
     activeColor: inactiveColor,
@@ -53,7 +61,7 @@ export default function playMove(
       : null,
     halfMoveClock: (isPawn || capturedPiece !== undefined) ? 0 : (halfMoveClock + 1),
     fullMoveNumber: fullMoveNumber + Number(inactiveColor === Colors.WHITE)
-  });
+  };
 }
 
 function isCastling(srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap): boolean {

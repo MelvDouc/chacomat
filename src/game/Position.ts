@@ -187,17 +187,19 @@ export default class Position implements PositionInfo {
     return isCheck;
   }
 
-  public cloneInfo(): PositionInfo {
+  public cloneInfo() {
     return {
       pieces: {
         [Colors.WHITE]: this.pieces[Colors.WHITE].clone(),
         [Colors.BLACK]: this.pieces[Colors.BLACK].clone()
       },
       activeColor: this.activeColor,
+      inactiveColor: this.inactiveColor,
       castlingRights: structuredClone(this.castlingRights),
       enPassantCoords: this.enPassantCoords,
       halfMoveClock: this.halfMoveClock,
-      fullMoveNumber: this.fullMoveNumber
+      fullMoveNumber: this.fullMoveNumber,
+      legalMoves: this.legalMoves
     };
   }
 

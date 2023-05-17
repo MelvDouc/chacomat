@@ -54,7 +54,8 @@ export default class ChessGame {
   }
 
   public playMove(srcCoords: Coordinates, destCoords: Coordinates, promotedPiece?: PromotedPiece): this {
-    const nextPosition = playMove(this.currentPosition, srcCoords, destCoords, promotedPiece);
+    const nextPositionInfo = playMove(this.currentPosition.cloneInfo(), srcCoords, destCoords, promotedPiece);
+    const nextPosition = new Position(nextPositionInfo);
 
     this.checkStatus(nextPosition.getStatus(), this.currentPosition.activeColor);
     nextPosition.srcMove = [srcCoords, destCoords, promotedPiece];
