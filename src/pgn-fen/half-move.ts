@@ -33,11 +33,11 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
     }
   },
   PIECE_MOVE: {
-    regex: /^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<df>[a-h])(?<dr>[1-8])$/,
-    getHalfMove: ({ pt, sf, sr, df, dr }, halfMoves, pieceMap) => {
+    regex: /^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])$/,
+    getHalfMove: ({ pt, sf, sr, dc }, halfMoves, pieceMap) => {
       const srcX = (sr) ? (8 - +sr) : null;
       const srcY = (sf) ? File[sf as keyof typeof File] : null;
-      const destCoords = Coords[((df as string) + (dr as string)) as AlgebraicNotation];
+      const destCoords = Coords[dc as AlgebraicNotation];
 
       return halfMoves.find(([src, dest]) => {
         return dest === destCoords

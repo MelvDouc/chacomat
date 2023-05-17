@@ -1,6 +1,7 @@
 import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
 import ChessGame from "@src/game/ChessGame.js";
 import assert from "node:assert";
+// import { writeFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 describe("Various checkmates", () => {
@@ -32,7 +33,24 @@ describe("Various checkmates", () => {
         13.Rxd7 Rxd7 14.Rd1 Qe6 15.Bxd7+ Nxd7 16.Qb8+ Nxb8 17.Rd8# 1-0
       `
     });
-    console.log(game.toString().replace(/\n/g, " "));
+    // writeFileSync("./pgn/opera-game.pgn", game.toString());
     assert.strictEqual(game.currentPosition.getStatus(), GameStatus.CHECKMATE);
+  });
+
+  it("Polugaevsky - Nezhmetdinov (1958)", () => {
+    const game = new ChessGame({
+      pgn: `
+        [Site "Sochi URS"]
+        [White "Polugaevsky, Lev"]
+        [Black "Nezhmetdinov, Rashid"]
+
+        1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.e4 exd4 5.Qxd4 Nc6 6.Qd2 g6 7.b3 Bg7 8.Bb2 0-0 9. Bd3 Ng4 10.Nge2 Qh4 11.Ng3 Nge5 12.0-0 f5 13.f3 Bh6 14.Qd1 f4 15.Nge2 g5 16.Nd5 g4 17.g3 fxg3 18.hxg3 Qh3 19.f4 Be6 20.Bc2 Rf7 21.Kf2 Qh2+ 22.Ke3 Bxd5 23.cxd5 Nb4 24.Rh1 Rxf4 25.Rxh2 Rf3+ 26.Kd4 Bg7 27.a4 c5+ 28.dxc6 bxc6 29.Bd3 Nexd3+ 30.Kc4 d5+ 31.exd5 cxd5+ 32.Kb5 Rb8+ 33.Ka5 Nc6+
+      `
+    });
+    game
+      .playMoveWithNotations("a5", "a6")
+      .playMoveWithNotations("b8", "b6");
+    assert(game.result, "0-1");
+    // writeFileSync("./pgn/nezhmetdinov-immortal.pgn", game.toString());
   });
 });

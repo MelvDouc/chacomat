@@ -166,9 +166,9 @@ export default class Position implements PositionInfo {
 
   private tryMove(srcCoords: Coordinates, destCoords: Coordinates): () => void {
     const srcPiece = this.pieces[this.activeColor].get(srcCoords) as Piece;
-    const capturedCoords = (srcPiece < Piece.KNIGHT && destCoords === this.enPassantCoords)
-      ? getCoords(srcCoords.x, destCoords.y)
-      : destCoords;
+    const capturedCoords = (srcPiece >= Piece.KNIGHT || destCoords !== this.enPassantCoords)
+      ? destCoords
+      : getCoords(srcCoords.x, destCoords.y);
     const capturedPiece = this.pieces[this.inactiveColor].get(capturedCoords);
 
     this.pieces[this.activeColor].set(destCoords, srcPiece).delete(srcCoords);
@@ -187,14 +187,13 @@ export default class Position implements PositionInfo {
     return isCheck;
   }
 
-  public cloneInfo(): PositionInfo & { inactiveColor: Color; } {
+  public cloneInfo(): PositionInfo {
     return {
       pieces: {
         [Colors.WHITE]: this.pieces[Colors.WHITE].clone(),
         [Colors.BLACK]: this.pieces[Colors.BLACK].clone()
       },
       activeColor: this.activeColor,
-      inactiveColor: this.inactiveColor,
       castlingRights: structuredClone(this.castlingRights),
       enPassantCoords: this.enPassantCoords,
       halfMoveClock: this.halfMoveClock,

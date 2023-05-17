@@ -1,14 +1,11 @@
 **/node_modules
 **/.vscode
-**/*.local.*
 dist/test
 
+pgn
 src
 test
 
-.env
-.eslintrc.*
 .gitignore
-jest.config.*
 tsconfig.json
 todo.md

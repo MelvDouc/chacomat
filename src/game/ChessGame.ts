@@ -57,50 +57,46 @@ export default class ChessGame {
   }
 
   public playMove(srcCoords: Coordinates, destCoords: Coordinates, promotedPiece?: PromotedPiece): this {
-    const moves = this.currentPosition.legalMoves;
-
-    if (!moves.some(([src, dest]) => src === srcCoords && dest === destCoords))
+    if (!this.currentPosition.legalMoves.some(([src, dest]) => src === srcCoords && dest === destCoords))
       throw new Error(`Illegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
 
-    const { pieces, castlingRights, activeColor, inactiveColor } = this.currentPosition.cloneInfo();
-    let nextEnPassantCoords: Coordinates | null = null;
-    const srcPiece = pieces[activeColor].get(srcCoords) as Piece;
-    const destPiece = (srcPiece < Piece.KNIGHT || destCoords !== this.currentPosition.enPassantCoords)
-      ? pieces[inactiveColor].get(destCoords)
-      : pieces[inactiveColor].get(getCoords(srcCoords.x, destCoords.y));
+    const { pieces, castlingRights, activeColor, halfMoveClock, fullMoveNumber } = this.currentPosition.cloneInfo();
+    const { inactiveColor } = this.currentPosition;
+    let srcPiece = pieces[activeColor].get(srcCoords) as Piece;
+    const isPawn = srcPiece < Piece.KNIGHT;
+    const captureCoords = (!isPawn || destCoords !== this.currentPosition.enPassantCoords)
+      ? destCoords
+      : getCoords(srcCoords.x, destCoords.y);
+    const capturedPiece = pieces[inactiveColor].get(captureCoords);
 
     if (srcPiece === Piece.ROOK && srcCoords.x === InitialPieceRanks[activeColor])
       castlingRights[activeColor].delete(srcCoords.y);
 
     // unset castling rights on rook capture
-    if (destPiece === Piece.ROOK && destCoords.x === InitialPieceRanks[inactiveColor])
+    if (capturedPiece === Piece.ROOK && destCoords.x === InitialPieceRanks[inactiveColor])
       castlingRights[inactiveColor].delete(destCoords.y);
 
     if (srcPiece === Piece.KING) {
       if (this.isCastling(srcCoords, destCoords, pieces[activeColor]))
         this.castleRook(srcCoords, destCoords, pieces[activeColor], castlingRights[activeColor]);
-
       castlingRights[activeColor].clear();
     }
 
-    // Here because the next condition may update `pieces[activeColor]`.
-    pieces[activeColor].set(destCoords, srcPiece).delete(srcCoords);
-    pieces[inactiveColor].delete(destCoords);
+    if (isPawn && destCoords.x === InitialPieceRanks[inactiveColor])
+      srcPiece = promotedPiece ?? Piece.QUEEN;
 
-    if (srcPiece < Piece.KNIGHT) {
-      if (Math.abs(destCoords.x - srcCoords.x) === 2)
-        nextEnPassantCoords = getCoords((srcCoords.x + destCoords.x) / 2, srcCoords.y);
-      else if (destCoords.x === InitialPieceRanks[inactiveColor])
-        pieces[activeColor].set(destCoords, promotedPiece ?? Piece.QUEEN);
-    }
+    pieces[activeColor].set(destCoords, srcPiece).delete(srcCoords);
+    pieces[inactiveColor].delete(captureCoords);
 
     const nextPosition = new Position({
       pieces,
       castlingRights,
       activeColor: inactiveColor,
-      enPassantCoords: nextEnPassantCoords,
-      halfMoveClock: (srcPiece < Piece.KNIGHT || destPiece !== undefined) ? 0 : this.currentPosition.halfMoveClock + 1,
-      fullMoveNumber: this.currentPosition.fullMoveNumber + Number(inactiveColor === Colors.WHITE)
+      enPassantCoords: (isPawn && Math.abs(destCoords.x - srcCoords.x) === 2)
+        ? getCoords((srcCoords.x + destCoords.x) / 2, srcCoords.y)
+        : null,
+      halfMoveClock: (isPawn || capturedPiece !== undefined) ? 0 : (halfMoveClock + 1),
+      fullMoveNumber: fullMoveNumber + Number(inactiveColor === Colors.WHITE)
     });
 
     this.checkStatus(nextPosition.getStatus(), activeColor);

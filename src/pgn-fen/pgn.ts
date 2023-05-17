@@ -73,11 +73,12 @@ export function stringifyMoves(game: ChessGame): string {
     if (position.activeColor === Colors.WHITE)
       movesStr += `${position.fullMoveNumber}. `;
 
-    movesStr += `${halfMoveToNotation(position, position.next.srcMove as HalfMoveWithPromotion)} `;
+    movesStr += halfMoveToNotation(position, position.next.srcMove as HalfMoveWithPromotion);
     if (position.next.getStatus() === GameStatus.CHECKMATE)
       movesStr += "#";
     else if (position.next.isCheck())
       movesStr += "+";
+    movesStr += " ";
     position = position.next;
   }
 
