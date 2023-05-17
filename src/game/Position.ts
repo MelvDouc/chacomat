@@ -91,7 +91,7 @@ export default class Position implements PositionInfo {
     return ReversedColors[this.activeColor];
   }
 
-  private computeLegalMoves(): HalfMove[] {
+  protected computeLegalMoves(): HalfMove[] {
     const moves = [...this.pieces[this.activeColor].keys()].reduce((acc, srcCoords) => {
       for (const destCoords of pseudoLegalMoves(srcCoords, this.activeColor, this.pieces, this.enPassantCoords))
         if (!this.doesMoveCauseCheck(srcCoords, destCoords))
@@ -119,7 +119,7 @@ export default class Position implements PositionInfo {
     ];
   }
 
-  private getCoordsAttackedByColor(color: Color): Set<Coordinates> {
+  protected getCoordsAttackedByColor(color: Color): Set<Coordinates> {
     const set = new Set<Coordinates>();
 
     for (const srcCoords of this.pieces[color].keys())
@@ -152,7 +152,7 @@ export default class Position implements PositionInfo {
     let count = 0;
 
     for (
-      let pos: Position | null | undefined = this.prev?.prev;
+      let pos: Position | undefined = this.prev?.prev;
       pos && count < 3;
       pos = pos.prev?.prev
     ) {
@@ -163,23 +163,23 @@ export default class Position implements PositionInfo {
     return count === 3;
   }
 
-  private tryMove(srcCoords: Coordinates, destCoords: Coordinates): () => void {
+  protected tryMove(srcCoords: Coordinates, destCoords: Coordinates): () => void {
     const srcPiece = this.pieces[this.activeColor].get(srcCoords) as Piece;
-    const capturedCoords = (srcPiece >= Piece.KNIGHT || destCoords !== this.enPassantCoords)
+    const captureCoords = (srcPiece >= Piece.KNIGHT || destCoords !== this.enPassantCoords)
       ? destCoords
       : getCoords(srcCoords.x, destCoords.y);
-    const capturedPiece = this.pieces[this.inactiveColor].get(capturedCoords);
+    const capturedPiece = this.pieces[this.inactiveColor].get(captureCoords);
 
     this.pieces[this.activeColor].set(destCoords, srcPiece).delete(srcCoords);
-    capturedPiece && this.pieces[this.inactiveColor].delete(capturedCoords);
+    capturedPiece && this.pieces[this.inactiveColor].delete(captureCoords);
 
     return () => {
       this.pieces[this.activeColor].set(srcCoords, srcPiece).delete(destCoords);
-      capturedPiece && this.pieces[this.inactiveColor].set(capturedCoords, capturedPiece);
+      capturedPiece && this.pieces[this.inactiveColor].set(captureCoords, capturedPiece);
     };
   }
 
-  private doesMoveCauseCheck(srcCoords: Coordinates, destCoords: Coordinates): boolean {
+  protected doesMoveCauseCheck(srcCoords: Coordinates, destCoords: Coordinates): boolean {
     const undo = this.tryMove(srcCoords, destCoords);
     const isCheck = this.isCheck();
     undo();
