@@ -1,5 +1,6 @@
+import Colors from "@src/constants/Colors.js";
 import { Coords, coordsToNotation, File, getCoords } from "@src/constants/Coords.js";
-import Piece, { PieceAbbreviations, PiecesByName } from "@src/constants/Piece.js";
+import Piece, { PieceInitials, PiecesByName } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
 import {
   AlgebraicNotation,
@@ -86,7 +87,7 @@ export function halfMoveToNotation(
   const destNotation = coordsToNotation(destCoords);
 
   if (srcPiece < Piece.KNIGHT) {
-    const promotedPieceAbbrev = (promotedPiece) ? PieceAbbreviations[promotedPiece] : "";
+    const promotedPieceAbbrev = (promotedPiece) ? PieceInitials[Colors.WHITE][promotedPiece] : "";
     return (srcCoords.y !== destCoords.y)
       ? `${coordsToNotation(srcCoords)[0]}x${destNotation + promotedPieceAbbrev}`
       : destNotation + promotedPieceAbbrev;
@@ -101,7 +102,7 @@ export function halfMoveToNotation(
   }
 
   const { srcRank, srcFile } = getAmbiguousRankAndFile(legalMoves, srcCoords, destCoords, pieces[activeColor]);
-  return PieceAbbreviations[srcPiece] + srcFile + srcRank + captureMarker + destNotation;
+  return PieceInitials[Colors.WHITE][srcPiece] + srcFile + srcRank + captureMarker + destNotation;
 }
 
 function getAmbiguousRankAndFile(legalMoves: HalfMove[], srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap): {

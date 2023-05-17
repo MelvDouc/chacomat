@@ -1,6 +1,6 @@
 import Colors from "@src/constants/Colors.js";
 import { getCoords } from "@src/constants/Coords.js";
-import Piece, { PieceAbbreviations, PiecesByName } from "@src/constants/Piece.js";
+import Piece, { PieceInitials, PiecesByName } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
 import { Coordinates } from "@src/types.js";
 
@@ -30,20 +30,20 @@ export default class PieceMap extends Map<Coordinates, Piece> {
   public static stringifyBoard(board: Position["pieces"]): string {
     return Array
       .from({ length: 8 }, (_, x) => {
-        return Array
-          .from({ length: 8 }, (_, y) => {
-            const coords = getCoords(x, y);
+        let row = "";
 
-            if (board[Colors.WHITE].has(coords))
-              return PieceAbbreviations[board[Colors.WHITE].get(coords) as Piece];
+        for (let y = 0; y < 8; y++) {
+          const coords = getCoords(x, y);
 
-            if (board[Colors.BLACK].has(coords))
-              return PieceAbbreviations[board[Colors.BLACK].get(coords) as Piece].toLowerCase();
+          if (board[Colors.WHITE].has(coords))
+            row += PieceInitials[Colors.WHITE][board[Colors.WHITE].get(coords) as Piece];
+          else if (board[Colors.BLACK].has(coords))
+            row += PieceInitials[Colors.BLACK][board[Colors.BLACK].get(coords) as Piece];
+          else
+            row += "0";
+        }
 
-            return "0";
-          })
-          .join("")
-          .replace(/0+/g, (zeros) => String(zeros.length));
+        return row.replace(/0+/g, (zeros) => String(zeros.length));
       })
       .join("/");
   }
