@@ -75,10 +75,10 @@ export default class ChessGame {
         this.resultObs.value = (activeColor === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;
         break;
       case GameStatus.STALEMATE:
+      case GameStatus.INSUFFICIENT_MATERIAL:
       case GameStatus.TRIPLE_REPETITION:
       case GameStatus.DRAW_BY_FIFTY_MOVE_RULE:
         this.resultObs.value = GameResults.DRAW;
-        break;
     }
   }
 
