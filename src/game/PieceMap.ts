@@ -1,7 +1,7 @@
 import Colors from "@src/constants/Colors.js";
 import { getCoords } from "@src/constants/Coords.js";
 import Piece, { PieceInitials, PiecesByName } from "@src/constants/Piece.js";
-import { Coordinates, Position } from "@src/types.js";
+import { Coordinates, NonKingPiece, Position } from "@src/types.js";
 
 
 export default class PieceMap extends Map<Coordinates, Piece> {
@@ -54,6 +54,10 @@ export default class PieceMap extends Map<Coordinates, Piece> {
       this.kingCoords = key;
 
     return super.set(key, value);
+  }
+
+  public getNonKingPieces(): [Coordinates, NonKingPiece][] {
+    return [...this].filter(([, piece]) => piece !== Piece.KING) as [Coordinates, NonKingPiece][];
   }
 
   public clone(): PieceMap {

@@ -143,6 +143,8 @@ export default class Position implements PositionInfo {
       return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
     if (this.halfMoveClock >= 50)
       return GameStatus.DRAW_BY_FIFTY_MOVE_RULE;
+    if (this.isInsufficientMaterial())
+      return GameStatus.INSUFFICIENT_MATERIAL;
     if (this.isTripleRepetition())
       return GameStatus.TRIPLE_REPETITION;
     return GameStatus.ONGOING;
@@ -161,6 +163,47 @@ export default class Position implements PositionInfo {
     }
 
     return count === 3;
+  }
+
+  /**
+   * Minimum material to mate (irrespective of opponent material):
+   * - a pawn
+   * - a rook
+   * - a queen
+   * - two or more knights
+   * - at least one bishop of each color
+   */
+  public isInsufficientMaterial() {
+    const [minPieces, maxPieces] = [
+      this.pieces[Colors.WHITE].getNonKingPieces(),
+      this.pieces[Colors.BLACK].getNonKingPieces(),
+    ].sort((a, b) => a.length - b.length);
+
+    if (minPieces.length === 0) {
+      let parity: boolean | null = null;
+      return maxPieces.length === 1 && maxPieces[0][1] === Piece.KNIGHT
+        // 0 or more same-colored bishops
+        || maxPieces.every(([{ x, y }, piece]) => {
+          if (piece !== Piece.BISHOP)
+            return false;
+          if (parity === null)
+            return (parity = (x % 2 === y % 2)), true;
+          return (x % 2 === y % 2) === parity;
+        });
+    }
+
+    if (minPieces.length === 1 && maxPieces.length === 1) {
+      const [[coords, piece]] = minPieces;
+      const [[oppCoords, oppPiece]] = maxPieces;
+      return (piece === Piece.KNIGHT && oppPiece === Piece.KNIGHT)
+        || (
+          piece === Piece.BISHOP
+          && oppPiece === Piece.BISHOP
+          && (coords.x % 2 === coords.y % 2) === (oppCoords.x % 2 === oppCoords.y % 2)
+        );
+    }
+
+    return false;
   }
 
   protected tryMove(srcCoords: Coordinates, destCoords: Coordinates): () => void {
