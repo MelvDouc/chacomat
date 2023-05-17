@@ -1,4 +1,4 @@
-import Colors, { reverseColor } from "@src/constants/Colors.js";
+import Colors, { ReversedColors } from "@src/constants/Colors.js";
 import {
   Coords,
   coordsToNotation,
@@ -88,7 +88,7 @@ export default class Position implements PositionInfo {
   }
 
   public get inactiveColor(): Color {
-    return reverseColor(this.activeColor);
+    return ReversedColors[this.activeColor];
   }
 
   private computeLegalMoves(): HalfMove[] {
