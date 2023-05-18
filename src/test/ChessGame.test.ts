@@ -61,7 +61,6 @@ describe("Stalemate", () => {
       pgn: `1. e3 a5 2. Qh5 Ra6 3. Qa5 h5 4. Qxc7 Rah6
         5. h4 f6 6. Qxd7+ Kf7 7. Qxb7 Qd3 8. Qxb8 Qh7 9. Qxc8 Kg6 10. Qe6`
     });
-    console.log(game.toString());
     assert(game.currentPosition.status === GameStatus.STALEMATE);
   });
 });
