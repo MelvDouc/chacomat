@@ -1,11 +1,10 @@
 **/node_modules
 **/.vscode
-dist/test
 
+dist/test
 pgn
 src
-test
 
 .gitignore
 tsconfig.json
-todo.md
+TODO.md
