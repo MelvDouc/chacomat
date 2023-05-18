@@ -97,11 +97,8 @@ export default class ChessGame {
   }
 
   public getFirstPosition(): Position {
-    let pos: Position | null | undefined = this.currentPosition;
-
-    while (pos.prev)
-      pos = pos.prev;
-
+    let pos: Position = this.currentPosition;
+    while (pos.prev) pos = pos.prev;
     return pos;
   }
 

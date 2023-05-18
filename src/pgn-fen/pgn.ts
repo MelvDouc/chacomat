@@ -72,23 +72,36 @@ export function stringifyMetaInfo(metaInfo: ChessGame["metaInfo"]): string {
     .join("\n");
 }
 
-export function stringifyMoves(position: Position, varIndex = 0): string {
-  let movesStr = "";
+export function stringifyMoves(position: Position, depth = 0): string {
+  const moves: string[] = [];
 
-  while (position.next && position.next[varIndex]) {
+  while (position.next.length) {
+    let movesStr = "";
+
     if (position.activeColor === Colors.WHITE)
       movesStr += `${position.fullMoveNumber}. `;
+    else if (depth > 0)
+      movesStr += `${position.fullMoveNumber}... `;
 
-    const next = position.next[varIndex];
+    const [next] = position.next;
     movesStr += next.notation;
-    if (next.position.getStatus() === GameStatus.CHECKMATE)
+
+    if (next.position.status === GameStatus.CHECKMATE)
       movesStr += "#";
     else if (next.position.isCheck())
       movesStr += "+";
-    // position.next.slice(1).forEach((_, i) => movesStr += `\n(${stringifyMoves(position, i + 1)})`);
-    movesStr += " ";
+
+    moves.push(movesStr);
+    for (let i = 1; i < position.next.length; i++)
+      moves.push(
+        position.next[i].notation,
+        stringifyMoves(position.next[i].position, depth + 1)
+      );
+
     position = next.position;
   }
 
-  return movesStr;
+  if (depth === 0)
+    return moves.join(" ");
+  return `( ${moves.join(" ")} )`;
 }

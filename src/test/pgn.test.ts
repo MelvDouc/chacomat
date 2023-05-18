@@ -23,4 +23,15 @@ describe("PGN", () => {
     game.playMoveWithNotations("f3", "d5");
     assert(game.toString().includes("Qf3xd5"));
   });
+
+  it("should print variations", () => {
+    const game = new ChessGame();
+    game.playMoveWithNotations("e2", "e4");
+    game.playMoveWithNotations("e7", "e5");
+    game.goToMove(1, -1);
+    // console.log(game.currentPosition.legalMovesAsNotations.join(" "));
+    game.playMoveWithNotations("c7", "c5");
+    console.log(game.toString());
+    assert(true);
+  });
 });
