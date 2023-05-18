@@ -1,7 +1,7 @@
 import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
 import ChessGame from "@src/game/ChessGame.js";
 import assert from "node:assert";
-import { writeFileSync } from "node:fs";
+// import { writeFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 describe("Various checkmates", () => {
@@ -51,6 +51,6 @@ describe("Various checkmates", () => {
       .playMoveWithNotations("a5", "a6")
       .playMoveWithNotations("b8", "b6");
     assert(game.result, "0-1");
-    writeFileSync("./pgn/nezhmetdinov-immortal.pgn", game.toString());
+    // writeFileSync("./pgn/nezhmetdinov-immortal.pgn", game.toString());
   });
 });
