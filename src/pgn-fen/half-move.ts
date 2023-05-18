@@ -10,9 +10,7 @@ import Position from "@src/game/Position.js";
 import {
   AlgebraicNotation,
   Coordinates,
-  HalfMove,
   HalfMoveWithPromotion,
-  PieceMap,
   PromotedPiece,
   Wing
 } from "@src/types.js";
@@ -24,13 +22,13 @@ import {
 const MOVE_FINDERS: Record<string, MoveFinder> = {
   PAWN_MOVE: {
     regex: /^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRBN]))?$/,
-    getHalfMove: ({ sf, df, dr, pt }, halfMoves, pieceMap) => {
+    getHalfMove: ({ legalMoves, activeColor, board }, { sf, df, dr, pt }) => {
       const srcY = File[sf as keyof typeof File];
       const destCoords = (df)
         ? Coords[(df + dr) as AlgebraicNotation]
         : getCoords(8 - Number(dr), srcY);
-      const move = halfMoves.find(([src, dest]) => {
-        return (pieceMap.get(src) as Piece) < Piece.KNIGHT
+      const move = legalMoves.find(([src, dest]) => {
+        return (board.get(activeColor, src) as Piece) < Piece.KNIGHT
           && src.y === srcY
           && dest === destCoords;
       });
@@ -42,14 +40,14 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
   },
   PIECE_MOVE: {
     regex: /^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])$/,
-    getHalfMove: ({ pt, sf, sr, dc }, halfMoves, pieceMap) => {
+    getHalfMove: ({ legalMoves, board, activeColor }, { pt, sf, sr, dc }) => {
       const srcX = (sr) ? (8 - +sr) : null;
       const srcY = (sf) ? File[sf as keyof typeof File] : null;
       const destCoords = Coords[dc as AlgebraicNotation];
 
-      return halfMoves.find(([src, dest]) => {
+      return legalMoves.find(([src, dest]) => {
         return dest === destCoords
-          && pieceMap.get(src) === PiecesByName[pt as keyof typeof PiecesByName]
+          && board.get(activeColor, src) === PiecesByName[pt as keyof typeof PiecesByName]
           && (srcX === null || src.x === srcX)
           && (srcY === null || src.y === srcY);
       });
@@ -57,12 +55,12 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
   },
   CASTLING: {
     regex: /^(?<o>O|0)-\k<o>(?<o2>-\k<o>)?$/,
-    getHalfMove: ({ o2 }, halfMoves, pieceMap) => {
+    getHalfMove: ({ board, legalMoves, activeColor }, { o2 }) => {
       const wing: Wing = (o2 !== undefined) ? -1 : 1;
-      return halfMoves.find(([src, dest]) => {
-        return pieceMap.get(src) === Piece.KING
+      return legalMoves.find(([src, dest]) => {
+        return board.get(activeColor, src) === Piece.KING
           && Math.sign(dest.y - src.y) === wing
-          && (Math.abs(dest.y - src.y) === 2 || pieceMap.get(dest) === Piece.ROOK);
+          && Position.isCastling(src, dest, activeColor, board);
       });
     }
   }
@@ -74,9 +72,8 @@ export function notationToHalfMove(notation: string, position: Position): HalfMo
 
     if (match) {
       const halfMove = MOVE_FINDERS[key].getHalfMove(
-        match.groups as Record<string, string>,
-        position.legalMoves,
-        position.pieces[position.activeColor]
+        position,
+        match.groups as Record<string, string>
       );
 
       if (halfMove)
@@ -92,21 +89,20 @@ export function notationToHalfMove(notation: string, position: Position): HalfMo
 // ===== ===== ===== ===== =====
 
 export function halfMoveToNotation(
-  { pieces, activeColor, inactiveColor, legalMoves }: Position,
+  position: Position,
   [srcCoords, destCoords, promotedPiece]: HalfMoveWithPromotion
 ): string {
-  const srcPiece = pieces[activeColor].get(srcCoords) as Piece;
+  const srcPiece = position.board.get(position.activeColor, srcCoords) as Piece;
 
   if (srcPiece < Piece.KNIGHT)
     return halfPawnMoveToNotation(srcCoords, destCoords, promotedPiece);
 
-  const isCapture = pieces[inactiveColor].has(destCoords);
-
   if (srcPiece === Piece.KING)
-    return halfKingMoveToNotation(srcCoords, destCoords, pieces[activeColor], isCapture);
+    return halfKingMoveToNotation(srcCoords, destCoords, position);
 
   const destNotation = coordsToNotation(destCoords);
-  const { srcRank, srcFile } = getAmbiguousRankAndFile(legalMoves, srcCoords, destCoords, pieces[activeColor]);
+  const isCapture = position.board.has(destCoords, position.inactiveColor);
+  const { srcRank, srcFile } = getAmbiguousRankAndFile(srcCoords, destCoords, position);
   return PieceInitials[Colors.WHITE][srcPiece] + srcFile + srcRank + (isCapture ? "x" : "") + destNotation;
 }
 
@@ -121,23 +117,24 @@ function halfPawnMoveToNotation(srcCoords: Coordinates, destCoords: Coordinates,
 }
 
 
-function halfKingMoveToNotation(srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap, isCapture: boolean) {
+function halfKingMoveToNotation(srcCoords: Coordinates, destCoords: Coordinates, { activeColor, inactiveColor, board }: Position) {
   const destNotation = coordsToNotation(destCoords);
 
-  if (Math.abs(destCoords.y - srcCoords.y) === 2 || pieceMap.get(destCoords) === Piece.ROOK)
+  if (Position.isCastling(srcCoords, destCoords, activeColor, board))
     return (Math.sign(destCoords.y - srcCoords.y) === -1) ? "0-0-0" : "0-0";
-  return `K${(isCapture ? "x" : "") + destNotation}`;
+
+  return `K${(board.has(destCoords, inactiveColor) ? "x" : "") + destNotation}`;
 }
 
 
-function getAmbiguousRankAndFile(legalMoves: HalfMove[], srcCoords: Coordinates, destCoords: Coordinates, pieceMap: PieceMap): {
+function getAmbiguousRankAndFile(srcCoords: Coordinates, destCoords: Coordinates, { board, activeColor, legalMoves }: Position): {
   srcFile: string;
   srcRank: string;
 } {
   const similarMoves = legalMoves.filter(([src, dest]) => {
     return src !== srcCoords
       && dest === destCoords
-      && pieceMap.get(src) === pieceMap.get(srcCoords);
+      && board.get(activeColor, src) === board.get(activeColor, srcCoords);
   });
 
   if (!similarMoves.length)
@@ -160,5 +157,8 @@ function getAmbiguousRankAndFile(legalMoves: HalfMove[], srcCoords: Coordinates,
 
 interface MoveFinder {
   regex: RegExp;
-  getHalfMove: (groups: Record<string, string | undefined>, halfMoves: HalfMove[], pieceMap: PieceMap) => HalfMoveWithPromotion | undefined;
+  getHalfMove: (
+    position: Position,
+    groups: Record<string, string | undefined>,
+  ) => HalfMoveWithPromotion | undefined;
 }
