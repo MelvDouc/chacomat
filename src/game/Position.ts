@@ -10,6 +10,7 @@ import { CastledKingFiles, CastlingFilesByColorAndWing } from "@src/constants/pl
 import PieceMap from "@src/game/PieceMap.js";
 import { attackedCoords, canCastleTo, pseudoLegalMoves } from "@src/moves/legal-moves.js";
 import { isValidFen } from "@src/pgn-fen/fen.js";
+import { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
 import {
   AlgebraicNotation,
   CastlingRights,
@@ -89,6 +90,10 @@ export default class Position implements PositionInfo {
 
   public get inactiveColor(): Color {
     return ReversedColors[this.activeColor];
+  }
+
+  public get legalMovesAsNotations(): string[] {
+    return this.legalMoves.map((move) => halfMoveToNotation(this, move));
   }
 
   protected computeLegalMoves(): HalfMove[] {
