@@ -42,7 +42,7 @@ export function enterPgn(pgn: string) {
   return {
     gameMetaInfo,
     enterMoves: (game: ChessGame) => {
-      const mainLine = parseVariations(movesStr).mainLine;
+      const { mainLine } = parseVariations(movesStr);
 
       for (const [halfMoveStr] of mainLine.matchAll(halfMoveRegex)) {
         const halfMove = notationToHalfMove(halfMoveStr, game.currentPosition);

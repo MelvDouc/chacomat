@@ -1,5 +1,10 @@
 import Colors from "@src/constants/Colors.js";
-import { Coords, coordsToNotation, File, getCoords } from "@src/constants/Coords.js";
+import {
+  Coords,
+  File,
+  coordsToNotation,
+  getCoords
+} from "@src/constants/Coords.js";
 import Piece, { PieceInitials, PiecesByName } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
 import {

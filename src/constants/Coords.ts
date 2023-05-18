@@ -1,23 +1,7 @@
+import File from "@src/constants/File.js";
 import { Coordinates } from "@src/types.js";
 
-export enum File {
-  // eslint-disable-next-line no-unused-vars
-  a,
-  // eslint-disable-next-line no-unused-vars
-  b,
-  // eslint-disable-next-line no-unused-vars
-  c,
-  // eslint-disable-next-line no-unused-vars
-  d,
-  // eslint-disable-next-line no-unused-vars
-  e,
-  // eslint-disable-next-line no-unused-vars
-  f,
-  // eslint-disable-next-line no-unused-vars
-  g,
-  // eslint-disable-next-line no-unused-vars
-  h
-}
+export { File };
 
 const coordsTable = Array.from({ length: 8 }, (_, x) => {
   return Array.from({ length: 8 }, (_, y) => Object.freeze({ x, y }));
