@@ -101,6 +101,18 @@ export default class Position implements PositionInfo {
     return this.legalMoves.map((move) => halfMoveToNotation(this, move));
   }
 
+  public get status(): GameStatus {
+    if (!this.legalMoves.length)
+      return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
+    if (this.halfMoveClock >= 50)
+      return GameStatus.DRAW_BY_FIFTY_MOVE_RULE;
+    if (this.board.isInsufficientMaterial())
+      return GameStatus.INSUFFICIENT_MATERIAL;
+    if (this.isTripleRepetition())
+      return GameStatus.TRIPLE_REPETITION;
+    return GameStatus.ONGOING;
+  }
+
   protected computeLegalMoves(): HalfMove[] {
     const moves = [...this.board.pseudoLegalMoves(this.activeColor, this.enPassantCoords)].filter(([srcCoords, destCoords]) => {
       return !this.doesMoveCauseCheck(srcCoords, destCoords);
@@ -124,18 +136,6 @@ export default class Position implements PositionInfo {
       kingCoords,
       getCoords(kingCoords.x, CastledKingFiles[Math.sign(rookY - kingCoords.y) as Wing])
     ];
-  }
-
-  public getStatus(): GameStatus {
-    if (!this.legalMoves.length)
-      return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
-    if (this.halfMoveClock >= 50)
-      return GameStatus.DRAW_BY_FIFTY_MOVE_RULE;
-    if (this.board.isInsufficientMaterial())
-      return GameStatus.INSUFFICIENT_MATERIAL;
-    if (this.isTripleRepetition())
-      return GameStatus.TRIPLE_REPETITION;
-    return GameStatus.ONGOING;
   }
 
   public isCheck(): boolean {

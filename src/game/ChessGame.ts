@@ -60,7 +60,7 @@ export default class ChessGame {
     const nextPositionInfo = playMove(this.currentPosition.cloneInfo(), srcCoords, destCoords, promotedPiece);
     const nextPosition = new Position(nextPositionInfo);
 
-    this.checkStatus(nextPosition.getStatus(), this.currentPosition.activeColor);
+    this.updateResult(nextPosition.status, this.currentPosition.activeColor);
     nextPosition.prev = this.currentPosition;
     this.currentPosition.next.push({
       notation: halfMoveToNotation(this.currentPosition, [srcCoords, destCoords, promotedPiece]),
@@ -74,7 +74,7 @@ export default class ChessGame {
     return this.playMove(Coords[srcNotation], Coords[destNotation], promotedPiece);
   }
 
-  private checkStatus(status: GameStatus, activeColor: Color): void {
+  private updateResult(status: GameStatus, activeColor: Color): void {
     switch (status) {
       case GameStatus.CHECKMATE:
         this.resultObs.value = (activeColor === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;

@@ -16,7 +16,7 @@ describe("Various checkmates", () => {
     const game = new ChessGame({
       pgn: "1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7#"
     });
-    assert.strictEqual(game.currentPosition.getStatus(), GameStatus.CHECKMATE);
+    assert.strictEqual(game.currentPosition.status, GameStatus.CHECKMATE);
   });
 
   it("the Opera Game", () => {
@@ -34,7 +34,7 @@ describe("Various checkmates", () => {
       `
     });
     // writeFileSync("./pgn/opera-game.pgn", game.toString());
-    assert.strictEqual(game.currentPosition.getStatus(), GameStatus.CHECKMATE);
+    assert.strictEqual(game.currentPosition.status, GameStatus.CHECKMATE);
   });
 
   it("Polugaevsky - Nezhmetdinov (1958)", () => {
@@ -52,5 +52,16 @@ describe("Various checkmates", () => {
       .playMoveWithNotations("b8", "b6");
     assert(game.result, "0-1");
     // writeFileSync("./pgn/nezhmetdinov-immortal.pgn", game.toString());
+  });
+});
+
+describe("Stalemate", () => {
+  it("fastest stalemate", () => {
+    const game = new ChessGame({
+      pgn: `1. e3 a5 2. Qh5 Ra6 3. Qa5 h5 4. Qxc7 Rah6
+        5. h4 f6 6. Qxd7+ Kf7 7. Qxb7 Qd3 8. Qxb8 Qh7 9. Qxc8 Kg6 10. Qe6`
+    });
+    console.log(game.toString());
+    assert(game.currentPosition.status === GameStatus.STALEMATE);
   });
 });
