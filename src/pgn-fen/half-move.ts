@@ -23,7 +23,7 @@ import {
 
 const MOVE_FINDERS: Record<string, MoveFinder> = {
   PAWN_MOVE: {
-    regex: /^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRNB]))?$/,
+    regex: /^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRBN]))?$/,
     getHalfMove: ({ sf, df, dr, pt }, halfMoves, pieceMap) => {
       const srcY = File[sf as keyof typeof File];
       const destCoords = (df)

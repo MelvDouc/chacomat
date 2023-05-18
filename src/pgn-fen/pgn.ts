@@ -10,7 +10,6 @@ import {
 
 
 const infoRegex = /^\[(?<k>\w+)\s+"(?<v>[^"]*)"\]/;
-const halfMoveRegex = /([NBRQK][a-h]?[1-8]?x?[a-h][1-8]|[a-h](x[a-h])?[1-8](=?[NBRQ])?|O-O(-O)?|0-0(-0)?)/g;
 
 // ===== ===== ===== ===== =====
 // PARSE
@@ -42,13 +41,22 @@ export function enterPgn(pgn: string) {
   return {
     gameMetaInfo,
     enterMoves: (game: ChessGame) => {
-      const { mainLine } = parseVariations(movesStr);
+      const [mainLine] = parseVariations(movesStr);
 
-      for (const [halfMoveStr] of mainLine.matchAll(halfMoveRegex)) {
-        const halfMove = notationToHalfMove(halfMoveStr, game.currentPosition);
-        if (!halfMove)
-          throw new Error(`Invalid move: "${halfMoveStr}".`);
-        game.playMove(...halfMove);
+      for (const { whiteMove, blackMove } of mainLine) {
+        if (whiteMove) {
+          const halfMove = notationToHalfMove(whiteMove, game.currentPosition);
+          if (!halfMove)
+            throw new Error(`Invalid move: "${whiteMove}".`);
+          game.playMove(...halfMove);
+        }
+
+        if (blackMove) {
+          const halfMove = notationToHalfMove(blackMove, game.currentPosition);
+          if (!halfMove)
+            throw new Error(`Invalid move: "${blackMove}".`);
+          game.playMove(...halfMove);
+        }
       }
     }
   };

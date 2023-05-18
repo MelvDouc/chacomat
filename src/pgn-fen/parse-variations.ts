@@ -1,19 +1,33 @@
-export default function parseVariations(movesStr: string): PgnVariations {
-  movesStr = movesStr.trim();
-  const variations: PgnVariations["variations"] = [];
-  let openingParenIndex: number;
+const halfMoveRegex = /(([a-h](x[a-h])?|[KQRBN][a-h]?[1-8]?x?[a-h])[1-8]|(0|O)(-(0|O)){1,2})/g;
+const moveNumberRegex = /(?<moveNumber>\d+)\.(?<isBlack>\.\.)?/g;
+// const moveNotationsRegex = RegExp(`(?<m1>${halfMoveRegex.source})(\\s+(?<m2>${halfMoveRegex.source}))?/`);
 
-  while ((openingParenIndex = movesStr.indexOf("(")) !== -1) {
-    const closingParenIndex = findClosingParenIndex(movesStr, openingParenIndex);
-    const varText = movesStr.slice(openingParenIndex + 1, closingParenIndex);
-    variations.push(parseVariations(varText));
-    movesStr = movesStr.slice(0, openingParenIndex) + movesStr.slice(closingParenIndex + 1);
+export default function parseVariations(moveStr: string, memo: ParsedMove[][] = []): ParsedMove[][] {
+  let firstParenIndex: number;
+
+  while ((firstParenIndex = moveStr.indexOf("(")) !== -1) {
+    const closingParentIndex = findClosingParenIndex(moveStr, firstParenIndex);
+    parseVariations(moveStr.slice(firstParenIndex + 1, closingParentIndex), memo);
+    moveStr = moveStr.slice(0, firstParenIndex) + moveStr.slice(closingParentIndex + 1);
   }
 
-  return {
-    mainLine: movesStr,
-    variations
-  };
+  memo.unshift(parseVariation(moveStr));
+  return memo;
+}
+
+function parseVariation(varString: string): ParsedMove[] {
+  return [...varString.matchAll(moveNumberRegex)].map((item, i, arr) => {
+    const groups = item.groups ?? {};
+    const isBlack = !!groups["isBlack"];
+    const substring = varString.slice(item.index, arr[i + 1]?.index).trim();
+    const [m1, m2] = substring.slice(item[0].length).match(halfMoveRegex) ?? [];
+
+    return {
+      moveNumber: Number(groups["moveNumber"]),
+      whiteMove: isBlack ? null : m1,
+      blackMove: isBlack ? m1 : m2
+    };
+  });
 }
 
 function findClosingParenIndex(str: string, firstParenIndex: number): number {
@@ -33,7 +47,8 @@ function findClosingParenIndex(str: string, firstParenIndex: number): number {
   throw new Error(`Unclosed parenthesis in string: "${str}"`);
 }
 
-interface PgnVariations {
-  mainLine: string;
-  variations: PgnVariations[];
+interface ParsedMove {
+  moveNumber: number;
+  whiteMove: string | null | undefined;
+  blackMove: string | null | undefined;
 }
