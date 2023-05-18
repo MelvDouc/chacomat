@@ -5,33 +5,33 @@ import { attackedCoords, pseudoLegalMoves } from "@src/moves/legal-moves.js";
 import { Color, Coordinates, HalfMove } from "@src/types.js";
 
 export default class Board {
-  static parse(boardStr: string): Board {
-    return boardStr
-      .split("/")
-      .reduce((acc, row, x) => {
-        row
-          .replace(/\d+/g, (n) => "0".repeat(+n))
-          .split("")
-          .forEach((char, y) => {
-            if (char !== "0")
-              acc.set(
-                (char === char.toUpperCase()) ? Colors.WHITE : Colors.BLACK,
-                getCoords(x, y),
-                PiecesByName[char as keyof typeof PiecesByName]
-              );
-          });
-        return acc;
-      }, new Board());
-  }
-
   readonly #pieces: Record<Color, Map<Coordinates, Piece>>;
   readonly #kingCoords = {} as Record<Color, Coordinates>;
 
-  constructor() {
+  constructor(boardStr?: string) {
     this.#pieces = {
       [Colors.WHITE]: new Map(),
       [Colors.BLACK]: new Map()
     };
+
+    if (boardStr)
+      this.#parse(boardStr);
+  }
+
+  #parse(boardStr: string): void {
+    boardStr.split("/").forEach((row, x) => {
+      row
+        .replace(/\d+/g, (n) => "0".repeat(+n))
+        .split("")
+        .forEach((char, y) => {
+          if (char !== "0")
+            this.set(
+              (char === char.toUpperCase()) ? Colors.WHITE : Colors.BLACK,
+              getCoords(x, y),
+              PiecesByName[char as keyof typeof PiecesByName]
+            );
+        });
+    });
   }
 
   getKingCoords(color: Color): Coordinates {
@@ -128,23 +128,26 @@ export default class Board {
   }
 
   toString(): string {
-    return Array.from({ length: 8 }, (_, x) => {
+    let boardStr = "";
+
+    for (let x = 0; x < 8; x++) {
       let row = "";
 
-      y_loop: for (let y = 0; y < 8; y++) {
+      for (let y = 0; y < 8; y++) {
         const coords = getCoords(x, y);
 
-        for (const color of Object.values(Colors)) {
-          if (this.has(coords, color)) {
-            row += PieceInitials[color][this.get(color, coords) as Piece];
-            continue y_loop;
-          }
-        }
-
-        row += "0";
+        if (this.#pieces[Colors.WHITE].has(coords))
+          row += PieceInitials[Colors.WHITE][this.#pieces[Colors.WHITE].get(coords) as Piece];
+        else if (this.#pieces[Colors.BLACK].has(coords))
+          row += PieceInitials[Colors.BLACK][this.#pieces[Colors.BLACK].get(coords) as Piece];
+        else
+          row += "0";
       }
 
-      return row.replace(/0+/g, (zeros) => String(zeros.length));
-    }).join("/");
+      boardStr += row.replace(/0+/g, (zeros) => String(zeros.length));
+      if (x < 8 - 1) boardStr += "/";
+    }
+
+    return boardStr;
   }
 }

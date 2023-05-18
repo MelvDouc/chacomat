@@ -32,7 +32,7 @@ export default class Position implements PositionInfo {
     const [boardStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
     return new this({
-      board: Board.parse(boardStr),
+      board: new Board(boardStr),
       activeColor: (color === "w") ? Colors.WHITE : Colors.BLACK,
       castlingRights: this.parseCastlingRights(castlingStr),
       enPassantCoords: Coords[enPassant as AlgebraicNotation] ?? null,

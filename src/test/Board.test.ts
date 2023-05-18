@@ -20,37 +20,37 @@ describe("A board", () => {
 
 describe("Insufficient material", () => {
   it("should be detected with only kings", () => {
-    const board = Board.parse("k7/8/8/8/8/8/8/7K");
+    const board = new Board("k7/8/8/8/8/8/8/7K");
     assert(board.isInsufficientMaterial());
   });
 
   it("should be detected with a lone knight", () => {
-    const board = Board.parse("k7/8/8/8/8/8/8/6NK");
+    const board = new Board("k7/8/8/8/8/8/8/6NK");
     assert(board.isInsufficientMaterial());
   });
 
   it("should be detected with a lone bishop", () => {
-    const board = Board.parse("k7/8/8/8/8/8/8/6BK");
+    const board = new Board("k7/8/8/8/8/8/8/6BK");
     assert(board.isInsufficientMaterial());
   });
 
   it("should be detected with N v N", () => {
-    const board = Board.parse("kn6/8/8/8/8/8/8/6NK");
+    const board = new Board("kn6/8/8/8/8/8/8/6NK");
     assert(board.isInsufficientMaterial());
   });
 
   it("should not be detected with N v B", () => {
-    const board = Board.parse("kn6/8/8/8/8/8/8/6BK");
+    const board = new Board("kn6/8/8/8/8/8/8/6BK");
     assert(!board.isInsufficientMaterial());
   });
 
   it("should be detected with same-colored bishops", () => {
-    const board = Board.parse("k7/8/8/8/8/8/8/B1B1B1BK");
+    const board = new Board("k7/8/8/8/8/8/8/B1B1B1BK");
     assert(board.isInsufficientMaterial());
   });
 
   it("should not be detected with opposite-colored bishops", () => {
-    const board = Board.parse("kb6/8/8/8/8/8/8/5B1K");
+    const board = new Board("kb6/8/8/8/8/8/8/5B1K");
     assert(!board.isInsufficientMaterial());
   });
 });
