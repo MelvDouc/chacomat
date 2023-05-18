@@ -4,16 +4,15 @@ import Piece from "@src/constants/Piece.js";
 import { CastledKingFiles, CastledRookFiles, InitialPawnRanks, InitialPieceRanks } from "@src/constants/placement.js";
 import offsets from "@src/moves/offsets.js";
 import {
+  Board,
   Color,
   Coordinates,
-  PieceMap,
-  Position,
   Wing
 } from "@src/types.js";
 
 
-export function* attackedCoords(srcCoords: Coordinates, color: Color, pieces: Record<Color, PieceMap>): Generator<Coordinates> {
-  const piece = pieces[color].get(srcCoords) as Piece;
+export function* attackedCoords(srcCoords: Coordinates, color: Color, board: Board): Generator<Coordinates> {
+  const piece = board.get(color, srcCoords) as Piece;
   const { x: xOffsets, y: yOffsets } = offsets[piece];
   let coords: Coordinates;
 
@@ -24,7 +23,7 @@ export function* attackedCoords(srcCoords: Coordinates, color: Color, pieces: Re
     while (x >= 0 && x < 8 && y >= 0 && y < 8) {
       coords = getCoords(x, y);
       yield coords;
-      if (piece < Piece.BISHOP || pieces[color].has(coords) || pieces[ReversedColors[color]].has(coords))
+      if (piece < Piece.BISHOP || board.has(coords))
         break;
       x += xOffsets[i];
       y += yOffsets[i];
@@ -32,15 +31,15 @@ export function* attackedCoords(srcCoords: Coordinates, color: Color, pieces: Re
   }
 }
 
-function* pseudoLegalForwardPawnMoves(srcCoords: Coordinates, color: Color, xOffset: number, pieces: Record<Color, PieceMap>) {
+function* pseudoLegalForwardPawnMoves(srcCoords: Coordinates, color: Color, xOffset: number, board: Board) {
   const forwardCoords = getCoords(srcCoords.x + xOffset, srcCoords.y);
 
-  if (!pieces[color].has(forwardCoords) && !pieces[ReversedColors[color]].has(forwardCoords)) {
+  if (!board.has(forwardCoords)) {
     yield forwardCoords;
 
     if (srcCoords.x === InitialPawnRanks[color]) {
       const forwardCoords = getCoords(srcCoords.x + xOffset * 2, srcCoords.y);
-      if (!pieces[color].has(forwardCoords) && !pieces[ReversedColors[color]].has(forwardCoords))
+      if (!board.has(forwardCoords))
         yield forwardCoords;
     }
   }
@@ -49,27 +48,27 @@ function* pseudoLegalForwardPawnMoves(srcCoords: Coordinates, color: Color, xOff
 export function* pseudoLegalMoves(
   srcCoords: Coordinates,
   color: Color,
-  pieces: Record<Color, PieceMap>,
+  board: Board,
   enPassantCoords: Coordinates | null
 ): Generator<Coordinates> {
-  const piece = pieces[color].get(srcCoords) as Piece;
+  const piece = board.get(color, srcCoords) as Piece;
 
   if (piece >= Piece.KNIGHT) {
-    for (const destCoords of attackedCoords(srcCoords, color, pieces))
-      if (!pieces[color].has(destCoords))
+    for (const destCoords of attackedCoords(srcCoords, color, board))
+      if (!board.has(destCoords, color))
         yield destCoords;
     return;
   }
 
-  yield* pseudoLegalForwardPawnMoves(srcCoords, color, offsets[piece].x[0], pieces);
+  yield* pseudoLegalForwardPawnMoves(srcCoords, color, offsets[piece].x[0], board);
 
-  for (const destCoords of attackedCoords(srcCoords, color, pieces))
-    if (pieces[ReversedColors[color]].has(destCoords) || destCoords === enPassantCoords)
+  for (const destCoords of attackedCoords(srcCoords, color, board))
+    if (board.has(destCoords, ReversedColors[color]) || destCoords === enPassantCoords)
       yield destCoords;
 }
 
-export function canCastleTo(rookY: number, color: Color, pieces: Position["pieces"], coordsAttackedByInactiveColor: Set<Coordinates>): boolean {
-  const kingY = pieces[color].kingCoords.y;
+export function canCastleTo(rookY: number, color: Color, board: Board, coordsAttackedByInactiveColor: Set<Coordinates>): boolean {
+  const kingY = board.getKingCoords(color).y;
   const wing = Math.sign(rookY - kingY) as Wing;
   const kingYOffset = Math.sign(CastledKingFiles[wing] - kingY);
   const rookYOffset = Math.sign(CastledRookFiles[wing] - kingY);
@@ -79,8 +78,8 @@ export function canCastleTo(rookY: number, color: Color, pieces: Position["piece
     coords = getCoords(InitialPieceRanks[color], kingY + kingYOffset * i);
     if (
       coordsAttackedByInactiveColor.has(coords)
-      || pieces[ReversedColors[color]].has(coords)
-      || pieces[color].has(coords) && pieces[color].get(coords) !== Piece.ROOK
+      || board.has(coords, ReversedColors[color])
+      || board.has(coords, color) && board.get(color, coords) !== Piece.ROOK
     )
       return false;
   }
@@ -88,8 +87,8 @@ export function canCastleTo(rookY: number, color: Color, pieces: Position["piece
   for (i = 1; i <= Math.abs(CastledRookFiles[wing] - rookY); i++) {
     coords = getCoords(InitialPieceRanks[color], rookY + rookYOffset * i);
     if (
-      pieces[ReversedColors[color]].has(coords)
-      || pieces[color].has(coords) && pieces[color].get(coords) !== Piece.KING
+      board.has(coords, ReversedColors[color])
+      || board.has(coords, color) && board.get(color, coords) !== Piece.KING
     )
       return false;
   }

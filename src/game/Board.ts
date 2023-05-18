@@ -1,6 +1,7 @@
 import Colors from "@src/constants/Colors.js";
 import { getCoords } from "@src/constants/Coords.js";
 import Piece, { PieceInitials } from "@src/constants/Piece.js";
+import { attackedCoords } from "@src/moves/legal-moves.js";
 import { Color, Coordinates } from "@src/types.js";
 
 export default class Board {
@@ -26,7 +27,7 @@ export default class Board {
         const coords = getCoords(x, y);
 
         for (const color of Object.values(Colors)) {
-          if (this.has(color, coords)) {
+          if (this.has(coords, color)) {
             row += PieceInitials[color][this.get(color, coords) as Piece];
             continue y_loop;
           }
@@ -43,8 +44,21 @@ export default class Board {
     return this.#kingCoords[color];
   }
 
-  has(color: Color, coords: Coordinates): boolean {
-    return this.#pieces[color].has(coords);
+  getCoordsAttackedByColor(color: Color) {
+    const set = new Set<Coordinates>();
+
+    for (const srcCoords of this.#pieces[color].keys())
+      for (const destCoords of attackedCoords(srcCoords, color, this))
+        set.add(destCoords);
+
+    return set;
+  }
+
+  has(coords: Coordinates, color?: Color): boolean {
+    if (color !== undefined)
+      return this.#pieces[color].has(coords);
+    return this.#pieces[Colors.WHITE].has(coords)
+      || this.#pieces[Colors.BLACK].has(coords);
   }
 
   get(color: Color, coords: Coordinates): Piece | null {
