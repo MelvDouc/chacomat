@@ -1,4 +1,4 @@
-import Colors from "@src/constants/Colors.js";
+import Colors, { ConsoleColors } from "@src/constants/Colors.js";
 import { getCoords } from "@src/constants/Coords.js";
 import Piece, { PieceInitials, PiecesByName } from "@src/constants/Piece.js";
 import { attackedCoords, pseudoLegalMoves } from "@src/moves/legal-moves.js";
@@ -32,6 +32,14 @@ export default class Board {
             );
         });
     });
+  }
+
+  getPieceInitialAt(coords: Coordinates) {
+    if (this.#pieces[Colors.WHITE].has(coords))
+      return PieceInitials[Colors.WHITE][this.#pieces[Colors.WHITE].get(coords) as Piece];
+    if (this.#pieces[Colors.BLACK].has(coords))
+      return PieceInitials[Colors.BLACK][this.#pieces[Colors.BLACK].get(coords) as Piece];
+    return null;
   }
 
   getKingCoords(color: Color): Coordinates {
@@ -133,21 +141,25 @@ export default class Board {
     for (let x = 0; x < 8; x++) {
       let row = "";
 
-      for (let y = 0; y < 8; y++) {
-        const coords = getCoords(x, y);
-
-        if (this.#pieces[Colors.WHITE].has(coords))
-          row += PieceInitials[Colors.WHITE][this.#pieces[Colors.WHITE].get(coords) as Piece];
-        else if (this.#pieces[Colors.BLACK].has(coords))
-          row += PieceInitials[Colors.BLACK][this.#pieces[Colors.BLACK].get(coords) as Piece];
-        else
-          row += "0";
-      }
+      for (let y = 0; y < 8; y++)
+        row += this.getPieceInitialAt(getCoords(x, y)) ?? "0";
 
       boardStr += row.replace(/0+/g, (zeros) => String(zeros.length));
       if (x < 8 - 1) boardStr += "/";
     }
 
     return boardStr;
+  }
+
+  log(): void {
+    console.log(
+      Array.from({ length: 8 }, (_, x) => {
+        return Array.from({ length: 8 }, (_, y) => {
+          const bgColor = (x % 2 === y % 2) ? ConsoleColors.BG_WHITE : ConsoleColors.BG_GREEN;
+          const initial = this.getPieceInitialAt(getCoords(x, y)) ?? " ";
+          return `${bgColor + ConsoleColors.FG_BLACK} ${initial} ${ConsoleColors.RESET}`;
+        }).join("");
+      }).join("\n")
+    );
   }
 }
