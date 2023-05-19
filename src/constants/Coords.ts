@@ -102,7 +102,7 @@ export function coordsToNotation({ x, y }: Coordinates): string {
   return allNotations[x][y];
 }
 
-function xToRankName(x: number): string {
+export function xToRankName(x: number): string {
   return String(8 - x);
 }
 
@@ -110,7 +110,7 @@ export function rankNameToX(rankName: string): number {
   return 8 - +rankName;
 }
 
-function yToFileName(y: number): string {
+export function yToFileName(y: number): string {
   return File[y];
 }
 
