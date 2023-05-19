@@ -36,18 +36,19 @@ describe("A PGN", () => {
       .playMoveWithNotations("a7", "a6");
 
     game.currentPosition = posAfterPe4;
-    game.playMoveWithNotations("c7", "c5");
-    game.playMoveWithNotations("f2", "f4");
-    const e6SicilianPos = game.playMoveWithNotations("e7", "e6").currentPosition;
+    const postSicilianPos = game.playMoveWithNotations("c7", "c5").currentPosition;
+    game.playMoveWithNotations("f2", "f4")
+      .playMoveWithNotations("e7", "e6");
 
     game.currentPosition = posAfterPe4;
     game.playMoveWithNotations("c7", "c6");
 
-    game.currentPosition = e6SicilianPos;
+    game.currentPosition = postSicilianPos;
     game.playMoveWithNotations("b1", "c3");
 
     const pgn = game.toString();
     console.log(pgn);
-    assert(pgn.includes("1... c5 2. f4 e6 3. Nc3"));
+    assert(pgn.includes("( 1... c6 )"));
+    assert(pgn.includes("1... c5 2. f4 ( 2. Nc3 )"));
   });
 });

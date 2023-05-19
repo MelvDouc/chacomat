@@ -17,8 +17,7 @@ import { Observable } from "melv_observable";
 
 
 export default class ChessGame {
-  // private readonly currentPositionObs = new Observable<Position>();
-  public currentPosition: Position;
+  private readonly currentPositionObs = new Observable<Position>();
   private readonly resultObs = new Observable<GameResult>();
   public readonly metaInfo: Partial<GameMetaInfo> = {};
 
@@ -29,13 +28,11 @@ export default class ChessGame {
     if (pgn) {
       const { gameMetaInfo, enterMoves } = enterPgn(pgn);
       this.metaInfo = gameMetaInfo;
-      // this.currentPositionObs.value = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
-      this.currentPosition = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
+      this.currentPositionObs.value = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
       this.resultObs.value = this.metaInfo.Result ?? GameResults.ONGOING;
       enterMoves(this);
     } else {
-      // this.currentPositionObs.value = Position.fromFen(fen ?? Position.startFen);
-      this.currentPosition = Position.fromFen(fen ?? Position.startFen);
+      this.currentPositionObs.value = Position.fromFen(fen ?? Position.startFen);
       if (fen) this.metaInfo.FEN = fen;
       this.resultObs.value = GameResults.ONGOING;
     }
@@ -43,17 +40,21 @@ export default class ChessGame {
     this.resultObs.subscribe((result) => this.metaInfo.Result = result);
   }
 
-  // public get currentPosition(): Position {
-  //   return this.currentPositionObs.value;
-  // }
+  public get currentPosition(): Position {
+    return this.currentPositionObs.value;
+  }
+
+  public set currentPosition(position: Position) {
+    this.currentPositionObs.value = position;
+  }
 
   public get result(): GameResult {
     return this.resultObs.value;
   }
 
-  // public onPositionChange(subscription: (position: Position) => void): void {
-  //   this.currentPositionObs.subscribe(subscription);
-  // }
+  public onPositionChange(subscription: (position: Position) => void): void {
+    this.currentPositionObs.subscribe(subscription);
+  }
 
   public onResultChange(subscription: (result: GameResult) => void): void {
     this.resultObs.subscribe(subscription);
@@ -69,7 +70,6 @@ export default class ChessGame {
       notation: halfMoveToNotation(this.currentPosition, [srcCoords, destCoords, promotedPiece]),
       position: nextPosition
     });
-    // this.currentPositionObs.value = nextPosition;
     this.currentPosition = nextPosition;
     return this;
   }

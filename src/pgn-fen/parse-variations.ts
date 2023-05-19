@@ -1,6 +1,5 @@
 const halfMoveRegex = /(([a-h](x[a-h])?|[KQRBN][a-h]?[1-8]?x?[a-h])[1-8]|(0|O)(-(0|O)){1,2})/g;
 const moveNumberRegex = /(?<moveNumber>\d+)\.(?<isBlack>\.\.)?/g;
-// const moveNotationsRegex = RegExp(`(?<m1>${halfMoveRegex.source})(\\s+(?<m2>${halfMoveRegex.source}))?/`);
 
 export default function parseVariations(moveStr: string, memo: ParsedMove[][] = []): ParsedMove[][] {
   let firstParenIndex: number;
