@@ -1,0 +1,1 @@
+- [ ] Parse game result
