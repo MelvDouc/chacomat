@@ -62,9 +62,9 @@ describe("Insufficient material", () => {
     assert(board.isInsufficientMaterial());
   });
 
-  it("should be detected with N v N", () => {
+  it("should not be detected with N v N", () => {
     const board = new Board("kn6/8/8/8/8/8/8/6NK");
-    assert(board.isInsufficientMaterial());
+    assert(!board.isInsufficientMaterial());
   });
 
   it("should not be detected with N v B", () => {

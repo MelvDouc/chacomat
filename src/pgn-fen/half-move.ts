@@ -1,9 +1,10 @@
 import Colors from "@src/constants/Colors.js";
 import {
   Coords,
-  File,
   coordsToNotation,
-  getCoords
+  fileNameToY,
+  getCoords,
+  rankNameToX
 } from "@src/constants/Coords.js";
 import Piece, { PieceInitials, PiecesByName } from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
@@ -11,6 +12,7 @@ import {
   AlgebraicNotation,
   Coordinates,
   HalfMoveWithPromotion,
+  PieceInitial,
   PromotedPiece,
   Wing
 } from "@src/types.js";
@@ -23,7 +25,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
   PAWN_MOVE: {
     regex: /^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRBN]))?$/,
     getHalfMove: ({ legalMoves, activeColor, board }, { sf, df, dr, pt }) => {
-      const srcY = File[sf as keyof typeof File];
+      const srcY = fileNameToY(sf as string);
       const destCoords = (df)
         ? Coords[(df + dr) as AlgebraicNotation]
         : getCoords(8 - Number(dr), srcY);
@@ -34,20 +36,20 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
       });
 
       if (move && pt)
-        return [...move, PiecesByName[pt as keyof typeof PiecesByName] as PromotedPiece];
+        return [...move, PiecesByName[pt as PieceInitial] as PromotedPiece];
       return move;
     }
   },
   PIECE_MOVE: {
     regex: /^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])$/,
     getHalfMove: ({ legalMoves, board, activeColor }, { pt, sf, sr, dc }) => {
-      const srcX = (sr) ? (8 - +sr) : null;
-      const srcY = (sf) ? File[sf as keyof typeof File] : null;
+      const srcX = sr ? rankNameToX(sr) : null;
+      const srcY = sf ? fileNameToY(sf) : null;
       const destCoords = Coords[dc as AlgebraicNotation];
 
       return legalMoves.find(([src, dest]) => {
         return dest === destCoords
-          && board.get(activeColor, src) === PiecesByName[pt as keyof typeof PiecesByName]
+          && board.get(activeColor, src) === PiecesByName[pt as PieceInitial]
           && (srcX === null || src.x === srcX)
           && (srcY === null || src.y === srcY);
       });
@@ -57,6 +59,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
     regex: /^(?<o>O|0)-\k<o>(?<o2>-\k<o>)?$/,
     getHalfMove: ({ board, legalMoves, activeColor }, { o2 }) => {
       const wing: Wing = (o2 !== undefined) ? -1 : 1;
+
       return legalMoves.find(([src, dest]) => {
         return board.get(activeColor, src) === Piece.KING
           && Math.sign(dest.y - src.y) === wing

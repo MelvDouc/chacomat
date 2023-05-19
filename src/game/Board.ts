@@ -2,7 +2,7 @@ import Colors, { ConsoleColors } from "@src/constants/Colors.js";
 import { getCoords } from "@src/constants/Coords.js";
 import Piece, { PieceInitials, PiecesByName } from "@src/constants/Piece.js";
 import { attackedCoords, pseudoLegalMoves } from "@src/moves/legal-moves.js";
-import { Color, Coordinates, HalfMove } from "@src/types.js";
+import { Color, Coordinates, HalfMove, PieceInitial } from "@src/types.js";
 
 export default class Board {
   static isLightSquare(coords: Coordinates): boolean {
@@ -32,7 +32,7 @@ export default class Board {
             this.set(
               (char === char.toUpperCase()) ? Colors.WHITE : Colors.BLACK,
               getCoords(x, y),
-              PiecesByName[char as keyof typeof PiecesByName]
+              PiecesByName[char as PieceInitial]
             );
         });
     });

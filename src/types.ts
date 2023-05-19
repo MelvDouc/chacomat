@@ -1,7 +1,7 @@
 import Colors from "@src/constants/Colors.js";
 import { Coords } from "@src/constants/Coords.js";
 import { GameResults } from "@src/constants/GameStatus.js";
-import Piece from "@src/constants/Piece.js";
+import Piece, { PiecesByName } from "@src/constants/Piece.js";
 import Board from "@src/game/Board.js";
 import ChessGame from "@src/game/ChessGame.js";
 import Position from "@src/game/Position.js";
@@ -20,6 +20,7 @@ export type GameResult = typeof GameResults[keyof typeof GameResults];
 export type HalfMove = [Coordinates, Coordinates];
 export type HalfMoveWithPromotion = [...HalfMove, PromotedPiece?];
 export type NonKingPiece = Piece.WHITE_PAWN | Piece.BLACK_PAWN | Piece.KNIGHT | Piece.BISHOP | Piece.ROOK | Piece.QUEEN;
+export type PieceInitial = keyof typeof PiecesByName;
 export type PromotedPiece = Piece.QUEEN | Piece.ROOK | Piece.BISHOP | Piece.KNIGHT;
 export type Wing = -1 | 1;
 

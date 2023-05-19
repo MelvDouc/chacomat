@@ -1,27 +1,28 @@
 import File from "@src/constants/File.js";
 import { Coordinates } from "@src/types.js";
 
-export { File };
-
 const coordsTable = Array.from({ length: 8 }, (_, x) => {
-  return Array.from({ length: 8 }, (_, y) => Object.freeze({ x, y }));
+  return Array.from({ length: 8 }, (_, y) => {
+    return Object.create(null, {
+      x: {
+        value: x,
+        writable: false,
+        configurable: false,
+        enumerable: true
+      },
+      y: {
+        value: y,
+        writable: false,
+        configurable: false,
+        enumerable: true
+      }
+    });
+  });
 }) as readonly Coordinates[][];
 
 const allNotations = coordsTable.map((row, x) => {
-  const rank = String(8 - x);
-  return row.map(({ y }) => File[y] + rank);
+  return row.map(({ y }) => yToFileName(y) + xToRankName(x));
 });
-
-/**
- * `x` and `y` are expected to be within bounds of a regular board.
- */
-export function getCoords(x: number, y: number): Coordinates {
-  return coordsTable[x][y];
-}
-
-export function coordsToNotation({ x, y }: Coordinates): string {
-  return allNotations[x][y];
-}
 
 export const Coords = {
   a8: coordsTable[0][0],
@@ -89,3 +90,30 @@ export const Coords = {
   g1: coordsTable[7][6],
   h1: coordsTable[7][7]
 } as const;
+
+/**
+ * `x` and `y` are expected to be within bounds of a regular board.
+ */
+export function getCoords(x: number, y: number): Coordinates {
+  return coordsTable[x][y];
+}
+
+export function coordsToNotation({ x, y }: Coordinates): string {
+  return allNotations[x][y];
+}
+
+function xToRankName(x: number): string {
+  return String(8 - x);
+}
+
+export function rankNameToX(rankName: string): number {
+  return 8 - +rankName;
+}
+
+function yToFileName(y: number): string {
+  return File[y];
+}
+
+export function fileNameToY(fileName: string): number {
+  return File[fileName as unknown as keyof typeof File];
+}

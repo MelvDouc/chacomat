@@ -41,8 +41,7 @@ export function enterPgn(pgn: string) {
   return {
     gameMetaInfo,
     enterMoves: (game: ChessGame) => {
-      const [mainLine, ...variations] = parseVariations(movesStr);
-      console.log(variations);
+      const [mainLine] = parseVariations(movesStr);
 
       for (const { whiteMove, blackMove } of mainLine) {
         if (whiteMove) {
