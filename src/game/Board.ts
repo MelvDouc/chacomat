@@ -5,6 +5,10 @@ import { attackedCoords, pseudoLegalMoves } from "@src/moves/legal-moves.js";
 import { Color, Coordinates, HalfMove } from "@src/types.js";
 
 export default class Board {
+  static isLightSquare(coords: Coordinates): boolean {
+    return coords.x % 2 === coords.y % 2;
+  }
+
   readonly #pieces: Record<Color, Map<Coordinates, Piece>>;
   readonly #kingCoords = {} as Record<Color, Coordinates>;
 
@@ -89,41 +93,35 @@ export default class Board {
   }
 
   /**
-   * Minimum material to mate (irrespective of opponent material):
-   * - a pawn
-   * - a rook
-   * - a queen
-   * - two or more knights
-   * - at least one bishop of each color
+   * Insufficient material is when:
+   * - neither side has pieces;
+   * - one side has no pieces and the other side only has a knight or same-colored bishops;
+   * - one side only has a bishop and the other side only has a bishop of the same color.
    */
-  isInsufficientMaterial() {
+  isInsufficientMaterial(): boolean {
     const [minPieces, maxPieces] = [
       [...this.#pieces[Colors.WHITE]].filter(([, piece]) => piece !== Piece.KING),
       [...this.#pieces[Colors.BLACK]].filter(([, piece]) => piece !== Piece.KING)
     ].sort((a, b) => a.length - b.length);
 
     if (minPieces.length === 0) {
-      let parity: boolean | null = null;
+      let isLightSquare: boolean;
       return maxPieces.length === 1 && maxPieces[0][1] === Piece.KNIGHT
-        // 0 or more same-colored bishops
-        || maxPieces.every(([{ x, y }, piece]) => {
+        // 0 or more same-colored bishops (also true if no pieces)
+        || maxPieces.every(([coords, piece]) => {
           if (piece !== Piece.BISHOP)
             return false;
-          if (parity === null)
-            return (parity = (x % 2 === y % 2)), true;
-          return (x % 2 === y % 2) === parity;
+          isLightSquare ??= Board.isLightSquare(coords);
+          return Board.isLightSquare(coords) === isLightSquare;
         });
     }
 
     if (minPieces.length === 1 && maxPieces.length === 1) {
       const [[coords, piece]] = minPieces;
       const [[oppCoords, oppPiece]] = maxPieces;
-      return (piece === Piece.KNIGHT && oppPiece === Piece.KNIGHT)
-        || (
-          piece === Piece.BISHOP
-          && oppPiece === Piece.BISHOP
-          && (coords.x % 2 === coords.y % 2) === (oppCoords.x % 2 === oppCoords.y % 2)
-        );
+      return piece === Piece.BISHOP
+        && oppPiece === Piece.BISHOP
+        && Board.isLightSquare(coords) === Board.isLightSquare(oppCoords);
     }
 
     return false;
