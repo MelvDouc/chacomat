@@ -94,9 +94,8 @@ export default class Board {
 
   /**
    * Insufficient material is when:
-   * - neither side has pieces;
-   * - one side has no pieces and the other side only has a knight or same-colored bishops;
-   * - one side only has a bishop and the other side only has a bishop of the same color.
+   * - one side has a knight or bishop and the other side has no pieces;
+   * - both sides only have a bishop of the same color.
    */
   isInsufficientMaterial(): boolean {
     const [minPieces, maxPieces] = [
@@ -104,24 +103,22 @@ export default class Board {
       [...this.#pieces[Colors.BLACK]].filter(([, piece]) => piece !== Piece.KING)
     ].sort((a, b) => a.length - b.length);
 
-    if (minPieces.length === 0) {
-      let isLightSquare: boolean;
-      return maxPieces.length === 1 && maxPieces[0][1] === Piece.KNIGHT
-        // 0 or more same-colored bishops (also true if no pieces)
-        || maxPieces.every(([coords, piece]) => {
-          if (piece !== Piece.BISHOP)
-            return false;
-          isLightSquare ??= Board.isLightSquare(coords);
-          return Board.isLightSquare(coords) === isLightSquare;
-        });
-    }
+    if (maxPieces.length === 0)
+      return true;
 
-    if (minPieces.length === 1 && maxPieces.length === 1) {
-      const [[coords, piece]] = minPieces;
-      const [[oppCoords, oppPiece]] = maxPieces;
-      return piece === Piece.BISHOP
-        && oppPiece === Piece.BISHOP
-        && Board.isLightSquare(coords) === Board.isLightSquare(oppCoords);
+    if (maxPieces.length === 1) {
+      const [[coords, piece]] = maxPieces;
+
+      if (minPieces.length === 0)
+        return piece === Piece.KNIGHT || piece === Piece.BISHOP;
+
+      if (minPieces.length === 1) {
+        const [[oppCoords, oppPiece]] = minPieces;
+
+        return piece === Piece.BISHOP
+          && oppPiece === Piece.BISHOP
+          && Board.isLightSquare(coords) === Board.isLightSquare(oppCoords);
+      }
     }
 
     return false;

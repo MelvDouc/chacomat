@@ -72,11 +72,6 @@ describe("Insufficient material", () => {
     assert(!board.isInsufficientMaterial());
   });
 
-  it("should be detected with same-colored bishops", () => {
-    const board = new Board("k7/8/8/8/8/8/8/B1B1B1BK");
-    assert(board.isInsufficientMaterial());
-  });
-
   it("should not be detected with opposite-colored bishops", () => {
     const board = new Board("kb6/8/8/8/8/8/8/5B1K");
     assert(!board.isInsufficientMaterial());
