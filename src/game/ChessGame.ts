@@ -3,6 +3,7 @@ import { Coords } from "@src/constants/Coords.js";
 import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
 import Position from "@src/game/Position.js";
 import playMove from "@src/moves/play-move.js";
+import { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
 import { enterPgn, stringifyMetaInfo, stringifyMoves } from "@src/pgn-fen/pgn.js";
 import {
   AlgebraicNotation,
@@ -13,44 +14,46 @@ import {
   PromotedPiece
 } from "@src/types.js";
 import { Observable } from "melv_observable";
-import { halfMoveToNotation } from "../pgn-fen/half-move.js";
 
 
 export default class ChessGame {
-  private readonly currentPositionObs = new Observable<Position>();
+  // private readonly currentPositionObs = new Observable<Position>();
+  public currentPosition: Position;
   private readonly resultObs = new Observable<GameResult>();
   public readonly metaInfo: Partial<GameMetaInfo> = {};
 
   constructor({ pgn, fen }: {
     pgn?: string;
     fen?: string;
-  } = { fen: Position.startFen }) {
+  } = {}) {
     if (pgn) {
       const { gameMetaInfo, enterMoves } = enterPgn(pgn);
       this.metaInfo = gameMetaInfo;
-      this.currentPositionObs.value = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
+      // this.currentPositionObs.value = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
+      this.currentPosition = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
       this.resultObs.value = this.metaInfo.Result ?? GameResults.ONGOING;
       enterMoves(this);
     } else {
-      this.currentPositionObs.value = Position.fromFen(fen as string);
-      this.metaInfo.FEN = fen;
+      // this.currentPositionObs.value = Position.fromFen(fen ?? Position.startFen);
+      this.currentPosition = Position.fromFen(fen ?? Position.startFen);
+      if (fen) this.metaInfo.FEN = fen;
       this.resultObs.value = GameResults.ONGOING;
     }
 
     this.resultObs.subscribe((result) => this.metaInfo.Result = result);
   }
 
-  public get currentPosition(): Position {
-    return this.currentPositionObs.value;
-  }
+  // public get currentPosition(): Position {
+  //   return this.currentPositionObs.value;
+  // }
 
   public get result(): GameResult {
     return this.resultObs.value;
   }
 
-  public onPositionChange(subscription: (position: Position) => void): void {
-    this.currentPositionObs.subscribe(subscription);
-  }
+  // public onPositionChange(subscription: (position: Position) => void): void {
+  //   this.currentPositionObs.subscribe(subscription);
+  // }
 
   public onResultChange(subscription: (result: GameResult) => void): void {
     this.resultObs.subscribe(subscription);
@@ -66,7 +69,8 @@ export default class ChessGame {
       notation: halfMoveToNotation(this.currentPosition, [srcCoords, destCoords, promotedPiece]),
       position: nextPosition
     });
-    this.currentPositionObs.value = nextPosition;
+    // this.currentPositionObs.value = nextPosition;
+    this.currentPosition = nextPosition;
     return this;
   }
 
@@ -100,31 +104,6 @@ export default class ChessGame {
     let pos: Position = this.currentPosition;
     while (pos.prev) pos = pos.prev;
     return pos;
-  }
-
-  public goToMove(moveNumber: number, color: Color, varIndex = 0): void {
-    let pos: Position | null | undefined = this.currentPosition;
-
-    while (pos && pos.fullMoveNumber !== moveNumber) {
-      pos = (pos.fullMoveNumber < moveNumber)
-        ? pos.next[varIndex].position
-        : pos.prev;
-    }
-
-    if (!pos)
-      throw new Error(`No position was found at move number ${moveNumber}.`);
-
-    if (pos.activeColor === color) {
-      this.currentPositionObs.value = pos;
-      return;
-    }
-
-    const otherPos = (color === Colors.WHITE) ? pos.next[varIndex].position : pos.prev;
-
-    if (!otherPos)
-      throw new Error(`No position was found at move number ${moveNumber} for color ${color}.`);
-
-    this.currentPositionObs.value = otherPos;
   }
 
   public toString(): string {

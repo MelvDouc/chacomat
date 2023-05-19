@@ -72,36 +72,26 @@ export function stringifyMetaInfo(metaInfo: ChessGame["metaInfo"]): string {
     .join("\n");
 }
 
-export function stringifyMoves(position: Position, depth = 0): string {
+export function stringifyMoves(position: Position, varIndex = 0): string {
   const moves: string[] = [];
+  const next = position.next[varIndex];
 
-  while (position.next.length) {
-    let movesStr = "";
-
-    if (position.activeColor === Colors.WHITE)
-      movesStr += `${position.fullMoveNumber}. `;
-    else if (depth > 0)
-      movesStr += `${position.fullMoveNumber}... `;
-
-    const [next] = position.next;
-    movesStr += next.notation;
-
-    if (next.position.status === GameStatus.CHECKMATE)
-      movesStr += "#";
-    else if (next.position.isCheck())
-      movesStr += "+";
-
-    moves.push(movesStr);
-    for (let i = 1; i < position.next.length; i++)
-      moves.push(
-        position.next[i].notation,
-        stringifyMoves(position.next[i].position, depth + 1)
-      );
-
-    position = next.position;
+  if (next) {
+    const moveNo = (position.activeColor === Colors.WHITE) ? `${position.fullMoveNumber}. `
+      : (varIndex > 0) ? `${position.fullMoveNumber}... `
+        : "";
+    const checkAnnotation = (next.position.status === GameStatus.CHECKMATE) ? "#"
+      : (next.position.isCheck()) ? "+"
+        : "";
+    moves.push(moveNo + next.notation + checkAnnotation);
   }
 
-  if (depth === 0)
-    return moves.join(" ");
-  return `( ${moves.join(" ")} )`;
+  if (varIndex === 0)
+    for (let i = 1; i < position.next.length; i++)
+      moves.push(`( ${stringifyMoves(position, i)} )`);
+
+  if (next)
+    moves.push(stringifyMoves(next.position, 0));
+
+  return moves.join(" ").trimEnd();
 }

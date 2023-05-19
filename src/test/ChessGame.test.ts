@@ -7,22 +7,22 @@ import { describe, it } from "node:test";
 describe("A chess game", () => {
   it("should keep track of variations", () => {
     const game = new ChessGame();
-    const e4Pos = game.playMoveWithNotations("e2", "e4").currentPosition;
-    const e5Pos = game.playMoveWithNotations("e7", "e5").currentPosition;
+    const posAfterPe4 = game.playMoveWithNotations("e2", "e4").currentPosition;
+    const posAfterPe5 = game.playMoveWithNotations("e7", "e5").currentPosition;
 
     game.playMoveWithNotations("g1", "f3")
       .playMoveWithNotations("b8", "c6")
       .playMoveWithNotations("f1", "b5")
       .playMoveWithNotations("a7", "a6");
 
-    game.goToMove(1, -1);
+    game.currentPosition = posAfterPe4;
     const sicilianPos = game.playMoveWithNotations("c7", "c5").currentPosition;
 
-    game.goToMove(1, -1);
+    game.currentPosition = posAfterPe4;
     const ckPos = game.playMoveWithNotations("c7", "c6").currentPosition;
 
-    const postE4Positions = e4Pos.next.map((x) => x.position);
-    assert(postE4Positions[0] === e5Pos);
+    const postE4Positions = posAfterPe4.next.map((x) => x.position);
+    assert(postE4Positions[0] === posAfterPe5);
     assert(postE4Positions[1] === sicilianPos);
     assert(postE4Positions[2] === ckPos);
   });
