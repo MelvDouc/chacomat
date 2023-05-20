@@ -61,10 +61,11 @@ export default class Board {
   }
 
   has(coords: Coordinates, color?: Color): boolean {
-    if (color !== undefined)
-      return this.#pieces[color].has(coords);
-    return this.#pieces[Colors.WHITE].has(coords)
-      || this.#pieces[Colors.BLACK].has(coords);
+    if (!color)
+      return this.#pieces[Colors.WHITE].has(coords)
+        || this.#pieces[Colors.BLACK].has(coords);
+
+    return this.#pieces[color].has(coords);
   }
 
   get(color: Color, coords: Coordinates): Piece | null {

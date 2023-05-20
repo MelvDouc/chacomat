@@ -37,7 +37,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
 
       if (move && pt)
         return [...move, PiecesByName[pt as PieceInitial] as PromotedPiece];
-      return move;
+      return move ?? null;
     }
   },
   PIECE_MOVE: {
@@ -52,19 +52,19 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
           && board.get(activeColor, src) === PiecesByName[pt as PieceInitial]
           && (srcX === null || src.x === srcX)
           && (srcY === null || src.y === srcY);
-      });
+      }) ?? null;
     }
   },
   CASTLING: {
     regex: /^(?<o>O|0)-\k<o>(?<o2>-\k<o>)?$/,
     getHalfMove: (position, { o2 }) => {
-      const wing: Wing = (o2 !== undefined) ? -1 : 1;
+      const wing: Wing = (o2) ? -1 : 1;
 
       return position.legalMoves.find(([src, dest]) => {
         return position.board.get(position.activeColor, src) === Piece.KING
           && Math.sign(dest.y - src.y) === wing
           && position.isCastlingMove(src, dest);
-      });
+      }) ?? null;
     }
   }
 } as const;
@@ -163,5 +163,5 @@ interface MoveFinder {
   getHalfMove: (
     position: Position,
     groups: Record<string, string | undefined>,
-  ) => HalfMoveWithPromotion | undefined;
+  ) => HalfMoveWithPromotion | null;
 }
