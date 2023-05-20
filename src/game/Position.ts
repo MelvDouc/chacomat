@@ -17,12 +17,11 @@ import {
   Color,
   Coordinates,
   HalfMove,
-  PositionInfo,
   Wing
 } from "@src/types.js";
 
 
-export default class Position implements PositionInfo {
+export default class Position {
   public static readonly startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   public static fromFen(fen: string): Position {
@@ -72,6 +71,7 @@ export default class Position implements PositionInfo {
 
   public readonly board: Board;
   public readonly activeColor: Color;
+  /** Contains initial rook files. */
   public readonly castlingRights: CastlingRights;
   public readonly enPassantCoords: Coordinates | null;
   public readonly halfMoveClock: number;
@@ -83,7 +83,14 @@ export default class Position implements PositionInfo {
     position: Position;
   }[] = [];
 
-  constructor({ board, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: PositionInfo) {
+  constructor({ board, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: {
+    board: Board;
+    activeColor: Color;
+    castlingRights: CastlingRights;
+    enPassantCoords: Coordinates | null;
+    halfMoveClock: number;
+    fullMoveNumber: number;
+  }) {
     this.board = board;
     this.activeColor = activeColor;
     this.castlingRights = castlingRights;
@@ -136,6 +143,17 @@ export default class Position implements PositionInfo {
       kingCoords,
       getCoords(kingCoords.x, CastledKingFiles[Math.sign(rookY - kingCoords.y) as Wing])
     ];
+  }
+
+  public isLegal(): boolean {
+    if (this.board
+      .getCoordsAttackedByColor(this.activeColor)
+      .has(this.board.getKingCoords(this.inactiveColor)))
+      return false;
+
+    // TODO: check other conditions
+
+    return true;
   }
 
   public isCheck(): boolean {

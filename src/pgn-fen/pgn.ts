@@ -4,10 +4,7 @@ import ChessGame from "@src/game/ChessGame.js";
 import Position from "@src/game/Position.js";
 import { notationToHalfMove } from "@src/pgn-fen/half-move.js";
 import parseVariations from "@src/pgn-fen/parse-variations.js";
-import {
-  GameMetaInfo
-} from "@src/types.js";
-
+import { GameMetaInfo } from "@src/types.js";
 
 const infoRegex = /^\[(?<k>\w+)\s+"(?<v>[^"]*)"\]/;
 

@@ -29,16 +29,6 @@ export interface Coordinates {
   readonly y: number;
 }
 
-export interface PositionInfo {
-  board: Board;
-  activeColor: Color;
-  /** Contains initial rook files. */
-  castlingRights: CastlingRights;
-  enPassantCoords: Coordinates | null;
-  halfMoveClock: number;
-  fullMoveNumber: number;
-}
-
 export interface GameMetaInfo {
   White: string;
   Black: string;

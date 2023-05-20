@@ -7,7 +7,6 @@ import {
   Board,
   Color,
   Coordinates,
-  PositionInfo,
   PromotedPiece,
   Wing
 } from "@src/types.js";
@@ -26,7 +25,7 @@ export default function playMove(
   srcCoords: Coordinates,
   destCoords: Coordinates,
   promotedPiece?: PromotedPiece
-): PositionInfo {
+) {
   if (!legalMoves.some(([src, dest]) => src === srcCoords && dest === destCoords))
     throw new Error(`Illegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
 
