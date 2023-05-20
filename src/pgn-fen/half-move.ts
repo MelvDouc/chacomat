@@ -57,13 +57,13 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
   },
   CASTLING: {
     regex: /^(?<o>O|0)-\k<o>(?<o2>-\k<o>)?$/,
-    getHalfMove: ({ board, legalMoves, activeColor }, { o2 }) => {
+    getHalfMove: (position, { o2 }) => {
       const wing: Wing = (o2 !== undefined) ? -1 : 1;
 
-      return legalMoves.find(([src, dest]) => {
-        return board.get(activeColor, src) === Piece.KING
+      return position.legalMoves.find(([src, dest]) => {
+        return position.board.get(position.activeColor, src) === Piece.KING
           && Math.sign(dest.y - src.y) === wing
-          && Position.isCastling(src, dest, activeColor, board);
+          && position.isCastlingMove(src, dest);
       });
     }
   }
@@ -120,13 +120,13 @@ function halfPawnMoveToNotation(srcCoords: Coordinates, destCoords: Coordinates,
 }
 
 
-function halfKingMoveToNotation(srcCoords: Coordinates, destCoords: Coordinates, { activeColor, inactiveColor, board }: Position) {
+function halfKingMoveToNotation(srcCoords: Coordinates, destCoords: Coordinates, position: Position) {
   const destNotation = coordsToNotation(destCoords);
 
-  if (Position.isCastling(srcCoords, destCoords, activeColor, board))
+  if (position.isCastlingMove(srcCoords, destCoords))
     return (Math.sign(destCoords.y - srcCoords.y) === -1) ? "0-0-0" : "0-0";
 
-  return `K${(board.has(destCoords, inactiveColor) ? "x" : "") + destNotation}`;
+  return `K${(position.board.has(destCoords, position.inactiveColor) ? "x" : "") + destNotation}`;
 }
 
 

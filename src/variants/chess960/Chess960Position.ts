@@ -1,5 +1,6 @@
 import Colors from "@src/constants/Colors.js";
 import { fileNameToY, getCoords, yToFileName } from "@src/constants/Coords.js";
+import Piece from "@src/constants/Piece.js";
 import Position from "@src/game/Position.js";
 import { CastlingRights, Coordinates, HalfMove } from "@src/types.js";
 
@@ -36,5 +37,10 @@ export default class Chess690Position extends Position {
       kingCoords,
       getCoords(kingCoords.x, rookY)
     ];
+  }
+
+  public override isCastlingMove(srcCoords: Coordinates, destCoords: Coordinates): boolean {
+    return this.board.get(this.activeColor, srcCoords) === Piece.KING
+      && this.board.get(this.activeColor, destCoords) === Piece.ROOK;
   }
 }

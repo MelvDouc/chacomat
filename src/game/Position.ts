@@ -61,14 +61,6 @@ export default class Position {
     }, "") || "-";
   }
 
-  public static isCastling(srcCoords: Coordinates, destCoords: Coordinates, activeColor: Color, board: Board): boolean {
-    return board.get(activeColor, srcCoords) === Piece.KING
-      && (
-        Math.abs(destCoords.y - srcCoords.y) === 2
-        || board.get(activeColor, destCoords) === Piece.ROOK
-      );
-  }
-
   public readonly board: Board;
   public readonly activeColor: Color;
   /** Contains initial rook files. */
@@ -145,6 +137,11 @@ export default class Position {
     ];
   }
 
+  public isCastlingMove(srcCoords: Coordinates, destCoords: Coordinates): boolean {
+    return this.board.get(this.activeColor, srcCoords) === Piece.KING
+      && Math.abs(destCoords.y - srcCoords.y) === 2;
+  }
+
   public isLegal(): boolean {
     if (this.board
       .getCoordsAttackedByColor(this.activeColor)
@@ -195,19 +192,6 @@ export default class Position {
     capturedPiece && this.board.set(this.inactiveColor, captureCoords, capturedPiece);
 
     return isCheck;
-  }
-
-  public cloneInfo() {
-    return {
-      board: this.board.clone(),
-      activeColor: this.activeColor,
-      inactiveColor: this.inactiveColor,
-      castlingRights: structuredClone(this.castlingRights),
-      enPassantCoords: this.enPassantCoords,
-      halfMoveClock: this.halfMoveClock,
-      fullMoveNumber: this.fullMoveNumber,
-      legalMoves: this.legalMoves
-    };
   }
 
   public toString(): string {
