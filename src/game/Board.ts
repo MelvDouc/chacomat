@@ -132,30 +132,37 @@ export default class Board {
   }
 
   toString(): string {
-    let boardStr = "";
+    return this.toArray()
+      .map((row) => {
+        return row
+          .map((initial) => initial || "0")
+          .join("")
+          .replace(/0+/g, (zeros) => String(zeros.length));
+      })
+      .join("/");
+  }
 
-    for (let x = 0; x < 8; x++) {
-      let row = "";
-
-      for (let y = 0; y < 8; y++)
-        row += this.getPieceInitialAt(getCoords(x, y)) ?? "0";
-
-      boardStr += row.replace(/0+/g, (zeros) => String(zeros.length));
-      if (x < 8 - 1) boardStr += "/";
-    }
-
-    return boardStr;
+  toArray(): string[][] {
+    return Array.from({ length: 8 }, (_, x) => {
+      return Array.from({ length: 8 }, (_, y) => {
+        const coords = getCoords(x, y);
+        return this.getPieceInitialAt(coords) ?? "";
+      });
+    });
   }
 
   log(): void {
     console.log(
-      Array.from({ length: 8 }, (_, x) => {
-        return Array.from({ length: 8 }, (_, y) => {
-          const bgColor = (x % 2 === y % 2) ? ConsoleColors.BG_WHITE : ConsoleColors.BG_GREEN;
-          const initial = this.getPieceInitialAt(getCoords(x, y)) ?? " ";
-          return `${bgColor + ConsoleColors.FG_BLACK} ${initial} ${ConsoleColors.RESET}`;
-        }).join("");
-      }).join("\n")
+      this.toArray()
+        .map((row, x) => {
+          return row
+            .map((initial, y) => {
+              const bgColor = (x % 2 === y % 2) ? ConsoleColors.BG_WHITE : ConsoleColors.BG_GREEN;
+              return `${bgColor + ConsoleColors.FG_BLACK} ${initial || " "} ${ConsoleColors.RESET}`;
+            })
+            .join("");
+        })
+        .join("/")
     );
   }
 }
