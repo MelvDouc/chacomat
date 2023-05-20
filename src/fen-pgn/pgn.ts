@@ -1,9 +1,9 @@
 import Colors from "@src/constants/Colors.js";
 import GameStatus from "@src/constants/GameStatus.js";
+import { halfMoveToNotation, notationToHalfMove } from "@src/fen-pgn/half-move.js";
+import { fenRegex, findClosingParenIndex, halfMoveRegex, infoRegex } from "@src/fen-pgn/utils.js";
 import ChessGame from "@src/game/ChessGame.js";
 import Position from "@src/game/Position.js";
-import { halfMoveToNotation, notationToHalfMove } from "@src/fen-pgn/half-move.js";
-import { findClosingParenIndex, infoRegex, halfMoveRegex, fenRegex } from "@src/fen-pgn/utils.js";
 import { GameMetaInfo } from "@src/types.js";
 
 export { fenRegex, halfMoveToNotation };
@@ -31,7 +31,6 @@ function getGameMetaInfoAndMovesStr(pgn: string): {
   };
 }
 
-// TODO: play variations
 export function enterPgn(pgn: string) {
   const { movesStr, gameMetaInfo } = getGameMetaInfoAndMovesStr(pgn);
 
