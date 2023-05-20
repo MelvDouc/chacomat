@@ -1,5 +1,5 @@
 import Colors from "@src/constants/Colors.js";
-import { Coords } from "@src/constants/Coords.js";
+import Coords from "@src/constants/Coords.js";
 import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
 import Position from "@src/game/Position.js";
 import playMove from "@src/moves/play-move.js";

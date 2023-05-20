@@ -1,4 +1,4 @@
-import { Coords, getCoords } from "@src/constants/Coords.js";
+import Coords, { getCoords } from "@src/constants/Coords.js";
 import Piece from "@src/constants/Piece.js";
 import Board from "@src/game/Board.js";
 import assert from "node:assert";

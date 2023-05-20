@@ -1,6 +1,5 @@
 import Colors from "@src/constants/Colors.js";
-import {
-  Coords,
+import Coords, {
   coordsToNotation,
   fileNameToY,
   getCoords,

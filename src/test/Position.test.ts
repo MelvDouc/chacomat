@@ -1,4 +1,4 @@
-import { Coords } from "@src/constants/Coords.js";
+import Coords from "@src/constants/Coords.js";
 import Position from "@src/game/Position.js";
 import playMove from "@src/moves/play-move.js";
 import assert from "node:assert";

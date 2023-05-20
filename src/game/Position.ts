@@ -1,6 +1,5 @@
 import Colors, { ReversedColors } from "@src/constants/Colors.js";
-import {
-  Coords,
+import Coords, {
   coordsToNotation,
   getCoords
 } from "@src/constants/Coords.js";

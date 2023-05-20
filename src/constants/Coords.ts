@@ -24,7 +24,7 @@ const allNotations = coordsTable.map((row, x) => {
   return row.map(({ y }) => yToFileName(y) + xToRankName(x));
 });
 
-export const Coords = {
+const Coords = {
   a8: coordsTable[0][0],
   b8: coordsTable[0][1],
   c8: coordsTable[0][2],
@@ -117,3 +117,5 @@ export function yToFileName(y: number): string {
 export function fileNameToY(fileName: string): number {
   return File[fileName as unknown as keyof typeof File];
 }
+
+export default Coords;

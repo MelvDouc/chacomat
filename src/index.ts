@@ -1,6 +1,6 @@
 export { default as Colors } from "@src/constants/Colors.js";
 export {
-  Coords,
+  default as Coords,
   coordsToNotation,
   getCoords
 } from "@src/constants/Coords.js";
