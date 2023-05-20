@@ -16,6 +16,7 @@ import {
   PromotedPiece,
   Wing
 } from "@src/types.js";
+import { pawnMoveRegex, pieceMoveRegex, castlingRegex } from "@src/fen-pgn/utils.js";
 
 // ===== ===== ===== ===== =====
 // TO MOVE ARRAY
@@ -23,7 +24,7 @@ import {
 
 const MOVE_FINDERS: Record<string, MoveFinder> = {
   PAWN_MOVE: {
-    regex: /^(?<sf>[a-h])(x(?<df>[a-h]))?(?<dr>[1-8])(=?(?<pt>[QRBN]))?$/,
+    regex: pawnMoveRegex,
     getHalfMove: ({ legalMoves, activeColor, board }, { sf, df, dr, pt }) => {
       const srcY = fileNameToY(sf as string);
       const destCoords = (df)
@@ -41,7 +42,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
     }
   },
   PIECE_MOVE: {
-    regex: /^(?<pt>[KQRBN])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])$/,
+    regex: pieceMoveRegex,
     getHalfMove: ({ legalMoves, board, activeColor }, { pt, sf, sr, dc }) => {
       const srcX = sr ? rankNameToX(sr) : null;
       const srcY = sf ? fileNameToY(sf) : null;
@@ -56,7 +57,7 @@ const MOVE_FINDERS: Record<string, MoveFinder> = {
     }
   },
   CASTLING: {
-    regex: /^(?<o>O|0)-\k<o>(?<o2>-\k<o>)?$/,
+    regex: castlingRegex,
     getHalfMove: (position, { o2 }) => {
       const wing: Wing = (o2) ? -1 : 1;
 

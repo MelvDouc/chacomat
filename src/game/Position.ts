@@ -7,10 +7,9 @@ import {
 import GameStatus from "@src/constants/GameStatus.js";
 import Piece from "@src/constants/Piece.js";
 import { CastledKingFiles, CastlingFilesByColorAndWing } from "@src/constants/placement.js";
+import { fenRegex, halfMoveToNotation } from "@src/fen-pgn/pgn.js";
 import Board from "@src/game/Board.js";
 import { canCastleTo } from "@src/moves/legal-moves.js";
-import { isValidFen } from "@src/pgn-fen/fen.js";
-import { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
 import {
   AlgebraicNotation,
   CastlingRights,
@@ -20,12 +19,11 @@ import {
   Wing
 } from "@src/types.js";
 
-
 export default class Position {
   public static readonly startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   public static fromFen(fen: string): Position {
-    if (!isValidFen(fen))
+    if (!fenRegex.test(fen))
       throw new Error(`Invalid FEN string: "${fen}"`);
 
     const [boardStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");

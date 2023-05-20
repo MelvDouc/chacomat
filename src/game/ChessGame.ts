@@ -3,8 +3,7 @@ import { Coords } from "@src/constants/Coords.js";
 import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
 import Position from "@src/game/Position.js";
 import playMove from "@src/moves/play-move.js";
-import { halfMoveToNotation } from "@src/pgn-fen/half-move.js";
-import { enterPgn, stringifyMetaInfo, stringifyMoves } from "@src/pgn-fen/pgn.js";
+import { enterPgn, stringifyMetaInfo, stringifyMoves, halfMoveToNotation } from "@src/fen-pgn/pgn.js";
 import {
   AlgebraicNotation,
   Color,

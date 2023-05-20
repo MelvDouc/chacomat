@@ -2,12 +2,11 @@ import Colors from "@src/constants/Colors.js";
 import GameStatus from "@src/constants/GameStatus.js";
 import ChessGame from "@src/game/ChessGame.js";
 import Position from "@src/game/Position.js";
-import { notationToHalfMove } from "@src/pgn-fen/half-move.js";
-import { findClosingParenIndex } from "@src/pgn-fen/utils.js";
+import { halfMoveToNotation, notationToHalfMove } from "@src/fen-pgn/half-move.js";
+import { findClosingParenIndex, infoRegex, halfMoveRegex, fenRegex } from "@src/fen-pgn/utils.js";
 import { GameMetaInfo } from "@src/types.js";
 
-const infoRegex = /^\[(?<k>\w+)\s+"(?<v>[^"]*)"\]/;
-const halfMoveRegex = /([a-h](x[a-h])?[1-8](=?[QRBN])?|[KQRBN][a-h]?[1-8]?x?[a-h][1-8]|(0|O)(-(0|O)){1,2})/g;
+export { fenRegex, halfMoveToNotation };
 
 // ===== ===== ===== ===== =====
 // PARSE
