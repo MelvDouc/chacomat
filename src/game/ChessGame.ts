@@ -1,9 +1,9 @@
 import Colors from "@src/constants/Colors.js";
 import Coords from "@src/constants/Coords.js";
 import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
+import { enterPgn, halfMoveToNotation, stringifyMetaInfo, stringifyMoves } from "@src/fen-pgn/pgn.js";
 import Position from "@src/game/Position.js";
 import playMove from "@src/moves/play-move.js";
-import { enterPgn, stringifyMetaInfo, stringifyMoves, halfMoveToNotation } from "@src/fen-pgn/pgn.js";
 import {
   AlgebraicNotation,
   Color,
@@ -16,22 +16,29 @@ import { Observable } from "melv_observable";
 
 
 export default class ChessGame {
-  private readonly currentPositionObs = new Observable<Position>();
-  private readonly resultObs = new Observable<GameResult>();
-  public readonly metaInfo: Partial<GameMetaInfo> = {};
+  protected static readonly Position = Position;
 
-  constructor({ pgn, fen }: {
+  protected readonly currentPositionObs = new Observable<Position>();
+  protected readonly resultObs = new Observable<GameResult>();
+  public readonly metaInfo: Partial<GameMetaInfo>;
+
+  constructor({ pgn, fen, metaInfo }: {
     pgn?: string;
     fen?: string;
+    metaInfo?: Partial<GameMetaInfo>;
   } = {}) {
+    const { Position } = this.constructor as typeof ChessGame;
+    metaInfo ??= {};
+
     if (pgn) {
       const { gameMetaInfo, enterMoves } = enterPgn(pgn);
-      this.metaInfo = gameMetaInfo;
+      this.metaInfo = { ...metaInfo, ...gameMetaInfo };
       this.currentPositionObs.value = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
       this.resultObs.value = this.metaInfo.Result ?? GameResults.ONGOING;
       enterMoves(this);
     } else {
       this.currentPositionObs.value = Position.fromFen(fen ?? Position.startFen);
+      this.metaInfo = metaInfo;
       if (fen) this.metaInfo.FEN = fen;
       this.resultObs.value = GameResults.ONGOING;
     }
@@ -82,7 +89,7 @@ export default class ChessGame {
     return this.playMove(Coords[srcNotation], Coords[destNotation], promotedPiece);
   }
 
-  private updateResult(status: GameStatus, activeColor: Color): void {
+  protected updateResult(status: GameStatus, activeColor: Color): void {
     switch (status) {
       case GameStatus.CHECKMATE:
         this.resultObs.value = (activeColor === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;
