@@ -1,6 +1,6 @@
 import Board from "@src/game/Board.js";
-import parseVariations from "@src/pgn-fen/parse-variations.js";
 import ChessGame from "@src/game/ChessGame.js";
+import parseVariations from "@src/pgn-fen/parse-variations.js";
 
 const board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 board.log();

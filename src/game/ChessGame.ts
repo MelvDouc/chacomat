@@ -48,6 +48,12 @@ export default class ChessGame {
     this.currentPositionObs.value = position;
   }
 
+  public get firstPosition(): Position {
+    let pos: Position = this.currentPosition;
+    while (pos.prev) pos = pos.prev;
+    return pos;
+  }
+
   public get result(): GameResult {
     return this.resultObs.value;
   }
@@ -96,17 +102,11 @@ export default class ChessGame {
    * @param color The camp that resigns.
    */
   public resign(color: Color): void {
-    this.resultObs.value = (color === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;
+    this.resultObs.value = (color === Colors.WHITE) ? GameResults.BLACK_WIN : GameResults.WHITE_WIN;
     this.metaInfo.Termination = "resignation";
   }
 
-  public getFirstPosition(): Position {
-    let pos: Position = this.currentPosition;
-    while (pos.prev) pos = pos.prev;
-    return pos;
-  }
-
   public toString(): string {
-    return `${stringifyMetaInfo(this.metaInfo)}\n\n${stringifyMoves(this.getFirstPosition())} ${this.result}`;
+    return `${stringifyMetaInfo(this.metaInfo)}\n\n${stringifyMoves(this.firstPosition)} ${this.result}`;
   }
 }
