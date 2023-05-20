@@ -3,10 +3,11 @@ import GameStatus from "@src/constants/GameStatus.js";
 import ChessGame from "@src/game/ChessGame.js";
 import Position from "@src/game/Position.js";
 import { notationToHalfMove } from "@src/pgn-fen/half-move.js";
-import parseVariations from "@src/pgn-fen/parse-variations.js";
+import { findClosingParenIndex } from "@src/pgn-fen/utils.js";
 import { GameMetaInfo } from "@src/types.js";
 
 const infoRegex = /^\[(?<k>\w+)\s+"(?<v>[^"]*)"\]/;
+const halfMoveRegex = /([a-h](x[a-h])?[1-8](=?[QRBN])?|[KQRBN][a-h]?[1-8]?x?[a-h][1-8]|(0|O)(-(0|O)){1,2})/g;
 
 // ===== ===== ===== ===== =====
 // PARSE
@@ -37,26 +38,51 @@ export function enterPgn(pgn: string) {
 
   return {
     gameMetaInfo,
-    enterMoves: (game: ChessGame) => {
-      const [mainLine] = parseVariations(movesStr);
-
-      for (const { whiteMove, blackMove } of mainLine) {
-        if (whiteMove) {
-          const halfMove = notationToHalfMove(whiteMove, game.currentPosition);
-          if (!halfMove)
-            throw new Error(`Invalid move: "${whiteMove}".`);
-          game.playMove(...halfMove);
-        }
-
-        if (blackMove) {
-          const halfMove = notationToHalfMove(blackMove, game.currentPosition);
-          if (!halfMove)
-            throw new Error(`Invalid move: "${blackMove}".`);
-          game.playMove(...halfMove);
-        }
-      }
-    }
+    enterMoves: (game: ChessGame) => parseVariations(game, movesStr)
   };
+}
+
+function enterNotations(game: ChessGame, movesStr: string) {
+  for (const [notation] of movesStr.matchAll(halfMoveRegex)) {
+    const move1 = notationToHalfMove(notation, game.currentPosition);
+
+    if (!move1)
+      throw new Error(`Illegal move: ${notation}`);
+
+    game.playMove(...move1);
+  }
+
+  return game.currentPosition.prev as Position;
+}
+
+function parseVariations(game: ChessGame, movesStr: string) {
+  let firstParenIndex: number;
+  let pos = game.currentPosition;
+  const stack: [Position, string][] = [];
+
+  while ((firstParenIndex = movesStr.indexOf("(")) !== -1) {
+    const closingParentIndex = findClosingParenIndex(movesStr, firstParenIndex);
+
+    const firstHalf = movesStr.slice(0, firstParenIndex).trim();
+    const varString = movesStr.slice(firstParenIndex + 1, closingParentIndex).trim();
+    const secondHalf = movesStr.slice(closingParentIndex + 1).trim();
+
+    if (firstHalf.length)
+      pos = enterNotations(game, firstHalf);
+
+    if (varString.length)
+      stack.push([pos, varString]);
+
+    movesStr = secondHalf;
+  }
+
+  if (movesStr.length)
+    enterNotations(game, movesStr);
+
+  stack.forEach(([pos, varString]) => {
+    game.currentPosition = pos;
+    parseVariations(game, varString);
+  });
 }
 
 // ===== ===== ===== ===== =====

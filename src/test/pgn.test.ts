@@ -25,30 +25,18 @@ describe("A PGN", () => {
     assert(game.toString().includes("Qf3xd5"), game.toString());
   });
 
-  it("should print variations", () => {
-    const game = new ChessGame();
-    const posAfterPe4 = game.playMoveWithNotations("e2", "e4").currentPosition;
-    game
-      .playMoveWithNotations("e7", "e5")
-      .playMoveWithNotations("g1", "f3")
-      .playMoveWithNotations("b8", "c6")
-      .playMoveWithNotations("f1", "b5")
-      .playMoveWithNotations("a7", "a6");
-
-    game.currentPosition = posAfterPe4;
-    const postSicilianPos = game.playMoveWithNotations("c7", "c5").currentPosition;
-    game.playMoveWithNotations("f2", "f4")
-      .playMoveWithNotations("e7", "e6");
-
-    game.currentPosition = posAfterPe4;
-    game.playMoveWithNotations("c7", "c6");
-
-    game.currentPosition = postSicilianPos;
-    game.playMoveWithNotations("b1", "c3");
+  it("should parse variations", () => {
+    const game = new ChessGame({
+      pgn: `1. e4 e5
+        ( 1... c5 2. f4 ( 2. Nc3 ) )
+        ( 1... c6 )
+        2. Nf3 ( 2. Bc4 ) 2... Nc6 3. Bb5 a6
+        `
+    });
 
     const pgn = game.toString();
     console.log(pgn);
-    assert(pgn.includes("( 1... c6 )"));
-    assert(pgn.includes("1... c5 2. f4 ( 2. Nc3 )"));
+    assert(pgn.includes("( 1... c6 )"), pgn);
+    assert(pgn.includes("1... c5 2. f4 ( 2. Nc3 )"), pgn);
   });
 });

@@ -1,6 +1,5 @@
 import Board from "@src/game/Board.js";
 import ChessGame from "@src/game/ChessGame.js";
-import parseVariations from "@src/pgn-fen/parse-variations.js";
 
 const board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 board.log();
@@ -14,7 +13,4 @@ const pgn = `
   2.Nf3 Nc6 3.Bb5 a6 *
 `;
 const game = new ChessGame({ pgn });
-console.log(
-  parseVariations(pgn)
-);
 game.currentPosition.board.log();
