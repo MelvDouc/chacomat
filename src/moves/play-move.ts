@@ -16,7 +16,7 @@ export default function playMove(
   srcCoords: Coordinates,
   destCoords: Coordinates,
   promotedPiece?: PromotedPiece
-) {
+): Position {
   if (!position.legalMoves.some(([src, dest]) => src === srcCoords && dest === destCoords))
     throw new Error(`Illegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
 

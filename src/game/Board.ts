@@ -38,7 +38,7 @@ export default class Board {
     });
   }
 
-  getPieceInitialAt(coords: Coordinates) {
+  getPieceInitialAt(coords: Coordinates): string | null {
     if (this.#pieces[Colors.WHITE].has(coords))
       return PieceInitials[Colors.WHITE][this.#pieces[Colors.WHITE].get(coords) as Piece];
     if (this.#pieces[Colors.BLACK].has(coords))
@@ -50,7 +50,7 @@ export default class Board {
     return this.#kingCoords[color];
   }
 
-  getCoordsAttackedByColor(color: Color) {
+  getCoordsAttackedByColor(color: Color): Set<Coordinates> {
     const set = new Set<Coordinates>();
 
     for (const srcCoords of this.#pieces[color].keys())

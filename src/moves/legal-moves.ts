@@ -31,7 +31,7 @@ export function* attackedCoords(srcCoords: Coordinates, color: Color, board: Boa
   }
 }
 
-function* pseudoLegalForwardPawnMoves(srcCoords: Coordinates, color: Color, xOffset: number, board: Board) {
+function* pseudoLegalForwardPawnMoves(srcCoords: Coordinates, color: Color, xOffset: number, board: Board): Generator<Coordinates> {
   const forwardCoords = getCoords(srcCoords.x + xOffset, srcCoords.y);
 
   if (!board.has(forwardCoords)) {
