@@ -13,16 +13,19 @@ export type {
   Position
 };
 
-export type AlgebraicNotation = keyof typeof Coords;
 export type Color = typeof Colors[keyof typeof Colors];
-export type CastlingRights = Record<Color, Set<number>>;
-export type GameResult = typeof GameResults[keyof typeof GameResults];
+export type Wing = -1 | 1;
+
+export type PieceInitial = keyof typeof PiecesByName;
+export type NonKingPiece = Piece.WHITE_PAWN | Piece.BLACK_PAWN | Piece.KNIGHT | Piece.BISHOP | Piece.ROOK | Piece.QUEEN;
+export type PromotedPiece = Piece.QUEEN | Piece.ROOK | Piece.BISHOP | Piece.KNIGHT;
+
 export type HalfMove = [Coordinates, Coordinates];
 export type HalfMoveWithPromotion = [...HalfMove, PromotedPiece?];
-export type NonKingPiece = Piece.WHITE_PAWN | Piece.BLACK_PAWN | Piece.KNIGHT | Piece.BISHOP | Piece.ROOK | Piece.QUEEN;
-export type PieceInitial = keyof typeof PiecesByName;
-export type PromotedPiece = Piece.QUEEN | Piece.ROOK | Piece.BISHOP | Piece.KNIGHT;
-export type Wing = -1 | 1;
+
+export type AlgebraicNotation = keyof typeof Coords;
+export type CastlingRights = Record<Color, Set<number>>;
+export type GameResult = typeof GameResults[keyof typeof GameResults];
 
 export interface Coordinates {
   readonly x: number;
