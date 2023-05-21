@@ -71,5 +71,5 @@ spanishGame.currentPosition.board.log();
 
 ```javascript
 const pieceArr = spanishGame.currentPosition.board.toArray();
-console.log(pieceArr);
+console.table(pieceArr);
 ```
