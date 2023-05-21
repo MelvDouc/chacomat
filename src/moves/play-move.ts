@@ -20,13 +20,7 @@ export default function playMove(
   if (!position.legalMoves.some(([src, dest]) => src === srcCoords && dest === destCoords))
     throw new Error(`Illegal move: ${coordsToNotation(srcCoords)}-${coordsToNotation(destCoords)}`);
 
-  const {
-    activeColor,
-    inactiveColor,
-    enPassantCoords,
-    halfMoveClock,
-    fullMoveNumber
-  } = position;
+  const { activeColor, inactiveColor, enPassantCoords, halfMoveClock, fullMoveNumber } = position;
   const board = position.board.clone();
   const castlingRights = structuredClone(position.castlingRights);
 
