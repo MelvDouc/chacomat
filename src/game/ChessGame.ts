@@ -20,15 +20,16 @@ export default class ChessGame {
 
   protected readonly currentPositionObs = new Observable<Position>();
   protected readonly resultObs = new Observable<GameResult>();
-  public readonly metaInfo: Partial<GameMetaInfo>;
+  public readonly metaInfo: GameMetaInfo;
 
   constructor({ pgn, fen, metaInfo }: {
     pgn?: string;
     fen?: string;
-    metaInfo?: Partial<GameMetaInfo>;
+    metaInfo?: GameMetaInfo;
   } = {}) {
     const { Position } = this.constructor as typeof ChessGame;
-    metaInfo ??= {};
+    metaInfo ??= { Result: GameResults.ONGOING };
+    metaInfo.Result ??= GameResults.ONGOING;
 
     if (pgn) {
       const { gameMetaInfo, enterMoves } = enterPgn(pgn);

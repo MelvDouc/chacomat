@@ -33,25 +33,25 @@ export interface Coordinates {
 }
 
 export interface GameMetaInfo {
-  White: string;
-  Black: string;
   Result: GameResult;
-  FEN: string;
-  WhiteElo: number;
-  BlackElo: number;
-  WhiteTeam: string;
-  BlackTeam: string;
-  Event: string;
-  Site: string;
-  Round: number;
+  White?: string;
+  Black?: string;
+  FEN?: string;
+  WhiteElo?: number;
+  BlackElo?: number;
+  WhiteTeam?: string;
+  BlackTeam?: string;
+  Event?: string;
+  Site?: string;
+  Round?: number;
   /** Should be in the format `YYYY.MM.DD`. */
-  Date: string;
-  TimeControl: string;
-  ECO: string;
-  Opening: string;
-  Variation: string;
-  Termination: string;
-  PlyCount: number;
-  Annotator: string;
+  Date?: string;
+  TimeControl?: string;
+  ECO?: string;
+  Opening?: string;
+  Variation?: string;
+  Termination?: string;
+  PlyCount?: number;
+  Annotator?: string;
   [x: string]: unknown;
 }
