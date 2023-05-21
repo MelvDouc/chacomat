@@ -5,6 +5,7 @@ dist/test
 pgn
 src
 
+.eslintrc.yml
 .gitignore
 tsconfig.json
 TODO.md
