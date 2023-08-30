@@ -1,8 +1,10 @@
-import Coords from "../dist/game/Coords.js";
+import Piece from "../dist/constants/Piece.js";
 import Position from "../dist/game/Position.js";
-import assert from "node:assert";
-import { describe, it } from "node:test";
+import { expect, test } from "./utils.js";
 
-describe("A position", () => {
+test("legal moves #1", () => {
+  const pos = Position.fromFen(Position.START_FEN);
 
+  expect(pos.legalMoves).count(16, ({ srcCoords }) => pos.board.get(srcCoords) === Piece.WHITE_PAWN);
+  expect(pos.legalMoves).count(4, ({ srcCoords }) => pos.board.get(srcCoords) === Piece.WHITE_KNIGHT);
 });

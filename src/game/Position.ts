@@ -21,7 +21,7 @@ export default class Position {
   } as const;
 
   public static isValidFen(fen: string): boolean {
-    return /^[pnbrqkPNBRQK1-8]+(\/[pnbrqkPNBRQK1-8]+){7} (w|b) (K?Q?k?q?|-) ([a-h][36]|-) \d+ \d+$/.test(fen);
+    return /^[nbrqkNBRQK1-8]+(\/[nbrqkNBRQK1-8]+){7} (w|b) (K?Q?k?q?|-) ([a-h][36]|-) \d+ \d+$/.test(fen);
   }
 
   public static fromFen(fen: string): Position {
