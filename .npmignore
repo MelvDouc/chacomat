@@ -2,6 +2,7 @@
 **/.vscode
 
 dist/test
+old
 pgn
 src
 

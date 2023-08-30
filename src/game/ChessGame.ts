@@ -1,118 +1,95 @@
-import Colors from "@src/constants/Colors.js";
-import Coords from "@src/constants/Coords.js";
-import GameStatus, { GameResults } from "@src/constants/GameStatus.js";
-import { enterPgn, halfMoveToNotation, stringifyMetaInfo, stringifyMoves } from "@src/fen-pgn/pgn.js";
-import Position from "@src/game/Position.js";
-import playMove from "@src/moves/play-move.js";
-import {
-  AlgebraicNotation,
-  Color,
-  Coordinates,
-  GameMetaInfo,
-  GameResult,
-  PromotedPiece
-} from "@src/types.js";
-import { Observable } from "melv_observable";
-
+import Color from "@constants/Color.js";
+import type Piece from "@constants/Piece.js";
+import Coords from "@game/Coords.js";
+import Position from "@game/Position.js";
+import type Move from "@moves/Move.js";
+import PawnMove from "@moves/PawnMove.js";
+import { Result } from "@types.js";
 
 export default class ChessGame {
-  protected static readonly Position = Position;
+  public static readonly BOARD_SIZE = 8;
 
-  protected readonly currentPositionObs = new Observable<Position>();
-  protected readonly resultObs = new Observable<GameResult>();
-  public readonly metaInfo: GameMetaInfo;
+  public static readonly Result = {
+    WHITE_WIN: "1-0",
+    BLACK_WIN: "0-1",
+    DRAW: "1/2-1/2",
+    DOUBLE_LOSS: "0-0"
+  } as const;
 
-  constructor({ pgn, fen, metaInfo }: {
-    pgn?: string;
+  public currentPosition: Position;
+  public result: Result | null;
+
+  public constructor({ fen }: {
     fen?: string;
-    metaInfo?: GameMetaInfo;
   } = {}) {
-    const { Position } = this.constructor as typeof ChessGame;
-    metaInfo ??= { Result: GameResults.ONGOING };
-    metaInfo.Result ??= GameResults.ONGOING;
+    this.currentPosition = Position.fromFen(fen ?? Position.START_FEN);
+    this.updateResult();
+  }
 
-    if (pgn) {
-      const { gameMetaInfo, enterMoves } = enterPgn(pgn);
-      this.metaInfo = { ...metaInfo, ...gameMetaInfo };
-      this.currentPositionObs.value = Position.fromFen(this.metaInfo.FEN ?? fen ?? Position.startFen);
-      this.resultObs.value = this.metaInfo.Result ?? GameResults.ONGOING;
-      enterMoves(this);
-    } else {
-      this.currentPositionObs.value = Position.fromFen(fen ?? Position.startFen);
-      this.metaInfo = metaInfo;
-      if (fen) this.metaInfo.FEN = fen;
-      this.resultObs.value = GameResults.ONGOING;
+  protected updateResult(): void {
+    switch (this.currentPosition.status) {
+      case Position.Status.CHECKMATE:
+        this.result = (this.currentPosition.activeColor === Color.WHITE)
+          ? ChessGame.Result.BLACK_WIN
+          : ChessGame.Result.WHITE_WIN;
+        break;
+      case Position.Status.STALEMATE:
+      case Position.Status.FIFTY_MOVE_RULE:
+      case Position.Status.INSUFFICIENT_MATERIAL:
+      case Position.Status.TRIPLE_REPETITION:
+        this.result = ChessGame.Result.DRAW;
+        break;
+      default:
+        this.result = null;
     }
-
-    this.resultObs.subscribe((result) => this.metaInfo.Result = result);
   }
 
-  public get currentPosition(): Position {
-    return this.currentPositionObs.value;
-  }
+  public playMove(move: Move): this {
+    if (this.result !== null)
+      throw new Error(`Game is over: ${this.result}.`);
 
-  public set currentPosition(position: Position) {
-    this.currentPositionObs.value = position;
-  }
+    const pos = this.currentPosition;
+    const board = pos.board.clone();
+    const castlingRights = pos.castlingRights.clone();
+    const srcPiece = board.get(move.srcCoords) as Piece;
+    const destPiece = move.getCapturedPiece(board);
+    const enPassantCoords = move instanceof PawnMove && move.isDouble()
+      ? Coords.get((move.srcCoords.x + move.destCoords.x) / 2, move.destCoords.y)
+      : null;
 
-  public get firstPosition(): Position {
-    let pos: Position = this.currentPosition;
-    while (pos.prev) pos = pos.prev;
-    return pos;
-  }
+    if (srcPiece.isKing())
+      castlingRights.get(pos.activeColor)!.clear();
 
-  public get result(): GameResult {
-    return this.resultObs.value;
-  }
+    if (srcPiece.isRook() && move.srcCoords.x === pos.activeColor.initialPieceRank)
+      castlingRights.get(pos.activeColor)!.delete(move.srcCoords.y);
 
-  public onPositionChange(subscription: (position: Position) => void): void {
-    this.currentPositionObs.subscribe(subscription);
-  }
+    if (destPiece?.isRook() && move.destCoords.x === pos.activeColor.initialPieceRank)
+      castlingRights.get(pos.activeColor.opposite)!.delete(move.destCoords.y);
 
-  public onResultChange(subscription: (result: GameResult) => void): void {
-    this.resultObs.subscribe(subscription);
-  }
-
-  public playMove(srcCoords: Coordinates, destCoords: Coordinates, promotedPiece?: PromotedPiece): this {
-    const nextPosition = playMove(this.currentPosition, srcCoords, destCoords, promotedPiece);
-
-    this.updateResult(nextPosition.status, this.currentPosition.activeColor);
-    nextPosition.prev = this.currentPosition;
-    this.currentPosition.next.push({
-      notation: halfMoveToNotation(this.currentPosition, [srcCoords, destCoords, promotedPiece]),
-      position: nextPosition
-    });
-    this.currentPosition = nextPosition;
+    move.play(board);
+    const nextPos = new Position(
+      board,
+      pos.activeColor.opposite,
+      castlingRights,
+      enPassantCoords,
+      (destPiece || srcPiece.isPawn()) ? 0 : (pos.halfMoveClock + 1),
+      pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
+    );
+    nextPos.prev = pos;
+    pos.next.push(nextPos);
+    this.currentPosition = nextPos;
+    this.updateResult();
     return this;
   }
 
-  public playMoveWithNotations(srcNotation: AlgebraicNotation, destNotation: AlgebraicNotation, promotedPiece?: PromotedPiece): this {
-    return this.playMove(Coords[srcNotation], Coords[destNotation], promotedPiece);
-  }
+  public playMoveWithNotation(notation: string): this {
+    const move = this.currentPosition.legalMoves.find((move) => {
+      return move.getComputerNotation() === notation;
+    });
 
-  protected updateResult(status: GameStatus, activeColor: Color): void {
-    switch (status) {
-      case GameStatus.CHECKMATE:
-        this.resultObs.value = (activeColor === Colors.WHITE) ? GameResults.WHITE_WIN : GameResults.BLACK_WIN;
-        break;
-      case GameStatus.STALEMATE:
-      case GameStatus.INSUFFICIENT_MATERIAL:
-      case GameStatus.TRIPLE_REPETITION:
-      case GameStatus.DRAW_BY_FIFTY_MOVE_RULE:
-        this.resultObs.value = GameResults.DRAW;
-    }
-  }
+    if (!move)
+      throw new Error(`Illegal move: "${notation}".`);
 
-  /**
-   * End the game by resignation.
-   * @param color The camp that resigns.
-   */
-  public resign(color: Color): void {
-    this.resultObs.value = (color === Colors.WHITE) ? GameResults.BLACK_WIN : GameResults.WHITE_WIN;
-    this.metaInfo.Termination = "resignation";
-  }
-
-  public toString(): string {
-    return `${stringifyMetaInfo(this.metaInfo)}\n\n${stringifyMoves(this.firstPosition)} ${this.result}`;
+    return this.playMove(move);
   }
 }

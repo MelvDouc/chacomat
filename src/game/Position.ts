@@ -1,204 +1,209 @@
-import Colors, { ReversedColors } from "@src/constants/Colors.js";
-import Coords, {
-  coordsToNotation,
-  getCoords
-} from "@src/constants/Coords.js";
-import GameStatus from "@src/constants/GameStatus.js";
-import Piece from "@src/constants/Piece.js";
-import { CastledKingFiles, CastlingFilesByColorAndWing } from "@src/constants/placement.js";
-import { fenRegex, halfMoveToNotation } from "@src/fen-pgn/pgn.js";
-import Board from "@src/game/Board.js";
-import { canCastleTo } from "@src/moves/legal-moves.js";
-import {
-  AlgebraicNotation,
-  CastlingRights,
-  Color,
-  Coordinates,
-  HalfMove,
-  Wing
-} from "@src/types.js";
+import Color from "@constants/Color.js";
+import Wing from "@constants/Wing.js";
+import Board from "@game/Board.js";
+import CastlingRights from "@game/CastlingRights.js";
+import Coords from "@game/Coords.js";
+import CastlingMove from "@moves/CastlingMove.js";
+import Move from "@moves/Move.js";
+import PawnMove from "@moves/PawnMove.js";
+import { Status } from "@types.js";
 
 export default class Position {
-  public static readonly startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+  public static readonly Status = {
+    ON_GOING: "on going",
+    CHECKMATE: "checkmate",
+    STALEMATE: "stalemate",
+    FIFTY_MOVE_RULE: "50-move rule",
+    INSUFFICIENT_MATERIAL: "insufficient material",
+    TRIPLE_REPETITION: "triple repetition"
+  } as const;
+
+  public static isValidFen(fen: string): boolean {
+    return /^[pnbrqkPNBRQK1-8]+(\/[pnbrqkPNBRQK1-8]+){7} (w|b) (K?Q?k?q?|-) ([a-h][36]|-) \d+ \d+$/.test(fen);
+  }
 
   public static fromFen(fen: string): Position {
-    if (!fenRegex.test(fen))
-      throw new Error(`Invalid FEN string: "${fen}"`);
+    const [pieceStr, clr, castling, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
-    const [boardStr, color, castlingStr, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
-
-    return new this({
-      board: new Board(boardStr),
-      activeColor: (color === "w") ? Colors.WHITE : Colors.BLACK,
-      castlingRights: this.parseCastlingRights(castlingStr),
-      enPassantCoords: Coords[enPassant as AlgebraicNotation] ?? null,
-      halfMoveClock: +halfMoveClock,
-      fullMoveNumber: +fullMoveNumber
-    });
+    return new this(
+      Board.fromString(pieceStr),
+      Color.fromAbbreviation(clr),
+      CastlingRights.fromString(castling),
+      Coords.fromNotation(enPassant),
+      Number(halfMoveClock),
+      Number(fullMoveNumber)
+    );
   }
 
-  protected static parseCastlingRights(castlingStr: string): CastlingRights {
-    return [...CastlingFilesByColorAndWing].reduce((acc, [color, filesByWing]) => {
-      for (const key in filesByWing)
-        if (castlingStr.includes(key))
-          acc[color].add(filesByWing[key]);
-      return acc;
-    }, {
-      [Colors.WHITE]: new Set<number>(),
-      [Colors.BLACK]: new Set<number>()
-    });
+  public readonly legalMoves: Move[];
+  public prev: Position | null = null;
+  public next: Position[] = [];
+
+  public constructor(
+    public readonly board: Board,
+    public readonly activeColor: Color,
+    public readonly castlingRights: CastlingRights,
+    public readonly enPassantCoords: Coords | null,
+    public readonly halfMoveClock: number,
+    public readonly fullMoveNumber: number
+  ) {
+    this.legalMoves = [];
+
+    for (const move of this.pseudoLegalMoves())
+      if (!this.doesMoveCauseCheck(move))
+        this.legalMoves.push(move);
+
+    this.legalMoves.push(...this.castlingMoves());
+    Object.freeze(this.legalMoves);
   }
 
-  protected static stringifyCastlingRights(castlingRights: CastlingRights): string {
-    return [...CastlingFilesByColorAndWing].reduce((acc, [color, filesByWing]) => {
-      for (const key in filesByWing)
-        if (castlingRights[color].has(filesByWing[key]))
-          acc += key;
-      return acc;
-    }, "") || "-";
+  // ===== ===== ===== ===== =====
+  // GETTERS
+  // ===== ===== ===== ===== =====
+
+  protected get attackedCoordsSet(): Set<Coords> {
+    const attackedCoordsSet = new Set<Coords>();
+
+    for (const [srcCoords] of this.board.getPiecesOfColor(this.activeColor.opposite))
+      for (const destCoords of this.board.attackedCoords(srcCoords))
+        attackedCoordsSet.add(destCoords);
+
+    return attackedCoordsSet;
   }
 
-  public readonly board: Board;
-  public readonly activeColor: Color;
-  /** Contains initial rook files. */
-  public readonly castlingRights: CastlingRights;
-  public readonly enPassantCoords: Coordinates | null;
-  public readonly halfMoveClock: number;
-  public readonly fullMoveNumber: number;
-  public readonly legalMoves: HalfMove[];
-  public prev?: Position;
-  public next: {
-    notation: string;
-    position: Position;
-  }[] = [];
-
-  constructor({ board, activeColor, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: {
-    board: Board;
-    activeColor: Color;
-    castlingRights: CastlingRights;
-    enPassantCoords: Coordinates | null;
-    halfMoveClock: number;
-    fullMoveNumber: number;
-  }) {
-    this.board = board;
-    this.activeColor = activeColor;
-    this.castlingRights = castlingRights;
-    this.enPassantCoords = enPassantCoords;
-    this.halfMoveClock = halfMoveClock;
-    this.fullMoveNumber = fullMoveNumber;
-    this.legalMoves = this.computeLegalMoves();
-  }
-
-  public get inactiveColor(): Color {
-    return ReversedColors[this.activeColor];
-  }
-
-  public get legalMovesAsNotations(): string[] {
-    return this.legalMoves.map((move) => halfMoveToNotation(this, move));
-  }
-
-  public get status(): GameStatus {
+  public get status(): Status {
     if (!this.legalMoves.length)
-      return (this.isCheck()) ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
+      return this.isCheck() ? Position.Status.CHECKMATE : Position.Status.STALEMATE;
     if (this.halfMoveClock >= 50)
-      return GameStatus.DRAW_BY_FIFTY_MOVE_RULE;
-    if (this.board.isInsufficientMaterial())
-      return GameStatus.INSUFFICIENT_MATERIAL;
+      return Position.Status.FIFTY_MOVE_RULE;
     if (this.isTripleRepetition())
-      return GameStatus.TRIPLE_REPETITION;
-    return GameStatus.ONGOING;
+      return Position.Status.TRIPLE_REPETITION;
+    if (this.isInsufficientMaterial())
+      return Position.Status.INSUFFICIENT_MATERIAL;
+    return Position.Status.ON_GOING;
   }
 
-  protected computeLegalMoves(): HalfMove[] {
-    const moves = [...this.board.pseudoLegalMoves(this.activeColor, this.enPassantCoords)].filter(([srcCoords, destCoords]) => {
-      return !this.doesMoveCauseCheck(srcCoords, destCoords);
-    });
+  public get legalMovesAsAlgebraicNotation(): string[] {
+    return this.legalMoves.map((move) => move.getAlgebraicNotation(this.board, this.legalMoves));
+  }
 
-    const coordsAttackedByInactiveColor = this.board.getCoordsAttackedByColor(this.inactiveColor);
+  // ===== ===== ===== ===== =====
+  // MOVES
+  // ===== ===== ===== ===== =====
+
+  protected doesMoveCauseCheck(move: Move): boolean {
+    const undo = move.play(this.board);
+    const isCheck = this.isCheck();
+    undo();
+    return isCheck;
+  }
+
+  protected *castlingMoves(): Generator<Move> {
     const kingCoords = this.board.getKingCoords(this.activeColor);
+    const { attackedCoordsSet } = this;
+    if (attackedCoordsSet.has(kingCoords)) return;
 
-    if (!coordsAttackedByInactiveColor.has(kingCoords)) {
-      for (const rookY of this.castlingRights[this.activeColor]) {
-        if (canCastleTo(rookY, this.activeColor, this.board, coordsAttackedByInactiveColor))
-          moves.push(this.getCastlingMove(kingCoords, rookY));
-      }
+    for (const srcRookY of this.castlingRights.get(this.activeColor)!) {
+      const wing = Wing.fromDirection(srcRookY - kingCoords.y);
+      if (this.board.canCastleToWing(wing, srcRookY, this.activeColor, attackedCoordsSet))
+        yield new CastlingMove(kingCoords, Coords.get(kingCoords.x, wing.castledKingY), srcRookY, wing);
     }
-
-    return moves;
   }
 
-  protected getCastlingMove(kingCoords: Coordinates, rookY: number): HalfMove {
-    return [
-      kingCoords,
-      getCoords(kingCoords.x, CastledKingFiles[Math.sign(rookY - kingCoords.y) as Wing])
-    ];
+  protected *pseudoLegalPawnMoves(srcCoords: Coords): Generator<Move> {
+    for (const destCoords of this.board.forwardPawnCoords(this.activeColor, srcCoords))
+      yield new PawnMove(srcCoords, destCoords);
+
+    for (const destCoords of this.board.attackedCoords(srcCoords))
+      if (this.board.get(destCoords)?.color === this.activeColor.opposite || destCoords === this.enPassantCoords)
+        yield new PawnMove(srcCoords, destCoords);
   }
 
-  public isCastlingMove(srcCoords: Coordinates, destCoords: Coordinates): boolean {
-    return this.board.get(this.activeColor, srcCoords) === Piece.KING
-      && Math.abs(destCoords.y - srcCoords.y) === 2;
+  protected *pseudoLegalMoves(): Generator<Move> {
+    for (const [srcCoords, srcPiece] of this.board.getPiecesOfColor(this.activeColor)) {
+      if (srcPiece.isPawn()) {
+        yield* this.pseudoLegalPawnMoves(srcCoords);
+        continue;
+      }
+
+      for (const destCoords of this.board.attackedCoords(srcCoords))
+        if (this.board.get(destCoords)?.color !== this.activeColor)
+          yield new Move(srcCoords, destCoords);
+    }
   }
 
-  public isLegal(): boolean {
-    if (this.board
-      .getCoordsAttackedByColor(this.activeColor)
-      .has(this.board.getKingCoords(this.inactiveColor)))
-      return false;
-
-    // TODO: check other conditions
-
-    return true;
-  }
+  // ===== ===== ===== ===== =====
+  // STATUS
+  // ===== ===== ===== ===== =====
 
   public isCheck(): boolean {
-    return this
-      .board
-      .getCoordsAttackedByColor(this.inactiveColor)
-      .has(this.board.getKingCoords(this.activeColor));
+    const kingCoords = this.board.getKingCoords(this.activeColor);
+
+    for (const [srcCoords] of this.board.getPiecesOfColor(this.activeColor.opposite))
+      for (const destCoords of this.board.attackedCoords(srcCoords))
+        if (destCoords === kingCoords)
+          return true;
+
+    return false;
   }
 
   public isTripleRepetition(): boolean {
     const boardStr = this.board.toString();
-    let count = 0;
+    let current: Position | null | undefined = this.prev?.prev;
+    let count = 1;
 
-    for (
-      let pos: Position | undefined = this.prev?.prev;
-      pos && count < 3;
-      pos = pos.prev?.prev
-    ) {
-      if (pos.board.toString() === boardStr)
+    while (current && count < 3) {
+      if (current.board.toString() === boardStr)
         count++;
+      current = current.prev?.prev;
     }
 
     return count === 3;
   }
 
-  protected doesMoveCauseCheck(srcCoords: Coordinates, destCoords: Coordinates): boolean {
-    const srcPiece = this.board.get(this.activeColor, srcCoords) as Piece;
-    const captureCoords = (srcPiece >= Piece.KNIGHT || destCoords !== this.enPassantCoords)
-      ? destCoords
-      : getCoords(srcCoords.x, destCoords.y);
-    const capturedPiece = this.board.get(this.inactiveColor, captureCoords);
+  public isInsufficientMaterial(): boolean {
+    if (this.board.size > 4)
+      return false;
 
-    this.board.set(this.activeColor, destCoords, srcPiece).delete(this.activeColor, srcCoords);
-    capturedPiece && this.board.delete(this.inactiveColor, captureCoords);
+    const whitePieces = [...this.board.getPiecesOfColor(Color.WHITE)].filter(([, piece]) => !piece.isKing());
+    const blackPieces = [...this.board.getPiecesOfColor(Color.BLACK)].filter(([, piece]) => !piece.isKing());
+    const [blackCoords0, blackPiece0] = blackPieces[0] ?? [];
 
-    const isCheck = this.isCheck();
+    if (whitePieces.length === 0)
+      return blackPieces.length === 0 || blackPieces.length === 1 && blackPiece0.isWorth3();
 
-    this.board.set(this.activeColor, srcCoords, srcPiece).delete(this.activeColor, destCoords);
-    capturedPiece && this.board.set(this.inactiveColor, captureCoords, capturedPiece);
+    if (whitePieces.length === 1) {
+      const [whiteCoords0, whitePiece0] = whitePieces[0];
+      if (blackPieces.length === 0)
+        return whitePiece0.isWorth3();
+      return blackPieces.length === 1
+        && whitePiece0.isBishop()
+        && blackPiece0.isBishop()
+        && whiteCoords0.isLightSquare() === blackCoords0.isLightSquare();
+    }
 
-    return isCheck;
+    if (whitePieces.length === 2)
+      return whitePieces[0][1].isKnight()
+        && whitePieces[1][1].isKnight()
+        && blackPieces.length === 0;
+
+    return false;
   }
+
+  // ===== ===== ===== ===== =====
+  // MISC
+  // ===== ===== ===== ===== =====
 
   public toString(): string {
     return [
       this.board.toString(),
-      (this.activeColor === Colors.WHITE) ? "w" : "b",
-      (this.constructor as typeof Position).stringifyCastlingRights(this.castlingRights),
-      (this.enPassantCoords) ? coordsToNotation(this.enPassantCoords) : "-",
-      String(this.halfMoveClock),
-      String(this.fullMoveNumber)
+      this.activeColor.abbreviation,
+      this.castlingRights.toString(),
+      this.enPassantCoords?.notation ?? "-",
+      this.halfMoveClock,
+      this.fullMoveNumber
     ].join(" ");
   }
 }
