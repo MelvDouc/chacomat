@@ -2,11 +2,6 @@ export default class Color {
   public static readonly WHITE = new this("w");
   public static readonly BLACK = new this("b");
 
-  private static readonly directions = {
-    [this.WHITE.abbreviation]: -1,
-    [this.BLACK.abbreviation]: 1
-  };
-
   private static readonly abbreviations = {
     [this.WHITE.abbreviation]: this.WHITE,
     [this.BLACK.abbreviation]: this.BLACK
@@ -35,7 +30,7 @@ export default class Color {
   private constructor(public readonly abbreviation: string) { }
 
   public get direction(): number {
-    return Color.directions[this.abbreviation];
+    return this === Color.WHITE ? -1 : 1;
   }
 
   public get initialPawnRank(): number {
@@ -47,13 +42,6 @@ export default class Color {
   }
 
   public get opposite(): Color {
-    switch (this) {
-      case Color.WHITE:
-        return Color.BLACK;
-      case Color.BLACK:
-        return Color.WHITE;
-      default:
-        throw new Error("Invalid color.");
-    }
+    return this === Color.WHITE ? Color.BLACK : Color.WHITE;
   }
 }

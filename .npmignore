@@ -1,12 +1,11 @@
 **/node_modules
 **/.vscode
 
-dist/test
 old
 pgn
 src
+tests
 
-.eslintrc.yml
 .gitignore
 tsconfig.json
 TODO.md
