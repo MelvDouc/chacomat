@@ -1,10 +1,10 @@
+import Color from "@constants/Color.js";
+import Piece from "@constants/Piece.js";
+import Wing from "@constants/Wing.js";
+import Board from "@game/Board.js";
+import Coords from "@game/Coords.js";
 import { strict, strictEqual } from "node:assert";
 import { test } from "node:test";
-import Color from "../dist/constants/Color.js";
-import Piece from "../dist/constants/Piece.js";
-import Wing from "../dist/constants/Wing.js";
-import Board from "../dist/game/Board.js";
-import Coords from "../dist/game/Coords.js";
 
 test("king coords", () => {
   const board = new Board();

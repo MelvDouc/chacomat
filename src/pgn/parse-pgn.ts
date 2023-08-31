@@ -1,5 +1,5 @@
 import type ChessGame from "@game/ChessGame.js";
-import playMoves from "./play-moves.js";
+import playMoves from "@pgn/play-moves.js";
 
 const infoRegex = /\[(?<key>\w+)\s+"(?<value>[^"]*)"\]/;
 

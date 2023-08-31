@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "test": "node --test -r ts-node/register --loader ts-node/esm",
+    "test": "npm run build && node --test dist/tests",
     "build": "npx tsc && npx tsc-alias",
     "prepublishOnly": "npm run build"
   },

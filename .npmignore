@@ -1,9 +1,9 @@
 **/node_modules
 **/.vscode
 
+dist/tests
 old
 src
-tests
 
 .gitignore
 tsconfig.json
