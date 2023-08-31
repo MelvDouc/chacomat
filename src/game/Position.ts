@@ -105,7 +105,7 @@ export default class Position {
     const { attackedCoordsSet } = this;
     if (attackedCoordsSet.has(kingCoords)) return;
 
-    for (const srcRookY of this.castlingRights.get(this.activeColor)!) {
+    for (const srcRookY of this.castlingRights.files(this.activeColor)) {
       const wing = Wing.fromDirection(srcRookY - kingCoords.y);
       if (this.board.canCastleToWing(wing, srcRookY, this.activeColor, attackedCoordsSet))
         yield new CastlingMove(kingCoords, Coords.get(kingCoords.x, wing.castledKingY), srcRookY, wing);

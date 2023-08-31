@@ -1,11 +1,11 @@
 import Color from "@constants/Color.js";
-import type Piece from "@constants/Piece.js";
+import Piece from "@constants/Piece.js";
 import Coords from "@game/Coords.js";
 import Position from "@game/Position.js";
 import type Move from "@moves/Move.js";
 import PawnMove from "@moves/PawnMove.js";
 import parsePgn from "@pgn/parse-pgn.js";
-import { GameMetaData, Result } from "@types.js";
+import { GameMetaData, PromotionType, Result } from "@types.js";
 
 export default class ChessGame {
   public static readonly BOARD_SIZE = 8;
@@ -55,7 +55,13 @@ export default class ChessGame {
     }
   }
 
-  public playMove(move: Move): this {
+  public goToStart(): void {
+    let pos = this.currentPosition;
+    while (pos.prev) pos = pos.prev;
+    this.currentPosition = pos;
+  }
+
+  public playMove(move: Move, promotionType?: PromotionType): this {
     if (this.result !== ChessGame.Result.NONE)
       throw new Error(`Game is over: ${this.result}.`);
 
@@ -69,15 +75,21 @@ export default class ChessGame {
       : null;
 
     if (srcPiece.isKing())
-      castlingRights.get(pos.activeColor)!.clear();
+      castlingRights.clear(pos.activeColor);
 
     if (srcPiece.isRook() && move.srcCoords.x === pos.activeColor.initialPieceRank)
-      castlingRights.get(pos.activeColor)!.delete(move.srcCoords.y);
+      castlingRights.addFile(pos.activeColor, move.srcCoords.y);
 
     if (destPiece?.isRook() && move.destCoords.x === pos.activeColor.initialPieceRank)
-      castlingRights.get(pos.activeColor.opposite)!.delete(move.destCoords.y);
+      castlingRights.addFile(pos.activeColor.opposite, move.destCoords.y);
 
     move.play(board);
+
+    if (move instanceof PawnMove && move.isPromotion()) {
+      promotionType ??= "Q";
+      board.set(move.destCoords, Piece.fromInitial(srcPiece.color === Color.WHITE ? promotionType : promotionType.toLowerCase())!);
+    }
+
     const nextPos = new Position(
       board,
       pos.activeColor.opposite,
@@ -93,7 +105,7 @@ export default class ChessGame {
     return this;
   }
 
-  public playMoveWithNotation(notation: string): this {
+  public playMoveWithNotation(notation: string, promotionType?: PromotionType): this {
     const move = this.currentPosition.legalMoves.find((move) => {
       return move.getComputerNotation() === notation;
     });
@@ -101,6 +113,6 @@ export default class ChessGame {
     if (!move)
       throw new Error(`Illegal move: "${notation}".`);
 
-    return this.playMove(move);
+    return this.playMove(move, promotionType);
   }
 }

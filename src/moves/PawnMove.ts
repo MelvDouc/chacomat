@@ -40,4 +40,8 @@ export default class PawnMove extends Move {
   public isDouble() {
     return Math.abs(this.srcCoords.x - this.destCoords.x) === 2;
   }
+
+  public isPromotion() {
+    return this.destCoords.x === 0 || this.destCoords.x === 8 - 1;
+  }
 }
