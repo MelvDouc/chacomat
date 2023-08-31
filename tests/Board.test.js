@@ -1,15 +1,16 @@
+import { strict, strictEqual } from "node:assert";
+import { test } from "node:test";
 import Color from "../dist/constants/Color.js";
 import Piece from "../dist/constants/Piece.js";
 import Wing from "../dist/constants/Wing.js";
 import Board from "../dist/game/Board.js";
 import Coords from "../dist/game/Coords.js";
-import { expect, test } from "./utils.js";
 
 test("king coords", () => {
   const board = new Board();
   board.set(Coords.get(0, 0), Piece.WHITE_KING);
 
-  expect(board.getKingCoords(Color.WHITE)).toBe(Coords.get(0, 0));
+  strictEqual(board.getKingCoords(Color.WHITE), Coords.get(0, 0));
 });
 
 test("pieces of color", () => {
@@ -19,7 +20,7 @@ test("pieces of color", () => {
   board.set(Coords.get(0, 2), Piece.WHITE_KING);
   board.set(Coords.get(0, 3), Piece.BLACK_QUEEN);
 
-  expect([...board.getPiecesOfColor(Color.BLACK)]).every(([, piece]) => piece.color === Color.BLACK);
+  strict([...board.getPiecesOfColor(Color.BLACK)].every(([, piece]) => piece.color === Color.BLACK));
 });
 
 test("castling possible", () => {
@@ -29,7 +30,7 @@ test("castling possible", () => {
   board.set(Coords.get(7, 6), Piece.WHITE_KNIGHT);
   board.set(Coords.get(7, 7), Piece.WHITE_ROOK);
 
-  expect(board.canCastleToWing(Wing.QUEEN_SIDE, 0, Color.WHITE, new Set())).true();
+  strict(board.canCastleToWing(Wing.QUEEN_SIDE, 0, Color.WHITE, new Set()));
 });
 
 test("castling obstructed", () => {
@@ -39,7 +40,7 @@ test("castling obstructed", () => {
   board.set(Coords.get(7, 6), Piece.WHITE_KNIGHT);
   board.set(Coords.get(7, 7), Piece.WHITE_ROOK);
 
-  expect(board.canCastleToWing(Wing.KING_SIDE, 7, Color.WHITE, new Set())).false();
+  strict(!board.canCastleToWing(Wing.KING_SIDE, 7, Color.WHITE, new Set()));
 });
 
 test("castling through check", () => {
@@ -49,7 +50,7 @@ test("castling through check", () => {
   board.set(Coords.get(7, 7), Piece.WHITE_ROOK);
   const attackedCoordsSet = new Set([Coords.get(7, 6)]);
 
-  expect(board.canCastleToWing(Wing.KING_SIDE, 7, Color.WHITE, attackedCoordsSet)).false();
+  strict(!board.canCastleToWing(Wing.KING_SIDE, 7, Color.WHITE, attackedCoordsSet));
 });
 
 test("forward pawn coords #1", () => {
@@ -57,8 +58,8 @@ test("forward pawn coords #1", () => {
   board.set(Coords.get(6, 0), Piece.WHITE_PAWN);
   const forwardCoords = [...board.forwardPawnCoords(Color.WHITE, Coords.get(6, 0))];
 
-  expect(forwardCoords).toContain(Coords.get(5, 0));
-  expect(forwardCoords).toContain(Coords.get(4, 0));
+  strict(forwardCoords.includes(Coords.get(5, 0)));
+  strict(forwardCoords.includes(Coords.get(4, 0)));
 });
 
 test("forward pawn coords #2", () => {
@@ -67,8 +68,8 @@ test("forward pawn coords #2", () => {
   board.set(Coords.get(4, 0), Piece.BLACK_PAWN);
   const forwardCoords = [...board.forwardPawnCoords(Color.WHITE, Coords.get(6, 0))];
 
-  expect(forwardCoords).toContain(Coords.get(5, 0));
-  expect(forwardCoords).not.toContain(Coords.get(4, 0));
+  strict(forwardCoords.includes(Coords.get(5, 0)));
+  strict(!forwardCoords.includes(Coords.get(4, 0)));
 });
 
 test("clone", () => {
@@ -77,11 +78,11 @@ test("clone", () => {
   board.set(Coords.get(7, 4), Piece.WHITE_KING);
   board.set(Coords.get(7, 7), Piece.WHITE_ROOK);
 
-  expect(board.toString()).toBe(board.clone().toString());
+  strictEqual(board.toString(), board.clone().toString());
 });
 
 test("stringify", () => {
   const boardStr = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
   const board = Board.fromString(boardStr);
-  expect(board.toString()).toBe(boardStr);
+  strictEqual(board.toString(), boardStr);
 });

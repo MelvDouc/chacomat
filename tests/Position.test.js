@@ -1,10 +1,11 @@
-import Piece from "../dist/constants/Piece.js";
+import { strictEqual } from "node:assert";
+import { test } from "node:test";
 import Position from "../dist/game/Position.js";
-import { expect, test } from "./utils.js";
+import { count } from "./utils.js";
 
 test("legal moves #1", () => {
-  const pos = Position.fromFen(Position.START_FEN);
+  const { board, legalMoves } = Position.fromFen(Position.START_FEN);
 
-  expect(pos.legalMoves).count(16, ({ srcCoords }) => pos.board.get(srcCoords) === Piece.WHITE_PAWN);
-  expect(pos.legalMoves).count(4, ({ srcCoords }) => pos.board.get(srcCoords) === Piece.WHITE_KNIGHT);
+  strictEqual(count(legalMoves, (move) => board.get(move.srcCoords).isPawn()), 16);
+  strictEqual(count(legalMoves, (move) => board.get(move.srcCoords).isKnight()), 4);
 });

@@ -4,7 +4,8 @@ import Coords from "@game/Coords.js";
 import Position from "@game/Position.js";
 import type Move from "@moves/Move.js";
 import PawnMove from "@moves/PawnMove.js";
-import { Result } from "@types.js";
+import parsePgn from "@pgn/parse-pgn.js";
+import { GameMetaData, Result } from "@types.js";
 
 export default class ChessGame {
   public static readonly BOARD_SIZE = 8;
@@ -13,17 +14,27 @@ export default class ChessGame {
     WHITE_WIN: "1-0",
     BLACK_WIN: "0-1",
     DRAW: "1/2-1/2",
-    DOUBLE_LOSS: "0-0"
+    DOUBLE_LOSS: "0-0",
+    NONE: "*"
   } as const;
 
+  public readonly metaData: Partial<GameMetaData>;
   public currentPosition: Position;
-  public result: Result | null;
+  public result: Result;
 
-  public constructor({ fen }: {
-    fen?: string;
+  public constructor({ pgn, metaData }: {
+    pgn?: string;
+    metaData?: Partial<GameMetaData>;
   } = {}) {
-    this.currentPosition = Position.fromFen(fen ?? Position.START_FEN);
+    this.metaData = metaData ?? {};
+    this.currentPosition = Position.fromFen(this.metaData.FEN ?? Position.START_FEN);
     this.updateResult();
+
+    if (pgn) {
+      const { metaData, enterMoves } = parsePgn(pgn);
+      Object.assign(this.metaData, metaData);
+      enterMoves(this);
+    }
   }
 
   protected updateResult(): void {
@@ -40,12 +51,12 @@ export default class ChessGame {
         this.result = ChessGame.Result.DRAW;
         break;
       default:
-        this.result = null;
+        this.result = ChessGame.Result.NONE;
     }
   }
 
   public playMove(move: Move): this {
-    if (this.result !== null)
+    if (this.result !== ChessGame.Result.NONE)
       throw new Error(`Game is over: ${this.result}.`);
 
     const pos = this.currentPosition;

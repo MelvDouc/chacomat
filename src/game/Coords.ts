@@ -16,11 +16,19 @@ export default class Coords {
     return this.get(Math.floor(index / 8), index % 8);
   }
 
+  public static rankNameToX(rank: string) {
+    return 8 - +rank;
+  }
+
+  public static fileNameToY(file: string) {
+    return this.FILES.indexOf(file);
+  }
+
   public static fromNotation(notation: string): Coords | null {
     if (!/^[a-h][1-8]$/.test(notation))
       return null;
 
-    return this.get(8 - +notation[1], this.FILES.indexOf(notation[0]));
+    return this.get(this.rankNameToX(notation[1]), this.fileNameToY(notation[0]));
   }
 
   private constructor(
