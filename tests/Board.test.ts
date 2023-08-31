@@ -84,5 +84,5 @@ test("clone", () => {
 test("stringify", () => {
   const boardStr = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
   const board = Board.fromString(boardStr);
-  strictEqual(board.toString(), boardStr);
+  strictEqual(board.toString(), boardStr, `${boardStr} -> ${board.toString()}`);
 });
