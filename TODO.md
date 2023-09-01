@@ -1,1 +1,3 @@
-- [ ] Parse game result
+# To-dos
+
+- [x] Parse game result

@@ -1,5 +1,5 @@
+import Coords from "@constants/Coords.js";
 import type Board from "@game/Board.js";
-import Coords from "@game/Coords.js";
 import Move from "@moves/Move.js";
 
 export default class PawnMove extends Move {

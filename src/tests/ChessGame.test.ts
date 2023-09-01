@@ -1,6 +1,6 @@
+import Coords from "@constants/Coords.js";
 import Piece from "@constants/Piece.js";
 import ChessGame from "@game/ChessGame.js";
-import Coords from "@game/Coords.js";
 import Move from "@moves/Move.js";
 import { strict, strictEqual } from "node:assert";
 import { test } from "node:test";

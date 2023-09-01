@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "test": "node --test dist/tests",
+    "test-dist": "node --test dist/tests",
+    "test": "npm run build && npm run test-dist",
     "build": "npx tsc && npx tsc-alias",
     "prepublishOnly": "npm run build"
   },

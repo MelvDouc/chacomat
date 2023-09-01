@@ -1,8 +1,8 @@
 import Color from "@constants/Color.js";
+import Coords from "@constants/Coords.js";
 import Piece from "@constants/Piece.js";
 import Wing from "@constants/Wing.js";
 import Board from "@game/Board.js";
-import Coords from "@game/Coords.js";
 import { strict, strictEqual } from "node:assert";
 import { test } from "node:test";
 

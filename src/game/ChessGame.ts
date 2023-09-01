@@ -1,6 +1,5 @@
 import Color from "@constants/Color.js";
 import Piece from "@constants/Piece.js";
-import Coords from "@game/Coords.js";
 import Position from "@game/Position.js";
 import type Move from "@moves/Move.js";
 import PawnMove from "@moves/PawnMove.js";
@@ -38,8 +37,7 @@ export default class ChessGame {
       result = r;
     }
 
-    if (result === null)
-      this.updateResult();
+    result ? (this.result = result) : this.updateResult();
   }
 
   public get firstPosition() {
@@ -82,7 +80,7 @@ export default class ChessGame {
     const srcPiece = board.get(move.srcCoords) as Piece;
     const destPiece = move.getCapturedPiece(board);
     const enPassantCoords = move instanceof PawnMove && move.isDouble()
-      ? Coords.get((move.srcCoords.x + move.destCoords.x) / 2, move.destCoords.y)
+      ? move.srcCoords.getPeer(pos.activeColor.direction, 0)
       : null;
 
     if (srcPiece.isKing())

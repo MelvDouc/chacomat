@@ -1,4 +1,4 @@
-import Coords from "@game/Coords.js";
+import Coords from "@constants/Coords.js";
 import type Board from "@game/Board.js";
 
 export default class Move {

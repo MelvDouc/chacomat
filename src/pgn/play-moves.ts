@@ -1,8 +1,8 @@
 import Color from "@constants/Color.js";
+import Coords from "@constants/Coords.js";
 import Piece from "@constants/Piece.js";
 import Wing from "@constants/Wing.js";
 import type ChessGame from "@game/ChessGame.js";
-import Coords from "@game/Coords.js";
 import type Position from "@game/Position.js";
 import CastlingMove from "@moves/CastlingMove.js";
 import type Move from "@moves/Move.js";

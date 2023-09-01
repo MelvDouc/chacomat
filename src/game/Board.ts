@@ -1,7 +1,7 @@
 import Color from "@constants/Color.js";
+import Coords from "@constants/Coords.js";
 import Piece from "@constants/Piece.js";
 import Wing from "@constants/Wing.js";
-import Coords from "@game/Coords.js";
 
 export default class Board extends Map<Coords, Piece> {
   public static fromString(str: string): Board {
@@ -68,27 +68,25 @@ export default class Board extends Map<Coords, Piece> {
 
   public canCastleToWing(wing: Wing, rookSrcY: number, color: Color, attackedCoordsSet: Set<Coords>): boolean {
     const kingSrcCoords = this.kingCoords[color.abbreviation];
-    const kingDirection = Math.sign(wing.castledKingY - kingSrcCoords.y);
-    const rookDirection = Math.sign(wing.castledRookY - rookSrcY);
+    const kingYOffset = Math.sign(wing.castledKingY - kingSrcCoords.y);
+    const rookYOffset = Math.sign(wing.castledRookY - rookSrcY);
 
-    if (kingDirection !== 0) {
-      let { y } = kingSrcCoords;
-      do {
-        y += kingDirection;
-        const coords = Coords.get(kingSrcCoords.x, y);
+    if (kingYOffset !== 0) {
+      for (const coords of kingSrcCoords.peers(0, kingYOffset)) {
         if (this.has(coords) && coords.y !== rookSrcY || attackedCoordsSet.has(coords))
           return false;
-      } while (y !== wing.castledKingY);
+        if (coords.y === wing.castledKingY)
+          break;
+      }
     }
 
-    if (rookDirection !== 0) {
-      let y = rookSrcY;
-      do {
-        y += rookDirection;
-        const coords = Coords.get(kingSrcCoords.x, y);
+    if (rookYOffset !== 0) {
+      for (const coords of Coords.get(kingSrcCoords.x, rookSrcY).peers(0, rookYOffset)) {
         if (this.has(coords) && coords !== kingSrcCoords)
           return false;
-      } while (y !== wing.castledRookY);
+        if (coords.y === wing.castledRookY)
+          break;
+      }
     }
 
     return true;
