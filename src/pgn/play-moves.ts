@@ -7,18 +7,17 @@ import type Position from "@game/Position.js";
 import CastlingMove from "@moves/CastlingMove.js";
 import type Move from "@moves/Move.js";
 import PawnMove from "@moves/PawnMove.js";
+import { PgnVariations, parseVariations } from "@pgn/utils.js";
 
 const pieceMoveR = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/.source;
-const pawnMoveR = /[a-h](x[a-h])?[1-8]/.source;
-const castlingR = /(0|O)(-(0|O)){1,2}/.source;
-const halfMoveR1 = RegExp(`(?<halfMove1>${pieceMoveR}|${pawnMoveR}|${castlingR})(\\+|#)?`).source;
-const halfMoveR2 = RegExp(`(?<halfMove2>${pieceMoveR}|${pawnMoveR}|${castlingR})(\\+|#)?`).source;
-const moveRegex = RegExp(`(?<moveNo>\\d+)\\.{1,3}\\s*${halfMoveR1}(\\s+${halfMoveR2})?`, "gm");
+const pawnMoveR = /[a-h](x[a-h])?[1-8](=[QRBN])?/.source;
+const castlingR = /(?<o>O|0)-\k<o>(-\k<o>)?/.source;
+const halfMoveRegex = RegExp(`(?<halfMove>${pieceMoveR}|${pawnMoveR}|${castlingR})`, "g");
 
-const moveFinders: Readonly<MoveFinder[]> = [
+const MOVE_FINDERS: Readonly<MoveFinder[]> = [
   {
     regex: /^(?<file>[a-h])(?<rank>[1-8])/,
-    findMove: ({ file, rank }, { legalMoves }) => {
+    find: ({ file, rank }, { legalMoves }) => {
       const destCoords = Coords.fromNotation(file + rank);
       return legalMoves.find((move) => {
         return move instanceof PawnMove && move.destCoords === destCoords;
@@ -27,7 +26,7 @@ const moveFinders: Readonly<MoveFinder[]> = [
   },
   {
     regex: /^(?<srcFile>[a-h])x(?<destFile>[a-h])(?<destRank>[1-8])/,
-    findMove: ({ srcFile, destFile, destRank }, { legalMoves }) => {
+    find: ({ srcFile, destFile, destRank }, { legalMoves }) => {
       const srcY = Coords.fileNameToY(srcFile);
       const destCoords = Coords.fromNotation(destFile + destRank);
       return legalMoves.find((move) => {
@@ -39,7 +38,7 @@ const moveFinders: Readonly<MoveFinder[]> = [
   },
   {
     regex: /^(?<initial>[NBRQK])(?<srcFile>[a-h])?(?<srcRank>[1-8])?x?(?<destFile>[a-h])(?<destRank>[1-8])/,
-    findMove: ({ initial, srcFile, srcRank, destFile, destRank }, { legalMoves, board, activeColor }) => {
+    find: ({ initial, srcFile, srcRank, destFile, destRank }, { legalMoves, board, activeColor }) => {
       const srcX = srcRank ? Coords.rankNameToX(srcRank) : null;
       const srcY = srcFile ? Coords.fileNameToY(srcFile) : null;
       const destCoords = Coords.fromNotation(destFile + destRank);
@@ -54,7 +53,7 @@ const moveFinders: Readonly<MoveFinder[]> = [
   },
   {
     regex: /^(?<o>O|0)-\k<o>(?<o2>-\k<o>)?/,
-    findMove: ({ o2 }, { legalMoves }) => {
+    find: ({ o2 }, { legalMoves }) => {
       const wing = o2 ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
       return legalMoves.find((move) => {
         return move instanceof CastlingMove && move.wing === wing;
@@ -63,38 +62,41 @@ const moveFinders: Readonly<MoveFinder[]> = [
   }
 ];
 
-function parseMove(halfMoveStr: string, position: Position) {
-  for (const { regex, findMove } of moveFinders) {
+function findHalfMove(halfMoveStr: string, position: Position) {
+  for (const { regex, find } of MOVE_FINDERS) {
     const matches = halfMoveStr.match(regex);
     if (matches?.groups)
-      return findMove(matches.groups, position);
+      return find(matches.groups, position);
   }
 
   return null;
 }
 
-function playMove(halfMoveStr: string, index: number, game: ChessGame): void {
-  const halfMove = parseMove(halfMoveStr, game.currentPosition);
-  if (!halfMove)
-    throw new Error(`Invalid half-move ${halfMoveStr} at index ${index}.`);
-  game.playMove(halfMove);
+function playLine(line: string, game: ChessGame) {
+  for (const { groups } of line.matchAll(halfMoveRegex)) {
+    if (!groups) break;
+
+    const halfMove = findHalfMove(groups["halfMove"], game.currentPosition);
+    if (!halfMove)
+      throw new Error(`Invalid half-move "${groups["halfMove"]}" in "${line}".`);
+    game.playMove(halfMove);
+  }
 }
 
 export default function playMoves(movesStr: string, game: ChessGame) {
-  for (const { groups, index } of movesStr.matchAll(moveRegex)) {
-    if (!groups) return;
-
-    const moveNumber = parseInt(groups["moveNo"]);
-    if (moveNumber !== game.currentPosition.fullMoveNumber)
-      throw new Error(`Invalid move number ${moveNumber} at index ${index}.`);
-
-    playMove(groups["halfMove1"], index as number, game);
-    if (groups["halfMove2"])
-      playMove(groups["halfMove2"], index as number, game);
-  }
+  parseVariations(movesStr).forEach(function recurse(variations: PgnVariations) {
+    playLine(variations.line, game);
+    const current = game.currentPosition;
+    const { prev } = current;
+    variations.variations.forEach((element) => {
+      game.currentPosition = prev!;
+      recurse(element);
+    });
+    game.currentPosition = current;
+  });
 }
 
 interface MoveFinder {
   regex: RegExp;
-  findMove: (groups: Record<string, string>, position: Position) => Move | undefined;
+  find: (groups: Record<string, string>, position: Position) => Move | undefined;
 };

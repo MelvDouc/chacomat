@@ -4,6 +4,7 @@ import Coords from "@game/Coords.js";
 import Position from "@game/Position.js";
 import type Move from "@moves/Move.js";
 import PawnMove from "@moves/PawnMove.js";
+import { getMoveSegments, stringifyMetaData } from "@pgn/game-to-pgn.js";
 import parsePgn from "@pgn/parse-pgn.js";
 import { GameMetaData, PromotionType, Result } from "@types.js";
 
@@ -18,7 +19,7 @@ export default class ChessGame {
     NONE: "*"
   } as const;
 
-  public readonly metaData: Partial<GameMetaData>;
+  public readonly metaData: Partial<GameMetaData> = {};
   public currentPosition: Position;
   public result: Result;
 
@@ -26,15 +27,25 @@ export default class ChessGame {
     pgn?: string;
     metaData?: Partial<GameMetaData>;
   } = {}) {
-    this.metaData = metaData ?? {};
+    if (metaData) Object.assign(this.metaData, metaData);
     this.currentPosition = Position.fromFen(this.metaData.FEN ?? Position.START_FEN);
-    this.updateResult();
+    let result: Result | null = null;
 
     if (pgn) {
-      const { metaData, enterMoves } = parsePgn(pgn);
+      const { metaData, enterMoves, result: r } = parsePgn(pgn.trim());
       Object.assign(this.metaData, metaData);
       enterMoves(this);
+      result = r;
     }
+
+    if (result === null)
+      this.updateResult();
+  }
+
+  public get firstPosition() {
+    let pos = this.currentPosition;
+    while (pos.prev) pos = pos.prev;
+    return pos;
   }
 
   protected updateResult(): void {
@@ -56,15 +67,15 @@ export default class ChessGame {
   }
 
   public goToStart(): void {
-    let pos = this.currentPosition;
-    while (pos.prev) pos = pos.prev;
-    this.currentPosition = pos;
+    this.currentPosition = this.firstPosition;
+  }
+
+  public goBack(): void {
+    const { prev } = this.currentPosition;
+    if (prev) this.currentPosition = prev;
   }
 
   public playMove(move: Move, promotionType?: PromotionType): this {
-    if (this.result !== ChessGame.Result.NONE)
-      throw new Error(`Game is over: ${this.result}.`);
-
     const pos = this.currentPosition;
     const board = pos.board.clone();
     const castlingRights = pos.castlingRights.clone();
@@ -99,7 +110,7 @@ export default class ChessGame {
       pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
     );
     nextPos.prev = pos;
-    pos.next.push(nextPos);
+    pos.next.push({ move, position: nextPos });
     this.currentPosition = nextPos;
     this.updateResult();
     return this;
@@ -114,5 +125,9 @@ export default class ChessGame {
       throw new Error(`Illegal move: "${notation}".`);
 
     return this.playMove(move, promotionType);
+  }
+
+  public toString() {
+    return `${stringifyMetaData(this.metaData)}\n\n${getMoveSegments(this.firstPosition).join(" ")} ${this.result}`;
   }
 }

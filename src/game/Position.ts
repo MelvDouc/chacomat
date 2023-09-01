@@ -39,7 +39,7 @@ export default class Position {
 
   public readonly legalMoves: Move[];
   public prev: Position | null = null;
-  public next: Position[] = [];
+  public next: { move: Move; position: Position; }[] = [];
 
   public constructor(
     public readonly board: Board,
