@@ -9,6 +9,11 @@ import { GameMetaData, PromotionType, Result } from "@types.js";
 
 export default class ChessGame {
   public static readonly BOARD_SIZE = 8;
+  protected static readonly Position: typeof Position = Position;
+
+  protected static createFirstPosition(fen?: string) {
+    return Position.fromFen(fen ?? Position.START_FEN);
+  }
 
   public static readonly Result = {
     WHITE_WIN: "1-0",
@@ -27,7 +32,7 @@ export default class ChessGame {
     metaData?: Partial<GameMetaData>;
   } = {}) {
     if (metaData) Object.assign(this.metaData, metaData);
-    this.currentPosition = Position.fromFen(this.metaData.FEN ?? Position.START_FEN);
+    this.currentPosition = (this.constructor as typeof ChessGame).createFirstPosition(metaData?.FEN);
     let result: Result | null = null;
 
     if (pgn) {
@@ -99,7 +104,7 @@ export default class ChessGame {
       board.set(move.destCoords, Piece.fromInitial(srcPiece.color === Color.WHITE ? promotionType : promotionType.toLowerCase())!);
     }
 
-    const nextPos = new Position(
+    const nextPos = new (this.constructor as typeof ChessGame).Position(
       board,
       pos.activeColor.opposite,
       castlingRights,
@@ -126,6 +131,9 @@ export default class ChessGame {
   }
 
   public toString() {
+    const { firstPosition, metaData } = this;
+    const fen = firstPosition.toString();
+    if (fen !== Position.START_FEN) metaData.FEN = fen;
     return `${stringifyMetaData(this.metaData)}\n\n${getMoveSegments(this.firstPosition).join(" ")} ${this.result}`;
   }
 }

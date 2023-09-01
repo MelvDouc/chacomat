@@ -20,6 +20,8 @@ export default class Position {
     TRIPLE_REPETITION: "triple repetition"
   } as const;
 
+  protected static readonly CastlingRights: typeof CastlingRights = CastlingRights;
+
   public static isValidFen(fen: string): boolean {
     return /^[nbrqkNBRQK1-8]+(\/[nbrqkNBRQK1-8]+){7} (w|b) (K?Q?k?q?|-) ([a-h][36]|-) \d+ \d+$/.test(fen);
   }
@@ -30,7 +32,7 @@ export default class Position {
     return new this(
       Board.fromString(pieceStr),
       Color.fromAbbreviation(clr),
-      CastlingRights.fromString(castling),
+      this.CastlingRights.fromString(castling),
       Coords.fromNotation(enPassant),
       Number(halfMoveClock),
       Number(fullMoveNumber)
@@ -100,15 +102,19 @@ export default class Position {
     return isCheck;
   }
 
+  protected getCastlingMove(kingCoords: Coords, wing: Wing, srcRookY: number) {
+    return new CastlingMove(kingCoords, Coords.get(kingCoords.x, wing.castledKingY), srcRookY, wing);
+  }
+
   protected *castlingMoves(): Generator<Move> {
     const kingCoords = this.board.getKingCoords(this.activeColor);
     const { attackedCoordsSet } = this;
     if (attackedCoordsSet.has(kingCoords)) return;
 
-    for (const srcRookY of this.castlingRights.files(this.activeColor)) {
-      const wing = Wing.fromDirection(srcRookY - kingCoords.y);
-      if (this.board.canCastleToWing(wing, srcRookY, this.activeColor, attackedCoordsSet))
-        yield new CastlingMove(kingCoords, Coords.get(kingCoords.x, wing.castledKingY), srcRookY, wing);
+    for (const rookSrcY of this.castlingRights.files(this.activeColor)) {
+      const wing = Wing.fromDirection(rookSrcY - kingCoords.y);
+      if (this.board.canCastleToWing(wing, rookSrcY, this.activeColor, attackedCoordsSet))
+        yield this.getCastlingMove(kingCoords, wing, rookSrcY);
     }
   }
 

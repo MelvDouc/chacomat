@@ -1,15 +1,16 @@
 import Color from "@constants/Color.js";
 import {
-  whitePawnOffsets,
-  knightOffsets,
-  royalOffsets,
   bishopOffsets,
+  blackPawnOffsets,
+  knightOffsets,
   rookOffsets,
-  blackPawnOffsets
+  royalOffsets,
+  whitePawnOffsets
 } from "@constants/offsets.js";
 
 export default class Piece {
   private static initialsMap = new Map<string, Piece>();
+  private static valuesMap = new Map<number, Piece>();
 
   public static readonly WHITE_PAWN = new this(1, "P");
   public static readonly WHITE_KNIGHT = new this(2, "N");
@@ -48,6 +49,7 @@ export default class Piece {
     public readonly initial: string,
   ) {
     Piece.initialsMap.set(initial, this);
+    Piece.valuesMap.set(value, this);
   }
 
   public get color(): Color {
@@ -56,6 +58,10 @@ export default class Piece {
 
   public get offsets(): { x: number[]; y: number[]; } {
     return Piece.offsets[this.value];
+  }
+
+  public get opposite(): Piece {
+    return Piece.valuesMap.get(-this.value)!;
   }
 
   public isPawn() {
@@ -72,6 +78,10 @@ export default class Piece {
 
   public isRook() {
     return Math.abs(this.value) === Piece.WHITE_ROOK.value;
+  }
+
+  public isQueen() {
+    return Math.abs(this.value) === Piece.WHITE_QUEEN.value;
   }
 
   public isKing() {
