@@ -1,5 +1,5 @@
 export default class Coords {
-  private static readonly FILES = "abcdefgh";
+  public static readonly FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
   private static readonly all = Array.from({ length: 8 }, (_, x) => {
     return Array.from({ length: 8 }, (_, y) => new Coords(x, y));
   });
@@ -24,6 +24,14 @@ export default class Coords {
     return this.FILES.indexOf(file);
   }
 
+  public static xToRankName(x: number) {
+    return String(8 - x);
+  }
+
+  public static yToFileName(y: number) {
+    return this.FILES[y];
+  }
+
   public static fromNotation(notation: string): Coords | null {
     if (!/^[a-h][1-8]$/.test(notation))
       return null;
@@ -41,11 +49,11 @@ export default class Coords {
   }
 
   public get fileNotation(): string {
-    return Coords.FILES[this.y];
+    return Coords.yToFileName(this.y);
   }
 
   public get rankNotation(): string {
-    return String(8 - this.x);
+    return Coords.xToRankName(this.x);
   }
 
   public get notation(): string {

@@ -19,11 +19,11 @@ export default class Board extends Map<Coords, Piece> {
       }, new this());
   }
 
-  protected readonly kingCoords: Record<string, Coords> = {};
+  protected readonly kingCoords = new Map<Color, Coords>();
 
   public override set(coords: Coords, piece: Piece): this {
     if (piece.isKing())
-      this.kingCoords[piece.color.abbreviation] = coords;
+      this.kingCoords.set(piece.color, coords);
     return super.set(coords, piece);
   }
 
@@ -36,7 +36,7 @@ export default class Board extends Map<Coords, Piece> {
   }
 
   public getKingCoords(color: Color): Coords {
-    return this.kingCoords[color.abbreviation];
+    return this.kingCoords.get(color)!;
   }
 
   public *attackedCoords(srcCoords: Coords): Generator<Coords> {
@@ -67,7 +67,7 @@ export default class Board extends Map<Coords, Piece> {
   }
 
   public canCastleToWing(wing: Wing, rookSrcY: number, color: Color, attackedCoordsSet: Set<Coords>): boolean {
-    const kingSrcCoords = this.kingCoords[color.abbreviation];
+    const kingSrcCoords = this.getKingCoords(color);
     const kingYOffset = Math.sign(wing.castledKingY - kingSrcCoords.y);
     const rookYOffset = Math.sign(wing.castledRookY - rookSrcY);
 
@@ -93,6 +93,7 @@ export default class Board extends Map<Coords, Piece> {
   }
 
   public clone(): Board {
+    // `new Board([...this])` fails as `clone.kingCoords` isn't defined yet.
     const clone = new Board();
     this.forEach((piece, coords) => clone.set(coords, piece));
     return clone;

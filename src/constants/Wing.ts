@@ -1,6 +1,6 @@
 export default class Wing {
-  public static readonly QUEEN_SIDE = new this(0, 2, 3);
-  public static readonly KING_SIDE = new this(7, 6, 5);
+  public static readonly QUEEN_SIDE = new this(2, 3);
+  public static readonly KING_SIDE = new this(6, 5);
 
   public static *cases(): Generator<Wing> {
     yield this.QUEEN_SIDE;
@@ -12,19 +12,15 @@ export default class Wing {
   }
 
   private constructor(
-    public readonly edge: number,
     public readonly castledKingY: number,
     public readonly castledRookY: number
   ) { }
 
+  public get edge(): number {
+    return this === Wing.QUEEN_SIDE ? 0 : 7;
+  }
+
   public get opposite(): Wing {
-    switch (this) {
-      case Wing.QUEEN_SIDE:
-        return Wing.KING_SIDE;
-      case Wing.KING_SIDE:
-        return Wing.QUEEN_SIDE;
-      default:
-        throw new Error("Invalid wing.");
-    }
+    return this === Wing.QUEEN_SIDE ? Wing.KING_SIDE : Wing.QUEEN_SIDE;
   }
 }

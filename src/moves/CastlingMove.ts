@@ -15,18 +15,20 @@ export default class CastlingMove extends Move {
 
   public override play(board: Board) {
     const king = board.get(this.srcCoords)!;
+    // Differs from `this.destCoords` in chess 960.
+    const kingDestCoords = Coords.get(this.srcCoords.x, this.wing.castledKingY);
     const rookSrcCoords = Coords.get(this.srcCoords.x, this.rookSrcY);
     const rookDestCoords = Coords.get(this.srcCoords.x, this.wing.castledRookY);
     const rook = board.get(rookSrcCoords)!;
 
     board.delete(this.srcCoords);
-    board.set(this.destCoords, king);
+    board.set(kingDestCoords, king);
     board.delete(rookSrcCoords);
     board.set(rookDestCoords, rook);
 
     return () => {
       board.set(this.srcCoords, king);
-      board.delete(this.destCoords);
+      board.delete(kingDestCoords);
       board.set(rookSrcCoords, rook);
       board.delete(rookDestCoords);
     };
