@@ -40,9 +40,8 @@ export default class Move {
         || board.get(move.srcCoords) !== board.get(this.srcCoords)
       )
         continue;
-      // Distinguish by file if same rank, else if same file or nothing in common distinguish by rank.
-      if (move.srcCoords.x === this.srcCoords.x) notation[1] = this.srcCoords.fileNotation;
-      else notation[2] = this.srcCoords.rankNotation;
+      if (move.srcCoords.y === this.srcCoords.y) notation[2] = this.srcCoords.rankNotation;
+      else notation[1] = this.srcCoords.fileNotation;
     }
 
     if (board.has(this.destCoords)) notation.push("x");
