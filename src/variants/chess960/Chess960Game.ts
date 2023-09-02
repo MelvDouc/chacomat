@@ -5,6 +5,6 @@ export default class Chess960Game extends ChessGame {
   protected static override Position = Chess960Position;
 
   protected static override createFirstPosition(fen?: string) {
-    return fen ? super.createFirstPosition() : Chess960Position.random();
+    return fen ? Chess960Position.fromFen(fen) : Chess960Position.random();
   }
 }

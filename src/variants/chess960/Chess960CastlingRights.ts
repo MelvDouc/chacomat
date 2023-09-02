@@ -6,13 +6,12 @@ export default class Chess960CastlingRights extends CastlingRights {
   public static override fromString(str: string) {
     const castlingRights = new this();
 
-    Coords.FILES.forEach((fileName) => {
-      if (str.includes(fileName.toUpperCase()))
+    for (const fileName of str) {
+      if (fileName === fileName.toUpperCase())
         castlingRights.addFile(Color.WHITE, Coords.fileNameToY(fileName.toLowerCase()));
-
-      if (str.includes(fileName))
+      else
         castlingRights.addFile(Color.BLACK, Coords.fileNameToY(fileName));
-    });
+    }
 
     return castlingRights;
   }
@@ -20,10 +19,10 @@ export default class Chess960CastlingRights extends CastlingRights {
   public override toString(): string {
     let str = "";
 
-    for (const file of this.files(Color.WHITE))
-      str += Coords.yToFileName(file).toUpperCase();
     for (const file of this.files(Color.BLACK))
       str += Coords.yToFileName(file);
+    for (const file of this.files(Color.WHITE))
+      str += Coords.yToFileName(file).toUpperCase();
 
     return str || "-";
   }

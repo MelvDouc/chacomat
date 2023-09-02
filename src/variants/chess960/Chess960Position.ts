@@ -10,19 +10,23 @@ import Chess960CastlingRights from "@variants/chess960/Chess960CastlingRights.js
 export default class Chess960Position extends Position {
   protected static override readonly CastlingRights = Chess960CastlingRights;
 
-  protected static getShuffledPieces() {
+  public static override isValidFen(fen: string): boolean {
+    return /^[pnbrqkPNBRQK1-8]+(\/[pnbrqkPNBRQK1-8]+){7} (w|b) ([A-Ha-h]{1,4}|-) ([a-h][36]|-) \d+ \d+$/.test(fen);
+  }
+
+  protected static getRandomWhitePieceRank() {
     let indices = Array.from({ length: 8 }, (_, y) => y);
 
-    const kingY = randomInt(0, 8 - 1);
+    const kingY = randomInt(1, 6);
     const queenRookY = randomInt(0, kingY - 1);
-    const kingRookY = randomInt(kingY + 1, 8 - 1);
+    const kingRookY = randomInt(kingY + 1, 7);
     indices = indices.filter((y) => y !== kingY && y !== queenRookY && y !== kingRookY);
 
     const bishopY1 = indices[randomInt(0, indices.length - 1)];
     const bishopY2 = indices
       .filter((y) => y % 2 !== bishopY1 % 2)
       .find((_, i, arr) => randomInt(0, 1) || i === arr.length - 1)!;
-    indices = shuffle(indices.filter((y) => y !== bishopY1 && y !== bishopY2));
+    indices = indices.filter((y) => y !== bishopY1 && y !== bishopY2).sort(() => Math.random() - 0.5);
 
     const pieces: Piece[] = [];
     pieces[kingY] = Piece.WHITE_KING;
@@ -40,14 +44,11 @@ export default class Chess960Position extends Position {
     const board = new Board();
     const castlingRights = new this.CastlingRights();
 
-    for (let y = 0; y < 8; y++)
+    this.getRandomWhitePieceRank().forEach((piece, y) => {
+      board.set(Coords.get(0, y), piece.opposite);
       board.set(Coords.get(1, y), Piece.BLACK_PAWN);
-    for (let y = 0; y < 8; y++)
       board.set(Coords.get(6, y), Piece.WHITE_PAWN);
-
-    this.getShuffledPieces().forEach((piece, y) => {
-      board.set(Coords.get(0, y), piece);
-      board.set(Coords.get(7, y), piece.opposite);
+      board.set(Coords.get(7, y), piece);
       if (piece.isRook()) {
         castlingRights.addFile(Color.WHITE, y);
         castlingRights.addFile(Color.BLACK, y);
@@ -64,8 +65,4 @@ export default class Chess960Position extends Position {
 
 function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffle<T>(arr: T[]) {
-  return arr.sort(() => Math.random() - 0.5);
 }
