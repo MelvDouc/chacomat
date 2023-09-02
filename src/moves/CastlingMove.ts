@@ -16,9 +16,9 @@ export default class CastlingMove extends Move {
   public override play(board: Board) {
     const king = board.get(this.srcCoords)!;
     // Differs from `this.destCoords` in chess 960.
-    const kingDestCoords = Coords.get(this.srcCoords.x, this.wing.castledKingY);
+    const kingDestCoords = Coords.get(this.srcCoords.x, this.srcCoords.y + this.wing.direction * 2);
     const rookSrcCoords = Coords.get(this.srcCoords.x, this.rookSrcY);
-    const rookDestCoords = Coords.get(this.srcCoords.x, this.wing.castledRookY);
+    const rookDestCoords = Coords.get(this.srcCoords.x, kingDestCoords.y - this.wing.direction);
     const rook = board.get(rookSrcCoords)!;
 
     board.delete(this.srcCoords);

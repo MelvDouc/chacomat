@@ -11,6 +11,10 @@ import { Status } from "@types.js";
 export default class Position {
   public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+  public static isValidFen(fen: string): boolean {
+    return /^[pnbrqkPNBRQK1-8]+(\/[pnbrqkPNBRQK1-8]+){7} (w|b) ([KQkq]{1,4}|-) ([a-h][36]|-) \d+ \d+$/.test(fen);
+  }
+
   public static readonly Status = {
     ON_GOING: "on going",
     CHECKMATE: "checkmate",
@@ -22,11 +26,10 @@ export default class Position {
 
   protected static readonly CastlingRights: typeof CastlingRights = CastlingRights;
 
-  public static isValidFen(fen: string): boolean {
-    return /^[nbrqkNBRQK1-8]+(\/[nbrqkNBRQK1-8]+){7} (w|b) (K?Q?k?q?|-) ([a-h][36]|-) \d+ \d+$/.test(fen);
-  }
-
   public static fromFen(fen: string): Position {
+    if (!this.isValidFen(fen))
+      throw new Error(`Invalid FEN string: "${fen}".`);
+
     const [pieceStr, clr, castling, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
     return new this(
@@ -103,7 +106,7 @@ export default class Position {
   }
 
   protected getCastlingMove(kingCoords: Coords, wing: Wing, srcRookY: number) {
-    return new CastlingMove(kingCoords, Coords.get(kingCoords.x, wing.castledKingY), srcRookY, wing);
+    return new CastlingMove(kingCoords, Coords.get(kingCoords.x, kingCoords.y + wing.direction * 2), srcRookY, wing);
   }
 
   protected *castlingMoves(): Generator<Move> {
