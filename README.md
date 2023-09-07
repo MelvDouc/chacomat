@@ -1,6 +1,6 @@
 # ChacoMat
 
-An TypeScript chess game.
+A TypeScript chess game.
 
 ## Creating a game
 
@@ -12,11 +12,11 @@ import { ChessGame } from "chacomat";
 const spanishGame = new ChessGame();
 
 spanishGame
-  .playMoveWithNotations("e2", "e4")
-  .playMoveWithNotations("e7", "e5")
-  .playMoveWithNotations("g1", "f3")
-  .playMoveWithNotations("b8", "c6")
-  .playMoveWithNotations("f1", "b5");
+  .playMoveWithNotation("e2e4")
+  .playMoveWithNotation("e7e5")
+  .playMoveWithNotation("g1f3")
+  .playMoveWithNotation("b8c6")
+  .playMoveWithNotation("f1b5");
 ```
 
 ### from an FEN string
@@ -44,7 +44,9 @@ const spanishGame = new ChessGame({
 });
 ```
 
-## Chess960
+## Variants
+
+### Chess960
 
 Also known as **Fischer random chess**.
 
@@ -57,19 +59,10 @@ console.log(chess960Game.currentPosition.toString()); // e.g. "rbkrnqbn/pppppppp
 
 Note how castling rights are noted using the rooks' initial files.
 
-## Various features
+### Capablanca Chess
 
-### Print board to console
-
-```javascript
-spanishGame.currentPosition.board.log();
-```
-
-![log of a chessboard](https://i.imgur.com/96BdDi8.png "game.logBoard()")
-
-### Get the pieces as an array
+[Capablanca Chess](https://en.wikipedia.org/wiki/Capablanca_chess) is also available.
 
 ```javascript
-const pieceArr = spanishGame.currentPosition.board.toArray();
-console.table(pieceArr);
+import { CapablancaChessGame } from "chacomat";
 ```
