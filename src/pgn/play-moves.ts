@@ -1,13 +1,12 @@
-import Color from "@constants/Color.js";
-import Coords from "@constants/Coords.js";
-import Piece from "@constants/Piece.js";
-import Wing from "@constants/Wing.js";
-import type ChessGame from "@game/ChessGame.js";
-import type Position from "@game/Position.js";
-import CastlingMove from "@moves/CastlingMove.js";
-import type Move from "@moves/Move.js";
-import PawnMove from "@moves/PawnMove.js";
-import { PgnVariations, parseVariations } from "@pgn/utils.js";
+import Color from "@/constants/Color.ts";
+import Coords from "@/constants/Coords.ts";
+import { Piece } from "@/constants/Pieces.ts";
+import type ChessGame from "@/game/ChessGame.ts";
+import type Position from "@/game/Position.ts";
+import CastlingMove from "@/game/moves/CastlingMove.ts";
+import type Move from "@/game/moves/Move.ts";
+import PawnMove from "@/game/moves/PawnMove.ts";
+import { PgnVariations, parseVariations } from "@/pgn/utils.ts";
 
 const pieceMoveR = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/.source;
 const pawnMoveR = /[a-h](x[a-h])?[1-8](=[QRBN])?/.source;
@@ -18,9 +17,9 @@ const MOVE_FINDERS: Readonly<MoveFinder[]> = [
   {
     regex: /^(?<file>[a-h])(?<rank>[1-8])/,
     find: ({ file, rank }, { legalMoves }) => {
-      const destCoords = Coords.fromNotation(file + rank);
+      const destCoords = Coords.fromNotation(file + rank)!;
       return legalMoves.find((move) => {
-        return move instanceof PawnMove && move.destCoords === destCoords;
+        return move instanceof PawnMove && destCoords === move.destCoords;
       });
     }
   },
@@ -28,7 +27,7 @@ const MOVE_FINDERS: Readonly<MoveFinder[]> = [
     regex: /^(?<srcFile>[a-h])x(?<destFile>[a-h])(?<destRank>[1-8])/,
     find: ({ srcFile, destFile, destRank }, { legalMoves }) => {
       const srcY = Coords.fileNameToY(srcFile);
-      const destCoords = Coords.fromNotation(destFile + destRank);
+      const destCoords = Coords.fromNotation(destFile + destRank)!;
       return legalMoves.find((move) => {
         return move instanceof PawnMove
           && move.srcCoords.y === srcY
@@ -41,7 +40,7 @@ const MOVE_FINDERS: Readonly<MoveFinder[]> = [
     find: ({ initial, srcFile, srcRank, destFile, destRank }, { legalMoves, board, activeColor }) => {
       const srcX = srcRank ? Coords.rankNameToX(srcRank) : null;
       const srcY = srcFile ? Coords.fileNameToY(srcFile) : null;
-      const destCoords = Coords.fromNotation(destFile + destRank);
+      const destCoords = Coords.fromNotation(destFile + destRank)!;
       const piece = Piece.fromInitial(activeColor === Color.WHITE ? initial : initial.toLowerCase());
       return legalMoves.find((move) => {
         return move.destCoords === destCoords
@@ -54,9 +53,8 @@ const MOVE_FINDERS: Readonly<MoveFinder[]> = [
   {
     regex: /^(?<o>O|0)-\k<o>(?<o2>-\k<o>)?/,
     find: ({ o2 }, { legalMoves }) => {
-      const wing = o2 ? Wing.QUEEN_SIDE : Wing.KING_SIDE;
       return legalMoves.find((move) => {
-        return move instanceof CastlingMove && move.wing === wing;
+        return move instanceof CastlingMove && move.isQueenSide() === !!o2;
       });
     }
   }
@@ -77,18 +75,20 @@ function playLine(line: string, game: ChessGame) {
     if (!groups) break;
 
     const halfMove = findHalfMove(groups["halfMove"], game.currentPosition);
+
     if (!halfMove)
-      throw new Error(`Invalid half-move "${groups["halfMove"]}" in "${line}".`);
+      throw new Error(`Illegal move "${groups["halfMove"]}" in "${line}".`);
+
     game.playMove(halfMove);
   }
 }
 
 export default function playMoves(movesStr: string, game: ChessGame) {
-  parseVariations(movesStr).forEach(function recurse(variations: PgnVariations) {
-    playLine(variations.line, game);
+  parseVariations(movesStr).forEach(function recurse({ line, variations }: PgnVariations) {
+    playLine(line, game);
     const current = game.currentPosition;
     const { prev } = current;
-    variations.variations.forEach((element) => {
+    variations.forEach((element) => {
       game.currentPosition = prev!;
       recurse(element);
     });

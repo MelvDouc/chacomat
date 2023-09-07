@@ -1,30 +1,35 @@
-import Color from "@constants/Color.js";
-import type Position from "@game/Position.js";
-import { GameMetaData } from "@types.js";
+import Color from "@/constants/Color.ts";
+import type Position from "@/game/Position.ts";
 
-export function stringifyMetaData(metaData: Partial<GameMetaData>): string {
-  return Object.entries(metaData).map(([key, value]) => `[${key} "${value}"]`).join("\n");
-}
+export function getMoveSegments(
+  { activeColor, board, fullMoveNumber, legalMoves, next }: Position,
+  isFirst = true,
+  acc: string[] = []
+): string[] {
+  if (!next.size) return acc;
 
-export function getMoveSegments({ activeColor, board, fullMoveNumber, legalMoves, next }: Position, afterVar = false): string[] {
-  if (!next.length) return [];
+  const [[move, position], ...variations] = next;
+  const moveNo = (activeColor === Color.WHITE) ? `${position.fullMoveNumber}.`
+    : (isFirst) ? `${position.fullMoveNumber - 1}...`
+      : "";
+  acc.push(moveNo + move.getAlgebraicNotation(board, legalMoves) + getCheckSign(position));
 
-  const segments: string[] = [];
-  const [{ move, position }, ...variations] = next;
-
-  if (activeColor === Color.WHITE)
-    segments.push(`${position.fullMoveNumber}.`);
-  else if (afterVar)
-    segments.push(`${position.fullMoveNumber - 1}...`);
-
-  segments.push(move.getAlgebraicNotation(board, legalMoves));
-
-  variations.forEach(({ move, position }) => {
+  variations.forEach(([move, position]) => {
     const moveNo = activeColor === Color.WHITE ? `${fullMoveNumber}.` : `${fullMoveNumber}...`;
     const notation = move.getAlgebraicNotation(board, legalMoves);
-    segments.push("(", moveNo, notation, ...getMoveSegments(position), ")");
+    acc.push("(", moveNo + notation + getCheckSign(position));
+    getMoveSegments(position, false, acc);
+    acc.push(")");
   });
 
-  segments.push(...getMoveSegments(position, variations.length > 0));
-  return segments;
+  getMoveSegments(position, variations.length > 0, acc);
+  return acc;
+}
+
+function getCheckSign(position: Position) {
+  if (position.isCheckmate())
+    return "#";
+  if (position.isCheck())
+    return "+";
+  return "";
 }

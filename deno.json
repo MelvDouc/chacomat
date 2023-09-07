@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "bench": "deno bench -A benchmarks/**/*"
+  },
+  "imports": {
+    "@/": "./src/",
+    "$dev_deps": "./dev_deps.ts"
+  },
+  "compilerOptions": {
+    "noImplicitOverride": true,
+    "strict": true
+  }
+}

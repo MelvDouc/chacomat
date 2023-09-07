@@ -1,47 +1,40 @@
 export default class Color {
-  public static readonly WHITE = new this("w");
-  public static readonly BLACK = new this("b");
+  public static readonly WHITE = new this("w", -1);
+  public static readonly BLACK = new this("b", 1);
 
-  private static readonly abbreviations = {
-    [this.WHITE.abbreviation]: this.WHITE,
-    [this.BLACK.abbreviation]: this.BLACK
-  };
-
-  private static readonly initialRanks = {
-    pieces: {
-      [this.WHITE.abbreviation]: 7,
-      [this.BLACK.abbreviation]: 0
-    },
-    pawns: {
-      [this.WHITE.abbreviation]: 6,
-      [this.BLACK.abbreviation]: 1
-    }
-  };
-
-  public static *cases(): Generator<Color> {
+  public static *cases() {
     yield this.WHITE;
     yield this.BLACK;
   }
 
-  public static fromAbbreviation(abbreviation: string): Color {
-    return this.abbreviations[abbreviation];
+  public static fromDirection(direction: number) {
+    for (const color of this.cases())
+      if (color.direction === direction)
+        return color;
+    throw new Error(`Invalid direction: ${direction}.`);
   }
 
-  private constructor(public readonly abbreviation: string) { }
-
-  public get direction(): number {
-    return this === Color.WHITE ? -1 : 1;
+  public static fromAbbreviation(abbreviation: string) {
+    for (const color of this.cases())
+      if (color.abbreviation === abbreviation)
+        return color;
+    throw new Error(`Invalid abbreviation: "${abbreviation}".`);
   }
 
-  public get initialPawnRank(): number {
-    return Color.initialRanks.pawns[this.abbreviation];
+  public constructor(
+    public readonly abbreviation: string,
+    public readonly direction: number
+  ) { }
+
+  public getPieceRank(boardHeight: number) {
+    return this === Color.WHITE ? boardHeight - 1 : 0;
   }
 
-  public get initialPieceRank(): number {
-    return Color.initialRanks.pieces[this.abbreviation];
+  public getPawnRank(boardHeight: number) {
+    return this.getPieceRank(boardHeight) + this.direction;
   }
 
-  public get opposite(): Color {
-    return this === Color.WHITE ? Color.BLACK : Color.WHITE;
+  public get opposite() {
+    return Color.fromDirection(-this.direction);
   }
 }

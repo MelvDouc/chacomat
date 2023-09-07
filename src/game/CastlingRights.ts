@@ -1,25 +1,27 @@
-import Color from "@constants/Color.js";
+import Color from "@/constants/Color.ts";
 
 export default class CastlingRights {
+  protected static readonly initials: Readonly<Record<string, [Color, number]>> = {
+    k: [Color.BLACK, 7],
+    q: [Color.BLACK, 0],
+    K: [Color.WHITE, 7],
+    Q: [Color.WHITE, 0]
+  };
+
   public static fromString(str: string): CastlingRights {
     const castlingRights = new this();
 
-    if (str.includes("Q"))
-      castlingRights.addFile(Color.WHITE, 0);
-    if (str.includes("K"))
-      castlingRights.addFile(Color.WHITE, 7);
-    if (str.includes("q"))
-      castlingRights.addFile(Color.BLACK, 0);
-    if (str.includes("k"))
-      castlingRights.addFile(Color.BLACK, 7);
+    for (const initial in this.initials)
+      if (str.includes(initial))
+        castlingRights.add(...this.initials[initial]);
 
     return castlingRights;
   }
 
-  protected readonly map = new Map<Color, Set<number>>();
+  protected readonly map: Map<Color, Set<number>>;
 
   public constructor() {
-    this.map
+    this.map = new Map()
       .set(Color.WHITE, new Set())
       .set(Color.BLACK, new Set());
   }
@@ -28,28 +30,28 @@ export default class CastlingRights {
     yield* this.map.get(color)!.values();
   }
 
-  public hasFile(color: Color, file: number): boolean {
-    return this.map.get(color)?.has(file) === true;
+  public has(color: Color, file: number): boolean {
+    return this.map.get(color)!.has(file) === true;
   }
 
-  public addFile(color: Color, file: number): void {
-    this.map.get(color)?.add(file);
+  public add(color: Color, file: number): void {
+    this.map.get(color)!.add(file);
   }
 
-  public removeFile(color: Color, file: number): void {
-    this.map.get(color)?.delete(file);
+  public remove(color: Color, file: number): void {
+    this.map.get(color)!.delete(file);
   }
 
   public clear(color: Color): void {
-    this.map.get(color)?.clear();
+    this.map.get(color)!.clear();
   }
 
   public clone(): CastlingRights {
-    const clone = new CastlingRights();
+    const clone = new (this.constructor as typeof CastlingRights)();
 
-    for (const color of Color.cases())
-      for (const file of this.files(color))
-        clone.addFile(color, file);
+    for (const color of Color.cases() as Generator<Color>)
+      for (const file of this.map.get(color)!)
+        clone.add(color, file);
 
     return clone;
   }
@@ -57,14 +59,9 @@ export default class CastlingRights {
   public toString() {
     let str = "";
 
-    if (this.map.get(Color.BLACK)!.has(7))
-      str += "k";
-    if (this.map.get(Color.BLACK)!.has(0))
-      str += "q";
-    if (this.map.get(Color.WHITE)!.has(7))
-      str += "K";
-    if (this.map.get(Color.WHITE)!.has(0))
-      str += "Q";
+    for (const initial in CastlingRights.initials)
+      if (this.has(...CastlingRights.initials[initial]))
+        str += initial;
 
     return str || "-";
   }

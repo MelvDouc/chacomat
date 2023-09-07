@@ -1,9 +1,10 @@
-import type ChessGame from "@game/ChessGame.js";
-import type Position from "@game/Position.js";
+import GameResults from "@/constants/GameResults.ts";
+import PositionStatuses from "@/constants/PositionStatuses.ts";
 
-export type Status = typeof Position["Status"][keyof typeof Position["Status"]];
-export type Result = typeof ChessGame["Result"][keyof typeof ChessGame["Result"]];
+export type Status = typeof PositionStatuses[keyof typeof PositionStatuses];
+export type Result = typeof GameResults[keyof typeof GameResults];
 export type PromotionType = "Q" | "R" | "B" | "N";
+export type CapablancaChessPromotionType = PromotionType | "A" | "C";
 
 export interface GameMetaData {
   Result: Result;
@@ -27,5 +28,4 @@ export interface GameMetaData {
   BlackElo: number;
   BlackTitle: string;
   WhiteTitle: string;
-  [key: string]: any;
 }

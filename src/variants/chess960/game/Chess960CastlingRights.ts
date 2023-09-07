@@ -1,16 +1,14 @@
-import Color from "@constants/Color.js";
-import Coords from "@constants/Coords.js";
-import CastlingRights from "@game/CastlingRights.js";
+import Color from "@/constants/Color.ts";
+import Coords from "@/constants/Coords.ts";
+import CastlingRights from "@/game/CastlingRights.ts";
 
 export default class Chess960CastlingRights extends CastlingRights {
   public static override fromString(str: string) {
     const castlingRights = new this();
 
     for (const fileName of str) {
-      if (fileName === fileName.toUpperCase())
-        castlingRights.addFile(Color.WHITE, Coords.fileNameToY(fileName.toLowerCase()));
-      else
-        castlingRights.addFile(Color.BLACK, Coords.fileNameToY(fileName));
+      const color = fileName === fileName.toUpperCase() ? Color.WHITE : Color.BLACK;
+      castlingRights.add(color, Coords.fileNameToY(fileName.toLowerCase()));
     }
 
     return castlingRights;

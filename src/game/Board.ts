@@ -1,10 +1,11 @@
-import Color from "@constants/Color.js";
-import Coords from "@constants/Coords.js";
-import Piece from "@constants/Piece.js";
-import Wing from "@constants/Wing.js";
+import Color from "@/constants/Color.ts";
+import Coords from "@/constants/Coords.ts";
+import { Piece } from "@/constants/Pieces.ts";
 
 export default class Board extends Map<Coords, Piece> {
   public static fromString(str: string): Board {
+    const { Piece, Coords } = this.prototype;
+
     return str
       .split("/")
       .reduce((acc, row, x) => {
@@ -21,16 +22,40 @@ export default class Board extends Map<Coords, Piece> {
 
   protected readonly kingCoords = new Map<Color, Coords>();
 
+  public get height() {
+    return this.Coords.BOARD_HEIGHT;
+  }
+
+  public get width() {
+    return this.Coords.BOARD_WIDTH;
+  }
+
+  public get initialKingFile() {
+    return 4;
+  }
+
+  public get castlingMultiplier() {
+    return 2;
+  }
+
+  public get Coords() {
+    return Coords;
+  }
+
+  public get Piece() {
+    return Piece;
+  }
+
   public override set(coords: Coords, piece: Piece): this {
     if (piece.isKing())
       this.kingCoords.set(piece.color, coords);
     return super.set(coords, piece);
   }
 
-  public getPiecesOfColor(color: Color): Map<Coords, Piece> {
-    const pieces = new Map<Coords, Piece>();
+  public getPiecesOfColor(color: Color) {
+    const pieces: [Coords, Piece][] = [];
     this.forEach((piece, coords) => {
-      if (piece.color === color) pieces.set(coords, piece);
+      if (piece.color === color) pieces.push([coords, piece]);
     });
     return pieces;
   }
@@ -52,41 +77,56 @@ export default class Board extends Map<Coords, Piece> {
     }
   }
 
-  public *forwardPawnCoords(color: Color, srcCoords: Coords): Generator<Coords> {
+  public *forwardPawnCoords(color: Color, srcCoords: Coords) {
     const destCoords1 = srcCoords.getPeer(color.direction, 0);
 
     if (destCoords1 && !this.has(destCoords1)) {
       yield destCoords1;
 
-      if (srcCoords.x === color.initialPawnRank) {
-        const destCoords2 = srcCoords.getPeer(color.direction * 2, 0);
+      if (srcCoords.x === color.getPawnRank(this.height)) {
+        const destCoords2 = destCoords1.getPeer(color.direction, 0);
         if (destCoords2 && !this.has(destCoords2))
           yield destCoords2;
       }
     }
   }
 
-  public canCastleToWing(wing: Wing, rookSrcY: number, color: Color, attackedCoordsSet: Set<Coords>): boolean {
-    const kingSrcCoords = this.getKingCoords(color);
-    const kingYOffset = Math.sign(wing.castledKingY - kingSrcCoords.y);
-    const rookYOffset = Math.sign(wing.castledRookY - rookSrcY);
+  public getAttackedCoordsSet(color: Color) {
+    const set = new Set<Coords>();
 
-    if (kingYOffset !== 0) {
-      for (const coords of kingSrcCoords.peers(0, kingYOffset)) {
-        if (this.has(coords) && coords.y !== rookSrcY || attackedCoordsSet.has(coords))
+    for (const [srcCoords] of this.getPiecesOfColor(color))
+      for (const destCoords of this.attackedCoords(srcCoords))
+        set.add(destCoords);
+
+    return set;
+  }
+
+  public canCastle(rookSrcY: number, color: Color, attackedCoordsSet: Set<Coords>): boolean {
+    const kingSrcCoords = this.getKingCoords(color);
+    const direction = Math.sign(rookSrcY - kingSrcCoords.y);
+    const kingDestY = this.initialKingFile + this.castlingMultiplier * direction;
+    const rookDestY = kingDestY - direction;
+
+    if (kingDestY !== kingSrcCoords.y) {
+      const yOffset = Math.sign(kingDestY - kingSrcCoords.y);
+      let { y } = kingSrcCoords;
+      do {
+        y += yOffset;
+        const coords = this.Coords.get(kingSrcCoords.x, y);
+        if (this.has(coords) && y !== rookSrcY || attackedCoordsSet.has(coords))
           return false;
-        if (coords.y === wing.castledKingY)
-          break;
-      }
+      } while (y !== kingDestY);
     }
 
-    if (rookYOffset !== 0) {
-      for (const coords of Coords.get(kingSrcCoords.x, rookSrcY).peers(0, rookYOffset)) {
+    if (rookDestY !== rookSrcY) {
+      const yOffset = Math.sign(rookDestY - rookSrcY);
+      let y = rookSrcY;
+      do {
+        y += yOffset;
+        const coords = this.Coords.get(kingSrcCoords.x, y);
         if (this.has(coords) && coords !== kingSrcCoords)
           return false;
-        if (coords.y === wing.castledRookY)
-          break;
-      }
+      } while (y !== rookDestY);
     }
 
     return true;
@@ -94,16 +134,18 @@ export default class Board extends Map<Coords, Piece> {
 
   public clone(): Board {
     // `new Board([...this])` fails as `clone.kingCoords` isn't defined yet.
-    const clone = new Board();
+    const clone = new (this.constructor as typeof Board)();
     this.forEach((piece, coords) => clone.set(coords, piece));
     return clone;
   }
 
   public override toString() {
+    const { Coords } = this;
+
     return Array
-      .from({ length: 8 }, (_, x) => {
+      .from({ length: Coords.BOARD_HEIGHT }, (_, x) => {
         let row = "";
-        for (let y = 0; y < 8; y++)
+        for (let y = 0; y < Coords.BOARD_WIDTH; y++)
           row += this.get(Coords.get(x, y))?.initial ?? "0";
         return row.replace(/0+/g, (zeros) => String(zeros.length));
       })

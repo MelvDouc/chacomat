@@ -1,5 +1,4 @@
-**/.vscode
-**/node_modules
-dist
-logs
-old
+.vscode
+bundle
+npm
+pgn-files
