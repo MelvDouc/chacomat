@@ -26,15 +26,15 @@ export default class Color {
     public readonly direction: number
   ) { }
 
+  public get opposite() {
+    return Color.fromDirection(-this.direction);
+  }
+
   public getPieceRank(boardHeight: number) {
     return this === Color.WHITE ? boardHeight - 1 : 0;
   }
 
   public getPawnRank(boardHeight: number) {
     return this.getPieceRank(boardHeight) + this.direction;
-  }
-
-  public get opposite() {
-    return Color.fromDirection(-this.direction);
   }
 }

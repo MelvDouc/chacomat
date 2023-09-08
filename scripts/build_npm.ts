@@ -4,18 +4,27 @@ const rootDir = Deno.cwd();
 const npmDir = `${rootDir}/npm`;
 
 await emptyDir(npmDir);
-await build({
-  entryPoints: [`${rootDir}/src/mod.ts`],
+build({
+  entryPoints: [
+    `${rootDir}/mod.ts`
+  ],
   outDir: npmDir,
   esModule: true,
   scriptModule: false,
   test: false,
-  rootTestDir: `${rootDir}/tests`,
+  // rootTestDir: `${rootDir}/tests`,
   shims: {
-    // see JS docs for overview and more options
     deno: true
   },
   importMap: `${rootDir}/deno.json`,
+  compilerOptions: {
+    target: "ES2022",
+    lib: [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ]
+  },
   package: {
     name: "chacomat",
     version: Deno.args[0],
@@ -37,6 +46,8 @@ await build({
       url: "https://github.com/MelvDouc/chacomat/issues"
     },
     homepage: "https://github.com/MelvDouc/chacomat#readme"
+  },
+  postBuild: () => {
+    Deno.copyFile(`${rootDir}/README.md`, `${npmDir}/README.md`);
   }
 });
-await Deno.copyFile(`${rootDir}/README.md`, `${rootDir}/npm/README.md`,);

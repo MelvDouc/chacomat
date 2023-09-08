@@ -1,18 +1,12 @@
-import type Coords from "@/constants/Coords.ts";
-import type Board from "@/game/Board.ts";
-import Move from "@/game/moves/Move.ts";
+import PieceMove from "@/game/moves/PieceMove.ts";
+import { Board, Coordinates, Move } from "@/types/main-types.ts";
 
-export default class CastlingMove extends Move {
-  public readonly rookSrcY: number;
-
+export default class CastlingMove implements Move {
   public constructor(
-    srcCoords: Coords,
-    destCoords: Coords,
-    rookSrcY: number
-  ) {
-    super(srcCoords, destCoords);
-    this.rookSrcY = rookSrcY;
-  }
+    public readonly srcCoords: Coordinates,
+    public readonly destCoords: Coordinates,
+    public readonly rookSrcY: number
+  ) { }
 
   public get direction() {
     return Math.sign(this.rookSrcY - this.srcCoords.y);
@@ -23,27 +17,37 @@ export default class CastlingMove extends Move {
   }
 
   public try(board: Board) {
-    const king = board.get(this.srcCoords)!;
-    const rookSrcCoords = board.Coords.get(this.srcCoords.x, this.rookSrcY);
+    const king = board.getByCoords(this.srcCoords)!;
+    const rookSrcCoords = board.Coords(this.srcCoords.x, this.rookSrcY);
     const rookDestCoords = this.destCoords.getPeer(0, -this.direction)!;
-    const rook = board.get(rookSrcCoords)!;
+    const rook = board.getByCoords(rookSrcCoords)!;
 
-    board.delete(this.srcCoords);
-    board.set(this.destCoords, king);
-    board.delete(rookSrcCoords);
-    board.set(rookDestCoords, rook);
+    board
+      .deleteCoords(this.srcCoords)
+      .setByCoords(this.destCoords, king)
+      .deleteCoords(rookSrcCoords)
+      .setByCoords(rookDestCoords, rook);
 
     return () => {
-      board.set(this.srcCoords, king);
-      board.delete(this.destCoords);
-      board.set(rookSrcCoords, rook);
-      board.delete(rookDestCoords);
+      board
+        .setByCoords(this.srcCoords, king)
+        .deleteCoords(this.destCoords)
+        .setByCoords(rookSrcCoords, rook)
+        .deleteCoords(rookDestCoords);
     };
+  }
+
+  public getComputerNotation() {
+    return PieceMove.prototype.getComputerNotation.apply(this);
   }
 
   public getAlgebraicNotation() {
     return this.isQueenSide()
       ? "0-0-0"
       : "0-0";
+  }
+
+  public toJson(board: Board, legalMoves: Move[]) {
+    return PieceMove.prototype.toJson.apply(this, [board, legalMoves]);
   }
 }

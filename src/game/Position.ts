@@ -1,23 +1,21 @@
-import Color from "@/constants/Color.ts";
-import type Coords from "@/constants/Coords.ts";
 import PositionStatuses from "@/constants/PositionStatuses.ts";
 import Board from "@/game/Board.ts";
 import CastlingRights from "@/game/CastlingRights.ts";
+import Color from "@/game/Color.ts";
 import CastlingMove from "@/game/moves/CastlingMove.ts";
-import type Move from "@/game/moves/Move.ts";
 import PawnMove from "@/game/moves/PawnMove.ts";
 import PieceMove from "@/game/moves/PieceMove.ts";
-import { Status } from "@/types.ts";
+import { Coordinates, Json, Move, PositionStatus } from "@/types/main-types.ts";
 
 export default class Position {
   protected static readonly Board: typeof Board = Board;
   protected static readonly CastlingRights: typeof CastlingRights = CastlingRights;
 
-  public static isValidFen(fen: string): boolean {
+  public static isValidFen(fen: string) {
     return /^[pnbrqkPNBRQK1-8]+(\/[pnbrqkPNBRQK1-8]+){7} (w|b) ([KQkq]{1,4}|-) ([a-h][36]|-) \d+ \d+$/.test(fen);
   }
 
-  public static fromFen(fen: string): Position {
+  public static fromFen(fen: string) {
     if (!this.isValidFen(fen))
       throw new Error(`Invalid FEN string: "${fen}".`);
 
@@ -27,7 +25,7 @@ export default class Position {
       this.Board.fromString(pieceStr),
       Color.fromAbbreviation(clr),
       this.CastlingRights.fromString(castling),
-      this.Board.prototype.Coords.fromNotation(enPassant),
+      this.Board.Coords.fromNotation(enPassant),
       Number(halfMoveClock),
       Number(fullMoveNumber)
     );
@@ -39,13 +37,14 @@ export default class Position {
 
   public readonly legalMoves: Move[];
   public prev: Position | null = null;
-  public next = new Map<Move, Position>();
+  public next: [Move, Position][] = [];
+  protected _repCount = 1;
 
   public constructor(
     public readonly board: Board,
     public readonly activeColor: Color,
     public readonly castlingRights: CastlingRights,
-    public readonly enPassantCoords: Coords | null,
+    public readonly enPassantCoords: Coordinates | null,
     public readonly halfMoveClock: number,
     public readonly fullMoveNumber: number
   ) {
@@ -57,7 +56,7 @@ export default class Position {
   // GETTERS
   // ===== ===== ===== ===== =====
 
-  public get status(): Status {
+  public get status(): PositionStatus {
     if (this.legalMoves.length === 0)
       return this.isCheck() ? PositionStatuses.CHECKMATE : PositionStatuses.STALEMATE;
     if (this.halfMoveClock >= 50)
@@ -69,7 +68,7 @@ export default class Position {
     return PositionStatuses.ON_GOING;
   }
 
-  public get legalMovesAsAlgebraicNotation(): string[] {
+  public get legalMovesAsAlgebraicNotation() {
     return this.legalMoves.map((move) => move.getAlgebraicNotation(this.board, this.legalMoves));
   }
 
@@ -77,7 +76,7 @@ export default class Position {
   // MOVES
   // ===== ===== ===== ===== =====
 
-  protected *castlingMoves(): Generator<Move> {
+  protected *castlingMoves() {
     const attackedCoordsSet = this.board.getAttackedCoordsSet(this.activeColor.opposite);
     const kingCoords = this.board.getKingCoords(this.activeColor);
     if (attackedCoordsSet.has(kingCoords)) return;
@@ -92,12 +91,26 @@ export default class Position {
     }
   }
 
-  protected *pseudoLegalPawnMoves(srcCoords: Coords) {
-    for (const destCoords of this.board.forwardPawnCoords(this.activeColor, srcCoords))
+  protected *forwardPawnCoords(color: Color, srcCoords: Coordinates) {
+    const destCoords1 = srcCoords.getPeer(color.direction, 0);
+
+    if (destCoords1 && !this.board.hasCoords(destCoords1)) {
+      yield destCoords1;
+
+      if (srcCoords.x === color.getPawnRank(this.board.height)) {
+        const destCoords2 = destCoords1.getPeer(color.direction, 0);
+        if (destCoords2 && !this.board.hasCoords(destCoords2))
+          yield destCoords2;
+      }
+    }
+  }
+
+  protected *pseudoLegalPawnMoves(srcCoords: Coordinates) {
+    for (const destCoords of this.forwardPawnCoords(this.activeColor, srcCoords))
       yield new PawnMove(srcCoords, destCoords);
 
     for (const destCoords of this.board.attackedCoords(srcCoords))
-      if (this.board.get(destCoords)?.color === this.activeColor.opposite || this.enPassantCoords === destCoords)
+      if (this.board.getByCoords(destCoords)?.color === this.activeColor.opposite || this.enPassantCoords === destCoords)
         yield new PawnMove(srcCoords, destCoords);
   }
 
@@ -109,7 +122,7 @@ export default class Position {
       }
 
       for (const destCoords of this.board.attackedCoords(srcCoords))
-        if (this.board.get(destCoords)?.color !== this.activeColor)
+        if (this.board.getByCoords(destCoords)?.color !== this.activeColor)
           yield new PieceMove(srcCoords, destCoords);
     }
   }
@@ -131,7 +144,7 @@ export default class Position {
   // STATUS
   // ===== ===== ===== ===== =====
 
-  public isCheck(): boolean {
+  public isCheck() {
     const kingCoords = this.board.getKingCoords(this.activeColor);
 
     for (const [srcCoords] of this.board.getPiecesOfColor(this.activeColor.opposite))
@@ -142,29 +155,32 @@ export default class Position {
     return false;
   }
 
-  public isCheckmate(): boolean {
-    return this.isCheck() && !this.legalMoves.length;
+  public isCheckmate() {
+    return this.status === PositionStatuses.CHECKMATE;
   }
 
-  public isStalemate(): boolean {
-    return !this.isCheck() && !this.legalMoves.length;
+  public isStalemate() {
+    return this.status === PositionStatuses.STALEMATE;
   }
 
-  public isTripleRepetition(): boolean {
+  public isTripleRepetition() {
+    if (this._repCount >= 3)
+      return true;
+
     const boardStr = this.board.toString();
     let current: Position | null | undefined = this.prev?.prev;
-    let count = 1;
+    let count = this._repCount;
 
     while (current && count < 3) {
       if (current.board.toString() === boardStr)
-        count++;
+        count += (current as Position)._repCount;
       current = current.prev?.prev;
     }
 
-    return count === 3;
+    return (this._repCount = count) >= 3;
   }
 
-  public isInsufficientMaterial(): boolean {
+  public isInsufficientMaterial() {
     if (this.board.size > 4)
       return false;
 
@@ -173,12 +189,12 @@ export default class Position {
     const [blackCoords0, blackPiece0] = blackPieces[0] ?? [];
 
     if (whitePieces.length === 0)
-      return blackPieces.length === 0 || blackPieces.length === 1 && blackPiece0.isWorth3();
+      return blackPieces.length === 0 || blackPieces.length === 1 && (blackPiece0.isKnight() || blackPiece0.isBishop());
 
     if (whitePieces.length === 1) {
       const [whiteCoords0, whitePiece0] = whitePieces[0];
       if (blackPieces.length === 0)
-        return whitePiece0.isWorth3();
+        return whitePiece0.isKnight() || whitePiece0.isBishop();
       return blackPieces.length === 1
         && whitePiece0.isBishop()
         && blackPiece0.isBishop()
@@ -206,5 +222,21 @@ export default class Position {
       this.halfMoveClock,
       this.fullMoveNumber
     ].join(" ");
+  }
+
+  public toJson(): Json.Position {
+    return {
+      activeColor: this.activeColor.abbreviation,
+      castlingRights: this.castlingRights.toJson(),
+      enPassantCoords: this.enPassantCoords?.toJson() ?? null,
+      board: this.board.toJson(),
+      legalMoves: this.legalMoves.map((move) => move.toJson(this.board, this.legalMoves)),
+      next: this.next.map(([move, position]) => [
+        move.toJson(this.board, this.legalMoves),
+        position.toJson()
+      ]),
+      status: this.status,
+      fen: this.toString()
+    };
   }
 }

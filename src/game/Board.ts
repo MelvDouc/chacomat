@@ -1,10 +1,13 @@
-import Color from "@/constants/Color.ts";
-import Coords from "@/constants/Coords.ts";
-import { Piece } from "@/constants/Pieces.ts";
+import CoordsFactory from "@/factories/CoordsFactory.ts";
+import Color from "@/game/Color.ts";
+import Piece from "@/game/Piece.ts";
+import { Coordinates, Figure } from "@/types/main-types.ts";
 
-export default class Board extends Map<Coords, Piece> {
+export default class Board {
+  public static readonly Coords: ReturnType<typeof CoordsFactory> = CoordsFactory(8, 8);
+  public static readonly PieceConstructor: typeof Piece = Piece;
+
   public static fromString(str: string): Board {
-    const { Piece, Coords } = this.prototype;
 
     return str
       .split("/")
@@ -14,85 +17,91 @@ export default class Board extends Map<Coords, Piece> {
           .split("")
           .forEach((initial, y) => {
             if (initial !== "0")
-              acc.set(Coords.get(x, y), Piece.fromInitial(initial)!);
+              acc.set(x, y, this.PieceConstructor.fromInitial(initial)!);
           });
         return acc;
       }, new this());
   }
 
-  protected readonly kingCoords = new Map<Color, Coords>();
-
-  public get height() {
-    return this.Coords.BOARD_HEIGHT;
-  }
-
-  public get width() {
-    return this.Coords.BOARD_WIDTH;
-  }
-
-  public get initialKingFile() {
-    return 4;
-  }
-
-  public get castlingMultiplier() {
-    return 2;
-  }
+  protected readonly pieces = new Map<Coordinates, Figure>();
+  protected readonly kingCoords = new Map<Color, Coordinates>();
+  public readonly height: number = 8;
+  public readonly width: number = 8;
+  public readonly initialKingFile: number = 4;
+  public readonly castlingMultiplier: number = 2;
 
   public get Coords() {
-    return Coords;
+    return (this.constructor as typeof Board).Coords;
   }
 
-  public get Piece() {
-    return Piece;
+  public get size() {
+    return this.pieces.size;
   }
 
-  public override set(coords: Coords, piece: Piece): this {
+  public has(x: number, y: number) {
+    return this.pieces.has(this.Coords(x, y));
+  }
+
+  public hasCoords(coords: Coordinates) {
+    return this.pieces.has(coords);
+  }
+
+  public get(x: number, y: number) {
+    return this.pieces.get(this.Coords(x, y)) ?? null;
+  }
+
+  public getByCoords(coords: Coordinates) {
+    return this.pieces.get(coords) ?? null;
+  }
+
+  public set(x: number, y: number, piece: Figure) {
+    return this.setByCoords(this.Coords(x, y), piece);
+  }
+
+  public setByCoords(coords: Coordinates, piece: Figure) {
     if (piece.isKing())
       this.kingCoords.set(piece.color, coords);
-    return super.set(coords, piece);
+    this.pieces.set(coords, piece);
+    return this;
+  }
+
+  public delete(x: number, y: number) {
+    this.pieces.delete(this.Coords(x, y));
+    return this;
+  }
+
+  public deleteCoords(coords: Coordinates) {
+    this.pieces.delete(coords);
+    return this;
   }
 
   public getPiecesOfColor(color: Color) {
-    const pieces: [Coords, Piece][] = [];
-    this.forEach((piece, coords) => {
+    const pieces: [Coordinates, Figure][] = [];
+    this.pieces.forEach((piece, coords) => {
       if (piece.color === color) pieces.push([coords, piece]);
     });
     return pieces;
   }
 
-  public getKingCoords(color: Color): Coords {
+  public getKingCoords(color: Color) {
     return this.kingCoords.get(color)!;
   }
 
-  public *attackedCoords(srcCoords: Coords): Generator<Coords> {
-    const srcPiece = this.get(srcCoords) as Piece;
+  public *attackedCoords(srcCoords: Coordinates) {
+    const srcPiece = this.pieces.get(srcCoords)!;
     const { x: xOffsets, y: yOffsets } = srcPiece.offsets;
 
     for (let i = 0; i < xOffsets.length; i++) {
       for (const destCoords of srcCoords.peers(xOffsets[i], yOffsets[i])) {
         yield destCoords;
-        if (srcPiece.isShortRange() || this.has(destCoords))
+        if (srcPiece.isShortRange() || this.pieces.has(destCoords))
           break;
       }
     }
   }
 
-  public *forwardPawnCoords(color: Color, srcCoords: Coords) {
-    const destCoords1 = srcCoords.getPeer(color.direction, 0);
-
-    if (destCoords1 && !this.has(destCoords1)) {
-      yield destCoords1;
-
-      if (srcCoords.x === color.getPawnRank(this.height)) {
-        const destCoords2 = destCoords1.getPeer(color.direction, 0);
-        if (destCoords2 && !this.has(destCoords2))
-          yield destCoords2;
-      }
-    }
-  }
-
   public getAttackedCoordsSet(color: Color) {
-    const set = new Set<Coords>();
+    const set = new Set<Coordinates>();
 
     for (const [srcCoords] of this.getPiecesOfColor(color))
       for (const destCoords of this.attackedCoords(srcCoords))
@@ -101,7 +110,7 @@ export default class Board extends Map<Coords, Piece> {
     return set;
   }
 
-  public canCastle(rookSrcY: number, color: Color, attackedCoordsSet: Set<Coords>): boolean {
+  public canCastle(rookSrcY: number, color: Color, attackedCoordsSet: Set<Coordinates>): boolean {
     const kingSrcCoords = this.getKingCoords(color);
     const direction = Math.sign(rookSrcY - kingSrcCoords.y);
     const kingDestY = this.initialKingFile + this.castlingMultiplier * direction;
@@ -112,8 +121,8 @@ export default class Board extends Map<Coords, Piece> {
       let { y } = kingSrcCoords;
       do {
         y += yOffset;
-        const coords = this.Coords.get(kingSrcCoords.x, y);
-        if (this.has(coords) && y !== rookSrcY || attackedCoordsSet.has(coords))
+        const coords = this.Coords(kingSrcCoords.x, y);
+        if (this.hasCoords(coords) && y !== rookSrcY || attackedCoordsSet.has(coords))
           return false;
       } while (y !== kingDestY);
     }
@@ -123,8 +132,7 @@ export default class Board extends Map<Coords, Piece> {
       let y = rookSrcY;
       do {
         y += yOffset;
-        const coords = this.Coords.get(kingSrcCoords.x, y);
-        if (this.has(coords) && coords !== kingSrcCoords)
+        if (this.has(kingSrcCoords.x, y) && y !== kingSrcCoords.y)
           return false;
       } while (y !== rookDestY);
     }
@@ -132,23 +140,29 @@ export default class Board extends Map<Coords, Piece> {
     return true;
   }
 
-  public clone(): Board {
+  public clone() {
     // `new Board([...this])` fails as `clone.kingCoords` isn't defined yet.
     const clone = new (this.constructor as typeof Board)();
-    this.forEach((piece, coords) => clone.set(coords, piece));
+    this.pieces.forEach((piece, coords) => clone.setByCoords(coords, piece));
     return clone;
   }
 
-  public override toString() {
-    const { Coords } = this;
-
+  public toString() {
     return Array
-      .from({ length: Coords.BOARD_HEIGHT }, (_, x) => {
+      .from({ length: this.height }, (_, x) => {
         let row = "";
-        for (let y = 0; y < Coords.BOARD_WIDTH; y++)
-          row += this.get(Coords.get(x, y))?.initial ?? "0";
+        for (let y = 0; y < this.width; y++)
+          row += this.get(x, y)?.initial ?? "0";
         return row.replace(/0+/g, (zeros) => String(zeros.length));
       })
       .join("/");
+  }
+
+  public toJson() {
+    return Array.from({ length: this.height }, (_, x) => {
+      return Array.from({ length: this.width }, (_, y) => {
+        return this.get(x, y)?.toJson() ?? null;;
+      });
+    });
   }
 }

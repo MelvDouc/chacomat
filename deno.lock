@@ -155,6 +155,7 @@
     "https://deno.land/x/dir@1.5.1/data_local_dir/mod.ts": "91eb1c4bfadfbeda30171007bac6d85aadacd43224a5ed721bbe56bc64e9eb66",
     "https://deno.land/x/dnt@0.38.1/lib/compiler.ts": "209ad2e1b294f93f87ec02ade9a0821f942d2e524104552d0aa8ff87021050a5",
     "https://deno.land/x/dnt@0.38.1/lib/compiler_transforms.ts": "f21aba052f5dcf0b0595c734450842855c7f572e96165d3d34f8fed2fc1f7ba1",
+    "https://deno.land/x/dnt@0.38.1/lib/main-types.ts": "b8e228b2fac44c2ae902fbb73b1689f6ab889915bd66486c8a85c0c24255f5fb",
     "https://deno.land/x/dnt@0.38.1/lib/mod.deps.ts": "30367fc68bcd2acf3b7020cf5cdd26f817f7ac9ac35c4bfb6c4551475f91bc3e",
     "https://deno.land/x/dnt@0.38.1/lib/npm_ignore.ts": "57fbb7e7b935417d225eec586c6aa240288905eb095847d3f6a88e290209df4e",
     "https://deno.land/x/dnt@0.38.1/lib/package_json.ts": "61f35b06e374ed39ca776d29d67df4be7ee809d0bca29a8239687556c6d027c2",

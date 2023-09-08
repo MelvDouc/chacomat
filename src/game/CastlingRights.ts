@@ -1,14 +1,14 @@
-import Color from "@/constants/Color.ts";
+import Color from "@/game/Color.ts";
 
 export default class CastlingRights {
   protected static readonly initials: Readonly<Record<string, [Color, number]>> = {
-    k: [Color.BLACK, 7],
+    k: [Color.BLACK, 8 - 1],
     q: [Color.BLACK, 0],
-    K: [Color.WHITE, 7],
+    K: [Color.WHITE, 8 - 1],
     Q: [Color.WHITE, 0]
   };
 
-  public static fromString(str: string): CastlingRights {
+  public static fromString(str: string) {
     const castlingRights = new this();
 
     for (const initial in this.initials)
@@ -30,23 +30,23 @@ export default class CastlingRights {
     yield* this.map.get(color)!.values();
   }
 
-  public has(color: Color, file: number): boolean {
+  public has(color: Color, file: number) {
     return this.map.get(color)!.has(file) === true;
   }
 
-  public add(color: Color, file: number): void {
+  public add(color: Color, file: number) {
     this.map.get(color)!.add(file);
   }
 
-  public remove(color: Color, file: number): void {
+  public remove(color: Color, file: number) {
     this.map.get(color)!.delete(file);
   }
 
-  public clear(color: Color): void {
+  public clear(color: Color) {
     this.map.get(color)!.clear();
   }
 
-  public clone(): CastlingRights {
+  public clone() {
     const clone = new (this.constructor as typeof CastlingRights)();
 
     for (const color of Color.cases() as Generator<Color>)
@@ -58,11 +58,19 @@ export default class CastlingRights {
 
   public toString() {
     let str = "";
+    const { initials } = this.constructor as typeof CastlingRights;
 
-    for (const initial in CastlingRights.initials)
-      if (this.has(...CastlingRights.initials[initial]))
+    for (const initial in initials)
+      if (this.has(...initials[initial]))
         str += initial;
 
     return str || "-";
+  }
+
+  public toJson() {
+    return [...Color.cases()].reduce((acc, color) => {
+      acc[color.abbreviation] = [...this.files(color)];
+      return acc;
+    }, {} as Record<string, number[]>);
   }
 }

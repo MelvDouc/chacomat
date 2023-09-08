@@ -1,20 +1,14 @@
-import Color from "@/constants/Color.ts";
 import GameResults from "@/constants/GameResults.ts";
-import { Piece } from "@/constants/Pieces.ts";
 import PositionStatuses from "@/constants/PositionStatuses.ts";
+import Color from "@/game/Color.ts";
 import Position from "@/game/Position.ts";
-import type Move from "@/game/moves/Move.ts";
 import PawnMove from "@/game/moves/PawnMove.ts";
-import { getMoveSegments } from "@/pgn/game-to-pgn.ts";
+import { stringifyPos } from "@/pgn/game-to-pgn.ts";
 import parsePgn from "@/pgn/parse-pgn.ts";
-import { GameMetaData, PromotionType, Result } from "@/types.ts";
+import { GameMetaData, GameResult, Move } from "@/types/main-types.ts";
 
 export default class ChessGame {
   protected static readonly Position: typeof Position = Position;
-
-  protected static getFirstPosition(fen?: string) {
-    return fen ? this.Position.fromFen(fen) : this.Position.new();
-  }
 
   public readonly metaData: Pick<GameMetaData, "Result"> & Partial<Omit<GameMetaData, "Result">> & { [key: string]: any; };
   public currentPosition: Position;
@@ -28,7 +22,8 @@ export default class ChessGame {
       ...metaData,
       Result: metaData.Result ?? GameResults.NONE
     };
-    this.currentPosition = (this.constructor as typeof ChessGame).getFirstPosition(this.metaData.FEN);
+    const { Position } = this.constructor as typeof ChessGame;
+    this.currentPosition = metaData.FEN ? Position.fromFen(metaData.FEN) : Position.new();
     if (pgn) this.enterPgn(pgn);
   }
 
@@ -38,7 +33,7 @@ export default class ChessGame {
     return pos;
   }
 
-  public getResult(): Result {
+  public getResult(): GameResult {
     switch (this.currentPosition.status) {
       case PositionStatuses.CHECKMATE:
         return (this.currentPosition.activeColor === Color.WHITE)
@@ -63,19 +58,21 @@ export default class ChessGame {
     if (prev) this.currentPosition = prev;
   }
 
-  public playMove(move: Move, promotionType: PromotionType = "Q"): ChessGame {
+  public playMove<PType extends string>(move: Move, promotionType?: PType) {
     const pos = this.currentPosition;
     const board = pos.board.clone();
     const castlingRights = pos.castlingRights.clone();
     const isPawnMove = move instanceof PawnMove;
-    const srcPiece = board.get(move.srcCoords) as Piece;
-    const destPiece = isPawnMove ? move.getCapturedPiece(board) : board.get(move.destCoords);
+    const srcPiece = board.getByCoords(move.srcCoords)!;
+    const destPiece = isPawnMove ? move.getCapturedPiece(board) : board.getByCoords(move.destCoords);
     const enPassantCoords = isPawnMove && move.isDouble()
       ? move.srcCoords.getPeer(pos.activeColor.direction, 0)
       : null;
 
     if (isPawnMove && move.isPromotion(board))
-      move.promotedPiece = board.Piece.fromInitial(srcPiece.color === Color.WHITE ? promotionType : promotionType.toLowerCase())!;
+      move.promotedPiece = (board.constructor as any)
+        .PieceConstructor
+        .fromInitial(srcPiece.color === Color.WHITE ? promotionType : (promotionType ?? "Q").toLowerCase())!;
 
     if (srcPiece.isKing())
       castlingRights.clear(pos.activeColor);
@@ -97,7 +94,7 @@ export default class ChessGame {
       pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
     );
     nextPos.prev = pos;
-    pos.next.set(move, nextPos);
+    pos.next.push([move, nextPos]);
     this.currentPosition = nextPos;
     return this;
   }
@@ -106,7 +103,7 @@ export default class ChessGame {
    * @param notation A computer notation like "e2e4" or "a2a1Q".
    * @returns This same game.
    */
-  public playMoveWithNotation(notation: string): ChessGame {
+  public playMoveWithNotation(notation: string) {
     const move = this.currentPosition.legalMoves.find((move) => {
       return move.getComputerNotation() === notation;
     });
@@ -114,7 +111,7 @@ export default class ChessGame {
     if (!move)
       throw new Error(`Illegal move: "${notation}".`);
 
-    return this.playMove(move, notation[5] as PromotionType | undefined);
+    return this.playMove(move, notation[5]);
   }
 
   public enterPgn(pgn: string) {
@@ -129,6 +126,6 @@ export default class ChessGame {
       .map(([key, value]) => `[${key} "${value}"]`)
       .join("\n");
 
-    return `${metaDataStr}\n\n${getMoveSegments(firstPosition).concat(metaData.Result!).join(" ")}`;
+    return `${metaDataStr}\n\n${stringifyPos(firstPosition) + metaData.Result}`;
   }
 }

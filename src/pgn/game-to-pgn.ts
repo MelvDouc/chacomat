@@ -1,35 +1,34 @@
-import Color from "@/constants/Color.ts";
-import type Position from "@/game/Position.ts";
+import Color from "@/game/Color.ts";
+import { Position } from "@/types/main-types.ts";
 
-export function getMoveSegments(
+export function stringifyPos(
   { activeColor, board, fullMoveNumber, legalMoves, next }: Position,
-  isFirst = true,
-  acc: string[] = []
-): string[] {
-  if (!next.size) return acc;
+  isFirst = true
+): string {
+  if (!next.length) return "";
 
-  const [[move, position], ...variations] = next;
-  const moveNo = (activeColor === Color.WHITE) ? `${position.fullMoveNumber}.`
-    : (isFirst) ? `${position.fullMoveNumber - 1}...`
-      : "";
-  acc.push(moveNo + move.getAlgebraicNotation(board, legalMoves) + getCheckSign(position));
+  let acc = "";
+  const [[move0, nextPos0], ...variations] = next;
 
-  variations.forEach(([move, position]) => {
-    const moveNo = activeColor === Color.WHITE ? `${fullMoveNumber}.` : `${fullMoveNumber}...`;
-    const notation = move.getAlgebraicNotation(board, legalMoves);
-    acc.push("(", moveNo + notation + getCheckSign(position));
-    getMoveSegments(position, false, acc);
-    acc.push(")");
+  if (activeColor === Color.WHITE)
+    acc += `${fullMoveNumber}.`;
+  else if (isFirst)
+    acc += `${fullMoveNumber}...`;
+
+  acc += move0.getAlgebraicNotation(board, legalMoves) + checkSign(nextPos0);
+
+  variations.forEach(([moveN, nextPosN]) => {
+    acc += (activeColor === Color.WHITE)
+      ? ` ( ${fullMoveNumber}.`
+      : ` ( ${fullMoveNumber}...`;
+    acc += `${moveN.getAlgebraicNotation(board, legalMoves) + checkSign(nextPosN)} ${stringifyPos(nextPosN, false)})`;
   });
 
-  getMoveSegments(position, variations.length > 0, acc);
-  return acc;
+  return `${acc} ${stringifyPos(nextPos0, variations.length > 0)}`;
 }
 
-function getCheckSign(position: Position) {
-  if (position.isCheckmate())
-    return "#";
+function checkSign(position: Position) {
   if (position.isCheck())
-    return "+";
+    return position.legalMoves.length ? "+" : "#";
   return "";
 }

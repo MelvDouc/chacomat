@@ -1,24 +1,32 @@
-import type Board from "@/game/Board.ts";
-import Move from "@/game/moves/Move.ts";
+import { Board, Coordinates, Move } from "@/types/main-types.ts";
 
-export default class PieceMove extends Move {
+export default class PieceMove implements Move {
+  public constructor(
+    public readonly srcCoords: Coordinates,
+    public readonly destCoords: Coordinates
+  ) { }
+
   public try(board: Board): () => void {
-    const srcPiece = board.get(this.srcCoords)!;
-    const destPiece = board.get(this.destCoords);
+    const srcPiece = board.getByCoords(this.srcCoords)!;
+    const destPiece = board.getByCoords(this.destCoords);
     board
-      .set(this.destCoords, srcPiece)
-      .delete(this.srcCoords);
+      .setByCoords(this.destCoords, srcPiece)
+      .deleteCoords(this.srcCoords);
 
     return () => {
       destPiece
-        ? board.set(this.destCoords, destPiece)
-        : board.delete(this.destCoords);
-      board.set(this.srcCoords, srcPiece);
+        ? board.setByCoords(this.destCoords, destPiece)
+        : board.deleteCoords(this.destCoords);
+      board.setByCoords(this.srcCoords, srcPiece);
     };
   }
 
-  public getAlgebraicNotation(board: Board, legalMoves: Move[]): string {
-    const srcPiece = board.get(this.srcCoords)!;
+  public getComputerNotation() {
+    return this.srcCoords.notation + this.destCoords.notation;
+  }
+
+  public getAlgebraicNotation(board: Board, legalMoves: Move[]) {
+    const srcPiece = board.getByCoords(this.srcCoords)!;
     let notation = "";
 
     if (!srcPiece.isKing()) {
@@ -26,7 +34,7 @@ export default class PieceMove extends Move {
         if (
           this.srcCoords === srcCoords
           || this.destCoords !== destCoords
-          || board.get(srcCoords) !== srcPiece
+          || board.getByCoords(srcCoords) !== srcPiece
         )
           continue;
         if (srcCoords.y === this.srcCoords.y) notation += this.srcCoords.rankNotation;
@@ -34,7 +42,15 @@ export default class PieceMove extends Move {
       }
     }
 
-    if (board.has(this.destCoords)) notation += "x";
+    if (board.hasCoords(this.destCoords)) notation += "x";
     return srcPiece.initial.toUpperCase() + notation + this.destCoords.notation;
+  }
+
+  public toJson(board: Board, legalMoves: Move[]) {
+    return {
+      srcCoords: this.srcCoords.toJson(),
+      destCoords: this.destCoords.toJson(),
+      algebraicNotation: this.getAlgebraicNotation(board, legalMoves)
+    };
   }
 }

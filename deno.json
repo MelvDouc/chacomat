@@ -1,7 +1,7 @@
 {
   "tasks": {
     "bench": "deno bench -A benchmarks/**/*",
-    "build_npm": "deno run -A scripts/build_npm.ts"
+    "build_npm": "deno run -A --unstable scripts/build_npm.ts"
   },
   "imports": {
     "@/": "./src/",
