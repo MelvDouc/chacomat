@@ -8,6 +8,7 @@ await build({
   entryPoints: [`${rootDir}/src/mod.ts`],
   outDir: npmDir,
   esModule: true,
+  scriptModule: false,
   test: false,
   rootTestDir: `${rootDir}/tests`,
   shims: {
@@ -18,6 +19,7 @@ await build({
   package: {
     name: "chacomat",
     version: Deno.args[0],
+    main: "./esm/mod.js",
     description: "A TypeScript chess game.",
     type: "module",
     scripts: {},
@@ -37,3 +39,4 @@ await build({
     homepage: "https://github.com/MelvDouc/chacomat#readme"
   }
 });
+await Deno.copyFile(`${rootDir}/README.md`, `${rootDir}/npm/README.md`,);
