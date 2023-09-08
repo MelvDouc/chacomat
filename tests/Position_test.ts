@@ -1,12 +1,12 @@
 import { assert, assertEquals, assertFalse } from "$dev_deps";
-import Position from "@/game/Position.ts";
-import { ChessGame } from "@/mod.ts";
+import ChessGame from "@/impl/ChessGame.ts";
+import Position from "@/impl/Position.ts";
 
 Deno.test("legal moves #1", () => {
   const { board, legalMoves } = Position.new();
 
-  assertEquals(legalMoves.filter((move) => board.get(move.srcCoords)?.isPawn()).length, 16);
-  assertEquals(legalMoves.filter((move) => board.get(move.srcCoords)?.isKnight()).length, 4);
+  assertEquals(legalMoves.filter((move) => board.getByCoords(move.srcCoords)?.isPawn()).length, 16);
+  assertEquals(legalMoves.filter((move) => board.getByCoords(move.srcCoords)?.isKnight()).length, 4);
 });
 
 Deno.test("Insufficient material: only kings", () => {

@@ -5,7 +5,9 @@ const npmDir = `${rootDir}/npm`;
 
 await emptyDir(npmDir);
 await build({
-  entryPoints: [`${rootDir}/src/mod.ts`],
+  entryPoints: [
+    `${rootDir}/src/mod.ts`
+  ],
   outDir: npmDir,
   esModule: true,
   scriptModule: false,
@@ -39,4 +41,4 @@ await build({
     homepage: "https://github.com/MelvDouc/chacomat#readme"
   }
 });
-await Deno.copyFile(`${rootDir}/README.md`, `${rootDir}/npm/README.md`,);
+await Deno.copyFile(`${rootDir}/README.md`, `${npmDir}/README.md`,);

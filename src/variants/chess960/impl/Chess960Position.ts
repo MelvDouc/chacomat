@@ -1,8 +1,8 @@
-import Color from "@/constants/Color.ts";
-import { Piece } from "@/constants/Pieces.ts";
-import Position from "@/game/Position.ts";
-import Chess960CastlingRights from "@/variants/chess960/game/Chess960CastlingRights.ts";
-import Chess960CastlingMove from "@/variants/chess960/moves/Chess960CastlingMove.ts";
+import Color from "@/impl/Color.ts";
+import Position from "@/impl/Position.ts";
+import { Figure } from "@/types/types.ts";
+import Chess960CastlingRights from "@/variants/chess960/impl/Chess960CastlingRights.ts";
+import Chess960CastlingMove from "@/variants/chess960/impl/moves/Chess960CastlingMove.ts";
 
 export default class Chess960Position extends Position {
   protected static override readonly CastlingRights = Chess960CastlingRights;
@@ -12,8 +12,8 @@ export default class Chess960Position extends Position {
   }
 
   protected static getRandomWhitePieceRank() {
-    const { Pieces } = Piece;
-    let indices = Array.from({ length: this.Board.prototype.Coords.BOARD_WIDTH }, (_, y) => y);
+    const { Pieces } = this.Board.PieceConstructor;
+    let indices = Array.from({ length: 8 }, (_, y) => y);
 
     const kingY = randomInt(1, 6);
     const queenRookY = randomInt(0, kingY - 1);
@@ -27,7 +27,7 @@ export default class Chess960Position extends Position {
       .filter((y) => y !== bishopY1 && y !== bishopY2)
       .sort(() => Math.random() - 0.5);
 
-    const pieces: Piece[] = [];
+    const pieces: Figure[] = [];
     pieces[kingY] = Pieces.WHITE_KING;
     pieces[queenRookY] = Pieces.WHITE_ROOK;
     pieces[kingRookY] = Pieces.WHITE_ROOK;
@@ -40,17 +40,17 @@ export default class Chess960Position extends Position {
   }
 
   public static override new() {
-    const { Coords, Piece: { Pieces } } = this.Board.prototype;
-    const whitePieceRank = Color.WHITE.getPieceRank(Coords.BOARD_HEIGHT);
-    const whitePawnRank = Color.WHITE.getPawnRank(Coords.BOARD_HEIGHT);
     const board = new this.Board();
     const castlingRights = new this.CastlingRights();
+    const { PieceConstructor: { Pieces } } = this.Board;
+    const whitePieceRank = Color.WHITE.getPieceRank(board.height);
+    const whitePawnRank = Color.WHITE.getPawnRank(board.height);
 
     this.getRandomWhitePieceRank().forEach((piece, y) => {
-      board.set(Coords.get(0, y), piece.opposite);
-      board.set(Coords.get(1, y), Pieces.BLACK_PAWN);
-      board.set(Coords.get(whitePawnRank, y), Pieces.WHITE_PAWN);
-      board.set(Coords.get(whitePieceRank, y), piece);
+      board.set(0, y, piece.opposite);
+      board.set(1, y, Pieces.BLACK_PAWN);
+      board.set(whitePawnRank, y, Pieces.WHITE_PAWN);
+      board.set(whitePieceRank, y, piece);
       if (piece.isRook()) {
         castlingRights.add(Color.WHITE, y);
         castlingRights.add(Color.BLACK, y);
@@ -69,7 +69,7 @@ export default class Chess960Position extends Position {
       if (this.board.canCastle(rookSrcY, this.activeColor, attackedCoordsSet))
         yield new Chess960CastlingMove(
           kingCoords,
-          this.board.Coords.get(kingCoords.x, rookSrcY),
+          this.board.Coords(kingCoords.x, rookSrcY),
           rookSrcY
         );
     }

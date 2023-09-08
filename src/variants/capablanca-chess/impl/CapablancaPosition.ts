@@ -1,8 +1,10 @@
-import Position from "@/game/Position.ts";
-import CapablancaBoard from "@/variants/capablanca-chess/game/CapablancaBoard.ts";
+import Position from "@/impl/Position.ts";
+import CapablancaBoard from "@/variants/capablanca-chess/impl/CapablancaBoard.ts";
+import CapablancaCastlingRights from "@/variants/capablanca-chess/impl/CapablancaCastlingRights.ts";
 
 export default class CapablancaPosition extends Position {
   protected static override readonly Board = CapablancaBoard;
+  protected static override readonly CastlingRights = CapablancaCastlingRights;
 
   public static override isValidFen(fen: string) {
     return /^[pnbrqkacPNBRQKAC0-9]+(\/[pnbrqkacPNBRQKAC0-9]+){7} (w|b) ([KQkq]{1,4}|-) ([a-j][36]|-) \d+ \d+$/.test(fen);

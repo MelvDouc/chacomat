@@ -1,5 +1,5 @@
 const PositionStatuses = {
-  ON_GOING: "on going",
+  ON_GOING: "ongoing",
   CHECKMATE: "checkmate",
   STALEMATE: "stalemate",
   FIFTY_MOVE_RULE: "50-move rule",

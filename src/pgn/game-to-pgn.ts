@@ -1,12 +1,12 @@
-import Color from "@/constants/Color.ts";
-import type Position from "@/game/Position.ts";
+import Color from "@/impl/Color.ts";
+import { Position } from "@/types/types.ts";
 
 export function getMoveSegments(
   { activeColor, board, fullMoveNumber, legalMoves, next }: Position,
   isFirst = true,
   acc: string[] = []
 ): string[] {
-  if (!next.size) return acc;
+  if (!next.length) return acc;
 
   const [[move, position], ...variations] = next;
   const moveNo = (activeColor === Color.WHITE) ? `${position.fullMoveNumber}.`
