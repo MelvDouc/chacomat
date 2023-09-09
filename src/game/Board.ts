@@ -1,7 +1,7 @@
 import CoordsFactory from "@/factories/CoordsFactory.ts";
-import Color from "@/impl/Color.ts";
-import Piece from "@/impl/Piece.ts";
-import { Coordinates, Figure } from "@/types/types.ts";
+import Color from "@/game/Color.ts";
+import Piece from "@/game/Piece.ts";
+import { Coordinates, Figure } from "@/types/main-types.ts";
 
 export default class Board {
   public static readonly Coords: ReturnType<typeof CoordsFactory> = CoordsFactory(8, 8);

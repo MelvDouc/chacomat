@@ -1,14 +1,13 @@
-import Color from "@/impl/Color.ts";
-import Piece from "@/impl/Piece.ts";
-import CastlingMove from "@/impl/moves/CastlingMove.ts";
-import PawnMove from "@/impl/moves/PawnMove.ts";
+import Color from "@/game/Color.ts";
+import CastlingMove from "@/game/moves/CastlingMove.ts";
+import PawnMove from "@/game/moves/PawnMove.ts";
 import { PgnVariations, parseVariations } from "@/pgn/utils.ts";
-import { ChessGame, Move, Position } from "@/types/types.ts";
+import { Board, ChessGame, Move, Position } from "@/types/main-types.ts";
 
-const pieceMoveR = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/.source;
-const pawnMoveR = /[a-h](x[a-h])?[1-8](=[QRBN])?/.source;
-const castlingR = /(?<o>O|0)-\k<o>(-\k<o>)?/.source;
-const halfMoveRegex = RegExp(`(?<halfMove>${pieceMoveR}|${pawnMoveR}|${castlingR})`, "g");
+const pieceMoveR = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/;
+const pawnMoveR = /[a-h](x[a-h])?[1-8](=[QRBN])?/;
+const castlingR = /([O0])(-[O0]){1,2}/;
+const halfMoveRegex = RegExp(`(${pieceMoveR.source}|${pawnMoveR.source}|${castlingR.source})`, "g");
 
 const MOVE_FINDERS: Readonly<MoveFinder[]> = [
   {
@@ -26,8 +25,7 @@ const MOVE_FINDERS: Readonly<MoveFinder[]> = [
       const srcY = Coords.fileNameToY(srcFile);
       const destCoords = Coords.fromNotation(destFile + destRank)!;
       return legalMoves.find((move) => {
-        return move instanceof PawnMove
-          && move.srcCoords.y === srcY
+        return move.srcCoords.y === srcY
           && move.destCoords === destCoords;
       });
     }
@@ -38,7 +36,7 @@ const MOVE_FINDERS: Readonly<MoveFinder[]> = [
       const srcX = srcRank ? board.Coords.rankNameToX(srcRank) : null;
       const srcY = srcFile ? board.Coords.fileNameToY(srcFile) : null;
       const destCoords = board.Coords.fromNotation(destFile + destRank)!;
-      const piece = Piece.fromInitial(activeColor === Color.WHITE ? initial : initial.toLowerCase());
+      const piece = (board.constructor as typeof Board).PieceConstructor.fromInitial(activeColor === Color.WHITE ? initial : initial.toLowerCase());
 
       return legalMoves.find((move) => {
         return move.destCoords === destCoords
@@ -69,13 +67,11 @@ function findHalfMove(halfMoveStr: string, position: Position) {
 }
 
 function playLine(line: string, game: ChessGame) {
-  for (const { groups } of line.matchAll(halfMoveRegex)) {
-    if (!groups) break;
-
-    const halfMove = findHalfMove(groups["halfMove"], game.currentPosition);
+  for (const { 0: match } of line.matchAll(halfMoveRegex)) {
+    const halfMove = findHalfMove(match, game.currentPosition);
 
     if (!halfMove)
-      throw new Error(`Illegal move "${groups["halfMove"]}" in "${line}".`);
+      throw new Error(`Illegal move "${match}" in "${line}".`);
 
     game.playMove(halfMove);
   }
@@ -83,6 +79,7 @@ function playLine(line: string, game: ChessGame) {
 
 function playLineAndVars(game: ChessGame, { line, variations }: PgnVariations) {
   playLine(line, game);
+
   const current = game.currentPosition;
   variations.forEach((element) => {
     game.currentPosition = current.prev!;

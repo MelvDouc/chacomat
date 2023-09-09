@@ -24,7 +24,7 @@ export interface Position {
   enPassantCoords: Coords | null;
   board: Board;
   legalMoves: Move[];
-  status: import("@/types/types.ts").PositionStatus;
+  status: import("@/types/main-types.ts").PositionStatus;
   next: [Move, Position][];
   fen: string;
 }

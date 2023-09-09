@@ -1,6 +1,6 @@
 import { assert, assertEquals, assertFalse } from "$dev_deps";
-import ChessGame from "@/impl/ChessGame.ts";
-import Position from "@/impl/Position.ts";
+import ChessGame from "@/game/ChessGame.ts";
+import Position from "@/game/Position.ts";
 
 Deno.test("legal moves #1", () => {
   const { board, legalMoves } = Position.new();

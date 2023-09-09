@@ -1,6 +1,6 @@
-import Position from "@/impl/Position.ts";
-import CapablancaBoard from "@/variants/capablanca-chess/impl/CapablancaBoard.ts";
-import CapablancaCastlingRights from "@/variants/capablanca-chess/impl/CapablancaCastlingRights.ts";
+import Position from "@/game/Position.ts";
+import CapablancaBoard from "@/variants/capablanca-chess/CapablancaBoard.ts";
+import CapablancaCastlingRights from "@/variants/capablanca-chess/CapablancaCastlingRights.ts";
 
 export default class CapablancaPosition extends Position {
   protected static override readonly Board = CapablancaBoard;

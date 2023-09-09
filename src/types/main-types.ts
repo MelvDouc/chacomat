@@ -1,13 +1,13 @@
 import GameResults from "@/constants/GameResults.ts";
 import PositionStatuses from "@/constants/PositionStatuses.ts";
-import Board from "@/impl/Board.ts";
-import ChessGame from "@/impl/ChessGame.ts";
-import Color from "@/impl/Color.ts";
-import Position from "@/impl/Position.ts";
-import * as JsonTypes from "@/types/JsonTypes.ts";
+import Board from "@/game/Board.ts";
+import ChessGame from "@/game/ChessGame.ts";
+import Color from "@/game/Color.ts";
+import Position from "@/game/Position.ts";
+import * as Json from "@/types/json-types.ts";
 
 export {
-  JsonTypes,
+  Json,
   type Board, type ChessGame, type Position
 };
 
@@ -23,7 +23,7 @@ export interface Coordinates {
   getPeer(xOffset: number, yOffset: number): Coordinates | null;
   peers(xOffset: number, yOffset: number): Generator<Coordinates>;
   isLightSquare(): boolean;
-  toJson(): JsonTypes.Coords;
+  toJson(): Json.Coords;
 }
 
 export interface Figure {
@@ -39,7 +39,7 @@ export interface Figure {
   isQueen(): boolean;
   isKing(): boolean;
   isShortRange(): boolean;
-  toJson(): JsonTypes.Piece;
+  toJson(): Json.Piece;
 }
 
 export interface Move {
@@ -53,7 +53,7 @@ export interface Move {
   try(board: Board): () => void;
   getComputerNotation(): string;
   getAlgebraicNotation(board: Board, legalMoves: Move[]): string;
-  toJson(board: Board, legalMoves: Move[]): JsonTypes.Move;
+  toJson(board: Board, legalMoves: Move[]): Json.Move;
 }
 
 export interface GameMetaData {

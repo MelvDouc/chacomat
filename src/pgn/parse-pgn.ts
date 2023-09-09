@@ -1,5 +1,5 @@
 import playMoves from "@/pgn/play-moves.ts";
-import { ChessGame } from "@/types/types.ts";
+import { ChessGame } from "@/types/main-types.ts";
 
 const infoRegex = /\[(?<key>\w+)\s+"(?<value>[^"]*)"\]/;
 

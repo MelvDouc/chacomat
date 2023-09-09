@@ -1,5 +1,5 @@
-import PieceMove from "@/impl/moves/PieceMove.ts";
-import { Board, Coordinates, Move } from "@/types/types.ts";
+import PieceMove from "@/game/moves/PieceMove.ts";
+import { Board, Coordinates, Move } from "@/types/main-types.ts";
 
 export default class CastlingMove implements Move {
   public constructor(

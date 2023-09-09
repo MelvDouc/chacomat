@@ -1,7 +1,7 @@
 import { assert, assertEquals, assertFalse } from "$dev_deps";
-import Board from "@/impl/Board.ts";
-import Color from "@/impl/Color.ts";
-import Piece from "@/impl/Piece.ts";
+import Board from "@/game/Board.ts";
+import Color from "@/game/Color.ts";
+import Piece from "@/game/Piece.ts";
 
 const { Pieces } = Piece;
 

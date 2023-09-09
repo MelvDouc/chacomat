@@ -1,6 +1,6 @@
 import { assertEquals } from "$dev_deps";
-import CapablancaBoard from "@/variants/capablanca-chess/impl/CapablancaBoard.ts";
-import CapablancaPiece from "@/variants/capablanca-chess/impl/CapablancaPiece.ts";
+import CapablancaBoard from "@/variants/capablanca-chess/CapablancaBoard.ts";
+import CapablancaPiece from "@/variants/capablanca-chess/CapablancaPiece.ts";
 
 Deno.test("Board validity #1", () => {
   const boardStr = "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR";

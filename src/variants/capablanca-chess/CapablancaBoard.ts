@@ -1,7 +1,7 @@
-import Board from "@/impl/Board.ts";
-import { Coordinates } from "@/types/types.ts";
-import CapablancaCoords from "@/variants/capablanca-chess/impl/CapablancaCoords.ts";
-import CapablancaPiece from "@/variants/capablanca-chess/impl/CapablancaPiece.ts";
+import Board from "@/game/Board.ts";
+import { Coordinates } from "@/types/main-types.ts";
+import CapablancaCoords from "@/variants/capablanca-chess/CapablancaCoords.ts";
+import CapablancaPiece from "@/variants/capablanca-chess/CapablancaPiece.ts";
 
 export default class CapablancaBoard extends Board {
   public static override Coords: typeof CapablancaCoords = CapablancaCoords;

@@ -1,7 +1,7 @@
 import { assert, assertArrayIncludes, assertEquals, assertFalse } from "$dev_deps";
-import ChessGame from "@/impl/ChessGame.ts";
-import Piece from "@/impl/Piece.ts";
-import PawnMove from "@/impl/moves/PawnMove.ts";
+import ChessGame from "@/game/ChessGame.ts";
+import Piece from "@/game/Piece.ts";
+import PawnMove from "@/game/moves/PawnMove.ts";
 
 const { Pieces } = Piece;
 

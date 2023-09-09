@@ -1,8 +1,8 @@
-import Color from "@/impl/Color.ts";
-import Position from "@/impl/Position.ts";
-import { Figure } from "@/types/types.ts";
-import Chess960CastlingRights from "@/variants/chess960/impl/Chess960CastlingRights.ts";
-import Chess960CastlingMove from "@/variants/chess960/impl/moves/Chess960CastlingMove.ts";
+import Color from "@/game/Color.ts";
+import Position from "@/game/Position.ts";
+import { Figure } from "@/types/main-types.ts";
+import Chess960CastlingRights from "@/variants/chess960/Chess960CastlingRights.ts";
+import Chess960CastlingMove from "@/variants/chess960/moves/Chess960CastlingMove.ts";
 
 export default class Chess960Position extends Position {
   protected static override readonly CastlingRights = Chess960CastlingRights;

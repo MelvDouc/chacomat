@@ -1,7 +1,7 @@
 import { assertEquals, assertGreater, assertLess, assertNotEquals } from "$dev_deps";
-import Color from "@/impl/Color.ts";
-import { Coordinates } from "@/types/types.ts";
-import Chess960Game from "@/variants/chess960/impl/Chess960Game.ts";
+import Color from "@/game/Color.ts";
+import { Coordinates } from "@/types/main-types.ts";
+import Chess960Game from "@/variants/chess960/Chess960Game.ts";
 
 Deno.test("Board validity", () => {
   const { currentPosition } = new Chess960Game();

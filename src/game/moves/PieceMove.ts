@@ -1,4 +1,4 @@
-import { Board, Coordinates, Move } from "@/types/types.ts";
+import { Board, Coordinates, Move } from "@/types/main-types.ts";
 
 export default class PieceMove implements Move {
   public constructor(

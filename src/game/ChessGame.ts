@@ -1,11 +1,11 @@
 import GameResults from "@/constants/GameResults.ts";
 import PositionStatuses from "@/constants/PositionStatuses.ts";
-import Color from "@/impl/Color.ts";
-import Position from "@/impl/Position.ts";
-import PawnMove from "@/impl/moves/PawnMove.ts";
-import { getMoveSegments } from "@/pgn/game-to-pgn.ts";
+import Color from "@/game/Color.ts";
+import Position from "@/game/Position.ts";
+import PawnMove from "@/game/moves/PawnMove.ts";
+import { stringifyPos } from "@/pgn/game-to-pgn.ts";
 import parsePgn from "@/pgn/parse-pgn.ts";
-import { GameMetaData, GameResult, Move } from "@/types/types.ts";
+import { GameMetaData, GameResult, Move } from "@/types/main-types.ts";
 
 export default class ChessGame {
   protected static readonly Position: typeof Position = Position;
@@ -126,8 +126,6 @@ export default class ChessGame {
       .map(([key, value]) => `[${key} "${value}"]`)
       .join("\n");
 
-    return `${metaDataStr}
-
-${getMoveSegments(firstPosition).concat(metaData.Result!).join(" ")}`;
+    return `${metaDataStr}\n\n${stringifyPos(firstPosition) + metaData.Result}`;
   }
 }

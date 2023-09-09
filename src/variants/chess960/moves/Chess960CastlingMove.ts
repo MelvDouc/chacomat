@@ -1,5 +1,5 @@
-import CastlingMove from "@/impl/moves/CastlingMove.ts";
-import { Board } from "@/types/types.ts";
+import CastlingMove from "@/game/moves/CastlingMove.ts";
+import { Board } from "@/types/main-types.ts";
 
 export default class Chess960CastlingMove extends CastlingMove {
   public override try(board: Board) {

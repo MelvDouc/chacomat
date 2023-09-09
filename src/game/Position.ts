@@ -1,11 +1,11 @@
 import PositionStatuses from "@/constants/PositionStatuses.ts";
-import Board from "@/impl/Board.ts";
-import CastlingRights from "@/impl/CastlingRights.ts";
-import Color from "@/impl/Color.ts";
-import CastlingMove from "@/impl/moves/CastlingMove.ts";
-import PawnMove from "@/impl/moves/PawnMove.ts";
-import PieceMove from "@/impl/moves/PieceMove.ts";
-import { Coordinates, JsonTypes, Move, PositionStatus } from "@/types/types.ts";
+import Board from "@/game/Board.ts";
+import CastlingRights from "@/game/CastlingRights.ts";
+import Color from "@/game/Color.ts";
+import CastlingMove from "@/game/moves/CastlingMove.ts";
+import PawnMove from "@/game/moves/PawnMove.ts";
+import PieceMove from "@/game/moves/PieceMove.ts";
+import { Coordinates, Json, Move, PositionStatus } from "@/types/main-types.ts";
 
 export default class Position {
   protected static readonly Board: typeof Board = Board;
@@ -224,7 +224,7 @@ export default class Position {
     ].join(" ");
   }
 
-  public toJson(): JsonTypes.Position {
+  public toJson(): Json.Position {
     return {
       activeColor: this.activeColor.abbreviation,
       castlingRights: this.castlingRights.toJson(),

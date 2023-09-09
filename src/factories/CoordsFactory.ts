@@ -1,4 +1,4 @@
-import { Coordinates } from "@/types/types.ts";
+import { Coordinates } from "@/types/main-types.ts";
 
 export default function CoordsFactory(boardHeight: number, boardWidth: number) {
   const FILES = Array.from({ length: boardWidth }, (_, i) => String.fromCharCode(i + 97));
@@ -9,7 +9,7 @@ export default function CoordsFactory(boardHeight: number, boardWidth: number) {
   const xToRankName = (x: number) => String(boardHeight - x);
   const yToFileName = (y: number) => FILES[y];
 
-  class C implements Coordinates {
+  class CoordinatesImpl implements Coordinates {
     constructor(public readonly x: number, public readonly y: number) { }
 
     get index() {
@@ -41,9 +41,8 @@ export default function CoordsFactory(boardHeight: number, boardWidth: number) {
     *peers(xOffset: number, yOffset: number) {
       let { x, y } = this;
 
-      while (isSafe(x += xOffset, y += yOffset)) {
+      while (isSafe(x += xOffset, y += yOffset))
         yield Coords(x, y);
-      }
     }
 
     toJson() {
@@ -57,7 +56,7 @@ export default function CoordsFactory(boardHeight: number, boardWidth: number) {
   };
 
   const ALL = Array.from({ length: boardHeight }, (_, x) => {
-    return Array.from({ length: boardWidth }, (_, y) => new C(x, y));
+    return Array.from({ length: boardWidth }, (_, y) => new CoordinatesImpl(x, y));
   });
 
   const Coords = (x: number, y: number) => ALL[x][y];

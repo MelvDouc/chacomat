@@ -1,5 +1,5 @@
-import PieceMove from "@/impl/moves/PieceMove.ts";
-import { Board, Coordinates, Figure, Move } from "@/types/types.ts";
+import PieceMove from "@/game/moves/PieceMove.ts";
+import { Board, Coordinates, Figure, Move } from "@/types/main-types.ts";
 
 export default class PawnMove implements Move {
   public constructor(
