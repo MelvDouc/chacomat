@@ -23,8 +23,8 @@ spanishGame
 
 ```javascript
 const spanishGame = new ChessGame({
-  fen: "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
-  metaInfo: {
+  fen: "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b kqKQ - 3 3",
+  info: {
     White: "Magnus Carlsen",
     Black: "Ian Nepomniachtchi"
   }
@@ -65,4 +65,12 @@ Note how castling rights are noted using the rooks' initial files.
 
 ```javascript
 import { CapablancaChessGame } from "chacomat";
+```
+
+### Shatranj
+
+The old game of Shatranj, which chess originated from, is also available.
+
+```javascript
+import { Shatranj } from "chacomat";
 ```

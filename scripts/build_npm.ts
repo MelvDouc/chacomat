@@ -1,4 +1,4 @@
-import { build, emptyDir } from "$dev_deps";
+import { build, emptyDir } from "@dev_deps";
 
 const rootDir = Deno.cwd();
 const npmDir = `${rootDir}/npm`;

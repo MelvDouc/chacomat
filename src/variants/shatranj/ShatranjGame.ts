@@ -1,53 +1,69 @@
+import type Move from "@/base/moves/Move.ts";
+import PawnMove from "@/base/moves/PawnMove.ts";
 import Color from "@/constants/Color.ts";
 import GameResults from "@/constants/GameResults.ts";
-import ShatranjPositionStatuses from "@/constants/PositionStatuses.ts";
-import { GameMetaData, GameResult, Move } from "@/types/main-types.ts";
+import playMoves from "@/pgn/play-moves.ts";
+import { GameInfo } from "@/types.ts";
+import ShatranjBoard from "@/variants/shatranj/ShatranjBoard.ts";
+import ShatranjPiece from "@/variants/shatranj/ShatranjPiece.ts";
 import ShatranjPosition from "@/variants/shatranj/ShatranjPosition.ts";
-import PawnMove from "@/variants/shatranj/moves/PawnMove.ts";
 
-export default class ShatranjGame<TPosition extends ShatranjPosition = ShatranjPosition> {
+export default class ShatranjGame {
   protected static readonly Position: typeof ShatranjPosition = ShatranjPosition;
 
-  protected static getInitialPosition(fen?: string) {
-    return fen
-      ? this.Position.fromFen(fen)
-      : this.Position.new();
-  }
+  public static parsePgn(pgn: string) {
+    let matchArray: RegExpMatchArray | null;
+    const info: GameInfo = { Result: GameResults.NONE };
 
-  public readonly metaData: Pick<GameMetaData, "Result"> & Partial<Omit<GameMetaData, "Result">> & { [key: string]: any; };
-  public currentPosition: TPosition;
+    while ((matchArray = pgn.match(/^\[(?<key>\w+)\s+"(?<value>[^"]*)"\]/))?.groups) {
+      info[matchArray.groups["key"]] = matchArray.groups["value"];
+      pgn = pgn.slice(matchArray[0].length).trimStart();
+    }
 
-  public constructor({ metaData }: {
-    metaData?: Partial<GameMetaData> & { [key: string]: any; };
-  } = {}) {
-    metaData ??= {};
-    this.metaData = {
-      ...metaData,
-      Result: metaData.Result ?? GameResults.NONE
+    return {
+      gameInfo: info,
+      moveList: pgn
     };
-    this.currentPosition = (metaData.FEN
-      ? ShatranjPosition.fromFen(metaData.FEN)
-      : ShatranjPosition.new()) as TPosition;
   }
 
-  public get firstPosition(): TPosition {
+  declare public ["constructor"]: typeof ShatranjGame;
+  public readonly info: GameInfo;
+  public currentPosition: ShatranjPosition;
+
+  public constructor({ info, pgn }: {
+    info?: GameInfo;
+    pgn?: string;
+  } = {}) {
+    this.info = {
+      ...(info ?? {}),
+      Result: info?.Result ?? GameResults.NONE
+    };
+
+    if (pgn) {
+      const { gameInfo, moveList } = this.constructor.parsePgn(pgn.trim());
+      Object.assign(this.info, gameInfo);
+      this.currentPosition = this.constructor.Position.new(this.info.FEN);
+      playMoves(moveList, this);
+    } else {
+      this.currentPosition = this.constructor.Position.new(this.info.FEN);
+    }
+
+  }
+
+  public get firstPosition(): this["currentPosition"] {
     let pos = this.currentPosition;
-    while (pos.prev) pos = pos.prev as TPosition;
+    while (pos.prev) pos = pos.prev;
     return pos;
   }
 
-  public getResult(): GameResult {
-    switch (this.currentPosition.status) {
-      case ShatranjPositionStatuses.CHECKMATE:
-        return (this.currentPosition.activeColor === Color.WHITE)
-          ? GameResults.BLACK_WIN
-          : GameResults.WHITE_WIN;
-      case ShatranjPositionStatuses.STALEMATE:
-      case ShatranjPositionStatuses.INSUFFICIENT_MATERIAL:
-        return GameResults.DRAW;
-      default:
-        return GameResults.NONE;
-    }
+  public updateResult() {
+    if (this.currentPosition.isCheckmate())
+      this.info.Result = (this.currentPosition.activeColor === Color.WHITE)
+        ? GameResults.BLACK_WIN
+        : GameResults.WHITE_WIN;
+    if (this.currentPosition.isStalemate())
+      this.info.Result = GameResults.DRAW;
+    this.info.Result = GameResults.NONE;
   }
 
   public goToStart() {
@@ -56,29 +72,28 @@ export default class ShatranjGame<TPosition extends ShatranjPosition = ShatranjP
 
   public goBack() {
     const { prev } = this.currentPosition;
-    if (prev) this.currentPosition = prev as TPosition;
+    if (prev) this.currentPosition = prev;
   }
 
   public playMove(move: Move) {
     const pos = this.currentPosition;
-    const board = pos.board.clone();
-    const srcPiece = board.getByCoords(move.srcCoords)!;
+    const board = pos.board.clone() as ShatranjBoard;
+    const srcPiece = board.get(move.srcIndex)!;
 
     if (move instanceof PawnMove && move.isPromotion(board))
-      move.promotedPiece = (board.constructor as typeof ShatranjPosition["Board"])
-        .PieceConstructor
-        .fromInitial(srcPiece.color === Color.WHITE ? "Q" : "q")!;
+      move.promotedPiece = ShatranjPiece.fromInitial(srcPiece.color === Color.WHITE ? "Q" : "q")!;
 
     move.try(board);
 
-    const nextPos = new (this.constructor as typeof ShatranjGame).Position({
+    const nextPos = new this.constructor.Position({
       board,
       activeColor: pos.activeColor.opposite,
       fullMoveNumber: pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
     });
     nextPos.prev = pos;
-    pos.next.push([move, nextPos]);
-    this.currentPosition = nextPos as TPosition;
+    nextPos.srcMove = move;
+    pos.next.push(nextPos);
+    this.currentPosition = nextPos;
     return this;
   }
 
@@ -87,13 +102,37 @@ export default class ShatranjGame<TPosition extends ShatranjPosition = ShatranjP
    * @returns This same game.
    */
   public playMoveWithNotation(notation: string) {
-    const move = this.currentPosition.legalMoves.find((move) => {
-      return move.getComputerNotation() === notation;
+    const { board, legalMoves } = this.currentPosition;
+    const srcIndex = board.notationToIndex(notation.slice(0, 2));
+    const destIndex = board.notationToIndex(notation.slice(2, 4));
+    const move = legalMoves.find((move) => {
+      return move.srcIndex === srcIndex && move.destIndex === destIndex;
     });
 
     if (!move)
       throw new Error(`Illegal move: "${notation}".`);
 
     return this.playMove(move);
+  }
+
+  public infoAsString() {
+    const { Result, FEN, ...info } = this.info;
+    const startFen = this.firstPosition.toString();
+    const infoAsStrings = Object.entries(info)
+      .map(([key, value]) => `[${key} "${value}"]`)
+      .concat(`[Result "${this.info.Result}"]`);
+
+    if (startFen !== this.constructor.Position.START_FEN)
+      infoAsStrings.push(`[FEN "${startFen}"]`);
+
+    return infoAsStrings.join("\n");
+  }
+
+  public moveListAsString() {
+    return this.firstPosition.toMoveList();
+  }
+
+  public toString() {
+    return `${this.infoAsString()}\n\n${this.moveListAsString()} ${this.info.Result}`;
   }
 }

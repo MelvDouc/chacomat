@@ -1,10 +1,11 @@
 import { diagonalOffsets, orthogonalOffsets } from "@/constants/offsets.ts";
-import Piece from "@/international/Piece.ts";
+import Piece from "@/standard/Piece.ts";
 
 export default class CapablancaPiece extends Piece {
-  protected static override values = new Map([...Piece.values]);
+  protected static readonly values = new Map<number, Piece>([...Piece.values]);
+  protected static readonly initials = new Map<string, Piece>([...Piece.initials]);
 
-  public static override get Pieces() {
+  public static get Pieces() {
     return CapablancaPieces;
   }
 }

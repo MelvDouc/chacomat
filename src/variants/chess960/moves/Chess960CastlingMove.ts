@@ -1,25 +1,25 @@
-import type Board from "@/international/Board.ts";
-import CastlingMove from "@/international/moves/CastlingMove.ts";
+import Board from "@/standard/Board.ts";
+import CastlingMove from "@/standard/moves/CastlingMove.ts";
 
 export default class Chess960CastlingMove extends CastlingMove {
   public override try(board: Board) {
-    const king = board.getByCoords(this.srcCoords)!;
-    const rook = board.getByCoords(this.destCoords)!;
-    const kingDestY = board.initialKingFile + board.castlingMultiplier * this.direction;
-    const rookDestY = kingDestY - this.direction;
+    const king = board.get(this.srcIndex)!;
+    const rook = board.get(this.destIndex)!;
+    const kingDestIndex = board.getCastledKingIndex(king.color, this.destIndex);
+    const rookDestIndex = kingDestIndex - this.direction;
 
     board
-      .deleteCoords(this.srcCoords)
-      .set(this.srcCoords.x, kingDestY, king)
-      .deleteCoords(this.destCoords)
-      .set(this.srcCoords.x, rookDestY, rook);
+      .delete(this.srcIndex)
+      .delete(this.destIndex)
+      .set(kingDestIndex, king)
+      .set(rookDestIndex, rook);
 
     return () => {
       board
-        .delete(this.srcCoords.x, kingDestY)
-        .setByCoords(this.srcCoords, king)
-        .delete(this.srcCoords.x, rookDestY)
-        .setByCoords(this.destCoords, rook);
+        .delete(kingDestIndex)
+        .delete(rookDestIndex)
+        .set(this.srcIndex, king)
+        .set(this.rookSrcIndex, rook);
     };
   }
 }

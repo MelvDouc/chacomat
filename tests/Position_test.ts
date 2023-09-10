@@ -1,44 +1,50 @@
-import { assert, assertEquals, assertFalse } from "$dev_deps";
-import ChessGame from "@/international/ChessGame.ts";
-import Position from "@/international/Position.ts";
+import ChessGame from "@/standard/ChessGame.ts";
+import Position from "@/standard/Position.ts";
+import { assert, assertArrayIncludes, assertEquals, assertFalse } from "@dev_deps";
 
-Deno.test("legal moves #1", () => {
+Deno.test("checkmate", () => {
+  const pos = Position.fromFen("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w kqKQ - 1 3");
+  assert(pos.isCheckmate());
+});
+
+Deno.test("stalemate", () => {
+  const pos = Position.fromFen("k7/8/2NN4/8/2K5/8/8/8 b - - 1 1");
+  assert(pos.isStalemate());
+});
+
+Deno.test("legal moves", () => {
   const { board, legalMoves } = Position.new();
 
-  assertEquals(legalMoves.filter((move) => board.getByCoords(move.srcCoords)?.isPawn()).length, 16);
-  assertEquals(legalMoves.filter((move) => board.getByCoords(move.srcCoords)?.isKnight()).length, 4);
+  assertEquals(legalMoves.filter(({ srcIndex }) => board.get(srcIndex)?.isPawn()).length, 16);
+  assertEquals(legalMoves.filter(({ srcIndex }) => board.get(srcIndex)?.isKnight()).length, 4);
 });
 
-Deno.test("Insufficient material: only kings", () => {
-  assert(Position.fromFen("k1K5/8/8/8/8/8/8/8 w - - 0 1").isInsufficientMaterial());
-});
-
-Deno.test("Insufficient material: minor vs nothing", () => {
-  assert(Position.fromFen("k1K5/n7/8/8/8/8/8/8 w - - 0 1").isInsufficientMaterial());
-});
-
-Deno.test("Insufficient material: same-colored bishops", () => {
-  assert(Position.fromFen("k1K5/b1B5/8/8/8/8/8/8 w - - 0 1").isInsufficientMaterial());
-});
-
-Deno.test("Sufficient material: opposite-colored bishops", () => {
-  assertFalse(Position.fromFen("k1K5/bB6/8/8/8/8/8/8 w - - 0 1").isInsufficientMaterial());
-});
-
-Deno.test("Stalemate #1", () => {
-  assert(Position.fromFen("5bnr/4p1pq/4Qpkr/7p/7P/4P3/PPPP1PP1/RNB1KBNR b KQ - 2 10").isStalemate());
-});
-
-Deno.test("Stalemate #2", () => {
-  assert(Position.fromFen("rn2k1nr/pp4pp/3p4/q1pP4/P1P2p1b/1b2pPRP/1P1NP1PQ/2B1KBNR w Kkq - 0 13").isStalemate());
-});
-
-Deno.test("Triple repetition #1", () => {
-  const game = new ChessGame({ pgn: `1.Nf3 Nf6 2.Ng1 Ng8 3.Nf3 Nf6 4.Ng1 Ng8 5.Nf3 *` });
+Deno.test("triple repetition", () => {
+  const game = new ChessGame({ pgn: "1.Nf3 Nf6 2.Ng1 Ng8 3.Nf3 Nf6 4.Ng1 Ng8 5.Nf3 *" });
   assert(game.currentPosition.isTripleRepetition());
 });
 
-Deno.test("Triple repetition #2", () => {
-  const game = new ChessGame({ pgn: `1.Nf3 Nf6 2.Ng1 Ng8 3.Nf3 Nf6 4.Ng1 Ng8 6.Nc3 Nc6 7.Nb1 Nb8 8.Nf3 *` });
-  assert(game.currentPosition.isTripleRepetition());
+Deno.test("insufficient material - kings only", () => {
+  const pos = Position.fromFen("k1K/8/8/8/8/8/8/8 w - - 0 1");
+  assert(pos.isInsufficientMaterial());
+});
+
+Deno.test("insufficient material - same-colored bishops", () => {
+  const pos = Position.fromFen("kb4KB/8/8/8/8/8/8/8 w - - 0 1");
+  assert(pos.isInsufficientMaterial());
+});
+
+Deno.test("sufficient material - opposite-colored bishops", () => {
+  const pos = Position.fromFen("kb4BK/8/8/8/8/8/8/8 w - - 0 1");
+  assertFalse(pos.isInsufficientMaterial());
+});
+
+Deno.test("sufficient material - N vs B", () => {
+  const pos = Position.fromFen("kb4NK/8/8/8/8/8/8/8 w - - 0 1");
+  assertFalse(pos.isInsufficientMaterial());
+});
+
+Deno.test("ambiguous move notation", () => {
+  const { legalMovesAsAlgebraicNotation } = Position.fromFen("3Q4/8/8/Q2Q4/8/8/8/4K1k1 w - - 0 1");
+  assertArrayIncludes(legalMovesAsAlgebraicNotation.filter(n => n.endsWith("a8")), ["Q8a8", "Qaa8", "Qd5a8"]);
 });

@@ -1,40 +1,43 @@
-import CastlingMove from "@/international/moves/CastlingMove.ts";
+import { fileNameToY, rankNameToX } from "@/base/CoordsUtils.ts";
 import { PgnVariations, parseVariations } from "@/pgn/utils.ts";
+import CastlingMove from "@/standard/moves/CastlingMove.ts";
 import type ShatranjGame from "@/variants/shatranj/ShatranjGame.ts";
 import type ShatranjPosition from "@/variants/shatranj/ShatranjPosition.ts";
 
-const halfMoveRegex = /([NBRQKa-h1-8]{0,4}x?[a-h][1-8]|(O|0)(-(O|0)){1,2})/g;
+const halfMoveRegex = /([A-Za-i\d]{0,5}x?[a-i]\d+|(O|0)(-(O|0)){1,2})/g;
+const ambiguousPieceMoveRegex = /^[A-Z](?<sy>[a-i])?(?<sx>\d+)?x?[a-i]\d+/;
 
 const MOVE_FINDERS = {
-  PAWN_MOVE: (str: string, { legalMoves, board }: ShatranjPosition) => {
-    const destCoords = board.Coords.fromNotation(str.slice(-2));
-
-    if (!str.includes("x"))
+  PAWN_MOVE: (input: string, { legalMoves, board }: ShatranjPosition) => {
+    if (!input.includes("x")) {
+      const destIndex = board.notationToIndex(input);
       return legalMoves.find((move) => {
-        return board.getByCoords(move.srcCoords)!.isPawn() && destCoords === move.destCoords;
+        return board.get(move.srcIndex)?.isPawn() && move.destIndex === destIndex;
       });
+    }
 
-    const srcY = board.Coords.fileNameToY(str[0]);
+    const srcY = fileNameToY(input[0]);
+    const destIndex = board.notationToIndex(input.slice(2));
     return legalMoves.find((move) => {
-      return move.srcCoords.y === srcY && move.destCoords === destCoords;
+      return move.getSrcCoords(board).y === srcY && move.destIndex === destIndex;
     });
   },
-  PIECE_MOVE: (str: string, { legalMoves, board }: ShatranjPosition) => {
-    const destCoords = board.Coords.fromNotation(str.slice(-2));
-    const groups = str.match(/^[NBRQK](?<sy>[a-h])?(?<sx>[1-8])?x?[a-h][1-8]/)?.groups ?? {};
-    const srcX = groups.sx ? board.Coords.rankNameToX(groups.sx) : null;
-    const srcY = groups.sy ? board.Coords.fileNameToY(groups.sy) : null;
+  PIECE_MOVE: (input: string, { legalMoves, board }: ShatranjPosition) => {
+    const destIndex = board.notationToIndex(input.slice(-2));
+    const groups = input.match(ambiguousPieceMoveRegex)?.groups ?? {};
+    const srcX = groups.sx ? rankNameToX(groups.sx, board.height) : null;
+    const srcY = groups.sy ? fileNameToY(groups.sy) : null;
 
     return legalMoves.find((move) => {
-      return move.destCoords === destCoords
-        && board.getByCoords(move.srcCoords)?.initial.toUpperCase() === str[0]
-        && (srcX === null || move.srcCoords.x === srcX)
-        && (srcY === null || move.srcCoords.y === srcY);
+      return move.destIndex === destIndex
+        && board.get(move.srcIndex)?.initial.toUpperCase() === input[0]
+        && (srcX === null || move.getSrcCoords(board).x === srcX)
+        && (srcY === null || move.getSrcCoords(board).y === srcY);
     });
   },
-  CASTLING: (str: string, { legalMoves }: ShatranjPosition) => {
+  CASTLING: (input: string, { legalMoves }: ShatranjPosition) => {
     return legalMoves.find((move) => {
-      return move instanceof CastlingMove && move.isQueenSide() === (str.length === 5);
+      return move instanceof CastlingMove && move.isQueenSide() === (input.length === 5);
     });
   }
 } as const;
@@ -42,20 +45,20 @@ const MOVE_FINDERS = {
 function findHalfMove(input: string, position: ShatranjPosition) {
   if (input.includes("-"))
     return MOVE_FINDERS.CASTLING(input, position);
-  if (/^[NBRQK]/.test(input))
+  if (/^[A-Z]/.test(input))
     return MOVE_FINDERS.PIECE_MOVE(input, position);
   return MOVE_FINDERS.PAWN_MOVE(input, position);
+  // return position.legalMoves.find((move) => {
+  //   return move.getAlgebraicNotation(position.board, position.legalMoves) === input;
+  // });
 }
 
 function playLine(line: string, game: ShatranjGame) {
-  const matches = line.match(halfMoveRegex);
-  if (!matches) return;
-
-  for (const input of matches) {
-    const halfMove = findHalfMove(input, game.currentPosition);
+  for (const { 0: substring, index } of line.matchAll(halfMoveRegex)) {
+    const halfMove = findHalfMove(substring, game.currentPosition);
 
     if (!halfMove) {
-      const errMessage = `Illegal move "${input}" in "${line}".`;
+      const errMessage = `Illegal move "${substring}" near "${line.slice(index)}" in "${line}".`;
       throw new Error(errMessage);
     }
 

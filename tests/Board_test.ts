@@ -1,68 +1,21 @@
-import { assert, assertEquals, assertFalse } from "$dev_deps";
-import Color from "@/constants/Color.ts";
-import Board from "@/international/Board.ts";
-import Piece from "@/international/Piece.ts";
+import ShatranjBoard from "@/variants/shatranj/ShatranjBoard.ts";
+import ShatranjPiece from "@/variants/shatranj/ShatranjPiece.ts";
+import { assert, assertEquals } from "@dev_deps";
 
-const { Pieces } = Piece;
-
-Deno.test("king coords", () => {
-  const board = new Board();
-  board.set(0, 0, Pieces.WHITE_KING);
-
-  assertEquals(board.getKingCoords(Color.WHITE), board.Coords(0, 0));
+Deno.test("string to board", () => {
+  const board = new ShatranjBoard().addPiecesFromString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+  const blackPieceRank = Array.from({ length: 8 }, (_, i) => board.get(i));
+  const whitePieceRank = Array.from({ length: 8 }, (_, i) => board.get(8 * 7 + i));
+  assert(whitePieceRank.every((piece, i) => blackPieceRank[i] === piece?.opposite));
 });
 
-Deno.test("pieces of color", () => {
-  const board = new Board();
-  board.set(0, 0, Pieces.BLACK_KING);
-  board.set(0, 1, Pieces.BLACK_ROOK);
-  board.set(0, 2, Pieces.WHITE_KING);
-  board.set(0, 3, Pieces.BLACK_QUEEN);
+Deno.test("board to string", () => {
+  const board = new ShatranjBoard();
 
-  assert([...board.getPiecesOfColor(Color.BLACK)].every(([, piece]) => piece.color === Color.BLACK));
-});
+  for (let i = 0; i < 8; i++) {
+    board.set(8 + i, ShatranjPiece.Pieces.BLACK_PAWN);
+    board.set(8 * 6 + i, ShatranjPiece.Pieces.WHITE_PAWN);
+  }
 
-Deno.test("castling possible", () => {
-  const board = new Board();
-  board.set(7, 0, Pieces.WHITE_ROOK);
-  board.set(7, 4, Pieces.WHITE_KING);
-  board.set(7, 6, Pieces.WHITE_KNIGHT);
-  board.set(7, 7, Pieces.WHITE_ROOK);
-
-  assert(board.canCastle(0, Color.WHITE, new Set()));
-});
-
-Deno.test("castling obstructed", () => {
-  const board = new Board();
-  board.set(7, 0, Pieces.WHITE_ROOK);
-  board.set(7, 4, Pieces.WHITE_KING);
-  board.set(7, 6, Pieces.WHITE_KNIGHT);
-  board.set(7, 7, Pieces.WHITE_ROOK);
-
-  assertFalse(board.canCastle(7, Color.WHITE, new Set()));
-});
-
-Deno.test("castling through check", () => {
-  const board = new Board();
-  board.set(7, 0, Pieces.WHITE_ROOK);
-  board.set(7, 4, Pieces.WHITE_KING);
-  board.set(7, 7, Pieces.WHITE_ROOK);
-  const attackedCoordsSet = new Set([board.Coords(7, 6)]);
-
-  assertFalse(board.canCastle(7, Color.WHITE, attackedCoordsSet));
-});
-
-Deno.test("clone", () => {
-  const board = new Board();
-  board.set(7, 0, Pieces.WHITE_ROOK);
-  board.set(7, 4, Pieces.WHITE_KING);
-  board.set(7, 7, Pieces.WHITE_ROOK);
-
-  assertEquals(board.toString(), board.clone().toString());
-});
-
-Deno.test("stringify", () => {
-  const boardStr = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-  const board = Board.fromString(boardStr);
-  assertEquals(board.toString(), boardStr, `${boardStr} -> ${board.toString()}`);
+  assertEquals(board.toString(), "8/pppppppp/8/8/8/8/PPPPPPPP/8");
 });

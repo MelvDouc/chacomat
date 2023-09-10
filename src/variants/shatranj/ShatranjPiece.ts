@@ -1,4 +1,4 @@
-import Color from "@/constants/Color.ts";
+import BasePiece from "@/base/BasePiece.ts";
 import {
   blackPawnOffsets,
   diagonalOffsets,
@@ -8,97 +8,16 @@ import {
   whitePawnOffsets
 } from "@/constants/offsets.ts";
 
-export default class ShatranjPiece {
-  protected static values = new Map<number, ShatranjPiece>();
+export default class ShatranjPiece extends BasePiece {
+  protected static readonly values = new Map<number, ShatranjPiece>();
+  protected static readonly initials = new Map<string, ShatranjPiece>();
 
   public static get Pieces() {
     return ShatranjPieces;
   }
 
-  public static fromInitial(initial: string) {
-    return Object.values(this.Pieces).find((piece) => piece.initial === initial);
-  }
-
-  public readonly value: number;
-  public readonly initial: string;
-  public readonly color: Color;
-  public readonly offsets: { x: number[]; y: number[]; };
-
-  public constructor({ value, initial, offsets }: {
-    value: number;
-    initial: string;
-    offsets: ShatranjPiece["offsets"];
-  }) {
-    this.value = value;
-    this.initial = initial;
-    this.color = initial === initial.toUpperCase() ? Color.WHITE : Color.BLACK;
-    this.offsets = offsets;
-    (this.constructor as typeof ShatranjPiece).values.set(value, this);
-  }
-
-  public get opposite() {
-    return (this.constructor as typeof ShatranjPiece).values.get(-this.value)!;
-  }
-
-  public isPawn() {
-    return this.initial.toUpperCase() === "P";
-  }
-
-  public isKing() {
-    return this.initial.toUpperCase() === "K";
-  }
-
-  public isKnight() {
-    return this.initial.toUpperCase() === "N";
-  }
-
-  public isBishop() {
-    return this.initial.toUpperCase() === "B";
-  }
-
-  public isRook() {
-    return this.initial.toUpperCase() === "R";
-  }
-
-  public isQueen() {
-    return this.initial.toUpperCase() === "Q";
-  }
-
   public isShortRange() {
-    return Math.abs(this.value) !== ShatranjPieces.WHITE_ROOK.value;
-  }
-
-  /*
-  public isPawn() {
-    return Math.abs(this.value) === absolutePieceValues.PAWN;
-  }
-
-  public isKing() {
-    return Math.abs(this.value) === absolutePieceValues.KING;
-  }
-
-  public isKnight() {
-    return Math.abs(this.value) === absolutePieceValues.KNIGHT;
-  }
-
-  public isBishop() {
-    return Math.abs(this.value) === absolutePieceValues.BISHOP;
-  }
-
-  public isRook() {
-    return Math.abs(this.value) === absolutePieceValues.ROOK;
-  }
-
-  public isQueen() {
-    return Math.abs(this.value) === absolutePieceValues.QUEEN;
-  }
-  */
-
-  public toJson() {
-    return {
-      initial: this.initial,
-      color: this.color.abbreviation
-    };
+    return !this.isRook();
   }
 }
 
