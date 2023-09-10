@@ -1,17 +1,15 @@
+import Color from "@/constants/Color.ts";
 import GameResults from "@/constants/GameResults.ts";
 import PositionStatuses from "@/constants/PositionStatuses.ts";
-import Board from "@/game/Board.ts";
-import ChessGame from "@/game/ChessGame.ts";
-import Color from "@/game/Color.ts";
-import Position from "@/game/Position.ts";
+import type ChessGame from "@/international/ChessGame.ts";
+import type Position from "@/international/Position.ts";
 import * as Json from "@/types/json-types.ts";
+import type ShatranjBoard from "@/variants/shatranj/ShatranjBoard.ts";
 
 export {
-  Json,
-  type Board, type ChessGame, type Position
+  Json, type ChessGame, type Color,
+  type Position
 };
-
-export type PositionStatus = typeof PositionStatuses[keyof typeof PositionStatuses];
 
 export interface Coordinates {
   x: number;
@@ -26,22 +24,6 @@ export interface Coordinates {
   toJson(): Json.Coords;
 }
 
-export interface Figure {
-  value: number;
-  initial: string;
-  offsets: { x: number[]; y: number[]; };
-  color: Color;
-  opposite: Figure;
-  isPawn(): boolean;
-  isKnight(): boolean;
-  isBishop(): boolean;
-  isRook(): boolean;
-  isQueen(): boolean;
-  isKing(): boolean;
-  isShortRange(): boolean;
-  toJson(): Json.Piece;
-}
-
 export interface Move {
   readonly srcCoords: Coordinates;
   readonly destCoords: Coordinates;
@@ -50,10 +32,10 @@ export interface Move {
    * @param board The move to apply the move to.
    * @returns An undo function.
   */
-  try(board: Board): () => void;
+  try(board: ShatranjBoard): () => void;
   getComputerNotation(): string;
-  getAlgebraicNotation(board: Board, legalMoves: Move[]): string;
-  toJson(board: Board, legalMoves: Move[]): Json.Move;
+  getAlgebraicNotation(board: ShatranjBoard, legalMoves: Move[]): string;
+  toJson(board: ShatranjBoard, legalMoves: Move[]): Json.Move;
 }
 
 export interface GameMetaData {
@@ -83,3 +65,4 @@ export interface GameMetaData {
 export type GameResult = typeof GameResults[keyof typeof GameResults];
 export type PromotionType = "Q" | "R" | "B" | "N";
 export type CapablancaChessPromotionType = PromotionType | "A" | "C";
+export type PositionStatus = typeof PositionStatuses[keyof typeof PositionStatuses];

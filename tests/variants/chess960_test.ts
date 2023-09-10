@@ -1,5 +1,5 @@
 import { assertEquals, assertGreater, assertLess, assertNotEquals } from "$dev_deps";
-import Color from "@/game/Color.ts";
+import Color from "@/constants/Color.ts";
 import { Coordinates } from "@/types/main-types.ts";
 import Chess960Game from "@/variants/chess960/Chess960Game.ts";
 

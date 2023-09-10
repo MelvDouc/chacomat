@@ -1,13 +1,13 @@
-import Color from "@/game/Color.ts";
-import { Position } from "@/types/main-types.ts";
+import Color from "@/constants/Color.ts";
+import type ShatranjPosition from "@/variants/shatranj/ShatranjPosition.ts";
 
 export function stringifyPos(
-  { activeColor, board, fullMoveNumber, legalMoves, next }: Position,
+  { activeColor, board, fullMoveNumber, legalMoves, next, comment }: ShatranjPosition,
   isFirst = true
 ): string {
   if (!next.length) return "";
 
-  let acc = "";
+  let acc = comment ? `{${comment}} ` : "";
   const [[move0, nextPos0], ...variations] = next;
 
   if (activeColor === Color.WHITE)
@@ -27,7 +27,7 @@ export function stringifyPos(
   return `${acc} ${stringifyPos(nextPos0, variations.length > 0)}`;
 }
 
-function checkSign(position: Position) {
+function checkSign(position: ShatranjPosition) {
   if (position.isCheck())
     return position.legalMoves.length ? "+" : "#";
   return "";

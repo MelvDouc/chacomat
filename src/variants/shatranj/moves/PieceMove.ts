@@ -1,4 +1,5 @@
-import { Board, Coordinates, Move } from "@/types/main-types.ts";
+import { Coordinates, Move } from "@/types/main-types.ts";
+import type ShatranjBoard from "@/variants/shatranj/ShatranjBoard.ts";
 
 export default class PieceMove implements Move {
   public constructor(
@@ -6,7 +7,7 @@ export default class PieceMove implements Move {
     public readonly destCoords: Coordinates
   ) { }
 
-  public try(board: Board): () => void {
+  public try(board: ShatranjBoard): () => void {
     const srcPiece = board.getByCoords(this.srcCoords)!;
     const destPiece = board.getByCoords(this.destCoords);
     board
@@ -25,7 +26,7 @@ export default class PieceMove implements Move {
     return this.srcCoords.notation + this.destCoords.notation;
   }
 
-  public getAlgebraicNotation(board: Board, legalMoves: Move[]) {
+  public getAlgebraicNotation(board: ShatranjBoard, legalMoves: Move[]) {
     const srcPiece = board.getByCoords(this.srcCoords)!;
     let notation = "";
 
@@ -46,7 +47,7 @@ export default class PieceMove implements Move {
     return srcPiece.initial.toUpperCase() + notation + this.destCoords.notation;
   }
 
-  public toJson(board: Board, legalMoves: Move[]) {
+  public toJson(board: ShatranjBoard, legalMoves: Move[]) {
     return {
       srcCoords: this.srcCoords.toJson(),
       destCoords: this.destCoords.toJson(),

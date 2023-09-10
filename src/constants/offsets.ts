@@ -13,17 +13,17 @@ export const knightOffsets = {
   y: [-2, -1, 1, 2, 2, 1, -1, -2]
 };
 
-export const bishopOffsets = {
-  x: [-1, -1, 1, 1],
-  y: [-1, 1, 1, -1]
-};
-
-export const rookOffsets = {
+export const orthogonalOffsets = {
   x: [0, -1, 0, 1],
   y: [-1, 0, 1, 0]
 };
 
-export const royalOffsets = {
-  x: [-1, -1, -1, 0, 1, 1, 1, 0],
-  y: [-1, 0, 1, 1, 1, 0, -1, -1]
+export const diagonalOffsets = {
+  x: [-1, -1, 1, 1],
+  y: [-1, 1, 1, -1]
+};
+
+export const kingOffsets = {
+  x: orthogonalOffsets.x.flatMap((xOffset, i) => [xOffset, diagonalOffsets.x[i]]),
+  y: orthogonalOffsets.y.flatMap((yOffset, i) => [yOffset, diagonalOffsets.y[i]])
 };

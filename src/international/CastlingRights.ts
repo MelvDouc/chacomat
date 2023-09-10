@@ -1,4 +1,4 @@
-import Color from "@/game/Color.ts";
+import Color from "@/constants/Color.ts";
 
 export default class CastlingRights {
   protected static readonly initials: Readonly<Record<string, [Color, number]>> = {

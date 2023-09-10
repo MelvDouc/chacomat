@@ -1,14 +1,13 @@
-import CoordsFactory from "@/factories/CoordsFactory.ts";
-import Color from "@/game/Color.ts";
-import Piece from "@/game/Piece.ts";
-import { Coordinates, Figure } from "@/types/main-types.ts";
+import Color from "@/constants/Color.ts";
+import { Coordinates } from "@/types/main-types.ts";
+import CoordsFactory from "@/variants/shatranj/factories/CoordsFactory.ts";
+import ShatranjPiece from "@/variants/shatranj/ShatranjPiece.ts";
 
-export default class Board {
+export default class ShatranjBoard {
   public static readonly Coords: ReturnType<typeof CoordsFactory> = CoordsFactory(8, 8);
-  public static readonly PieceConstructor: typeof Piece = Piece;
+  public static readonly PieceConstructor: typeof ShatranjPiece = ShatranjPiece;
 
-  public static fromString(str: string): Board {
-
+  public static fromString(str: string) {
     return str
       .split("/")
       .reduce((acc, row, x) => {
@@ -23,15 +22,14 @@ export default class Board {
       }, new this());
   }
 
-  protected readonly pieces = new Map<Coordinates, Figure>();
+  protected readonly pieces = new Map<Coordinates, ShatranjPiece>();
   protected readonly kingCoords = new Map<Color, Coordinates>();
   public readonly height: number = 8;
   public readonly width: number = 8;
   public readonly initialKingFile: number = 4;
-  public readonly castlingMultiplier: number = 2;
 
   public get Coords() {
-    return (this.constructor as typeof Board).Coords;
+    return (this.constructor as typeof ShatranjBoard).Coords;
   }
 
   public get size() {
@@ -54,11 +52,11 @@ export default class Board {
     return this.pieces.get(coords) ?? null;
   }
 
-  public set(x: number, y: number, piece: Figure) {
+  public set(x: number, y: number, piece: ShatranjPiece) {
     return this.setByCoords(this.Coords(x, y), piece);
   }
 
-  public setByCoords(coords: Coordinates, piece: Figure) {
+  public setByCoords(coords: Coordinates, piece: ShatranjPiece) {
     if (piece.isKing())
       this.kingCoords.set(piece.color, coords);
     this.pieces.set(coords, piece);
@@ -76,9 +74,21 @@ export default class Board {
   }
 
   public getPiecesOfColor(color: Color) {
-    const pieces: [Coordinates, Figure][] = [];
+    const pieces: [Coordinates, ShatranjPiece][] = [];
     this.pieces.forEach((piece, coords) => {
       if (piece.color === color) pieces.push([coords, piece]);
+    });
+    return pieces;
+  }
+
+  public getNonKingPieces() {
+    const pieces = new Map<Color, [Coordinates, ShatranjPiece][]>([
+      [Color.WHITE, []],
+      [Color.BLACK, []]
+    ]);
+    this.pieces.forEach((piece, coords) => {
+      if (!piece.isKing())
+        pieces.get(piece.color)!.push([coords, piece]);
     });
     return pieces;
   }
@@ -87,17 +97,31 @@ export default class Board {
     return this.kingCoords.get(color)!;
   }
 
-  public *attackedCoords(srcCoords: Coordinates) {
-    const srcPiece = this.pieces.get(srcCoords)!;
-    const { x: xOffsets, y: yOffsets } = srcPiece.offsets;
+  protected *shortRangePieceAttackedCoords(srcCoords: Coordinates, { x: xOffsets, y: yOffsets }: ShatranjPiece["offsets"]) {
+    for (let i = 0; i < xOffsets.length; i++) {
+      const destCoords = srcCoords.getPeer(xOffsets[i], yOffsets[i]);
+      if (destCoords) yield destCoords;
+    }
+  }
 
+  protected *longRangePieceAttackedCoords(srcCoords: Coordinates, { x: xOffsets, y: yOffsets }: ShatranjPiece["offsets"]) {
     for (let i = 0; i < xOffsets.length; i++) {
       for (const destCoords of srcCoords.peers(xOffsets[i], yOffsets[i])) {
         yield destCoords;
-        if (srcPiece.isShortRange() || this.pieces.has(destCoords))
-          break;
+        if (this.pieces.has(destCoords)) break;
       }
     }
+  }
+
+  public *attackedCoords(srcCoords: Coordinates) {
+    const srcPiece = this.pieces.get(srcCoords)!;
+
+    if (srcPiece.isShortRange()) {
+      yield* this.shortRangePieceAttackedCoords(srcCoords, srcPiece.offsets);
+      return;
+    }
+
+    yield* this.longRangePieceAttackedCoords(srcCoords, srcPiece.offsets);
   }
 
   public getAttackedCoordsSet(color: Color) {
@@ -110,39 +134,9 @@ export default class Board {
     return set;
   }
 
-  public canCastle(rookSrcY: number, color: Color, attackedCoordsSet: Set<Coordinates>): boolean {
-    const kingSrcCoords = this.getKingCoords(color);
-    const direction = Math.sign(rookSrcY - kingSrcCoords.y);
-    const kingDestY = this.initialKingFile + this.castlingMultiplier * direction;
-    const rookDestY = kingDestY - direction;
-
-    if (kingDestY !== kingSrcCoords.y) {
-      const yOffset = Math.sign(kingDestY - kingSrcCoords.y);
-      let { y } = kingSrcCoords;
-      do {
-        y += yOffset;
-        const coords = this.Coords(kingSrcCoords.x, y);
-        if (this.hasCoords(coords) && y !== rookSrcY || attackedCoordsSet.has(coords))
-          return false;
-      } while (y !== kingDestY);
-    }
-
-    if (rookDestY !== rookSrcY) {
-      const yOffset = Math.sign(rookDestY - rookSrcY);
-      let y = rookSrcY;
-      do {
-        y += yOffset;
-        if (this.has(kingSrcCoords.x, y) && y !== kingSrcCoords.y)
-          return false;
-      } while (y !== rookDestY);
-    }
-
-    return true;
-  }
-
   public clone() {
     // `new Board([...this])` fails as `clone.kingCoords` isn't defined yet.
-    const clone = new (this.constructor as typeof Board)();
+    const clone = new ShatranjBoard();
     this.pieces.forEach((piece, coords) => clone.setByCoords(coords, piece));
     return clone;
   }

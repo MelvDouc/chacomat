@@ -1,5 +1,5 @@
 import playMoves from "@/pgn/play-moves.ts";
-import { ChessGame } from "@/types/main-types.ts";
+import type ShatranjGame from "@/variants/shatranj/ShatranjGame.ts";
 
 const infoRegex = /\[(?<key>\w+)\s+"(?<value>[^"]*)"\]/;
 
@@ -18,6 +18,6 @@ export default function parsePgn(pgn: string) {
 
   return {
     metaData,
-    enterMoves: (game: ChessGame) => playMoves(pgn, game)
+    enterMoves: (game: ShatranjGame<any>) => playMoves(pgn, game)
   };
 }

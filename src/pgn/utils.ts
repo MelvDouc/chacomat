@@ -1,9 +1,10 @@
+
 const findClosingParenIndex = createClosingCharIndexSearchFn("(", ")");
-const findClosingCurlyIndex = createClosingCharIndexSearchFn("{", "}");
+const findClosingCurlyBraceIndex = createClosingCharIndexSearchFn("{", "}");
 
 function createClosingCharIndexSearchFn(openingChar: string, closingChar: string) {
   return (str: string, startIndex: number) => {
-    for (let i = startIndex, count = 0; i < str.length; i++) {
+    for (let i = startIndex + 1, count = 1; i < str.length; i++) {
       if (str[i] === openingChar) {
         count++;
         continue;
@@ -16,7 +17,7 @@ function createClosingCharIndexSearchFn(openingChar: string, closingChar: string
       }
     }
 
-    throw new Error(`Unclosed parenthesis in string: "${str}"`);
+    throw new Error(`Bracket at index ${startIndex} in "${str}" is not closed.`);
   };
 }
 
@@ -24,30 +25,37 @@ export function parseVariations(movesStr: string): PgnVariations[] {
   const lines: PgnVariations[] = [];
 
   while (movesStr.length) {
-    const openingParenIndex = movesStr.indexOf("(");
-
-    if (openingParenIndex === -1) {
-      lines.push({ line: movesStr, variations: [] });
-      break;
+    if (movesStr[0] === "{") {
+      const closingIndex = findClosingCurlyBraceIndex(movesStr, 0);
+      lines[lines.length - 1].comment = movesStr.slice(1, closingIndex);
+      movesStr = movesStr.slice(closingIndex + 1).trim();
+      continue;
     }
 
-    const closingParenIndex = findClosingParenIndex(movesStr, openingParenIndex);
-    const firstHalf = movesStr.slice(0, openingParenIndex).trim();
-    const variation = movesStr.slice(openingParenIndex + 1, closingParenIndex).trim();
+    if (movesStr[0] === "(") {
+      const closingIndex = findClosingParenIndex(movesStr, 0);
+      lines[lines.length - 1].variations.push(movesStr.slice(1, closingIndex));
+      movesStr = movesStr.slice(closingIndex + 1).trim();
+      continue;
+    }
 
-    if (firstHalf)
-      lines.push({ line: firstHalf, variations: [] });
-
-    if (variation)
-      lines.at(-1)?.variations?.push(...parseVariations(variation));
-
-    movesStr = movesStr.slice(closingParenIndex + 1).trim();
+    const nextIndex = Math.min(findIndex(movesStr, "{"), findIndex(movesStr, "("));
+    lines.push({ line: movesStr.slice(0, nextIndex), variations: [] });
+    movesStr = movesStr.slice(nextIndex).trim();
   }
 
   return lines;
 }
+// ".... ().....{}().....()"
+// ".... ().....{}().....()...."
+
+function findIndex(str: string, char: string) {
+  const index = str.indexOf(char);
+  return index !== -1 ? index : str.length;
+}
 
 export interface PgnVariations {
   line: string;
-  variations: PgnVariations[];
+  variations: string[];
+  comment?: string;
 }

@@ -1,6 +1,6 @@
-import Color from "@/game/Color.ts";
-import Position from "@/game/Position.ts";
-import { Figure } from "@/types/main-types.ts";
+import Color from "@/constants/Color.ts";
+import type Piece from "@/international/Piece.ts";
+import Position from "@/international/Position.ts";
 import Chess960CastlingRights from "@/variants/chess960/Chess960CastlingRights.ts";
 import Chess960CastlingMove from "@/variants/chess960/moves/Chess960CastlingMove.ts";
 
@@ -27,7 +27,7 @@ export default class Chess960Position extends Position {
       .filter((y) => y !== bishopY1 && y !== bishopY2)
       .sort(() => Math.random() - 0.5);
 
-    const pieces: Figure[] = [];
+    const pieces: Piece[] = [];
     pieces[kingY] = Pieces.WHITE_KING;
     pieces[queenRookY] = Pieces.WHITE_ROOK;
     pieces[kingRookY] = Pieces.WHITE_ROOK;
@@ -57,7 +57,14 @@ export default class Chess960Position extends Position {
       }
     });
 
-    return new this(board, Color.WHITE, castlingRights, null, 0, 1);
+    return new this({
+      board,
+      activeColor: Color.WHITE,
+      castlingRights,
+      enPassantCoords: null,
+      halfMoveClock: 0,
+      fullMoveNumber: 1
+    });
   }
 
   protected override *castlingMoves() {
