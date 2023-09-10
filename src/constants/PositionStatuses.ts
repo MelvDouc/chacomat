@@ -1,9 +1,9 @@
 const PositionStatuses = {
-  ON_GOING: "ongoing",
+  ONGOING: "ongoing",
   CHECKMATE: "checkmate",
   STALEMATE: "stalemate",
-  FIFTY_MOVE_RULE: "50-move rule",
   INSUFFICIENT_MATERIAL: "insufficient material",
+  FIFTY_MOVE_RULE: "draw by fifty-move rule",
   TRIPLE_REPETITION: "triple repetition"
 } as const;
 

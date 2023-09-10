@@ -1,6 +1,6 @@
-import Board from "@/game/Board.ts";
-import CastlingRights from "@/game/CastlingRights.ts";
-import Color from "@/game/Color.ts";
+import Color from "@/constants/Color.ts";
+import Board from "@/international/Board.ts";
+import CastlingRights from "@/international/CastlingRights.ts";
 
 export default class Chess960CastlingRights extends CastlingRights {
   public static override fromString(str: string) {

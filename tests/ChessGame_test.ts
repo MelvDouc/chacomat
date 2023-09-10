@@ -1,9 +1,23 @@
 import { assert, assertArrayIncludes, assertEquals, assertFalse } from "$dev_deps";
-import ChessGame from "@/game/ChessGame.ts";
-import Piece from "@/game/Piece.ts";
-import PawnMove from "@/game/moves/PawnMove.ts";
+import ChessGame from "@/international/ChessGame.ts";
+import Piece from "@/international/Piece.ts";
+import PawnMove from "@/variants/shatranj/moves/PawnMove.ts";
 
 const { Pieces } = Piece;
+const byrneVsFischer = await Deno.readTextFile("pgn-files/byrne_fischer_1956.pgn");
+
+Deno.test("go to start", () => {
+  const game = new ChessGame();
+  const firstPos = game.currentPosition;
+  const { Coords } = firstPos.board;
+  game
+    .playMove(new PawnMove(Coords(6, 4), Coords(4, 4)))
+    .playMove(new PawnMove(Coords(1, 3), Coords(3, 3)))
+    .playMove(new PawnMove(Coords(4, 4), Coords(3, 3)));
+  game.goToStart();
+
+  assertEquals(game.currentPosition, firstPos);
+});
 
 Deno.test("entering moves #1", () => {
   const game = new ChessGame();
@@ -85,15 +99,7 @@ Deno.test("Real PGN #2", () => {
   assertArrayIncludes(game.currentPosition.legalMovesAsAlgebraicNotation, ["Kxh2"]);
 });
 
-Deno.test("go to start", () => {
-  const game = new ChessGame();
-  const firstPos = game.currentPosition;
-  const { Coords } = firstPos.board;
-  game
-    .playMove(new PawnMove(Coords(6, 4), Coords(4, 4)))
-    .playMove(new PawnMove(Coords(1, 3), Coords(3, 3)))
-    .playMove(new PawnMove(Coords(4, 4), Coords(3, 3)));
-  game.goToStart();
-
-  assertEquals(game.currentPosition, firstPos);
+Deno.test("PGN comments", () => {
+  const game = new ChessGame({ pgn: byrneVsFischer });
+  console.log(game.toString());
 });

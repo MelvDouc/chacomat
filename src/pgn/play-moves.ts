@@ -1,98 +1,80 @@
-import Color from "@/game/Color.ts";
-import CastlingMove from "@/game/moves/CastlingMove.ts";
-import PawnMove from "@/game/moves/PawnMove.ts";
+import CastlingMove from "@/international/moves/CastlingMove.ts";
 import { PgnVariations, parseVariations } from "@/pgn/utils.ts";
-import { Board, ChessGame, Move, Position } from "@/types/main-types.ts";
+import type ShatranjGame from "@/variants/shatranj/ShatranjGame.ts";
+import type ShatranjPosition from "@/variants/shatranj/ShatranjPosition.ts";
 
-const pieceMoveR = /[NBRQK][a-h]?[1-8]?x?[a-h][1-8]/;
-const pawnMoveR = /[a-h](x[a-h])?[1-8](=[QRBN])?/;
-const castlingR = /([O0])(-[O0]){1,2}/;
-const halfMoveRegex = RegExp(`(${pieceMoveR.source}|${pawnMoveR.source}|${castlingR.source})`, "g");
+const halfMoveRegex = /([NBRQKa-h1-8]{0,4}x?[a-h][1-8]|(O|0)(-(O|0)){1,2})/g;
 
-const MOVE_FINDERS: Readonly<MoveFinder[]> = [
-  {
-    regex: /^(?<file>[a-h])(?<rank>[1-8])/,
-    find: ({ file, rank }, { legalMoves, board: { Coords } }) => {
-      const destCoords = Coords.fromNotation(file + rank)!;
-      return legalMoves.find((move) => {
-        return move instanceof PawnMove && destCoords === move.destCoords;
-      });
-    }
-  },
-  {
-    regex: /^(?<srcFile>[a-h])x(?<destFile>[a-h])(?<destRank>[1-8])/,
-    find: ({ srcFile, destFile, destRank }, { legalMoves, board: { Coords } }) => {
-      const srcY = Coords.fileNameToY(srcFile);
-      const destCoords = Coords.fromNotation(destFile + destRank)!;
-      return legalMoves.find((move) => {
-        return move.srcCoords.y === srcY
-          && move.destCoords === destCoords;
-      });
-    }
-  },
-  {
-    regex: /^(?<initial>[NBRQK])(?<srcFile>[a-h])?(?<srcRank>[1-8])?x?(?<destFile>[a-h])(?<destRank>[1-8])/,
-    find: ({ initial, srcFile, srcRank, destFile, destRank }, { legalMoves, board, activeColor }) => {
-      const srcX = srcRank ? board.Coords.rankNameToX(srcRank) : null;
-      const srcY = srcFile ? board.Coords.fileNameToY(srcFile) : null;
-      const destCoords = board.Coords.fromNotation(destFile + destRank)!;
-      const piece = (board.constructor as typeof Board).PieceConstructor.fromInitial(activeColor === Color.WHITE ? initial : initial.toLowerCase());
+const MOVE_FINDERS = {
+  PAWN_MOVE: (str: string, { legalMoves, board }: ShatranjPosition) => {
+    const destCoords = board.Coords.fromNotation(str.slice(-2));
 
+    if (!str.includes("x"))
       return legalMoves.find((move) => {
-        return move.destCoords === destCoords
-          && board.getByCoords(move.srcCoords) === piece
-          && (srcX === null || move.srcCoords.x === srcX)
-          && (srcY === null || move.srcCoords.y === srcY);
+        return board.getByCoords(move.srcCoords)!.isPawn() && destCoords === move.destCoords;
       });
-    }
+
+    const srcY = board.Coords.fileNameToY(str[0]);
+    return legalMoves.find((move) => {
+      return move.srcCoords.y === srcY && move.destCoords === destCoords;
+    });
   },
-  {
-    regex: /^(?<o>O|0)-\k<o>(?<o2>-\k<o>)?/,
-    find: ({ o2 }, { legalMoves }) => {
-      return legalMoves.find((move) => {
-        return move instanceof CastlingMove && move.isQueenSide() === !!o2;
-      });
-    }
+  PIECE_MOVE: (str: string, { legalMoves, board }: ShatranjPosition) => {
+    const destCoords = board.Coords.fromNotation(str.slice(-2));
+    const groups = str.match(/^[NBRQK](?<sy>[a-h])?(?<sx>[1-8])?x?[a-h][1-8]/)?.groups ?? {};
+    const srcX = groups.sx ? board.Coords.rankNameToX(groups.sx) : null;
+    const srcY = groups.sy ? board.Coords.fileNameToY(groups.sy) : null;
+
+    return legalMoves.find((move) => {
+      return move.destCoords === destCoords
+        && board.getByCoords(move.srcCoords)?.initial.toUpperCase() === str[0]
+        && (srcX === null || move.srcCoords.x === srcX)
+        && (srcY === null || move.srcCoords.y === srcY);
+    });
+  },
+  CASTLING: (str: string, { legalMoves }: ShatranjPosition) => {
+    return legalMoves.find((move) => {
+      return move instanceof CastlingMove && move.isQueenSide() === (str.length === 5);
+    });
   }
-];
+} as const;
 
-function findHalfMove(halfMoveStr: string, position: Position) {
-  for (const { regex, find } of MOVE_FINDERS) {
-    const matches = halfMoveStr.match(regex);
-    if (matches?.groups)
-      return find(matches.groups, position);
-  }
-
-  return null;
+function findHalfMove(input: string, position: ShatranjPosition) {
+  if (input.includes("-"))
+    return MOVE_FINDERS.CASTLING(input, position);
+  if (/^[NBRQK]/.test(input))
+    return MOVE_FINDERS.PIECE_MOVE(input, position);
+  return MOVE_FINDERS.PAWN_MOVE(input, position);
 }
 
-function playLine(line: string, game: ChessGame) {
-  for (const { 0: match } of line.matchAll(halfMoveRegex)) {
-    const halfMove = findHalfMove(match, game.currentPosition);
+function playLine(line: string, game: ShatranjGame) {
+  const matches = line.match(halfMoveRegex);
+  if (!matches) return;
 
-    if (!halfMove)
-      throw new Error(`Illegal move "${match}" in "${line}".`);
+  for (const input of matches) {
+    const halfMove = findHalfMove(input, game.currentPosition);
+
+    if (!halfMove) {
+      const errMessage = `Illegal move "${input}" in "${line}".`;
+      throw new Error(errMessage);
+    }
 
     game.playMove(halfMove);
   }
 }
 
-function playLineAndVars(game: ChessGame, { line, variations }: PgnVariations) {
+function playLineAndVars(game: ShatranjGame, { line, variations, comment }: PgnVariations) {
   playLine(line, game);
+  if (comment !== undefined) game.currentPosition.comment = comment;
 
   const current = game.currentPosition;
-  variations.forEach((element) => {
+  variations.forEach((variation) => {
     game.currentPosition = current.prev!;
-    playLineAndVars(game, element);
+    playMoves(variation, game);
   });
   game.currentPosition = current;
 }
 
-export default function playMoves(movesStr: string, game: ChessGame) {
+export default function playMoves(movesStr: string, game: ShatranjGame) {
   parseVariations(movesStr).forEach((element) => playLineAndVars(game, element));
 }
-
-interface MoveFinder {
-  regex: RegExp;
-  find: (groups: Record<string, string>, position: Position) => Move | undefined;
-};

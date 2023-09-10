@@ -18,6 +18,15 @@ export interface Move {
 
 export type Board = (Piece | null)[][];
 
+export interface ShatranjPosition {
+  activeColor: string;
+  board: Board;
+  legalMoves: Move[];
+  status: import("@/types/main-types.ts").PositionStatus;
+  next: [Move, ShatranjPosition][];
+  fen: string;
+}
+
 export interface Position {
   activeColor: string;
   castlingRights: Record<string, number[]>;

@@ -1,5 +1,5 @@
-import CastlingRights from "@/game/CastlingRights.ts";
-import Color from "@/game/Color.ts";
+import Color from "@/constants/Color.ts";
+import CastlingRights from "@/international/CastlingRights.ts";
 
 export default class CapablancaCastlingRights extends CastlingRights {
   public static override readonly initials: Readonly<Record<string, [Color, number]>> = {

@@ -1,4 +1,4 @@
-import Position from "@/game/Position.ts";
+import Position from "@/international/Position.ts";
 import CapablancaBoard from "@/variants/capablanca-chess/CapablancaBoard.ts";
 import CapablancaCastlingRights from "@/variants/capablanca-chess/CapablancaCastlingRights.ts";
 
@@ -13,4 +13,7 @@ export default class CapablancaPosition extends Position {
   public static override new() {
     return this.fromFen("rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1");
   }
+
+  declare public readonly board: CapablancaBoard;
+  declare public readonly castlingRights: CapablancaCastlingRights;
 }

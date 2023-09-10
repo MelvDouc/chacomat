@@ -1,4 +1,4 @@
-import ChessGame from "@/game/ChessGame.ts";
+import { ChessGame } from "../mod.ts";
 
 Deno.bench("Parse long game #1", async (b) => {
   const pgn = await Deno.readTextFile("pgn-files/nikolic_arsovic_1989.pgn");

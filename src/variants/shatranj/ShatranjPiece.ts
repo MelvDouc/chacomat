@@ -1,20 +1,18 @@
+import Color from "@/constants/Color.ts";
 import {
-  bishopOffsets,
   blackPawnOffsets,
+  diagonalOffsets,
+  kingOffsets,
   knightOffsets,
-  rookOffsets,
-  royalOffsets,
+  orthogonalOffsets,
   whitePawnOffsets
 } from "@/constants/offsets.ts";
-import Color from "@/game/Color.ts";
-import { Figure } from "@/types/main-types.ts";
 
-export default class Piece implements Figure {
-  protected static values = new Map<number, Figure>();
-  protected static shortRangeValues = new Set([1, 2, 3]);
+export default class ShatranjPiece {
+  protected static values = new Map<number, ShatranjPiece>();
 
   public static get Pieces() {
-    return Pieces;
+    return ShatranjPieces;
   }
 
   public static fromInitial(initial: string) {
@@ -24,22 +22,22 @@ export default class Piece implements Figure {
   public readonly value: number;
   public readonly initial: string;
   public readonly color: Color;
-  public readonly offsets: Figure["offsets"];
+  public readonly offsets: { x: number[]; y: number[]; };
 
   public constructor({ value, initial, offsets }: {
     value: number;
     initial: string;
-    offsets: Figure["offsets"];
+    offsets: ShatranjPiece["offsets"];
   }) {
     this.value = value;
     this.initial = initial;
     this.color = initial === initial.toUpperCase() ? Color.WHITE : Color.BLACK;
     this.offsets = offsets;
-    (this.constructor as typeof Piece).values.set(value, this);
+    (this.constructor as typeof ShatranjPiece).values.set(value, this);
   }
 
   public get opposite() {
-    return (this.constructor as typeof Piece).values.get(-this.value)!;
+    return (this.constructor as typeof ShatranjPiece).values.get(-this.value)!;
   }
 
   public isPawn() {
@@ -67,7 +65,7 @@ export default class Piece implements Figure {
   }
 
   public isShortRange() {
-    return (this.constructor as typeof Piece).shortRangeValues.has(Math.abs(this.value));
+    return Math.abs(this.value) !== ShatranjPieces.WHITE_ROOK.value;
   }
 
   /*
@@ -104,17 +102,22 @@ export default class Piece implements Figure {
   }
 }
 
-const Pieces = {
-  WHITE_PAWN: new Piece({ value: 1, initial: "P", offsets: whitePawnOffsets }),
-  WHITE_KING: new Piece({ value: 2, initial: "K", offsets: royalOffsets }),
-  WHITE_KNIGHT: new Piece({ value: 3, initial: "N", offsets: knightOffsets }),
-  WHITE_BISHOP: new Piece({ value: 4, initial: "B", offsets: bishopOffsets }),
-  WHITE_ROOK: new Piece({ value: 5, initial: "R", offsets: rookOffsets }),
-  WHITE_QUEEN: new Piece({ value: 6, initial: "Q", offsets: royalOffsets }),
-  BLACK_PAWN: new Piece({ value: -1, initial: "p", offsets: blackPawnOffsets }),
-  BLACK_KING: new Piece({ value: -2, initial: "k", offsets: royalOffsets }),
-  BLACK_KNIGHT: new Piece({ value: -3, initial: "n", offsets: knightOffsets }),
-  BLACK_BISHOP: new Piece({ value: -4, initial: "b", offsets: bishopOffsets }),
-  BLACK_ROOK: new Piece({ value: -5, initial: "r", offsets: rookOffsets }),
-  BLACK_QUEEN: new Piece({ value: -6, initial: "q", offsets: royalOffsets })
+const shatranjBishopOffsets = {
+  x: diagonalOffsets.x.map((xOffset) => xOffset * 2),
+  y: diagonalOffsets.y.map((yOffset) => yOffset * 2)
+};
+
+const ShatranjPieces = {
+  WHITE_PAWN: new ShatranjPiece({ value: 1, initial: "P", offsets: whitePawnOffsets }),
+  WHITE_KING: new ShatranjPiece({ value: 2, initial: "K", offsets: kingOffsets }),
+  WHITE_KNIGHT: new ShatranjPiece({ value: 3, initial: "N", offsets: knightOffsets }),
+  WHITE_BISHOP: new ShatranjPiece({ value: 4, initial: "B", offsets: shatranjBishopOffsets }),
+  WHITE_ROOK: new ShatranjPiece({ value: 5, initial: "R", offsets: orthogonalOffsets }),
+  WHITE_QUEEN: new ShatranjPiece({ value: 6, initial: "Q", offsets: diagonalOffsets }),
+  BLACK_PAWN: new ShatranjPiece({ value: -1, initial: "p", offsets: blackPawnOffsets }),
+  BLACK_KING: new ShatranjPiece({ value: -2, initial: "k", offsets: kingOffsets }),
+  BLACK_KNIGHT: new ShatranjPiece({ value: -3, initial: "n", offsets: knightOffsets }),
+  BLACK_BISHOP: new ShatranjPiece({ value: -4, initial: "b", offsets: shatranjBishopOffsets }),
+  BLACK_ROOK: new ShatranjPiece({ value: -5, initial: "r", offsets: orthogonalOffsets }),
+  BLACK_QUEEN: new ShatranjPiece({ value: -6, initial: "q", offsets: diagonalOffsets })
 } as const;
