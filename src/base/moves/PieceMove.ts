@@ -1,49 +1,48 @@
-import BaseBoard from "@/base/BaseBoard.ts";
+import type BaseBoard from "@/base/BaseBoard.ts";
+import type Coords from "@/base/Coords.ts";
 import Move from "@/base/moves/Move.ts";
 
 export default class PieceMove extends Move {
   public constructor(
-    public readonly srcIndex: number,
-    public readonly destIndex: number
+    public readonly srcCoords: Coords,
+    public readonly destCoords: Coords
   ) {
     super();
   }
 
   public try(board: BaseBoard) {
-    const srcPiece = board.get(this.srcIndex)!;
-    const destPiece = board.get(this.destIndex);
+    const srcPiece = board.get(this.srcCoords)!;
+    const destPiece = board.get(this.destCoords);
     board
-      .set(this.destIndex, srcPiece)
-      .delete(this.srcIndex);
+      .set(this.destCoords, srcPiece)
+      .delete(this.srcCoords);
 
     return () => {
       destPiece
-        ? board.set(this.destIndex, destPiece)
-        : board.delete(this.destIndex);
-      board.set(this.srcIndex, srcPiece);
+        ? board.set(this.destCoords, destPiece)
+        : board.delete(this.destCoords);
+      board.set(this.srcCoords, srcPiece);
     };
   }
 
   public getAlgebraicNotation(board: BaseBoard, legalMoves: Move[]) {
-    const srcPiece = board.get(this.srcIndex);
+    const srcPiece = board.get(this.srcCoords)!;
     let notation = "";
 
     if (!srcPiece.isKing()) {
-      const ambiguousMoves = legalMoves.filter(({ srcIndex, destIndex }) => {
-        return destIndex === this.destIndex && srcIndex !== this.srcIndex && board.get(srcIndex) === srcPiece;
+      const ambiguousMoves = legalMoves.filter(({ srcCoords, destCoords }) => {
+        return destCoords === this.destCoords && srcCoords !== this.srcCoords && board.get(srcCoords) === srcPiece;
       });
       if (ambiguousMoves.length) {
-        const { x, y } = this.getSrcCoords(board);
-        const aloneOnFile = !ambiguousMoves.some(({ srcIndex }) => board.indexToCoords(srcIndex).y === y);
-        const aloneOnRank = !ambiguousMoves.some(({ srcIndex }) => board.indexToCoords(srcIndex).x === x);
+        const aloneOnFile = !ambiguousMoves.some(({ srcCoords }) => srcCoords.y === this.srcCoords.y);
         if (!aloneOnFile)
-          notation += board.getRankNotation(this.srcIndex);
-        if (!aloneOnRank || aloneOnFile)
-          notation = board.getFileNotation(this.srcIndex) + notation;
+          notation += this.srcCoords.rankNotation;
+        if (ambiguousMoves.some(({ srcCoords }) => srcCoords.x === this.srcCoords.x) || aloneOnFile)
+          notation = this.srcCoords.fileNotation + notation;
       }
     }
 
-    if (board.has(this.destIndex)) notation += "x";
-    return srcPiece.initial.toUpperCase() + notation + board.getNotation(this.destIndex);
+    if (board.has(this.destCoords)) notation += "x";
+    return srcPiece.initial.toUpperCase() + notation + this.destCoords.notation;
   }
 }

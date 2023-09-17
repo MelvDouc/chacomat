@@ -15,8 +15,8 @@ Deno.test("stalemate", () => {
 Deno.test("legal moves", () => {
   const { board, legalMoves } = Position.new();
 
-  assertEquals(legalMoves.filter(({ srcIndex }) => board.get(srcIndex)?.isPawn()).length, 16);
-  assertEquals(legalMoves.filter(({ srcIndex }) => board.get(srcIndex)?.isKnight()).length, 4);
+  assertEquals(legalMoves.filter(({ srcCoords }) => board.get(srcCoords)?.isPawn()).length, 16);
+  assertEquals(legalMoves.filter(({ srcCoords }) => board.get(srcCoords)?.isKnight()).length, 4);
 });
 
 Deno.test("triple repetition", () => {

@@ -72,5 +72,5 @@ import { CapablancaChessGame } from "chacomat";
 The old game of Shatranj, which chess originated from, is also available.
 
 ```javascript
-import { Shatranj } from "chacomat";
+import { ShatranjGame } from "chacomat";
 ```

@@ -1,14 +1,17 @@
+import type Coords from "@/base/Coords.ts";
 import PawnMove from "@/base/moves/PawnMove.ts";
 import Color from "@/constants/Color.ts";
 import Board from "@/standard/Board.ts";
-import CastlingRightsMap from "@/standard/CastlingRightsMap.ts";
+import CastlingRights from "@/standard/CastlingRights.ts";
 import CastlingMove from "@/standard/moves/CastlingMove.ts";
 import EnPassantPawnMove from "@/standard/moves/EnPassantPawnMove.ts";
 import ShatranjPosition from "@/variants/shatranj/ShatranjPosition.ts";
 
 export default class Position extends ShatranjPosition {
   protected static readonly Board: typeof Board = Board;
-  protected static readonly CastlingRightsMap: typeof CastlingRightsMap = CastlingRightsMap;
+  protected static get CastlingRights() {
+    return CastlingRights;
+  }
 
   public static get START_FEN() {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
@@ -21,8 +24,8 @@ export default class Position extends ShatranjPosition {
     return new this({
       board,
       activeColor: Color.fromAbbreviation(clr),
-      castlingRights: this.CastlingRightsMap.fromString(castling, board.height, board.width),
-      enPassantIndex: enPassant === "-" ? -1 : board.notationToIndex(enPassant),
+      castlingRights: this.CastlingRights.fromString(castling, board.height, board.width),
+      enPassantCoords: enPassant === "-" ? null : board.Coords.fromNotation(enPassant),
       halfMoveClock: Number(halfMoveClock),
       fullMoveNumber: Number(fullMoveNumber)
     });
@@ -33,23 +36,23 @@ export default class Position extends ShatranjPosition {
   }
 
   declare public readonly board: Board;
-  public readonly castlingRights: CastlingRightsMap;
+  public readonly castlingRights: CastlingRights;
   public readonly halfMoveClock: number;
-  public readonly enPassantIndex: number;
+  public readonly enPassantCoords: Coords | null;
   declare public prev?: Position;
   public readonly next: Position[] = [];
 
-  public constructor({ activeColor, board, castlingRights, enPassantIndex, halfMoveClock, fullMoveNumber }: {
+  public constructor({ activeColor, board, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: {
     activeColor: Color;
     board: Board;
-    castlingRights: CastlingRightsMap;
-    enPassantIndex: number;
+    castlingRights: CastlingRights;
+    enPassantCoords: Coords | null;
     fullMoveNumber: number;
     halfMoveClock: number;
   }) {
     super({ board, activeColor, fullMoveNumber });
     this.castlingRights = castlingRights;
-    this.enPassantIndex = enPassantIndex;
+    this.enPassantCoords = enPassantCoords;
     this.halfMoveClock = halfMoveClock;
   }
 
@@ -58,41 +61,41 @@ export default class Position extends ShatranjPosition {
   }
 
   protected *castlingMoves() {
-    const attackedIndices = this.board.getAttackedIndexSet(this.activeColor.opposite);
-    const kingIndex = this.board.getKingIndex(this.activeColor);
-    if (attackedIndices.has(kingIndex)) return;
+    const attackedCoords = this.board.getAttackedCoordsSet(this.activeColor.opposite);
+    const kingCoords = this.board.getKingCoords(this.activeColor);
+    if (attackedCoords.has(kingCoords)) return;
 
-    for (const rookSrcIndex of this.castlingRights.get(this.activeColor)!) {
-      if (this.board.canCastle(rookSrcIndex, this.activeColor, attackedIndices))
+    for (const rookSrcY of this.castlingRights.get(this.activeColor)) {
+      if (this.board.canCastle(rookSrcY, this.activeColor, attackedCoords))
         yield new CastlingMove(
-          kingIndex,
-          this.board.getCastledKingIndex(this.activeColor, rookSrcIndex),
-          rookSrcIndex
+          kingCoords,
+          this.board.getCastledKingCoords(this.activeColor, rookSrcY),
+          this.board.Coords.get(kingCoords.x, rookSrcY)
         );
     }
   }
 
-  protected *pseudoLegalPawnMoves(srcIndex: number) {
-    const forwardIndex = srcIndex + this.board.height * this.activeColor.direction;
+  protected *pseudoLegalPawnMoves(srcCoords: Coords) {
+    const forwardCoords = srcCoords.peer(this.activeColor.direction, 0);
 
-    if (!this.board.has(forwardIndex)) {
-      yield new PawnMove(srcIndex, forwardIndex);
+    if (forwardCoords && !this.board.has(forwardCoords)) {
+      yield new PawnMove(srcCoords, forwardCoords);
 
-      if (this.board.indexToCoords(srcIndex).x === this.activeColor.getPawnRank(this.board.height)) {
-        const forwardIndex = srcIndex + this.board.height * this.activeColor.direction * 2;
+      if (srcCoords.x === this.activeColor.getPawnRank(this.board.height)) {
+        const forwardCoords = srcCoords.peer(this.activeColor.direction * 2, 0);
 
-        if (!this.board.has(forwardIndex))
-          yield new PawnMove(srcIndex, forwardIndex);
+        if (forwardCoords && !this.board.has(forwardCoords))
+          yield new PawnMove(srcCoords, forwardCoords);
       }
     }
 
-    for (const destIndex of this.board.attackedIndices(srcIndex)) {
-      if (this.board.get(destIndex)?.color === this.activeColor.opposite) {
-        yield new PawnMove(srcIndex, destIndex);
+    for (const destCoords of this.board.attackedCoords(srcCoords)) {
+      if (this.board.get(destCoords)?.color === this.activeColor.opposite) {
+        yield new PawnMove(srcCoords, destCoords);
         continue;
       }
-      if (destIndex === this.enPassantIndex)
-        yield new EnPassantPawnMove(srcIndex, destIndex);
+      if (destCoords === this.enPassantCoords)
+        yield new EnPassantPawnMove(srcCoords, destCoords);
     }
   }
 
@@ -115,7 +118,7 @@ export default class Position extends ShatranjPosition {
       current = current.prev?.prev;
     }
 
-    return count >= 3;
+    return count === 3;
   }
 
   public isInsufficientMaterial() {
@@ -125,36 +128,35 @@ export default class Position extends ShatranjPosition {
     const nonKingPieces = this.board.getNonKingPieces();
     const activePieces = nonKingPieces.get(this.activeColor)!;
     const inactivePieces = nonKingPieces.get(this.activeColor.opposite)!;
-    const [inactiveIndex0, inactivePiece0] = inactivePieces[0] ?? [];
+    const [inactiveCoords0, inactivePiece0] = inactivePieces[0] ?? [];
 
     if (activePieces.length === 0)
       return inactivePieces.length === 0
         || inactivePieces.length === 1 && (inactivePiece0.isKnight() || inactivePiece0.isBishop());
 
     if (activePieces.length === 1) {
-      const [activeIndex0, activePiece0] = activePieces[0];
+      const [activeCoords0, activePiece0] = activePieces[0];
       if (inactivePieces.length === 0)
         return activePiece0.isKnight() || activePiece0.isBishop();
       return inactivePieces.length === 1
         && activePiece0.isBishop()
         && inactivePiece0.isBishop()
-        && this.board.isLightSquare(activeIndex0) === this.board.isLightSquare(inactiveIndex0);
+        && activeCoords0.isLightSquare() === inactiveCoords0.isLightSquare();
     }
 
     return false;
   }
 
   public toString() {
-    const enPassantNotation = this.enPassantIndex === -1 ? "-" : this.board.getNotation(this.enPassantIndex);
     const castlingStr = this.castlingRights.toString(this.board.height, this.board.width);
-    return `${this.board} ${this.activeColor.abbreviation} ${castlingStr} ${enPassantNotation} ${this.halfMoveClock} ${this.fullMoveNumber}`;
+    return `${this.board} ${this.activeColor.abbreviation} ${castlingStr} ${this.enPassantCoords?.notation ?? "-"} ${this.halfMoveClock} ${this.fullMoveNumber}`;
   }
 
   public toObject() {
     return {
       ...super.toObject(),
       halfMoveClock: this.halfMoveClock,
-      enPassantIndex: this.enPassantIndex,
+      enPassantCoords: this.enPassantCoords,
       castlingRights: {
         [Color.WHITE.abbreviation]: [...this.castlingRights.get(Color.WHITE)!],
         [Color.BLACK.abbreviation]: [...this.castlingRights.get(Color.BLACK)!]

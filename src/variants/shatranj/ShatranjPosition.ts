@@ -1,7 +1,9 @@
 import BasePosition from "@/base/BasePosition.ts";
+import type Coords from "@/base/Coords.ts";
 import type Move from "@/base/moves/Move.ts";
 import PawnMove from "@/base/moves/PawnMove.ts";
 import Color from "@/constants/Color.ts";
+import { ShatranjPositionObject } from "@/types.ts";
 import ShatranjBoard from "@/variants/shatranj/ShatranjBoard.ts";
 
 export default class ShatranjPosition extends BasePosition<ShatranjBoard> {
@@ -50,15 +52,15 @@ export default class ShatranjPosition extends BasePosition<ShatranjBoard> {
     this.fullMoveNumber = fullMoveNumber;
   }
 
-  protected *pseudoLegalPawnMoves(srcIndex: number) {
-    const forwardIndex = srcIndex + this.board.height * this.activeColor.direction;
+  protected *pseudoLegalPawnMoves(srcCoords: Coords) {
+    const forwardCoords = srcCoords.peer(this.activeColor.direction, 0);
 
-    if (!this.board.has(forwardIndex))
-      yield new PawnMove(srcIndex, forwardIndex);
+    if (forwardCoords && !this.board.has(forwardCoords))
+      yield new PawnMove(srcCoords, forwardCoords);
 
-    for (const destIndex of this.board.attackedIndices(srcIndex))
-      if (this.board.get(destIndex)?.color === this.activeColor.opposite)
-        yield new PawnMove(srcIndex, destIndex);
+    for (const destCoords of this.board.attackedCoords(srcCoords))
+      if (this.board.get(destCoords)?.color === this.activeColor.opposite)
+        yield new PawnMove(srcCoords, destCoords);
   }
 
   public isCheckmate() {
@@ -101,11 +103,4 @@ export default class ShatranjPosition extends BasePosition<ShatranjBoard> {
       legalMoves: this.legalMoves.map((move) => move.toObject(this.board, this.legalMoves))
     };
   }
-}
-
-interface ShatranjPositionObject extends ReturnType<BasePosition<any>["toObject"]> {
-  FEN: string;
-  prev: ShatranjPositionObject | null;
-  next: { move: ReturnType<Move["toObject"]>; position: ShatranjPositionObject; }[];
-  legalMoves: ReturnType<Move["toObject"]>[];
 }

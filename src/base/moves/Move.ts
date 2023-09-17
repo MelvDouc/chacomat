@@ -1,28 +1,21 @@
-import BaseBoard from "@/base/BaseBoard.ts";
+import type BaseBoard from "@/base/BaseBoard.ts";
+import type Coords from "@/base/Coords.ts";
 
 export default abstract class Move {
-  public abstract readonly srcIndex: number;
-  public abstract readonly destIndex: number;
+  public abstract readonly srcCoords: Coords;
+  public abstract readonly destCoords: Coords;
 
   public abstract try(board: BaseBoard): () => void;
   public abstract getAlgebraicNotation(board: BaseBoard, legalMoves: Move[]): string;
 
-  public getSrcCoords(board: BaseBoard) {
-    return board.indexToCoords(this.srcIndex);
-  }
-
-  public getDestCoords(board: BaseBoard) {
-    return board.indexToCoords(this.destIndex);
-  }
-
-  public getComputerNotation(board: BaseBoard) {
-    return board.getNotation(this.srcIndex) + board.getNotation(this.destIndex);
+  public getComputerNotation() {
+    return this.srcCoords.notation + this.destCoords.notation;
   }
 
   public toObject(board: BaseBoard, legalMoves: Move[]) {
     return {
-      srcIndex: this.srcIndex,
-      destIndex: this.destIndex,
+      srcCoords: this.srcCoords,
+      destCoords: this.destCoords,
       algebraicNotation: this.getAlgebraicNotation(board, legalMoves)
     };
   }

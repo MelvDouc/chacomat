@@ -1,83 +1,91 @@
-import type Move from "@/base/moves/Move.ts";
+import type Coords from "@/base/Coords.ts";
 import Color from "@/constants/Color.ts";
 import Board from "@/standard/Board.ts";
+import type Piece from "@/standard/Piece.ts";
 import Position from "@/standard/Position.ts";
-import Chess960CastlingRightsMap from "@/variants/chess960/Chess960CastlingRightsMap.ts";
+import Chess960Board from "@/variants/chess960/Chess960Board.ts";
+import Chess960CastlingRights from "@/variants/chess960/Chess960CastlingRights.ts";
 import Chess960CastlingMove from "@/variants/chess960/moves/Chess960CastlingMove.ts";
 
 export default class Chess960Position extends Position {
-  protected static readonly CastlingRightsMap: typeof Chess960CastlingRightsMap = Chess960CastlingRightsMap;
+  protected static get Board() {
+    return Chess960Board;
+  }
+
+  protected static get CastlingRights() {
+    return Chess960CastlingRights;
+  }
 
   public static get START_FEN(): string {
     throw new Error("`Chess960Position` has no unique initial FEN.");
   }
 
+  protected static getWhiteFirstRank() {
+    const files = new Set(Array.from({ length: 8 }, (_, i) => i));
+    const { Pieces } = this.Board.prototype.PieceConstructor;
+
+    const kingY = randomInt(1, 6);
+    const queenRookY = randomInt(0, kingY - 1);
+    const kingRookY = randomInt(kingY + 1, 7);
+    files.delete(kingY);
+    files.delete(queenRookY);
+    files.delete(kingRookY);
+
+    const bishopY1 = [...files][randomInt(0, files.size - 1)];
+    files.delete(bishopY1);
+
+    const oppositeParityFiles = [...files].filter((i) => i % 2 !== bishopY1 % 2);
+    const bishopY2 = oppositeParityFiles[randomInt(0, oppositeParityFiles.length - 1)];
+    files.delete(bishopY2);
+    const remainingFiles = [...files].sort(() => Math.random() - .5);
+
+    const rank: Piece[] = [];
+    rank[kingY] = Pieces.WHITE_KING;
+    rank[queenRookY] = Pieces.WHITE_ROOK;
+    rank[kingRookY] = Pieces.WHITE_ROOK;
+    rank[bishopY1] = Pieces.WHITE_BISHOP;
+    rank[bishopY2] = Pieces.WHITE_BISHOP;
+    rank[remainingFiles[0]] = Pieces.WHITE_KNIGHT;
+    rank[remainingFiles[1]] = Pieces.WHITE_QUEEN;
+    rank[remainingFiles[2]] = Pieces.WHITE_KNIGHT;
+    return rank;
+  }
+
   public static new(fen?: string) {
     if (fen) return this.fromFen(fen);
 
-    const board = new Board();
-    const indices = new Set(Array.from({ length: board.width }, (_, i) => i));
-    const { Pieces } = board.PieceConstructor;
-    const castlingRights = new this.CastlingRightsMap([
-      [Color.WHITE, new Set()],
-      [Color.BLACK, new Set()]
-    ]);
+    const board = new this.Board();
+    const castlingRights = new this.CastlingRights();
 
-    const kingIndex = randomInt(1, 6);
-    const queenRookIndex = randomInt(0, kingIndex - 1);
-    const kingRookIndex = randomInt(kingIndex + 1, 7);
-    indices.delete(kingIndex);
-    indices.delete(queenRookIndex);
-    indices.delete(kingRookIndex);
-
-    const lsbIndex = [...indices][randomInt(0, indices.size - 1)];
-    indices.delete(lsbIndex);
-
-    const oppositeParityIndices = [...indices].filter((i) => i % 2 !== lsbIndex % 2);
-    const dsbIndex = oppositeParityIndices[randomInt(0, oppositeParityIndices.length - 1)];
-    indices.delete(dsbIndex);
-
-    const remainingIndices = [...indices].sort(() => Math.random() - .5);
-    board
-      .set(kingIndex, Pieces.BLACK_KING)
-      .set(queenRookIndex, Pieces.BLACK_ROOK)
-      .set(kingRookIndex, Pieces.BLACK_ROOK)
-      .set(lsbIndex, Pieces.BLACK_BISHOP)
-      .set(dsbIndex, Pieces.BLACK_BISHOP)
-      .set(remainingIndices[0], Pieces.BLACK_KNIGHT)
-      .set(remainingIndices[1], Pieces.BLACK_KNIGHT)
-      .set(remainingIndices[2], Pieces.BLACK_QUEEN);
-
-    for (let i = 0; i < board.width; i++) {
-      board.set(i + board.width * (board.height - 1), board.get(i)!.opposite);
-      board.set(i + board.width, Pieces.BLACK_PAWN);
-      board.set(i + board.width * (board.height - 2), Pieces.WHITE_PAWN);
-    }
-
-    castlingRights.get(Color.BLACK)!.add(queenRookIndex);
-    castlingRights.get(Color.BLACK)!.add(kingRookIndex);
-    castlingRights.get(Color.WHITE)!.add(queenRookIndex + board.width * (board.height - 1));
-    castlingRights.get(Color.WHITE)!.add(kingRookIndex + board.width * (board.height - 1));
+    this.getWhiteFirstRank().forEach((piece, y) => {
+      board.set(board.Coords.get(0, y), piece.opposite);
+      board.set(board.Coords.get(1, y), board.PieceConstructor.Pieces.BLACK_PAWN);
+      board.set(board.Coords.get(board.height - 2, y), board.PieceConstructor.Pieces.WHITE_PAWN);
+      board.set(board.Coords.get(board.height - 1, y), piece);
+      if (piece.isRook())
+        castlingRights.get(piece.color).add(y);
+    });
 
     return new this({
       activeColor: Color.WHITE,
       board,
       castlingRights,
-      enPassantIndex: -1,
+      enPassantCoords: null,
       halfMoveClock: 0,
       fullMoveNumber: 1
     });
   }
 
-  declare public readonly castlingRights: Chess960CastlingRightsMap;
+  declare public readonly board: Chess960Board;
+  declare public readonly castlingRights: Chess960CastlingRights;
   declare public prev?: Chess960Position;
   public readonly next: Chess960Position[] = [];
 
   public constructor(params: {
     activeColor: Color;
     board: Board;
-    castlingRights: Chess960CastlingRightsMap;
-    enPassantIndex: number;
+    castlingRights: Chess960CastlingRights;
+    enPassantCoords: Coords | null;
     fullMoveNumber: number;
     halfMoveClock: number;
   }) {
@@ -85,17 +93,19 @@ export default class Chess960Position extends Position {
   }
 
   protected *castlingMoves() {
-    const attackedIndices = this.board.getAttackedIndexSet(this.activeColor.opposite);
-    const kingIndex = this.board.getKingIndex(this.activeColor);
-    if (attackedIndices.has(kingIndex)) return;
+    const attackedCoords = this.board.getAttackedCoordsSet(this.activeColor.opposite);
+    const kingCoords = this.board.getKingCoords(this.activeColor);
+    if (attackedCoords.has(kingCoords)) return;
 
-    for (const rookSrcIndex of this.castlingRights.get(this.activeColor)!) {
-      if (this.board.canCastle(rookSrcIndex, this.activeColor, attackedIndices))
+    for (const rookSrcY of this.castlingRights.get(this.activeColor)) {
+      if (this.board.canCastle(rookSrcY, this.activeColor, attackedCoords)) {
+        const rookSrcCoords = this.board.Coords.get(kingCoords.x, rookSrcY);
         yield new Chess960CastlingMove(
-          kingIndex,
-          rookSrcIndex,
-          rookSrcIndex
+          kingCoords,
+          rookSrcCoords,
+          rookSrcCoords
         );
+      }
     }
   }
 }

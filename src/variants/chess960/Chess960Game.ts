@@ -2,7 +2,9 @@ import ChessGame from "@/standard/ChessGame.ts";
 import Chess960Position from "@/variants/chess960/Chess960Position.ts";
 
 export default class Chess960Game extends ChessGame {
-  protected static readonly Position: typeof Chess960Position = Chess960Position;
+  protected static get Position() {
+    return Chess960Position;
+  }
 
   declare public ["constructor"]: typeof Chess960Game;
   declare public currentPosition: Chess960Position;

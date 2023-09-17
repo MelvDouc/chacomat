@@ -1,4 +1,5 @@
 import BaseBoard from "@/base/BaseBoard.ts";
+import type Coords from "@/base/Coords.ts";
 import type Move from "@/base/moves/Move.ts";
 import PieceMove from "@/base/moves/PieceMove.ts";
 import Color from "@/constants/Color.ts";
@@ -20,18 +21,18 @@ export default abstract class BasePosition<TBoard extends BaseBoard> {
     return this.legalMoves.map((move) => move.getAlgebraicNotation(this.board, this.legalMoves));
   }
 
-  protected abstract pseudoLegalPawnMoves(srcIndex: number): Generator<Move>;
+  protected abstract pseudoLegalPawnMoves(srcCoords: Coords): Generator<Move>;
 
   protected *pseudoLegalMoves() {
-    for (const [srcIndex, srcPiece] of this.board.getPiecesOfColor(this.activeColor)) {
+    for (const [srcCoords, srcPiece] of this.board.getPiecesOfColor(this.activeColor)) {
       if (srcPiece.isPawn()) {
-        yield* this.pseudoLegalPawnMoves(srcIndex);
+        yield* this.pseudoLegalPawnMoves(srcCoords);
         continue;
       }
 
-      for (const destIndex of this.board.attackedIndices(srcIndex))
-        if (this.board.get(destIndex)?.color !== this.activeColor)
-          yield new PieceMove(srcIndex, destIndex);
+      for (const destCoords of this.board.attackedCoords(srcCoords))
+        if (this.board.get(destCoords)?.color !== this.activeColor)
+          yield new PieceMove(srcCoords, destCoords);
     }
   }
 

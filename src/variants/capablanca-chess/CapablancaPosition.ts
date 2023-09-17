@@ -1,4 +1,3 @@
-import type Move from "@/base/moves/Move.ts";
 import Position from "@/standard/Position.ts";
 import CapablancaBoard from "@/variants/capablanca-chess/CapablancaBoard.ts";
 
