@@ -12,10 +12,16 @@ Deno.test("Board validity #1", () => {
 Deno.test("Board validity #2", () => {
   const boardStr = "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR";
   const board = new CapablancaBoard().addPiecesFromString(boardStr);
-  assertEquals(board.get(70), board.get(79));
-  assertEquals(board.get(71), board.get(78));
-  assertEquals(board.get(72), CapablancaPiece.Pieces.WHITE_ARCHBISHOP);
-  assertEquals(board.get(77), CapablancaPiece.Pieces.WHITE_CHANCELLOR);
+  const a1 = board.at(7, 0);
+  const b1 = board.at(7, 1);
+  const c1 = board.at(7, 2);
+  const h1 = board.at(7, 7);
+  const i1 = board.at(7, 8);
+  const j1 = board.at(7, 9);
+  assertEquals(a1, j1);
+  assertEquals(b1, i1);
+  assertEquals(c1, CapablancaPiece.Pieces.WHITE_ARCHBISHOP);
+  assertEquals(h1, CapablancaPiece.Pieces.WHITE_CHANCELLOR);
 });
 
 Deno.test("castling", () => {

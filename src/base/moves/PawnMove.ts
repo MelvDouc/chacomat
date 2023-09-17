@@ -1,54 +1,55 @@
-import BaseBoard from "@/base/BaseBoard.ts";
-import BasePiece from "@/base/BasePiece.ts";
+import type BaseBoard from "@/base/BaseBoard.ts";
+import type BasePiece from "@/base/BasePiece.ts";
+import type Coords from "@/base/Coords.ts";
 import Move from "@/base/moves/Move.ts";
 
 export default class PawnMove extends Move {
   public promotedPiece: BasePiece | null = null;
 
   public constructor(
-    public readonly srcIndex: number,
-    public readonly destIndex: number
+    public readonly srcCoords: Coords,
+    public readonly destCoords: Coords
   ) {
     super();
   }
 
   public try(board: BaseBoard) {
-    const srcPiece = board.get(this.srcIndex)!;
-    const capturedPiece = board.get(this.destIndex);
+    const srcPiece = board.get(this.srcCoords)!;
+    const capturedPiece = board.get(this.destCoords);
 
-    capturedPiece && board.delete(this.destIndex);
+    capturedPiece && board.delete(this.destCoords);
     board
-      .set(this.destIndex, this.promotedPiece ?? srcPiece)
-      .delete(this.srcIndex);
+      .set(this.destCoords, this.promotedPiece ?? srcPiece)
+      .delete(this.srcCoords);
 
     return () => {
       board
-        .set(this.srcIndex, srcPiece)
-        .delete(this.destIndex);
-      capturedPiece && board.set(this.destIndex, capturedPiece);
+        .set(this.srcCoords, srcPiece)
+        .delete(this.destCoords);
+      capturedPiece && board.set(this.destCoords, capturedPiece);
     };
   }
 
-  public getAlgebraicNotation(board: BaseBoard) {
+  public getAlgebraicNotation() {
     const promotion = !this.promotedPiece ? "" : `=${this.promotedPiece.initial.toUpperCase()}`;
-    if (this.isCapture(board))
-      return `${board.getNotation(this.srcIndex)[0]}x${board.getNotation(this.destIndex) + promotion}`;
-    return board.getNotation(this.destIndex) + promotion;
+    if (this.isCapture())
+      return `${this.srcCoords.fileNotation}x${this.destCoords.notation + promotion}`;
+    return this.destCoords.notation + promotion;
   }
 
-  public override getComputerNotation(board: BaseBoard) {
-    return super.getComputerNotation(board) + (this.promotedPiece?.initial.toUpperCase() ?? "");
+  public getComputerNotation() {
+    return super.getComputerNotation() + (this.promotedPiece?.initial.toUpperCase() ?? "");
   }
 
-  public isCapture(board: BaseBoard) {
-    return this.getSrcCoords(board).y !== this.getDestCoords(board).y;
+  public isCapture() {
+    return this.srcCoords.y !== this.destCoords.y;
   }
 
-  public isDouble(boardHeight: number) {
-    return Math.abs(this.srcIndex - this.destIndex) === boardHeight * 2;
+  public isDouble() {
+    return Math.abs(this.srcCoords.x - this.destCoords.x) === 2;
   }
 
   public isPromotion(board: BaseBoard) {
-    return this.getDestCoords(board).x === board.get(this.srcIndex)?.color.opposite.getPieceRank(board.height);
+    return this.destCoords.x === board.get(this.srcCoords)?.color.opposite.getPieceRank(board.height);
   }
 }

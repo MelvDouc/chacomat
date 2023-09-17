@@ -1,41 +1,39 @@
 import BaseBoard from "@/base/BaseBoard.ts";
+import type Coords from "@/base/Coords.ts";
 import Color from "@/constants/Color.ts";
 import Piece from "@/standard/Piece.ts";
 
 export default class Board extends BaseBoard<Piece> {
   public readonly castlingMultiplier: number = 2;
-  public readonly initialKingIndices = new Map([
-    [Color.WHITE, 60],
-    [Color.BLACK, 4]
-  ]);
 
-  public get PieceConstructor(): typeof Piece {
+  public get PieceConstructor() {
     return Piece;
   }
 
-  public getCastledKingIndex(color: Color, rookSrcIndex: number) {
-    return this.initialKingIndices.get(color)! + this.castlingMultiplier * Math.sign(rookSrcIndex - this.getKingIndex(color));
+  public getCastledKingCoords(color: Color, rookSrcY: number) {
+    const { x, y } = this.getKingCoords(color);
+    return this.Coords.get(
+      x,
+      this.width / 2 + this.castlingMultiplier * Math.sign(rookSrcY - y)
+    );
   }
 
-  public canCastle(rookSrcIndex: number, color: Color, attackedIndices: Set<number>): boolean {
-    const kingSrcIndex = this.getKingIndex(color),
-      direction = Math.sign(rookSrcIndex - kingSrcIndex),
-      kingDestIndex = this.initialKingIndices.get(color)! + this.castlingMultiplier * direction,
-      rookDestIndex = kingDestIndex - direction;
+  public canCastle(rookSrcY: number, color: Color, attackedCoords: Set<Coords>): boolean {
+    const kingSrcCoords = this.getKingCoords(color),
+      rookSrcCoords = this.Coords.get(kingSrcCoords.x, rookSrcY),
+      direction = Math.sign(rookSrcY - kingSrcCoords.y),
+      rookDestCoords = this.getCastledKingCoords(color, rookSrcY).peer(0, -direction)!,
+      rookMoveCount = Math.abs(rookDestCoords.y - rookSrcY);
 
-    const kingYOffset = Math.sign(kingDestIndex - kingSrcIndex);
-    for (let i = kingSrcIndex; i !== kingDestIndex;) {
-      i += kingYOffset;
-      if (this.has(i) && i !== rookSrcIndex || attackedIndices.has(i))
+    for (let i = 1; i <= this.castlingMultiplier; i++) {
+      const coords = kingSrcCoords.peer(0, i * direction)!;
+      if (this.has(coords) || attackedCoords.has(coords))
         return false;
     }
 
-    const rookYOffset = Math.sign(rookDestIndex - rookSrcIndex);
-    for (let i = rookSrcIndex; i !== rookDestIndex;) {
-      i += rookYOffset;
-      if (this.has(i) && i !== kingSrcIndex)
+    for (let i = 1; i <= rookMoveCount; i++)
+      if (this.has(rookSrcCoords.peer(0, -i * direction)!))
         return false;
-    }
 
     return true;
   }

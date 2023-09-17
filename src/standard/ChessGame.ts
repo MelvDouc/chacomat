@@ -8,22 +8,28 @@ import Position from "@/standard/Position.ts";
 import ShatranjGame from "@/variants/shatranj/ShatranjGame.ts";
 
 export default class ChessGame extends ShatranjGame {
-  protected static readonly Position: typeof Position = Position;
+  protected static get Position() {
+    return Position;
+  }
 
   declare public ["constructor"]: typeof ChessGame;
   declare public currentPosition: Position;
 
   public updateResult() {
-    if (this.currentPosition.isCheckmate())
+    if (this.currentPosition.isCheckmate()) {
       this.info.Result = (this.currentPosition.activeColor === Color.WHITE)
         ? GameResults.BLACK_WIN
         : GameResults.WHITE_WIN;
+      return;
+    }
     if (
       this.currentPosition.isStalemate()
       || this.currentPosition.isInsufficientMaterial()
       || this.currentPosition.isTripleRepetition()
-    )
+    ) {
       this.info.Result = GameResults.DRAW;
+      return;
+    }
     this.info.Result = GameResults.NONE;
   }
 
@@ -31,8 +37,8 @@ export default class ChessGame extends ShatranjGame {
     const pos = this.currentPosition,
       board = pos.board.clone() as Board,
       castlingRights = pos.castlingRights.clone();
-    const srcPiece = board.get(move.srcIndex)!,
-      destPiece = board.get(move.destIndex);
+    const srcPiece = board.get(move.srcCoords)!,
+      destPiece = board.get(move.destCoords);
     const isPawnMove = move instanceof PawnMove;
 
     if (isPawnMove && move.isPromotion(board)) {
@@ -41,13 +47,13 @@ export default class ChessGame extends ShatranjGame {
     }
 
     if (srcPiece.isKing())
-      castlingRights.get(pos.activeColor)!.clear();
+      castlingRights.get(pos.activeColor).clear();
 
-    if (srcPiece.isRook() && move.getSrcCoords(board).x === pos.activeColor.getPieceRank(board.height))
-      castlingRights.get(pos.activeColor)!.delete(move.srcIndex);
+    if (srcPiece.isRook() && move.srcCoords.x === pos.activeColor.getPieceRank(board.height))
+      castlingRights.get(pos.activeColor).delete(move.srcCoords.y);
 
-    if (destPiece?.isRook() && move.getDestCoords(board).x === pos.activeColor.opposite.getPieceRank(board.height))
-      castlingRights.get(pos.activeColor.opposite)!.delete(move.destIndex);
+    if (destPiece?.isRook() && move.destCoords.x === pos.activeColor.opposite.getPieceRank(board.height))
+      castlingRights.get(pos.activeColor.opposite).delete(move.destCoords.y);
 
     move.try(board);
 
@@ -55,7 +61,9 @@ export default class ChessGame extends ShatranjGame {
       board,
       activeColor: pos.activeColor.opposite,
       castlingRights,
-      enPassantIndex: isPawnMove && move.isDouble(board.height) ? ((move.srcIndex + move.destIndex) / 2) : -1,
+      enPassantCoords: isPawnMove && move.isDouble()
+        ? board.Coords.get((move.srcCoords.x + move.destCoords.x) / 2, move.destCoords.y)
+        : null,
       halfMoveClock: (destPiece || isPawnMove) ? 0 : (pos.halfMoveClock + 1),
       fullMoveNumber: pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
     });
@@ -67,10 +75,8 @@ export default class ChessGame extends ShatranjGame {
   }
 
   public playMoveWithNotation(notation: string) {
-    const srcIndex = this.currentPosition.board.notationToIndex(notation.slice(0, 2));
-    const destIndex = this.currentPosition.board.notationToIndex(notation.slice(2, 4));
     const move = this.currentPosition.legalMoves.find((move) => {
-      return move.srcIndex === srcIndex && move.destIndex === destIndex;
+      return notation.startsWith(move.getComputerNotation());
     });
 
     if (!move)

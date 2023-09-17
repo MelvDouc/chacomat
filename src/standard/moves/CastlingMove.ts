@@ -1,40 +1,41 @@
+import type BaseBoard from "@/base/BaseBoard.ts";
+import type Coords from "@/base/Coords.ts";
 import Move from "@/base/moves/Move.ts";
-import BaseBoard from "@/base/BaseBoard.ts";
 
 export default class CastlingMove extends Move {
   public constructor(
-    public readonly srcIndex: number,
-    public readonly destIndex: number,
-    public readonly rookSrcIndex: number
+    public readonly srcCoords: Coords,
+    public readonly destCoords: Coords,
+    public readonly rookSrcCoords: Coords
   ) {
     super();
   }
 
   public get direction() {
-    return Math.sign(this.rookSrcIndex - this.srcIndex);
+    return Math.sign(this.rookSrcCoords.y - this.srcCoords.y);
   }
 
   public isQueenSide() {
-    return this.rookSrcIndex < this.srcIndex;
+    return this.rookSrcCoords.y < this.srcCoords.y;
   }
 
   public try(board: BaseBoard) {
-    const king = board.get(this.srcIndex)!;
-    const rookDestIndex = this.destIndex - this.direction;
-    const rook = board.get(this.rookSrcIndex)!;
+    const king = board.get(this.srcCoords)!;
+    const rookDestCoords = this.destCoords.peer(0, -this.direction)!;
+    const rook = board.get(this.rookSrcCoords)!;
 
     board
-      .delete(this.srcIndex)
-      .set(this.destIndex, king)
-      .delete(this.rookSrcIndex)
-      .set(rookDestIndex, rook);
+      .delete(this.srcCoords)
+      .set(this.destCoords, king)
+      .delete(this.rookSrcCoords)
+      .set(rookDestCoords, rook);
 
     return () => {
       board
-        .set(this.srcIndex, king)
-        .delete(this.destIndex)
-        .set(this.rookSrcIndex, rook)
-        .delete(rookDestIndex);
+        .set(this.srcCoords, king)
+        .delete(this.destCoords)
+        .set(this.rookSrcCoords, rook)
+        .delete(rookDestCoords);
     };
   }
 

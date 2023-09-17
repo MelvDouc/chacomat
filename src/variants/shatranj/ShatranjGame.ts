@@ -9,7 +9,9 @@ import ShatranjPiece from "@/variants/shatranj/ShatranjPiece.ts";
 import ShatranjPosition from "@/variants/shatranj/ShatranjPosition.ts";
 
 export default class ShatranjGame {
-  protected static readonly Position: typeof ShatranjPosition = ShatranjPosition;
+  protected static get Position() {
+    return ShatranjPosition;
+  };
 
   public static parsePgn(pgn: string) {
     let matchArray: RegExpMatchArray | null;
@@ -57,12 +59,16 @@ export default class ShatranjGame {
   }
 
   public updateResult() {
-    if (this.currentPosition.isCheckmate())
+    if (this.currentPosition.isCheckmate()) {
       this.info.Result = (this.currentPosition.activeColor === Color.WHITE)
         ? GameResults.BLACK_WIN
         : GameResults.WHITE_WIN;
-    if (this.currentPosition.isStalemate())
+      return;
+    }
+    if (this.currentPosition.isStalemate()) {
       this.info.Result = GameResults.DRAW;
+      return;
+    }
     this.info.Result = GameResults.NONE;
   }
 
@@ -78,7 +84,7 @@ export default class ShatranjGame {
   public playMove(move: Move) {
     const pos = this.currentPosition;
     const board = pos.board.clone() as ShatranjBoard;
-    const srcPiece = board.get(move.srcIndex)!;
+    const srcPiece = board.get(move.srcCoords)!;
 
     if (move instanceof PawnMove && move.isPromotion(board))
       move.promotedPiece = ShatranjPiece.fromInitial(srcPiece.color === Color.WHITE ? "Q" : "q")!;
@@ -102,11 +108,8 @@ export default class ShatranjGame {
    * @returns This same game.
    */
   public playMoveWithNotation(notation: string) {
-    const { board, legalMoves } = this.currentPosition;
-    const srcIndex = board.notationToIndex(notation.slice(0, 2));
-    const destIndex = board.notationToIndex(notation.slice(2, 4));
-    const move = legalMoves.find((move) => {
-      return move.srcIndex === srcIndex && move.destIndex === destIndex;
+    const move = this.currentPosition.legalMoves.find((move) => {
+      return notation.startsWith(move.getComputerNotation());
     });
 
     if (!move)
