@@ -1,22 +1,24 @@
+import Color from "@/base/Color.ts";
 import Coords from "@/base/Coords.ts";
-import Color from "@/constants/Color.ts";
-import CastlingRights from "@/standard/CastlingRights.ts";
+import CastlingRights from "@/variants/standard/CastlingRights.ts";
 
 export default class Chess960CastlingRights extends CastlingRights {
-  public static fromString(castlingStr: string) {
+  public static override fromString(castlingStr: string) {
     const castlingRights = new this();
 
-    for (const char of castlingStr) {
-      if (char === char.toUpperCase())
-        castlingRights.get(Color.WHITE).add(Coords.fileNameToY(char.toLowerCase()));
-      else
-        castlingRights.get(Color.BLACK).add(Coords.fileNameToY(char));
+    if (castlingStr !== "-") {
+      for (const char of castlingStr) {
+        if (char === char.toUpperCase())
+          castlingRights.get(Color.WHITE).add(Coords.fileNameToY(char.toLowerCase()));
+        else
+          castlingRights.get(Color.BLACK).add(Coords.fileNameToY(char));
+      }
     }
 
     return castlingRights;
   }
 
-  public toString() {
+  public override toString() {
     let castlingStr = "";
 
     for (const file of this.get(Color.BLACK))

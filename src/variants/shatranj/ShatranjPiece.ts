@@ -1,4 +1,4 @@
-import BasePiece from "@/base/BasePiece.ts";
+import Color from "@/base/Color.ts";
 import {
   blackPawnOffsets,
   diagonalOffsets,
@@ -6,9 +6,10 @@ import {
   knightOffsets,
   orthogonalOffsets,
   whitePawnOffsets
-} from "@/constants/offsets.ts";
+} from "@/base/offsets.ts";
+import { IColor, IPiece, PieceOffsets } from "@/typings/types.ts";
 
-export default class ShatranjPiece extends BasePiece {
+export default class ShatranjPiece implements IPiece {
   protected static readonly values = new Map<number, ShatranjPiece>();
   protected static readonly initials = new Map<string, ShatranjPiece>();
 
@@ -16,8 +17,66 @@ export default class ShatranjPiece extends BasePiece {
     return ShatranjPieces;
   }
 
+  public static fromInitial(initial: string) {
+    return this.initials.get(initial);
+  }
+
+  declare public ["constructor"]: typeof ShatranjPiece;
+  public readonly value: number;
+  public readonly initial: string;
+  public readonly color: IColor;
+  public readonly offsets: PieceOffsets;
+
+  public constructor({ value, initial, offsets }: {
+    value: number;
+    initial: string;
+    offsets: PieceOffsets;
+  }) {
+    this.value = value;
+    this.initial = initial;
+    this.color = initial === initial.toUpperCase() ? Color.WHITE : Color.BLACK;
+    this.offsets = offsets;
+    this.constructor.values.set(value, this);
+    this.constructor.initials.set(initial, this);
+  }
+
+  public get opposite() {
+    return this.constructor.values.get(-this.value)!;
+  }
+
+  public isPawn() {
+    return this.initial.toUpperCase() === "P";
+  }
+
+  public isKing() {
+    return this.initial.toUpperCase() === "K";
+  }
+
+  public isKnight() {
+    return this.initial.toUpperCase() === "N";
+  }
+
+  public isBishop() {
+    return this.initial.toUpperCase() === "B";
+  }
+
+  public isRook() {
+    return this.initial.toUpperCase() === "R";
+  }
+
+  public isQueen() {
+    return this.initial.toUpperCase() === "Q";
+  }
+
   public isShortRange() {
     return !this.isRook();
+  }
+
+  public toJSON() {
+    return {
+      initial: this.initial,
+      color: this.color.abbreviation
+    };
   }
 }
 

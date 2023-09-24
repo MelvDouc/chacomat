@@ -1,52 +1,53 @@
-import type Coords from "@/base/Coords.ts";
+import Color from "@/base/Color.ts";
 import PawnMove from "@/base/moves/PawnMove.ts";
-import Color from "@/constants/Color.ts";
-import Board from "@/standard/Board.ts";
-import CastlingRights from "@/standard/CastlingRights.ts";
-import CastlingMove from "@/standard/moves/CastlingMove.ts";
-import EnPassantPawnMove from "@/standard/moves/EnPassantPawnMove.ts";
+import { ICoords } from "@/typings/types.ts";
 import ShatranjPosition from "@/variants/shatranj/ShatranjPosition.ts";
+import Board from "@/variants/standard/Board.ts";
+import CastlingRights from "@/variants/standard/CastlingRights.ts";
+import CastlingMove from "@/variants/standard/moves/CastlingMove.ts";
+import EnPassantPawnMove from "@/variants/standard/moves/EnPassantPawnMove.ts";
 
 export default class Position extends ShatranjPosition {
-  protected static readonly Board: typeof Board = Board;
+  protected static get Board() {
+    return Board;
+  }
+
   protected static get CastlingRights() {
     return CastlingRights;
   }
 
-  public static get START_FEN() {
+  public static override get START_FEN() {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
   }
 
-  public static fromFen(fen: string) {
+  public static override fromFen(fen: string) {
     const [pieceStr, clr, castling, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
     const board = new this.Board().addPiecesFromString(pieceStr);
 
     return new this({
       board,
       activeColor: Color.fromAbbreviation(clr),
-      castlingRights: this.CastlingRights.fromString(castling, board.height, board.width),
-      enPassantCoords: enPassant === "-" ? null : board.Coords.fromNotation(enPassant),
+      castlingRights: this.CastlingRights.fromString(castling, board.width),
+      enPassantCoords: enPassant === "-" ? null : this.Board.getCoordsFromNotation(enPassant),
       halfMoveClock: Number(halfMoveClock),
       fullMoveNumber: Number(fullMoveNumber)
     });
   }
 
-  public static new(fen?: string) {
+  public static override new(fen?: string) {
     return this.fromFen(fen ?? this.START_FEN);
   }
 
   declare public readonly board: Board;
   public readonly castlingRights: CastlingRights;
   public readonly halfMoveClock: number;
-  public readonly enPassantCoords: Coords | null;
-  declare public prev?: Position;
-  public readonly next: Position[] = [];
+  public readonly enPassantCoords: ICoords | null;
 
   public constructor({ activeColor, board, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: {
     activeColor: Color;
     board: Board;
     castlingRights: CastlingRights;
-    enPassantCoords: Coords | null;
+    enPassantCoords: ICoords | null;
     fullMoveNumber: number;
     halfMoveClock: number;
   }) {
@@ -56,54 +57,11 @@ export default class Position extends ShatranjPosition {
     this.halfMoveClock = halfMoveClock;
   }
 
-  protected computeLegalMoves() {
-    return super.computeLegalMoves().concat(...this.castlingMoves());
-  }
-
-  protected *castlingMoves() {
-    const attackedCoords = this.board.getAttackedCoordsSet(this.activeColor.opposite);
-    const kingCoords = this.board.getKingCoords(this.activeColor);
-    if (attackedCoords.has(kingCoords)) return;
-
-    for (const rookSrcY of this.castlingRights.get(this.activeColor)) {
-      if (this.board.canCastle(rookSrcY, this.activeColor, attackedCoords))
-        yield new CastlingMove(
-          kingCoords,
-          this.board.getCastledKingCoords(this.activeColor, rookSrcY),
-          this.board.Coords.get(kingCoords.x, rookSrcY)
-        );
-    }
-  }
-
-  protected *pseudoLegalPawnMoves(srcCoords: Coords) {
-    const forwardCoords = srcCoords.peer(this.activeColor.direction, 0);
-
-    if (forwardCoords && !this.board.has(forwardCoords)) {
-      yield new PawnMove(srcCoords, forwardCoords);
-
-      if (srcCoords.x === this.activeColor.getPawnRank(this.board.height)) {
-        const forwardCoords = srcCoords.peer(this.activeColor.direction * 2, 0);
-
-        if (forwardCoords && !this.board.has(forwardCoords))
-          yield new PawnMove(srcCoords, forwardCoords);
-      }
-    }
-
-    for (const destCoords of this.board.attackedCoords(srcCoords)) {
-      if (this.board.get(destCoords)?.color === this.activeColor.opposite) {
-        yield new PawnMove(srcCoords, destCoords);
-        continue;
-      }
-      if (destCoords === this.enPassantCoords)
-        yield new EnPassantPawnMove(srcCoords, destCoords);
-    }
-  }
-
-  public isCheckmate() {
+  public override isCheckmate() {
     return this.isCheck() && !this.legalMoves.length;
   }
 
-  public isStalemate() {
+  public override isStalemate() {
     return !this.isCheck() && !this.legalMoves.length;
   }
 
@@ -122,10 +80,10 @@ export default class Position extends ShatranjPosition {
   }
 
   public isInsufficientMaterial() {
-    if (this.board.getPieceCount() > 4)
+    if (this.board.pieceCount() > 4)
       return false;
 
-    const nonKingPieces = this.board.getNonKingPieces();
+    const nonKingPieces = this.board.nonKingPieces();
     const activePieces = nonKingPieces.get(this.activeColor)!;
     const inactivePieces = nonKingPieces.get(this.activeColor.opposite)!;
     const [inactiveCoords0, inactivePiece0] = inactivePieces[0] ?? [];
@@ -147,14 +105,14 @@ export default class Position extends ShatranjPosition {
     return false;
   }
 
-  public toString() {
+  public override toString() {
     const castlingStr = this.castlingRights.toString(this.board.height, this.board.width);
     return `${this.board} ${this.activeColor.abbreviation} ${castlingStr} ${this.enPassantCoords?.notation ?? "-"} ${this.halfMoveClock} ${this.fullMoveNumber}`;
   }
 
-  public toObject() {
+  public override toJSON() {
     return {
-      ...super.toObject(),
+      ...super.toJSON(),
       halfMoveClock: this.halfMoveClock,
       enPassantCoords: this.enPassantCoords,
       castlingRights: {
@@ -162,5 +120,57 @@ export default class Position extends ShatranjPosition {
         [Color.BLACK.abbreviation]: [...this.castlingRights.get(Color.BLACK)!]
       }
     };
+  }
+
+  // ===== ===== ===== ===== =====
+  // PROTECTED
+  // ===== ===== ===== ===== =====
+
+  protected override *forwardPawnMoves(srcCoords: ICoords) {
+    const forwardCoords = srcCoords.peer(this.activeColor.direction, 0);
+
+    if (forwardCoords && !this.board.has(forwardCoords)) {
+      yield new PawnMove(srcCoords, forwardCoords);
+
+      if (srcCoords.x === this.activeColor.getPawnRank(this.board.height)) {
+        const forwardCoords = srcCoords.peer(this.activeColor.direction * 2, 0);
+
+        if (forwardCoords && !this.board.has(forwardCoords))
+          yield new PawnMove(srcCoords, forwardCoords);
+      }
+    }
+  }
+
+  protected override *pawnCaptures(srcCoords: ICoords) {
+    for (const destCoords of this.board.attackedCoords(srcCoords)) {
+      if (this.board.get(destCoords)?.color === this.activeColor.opposite) {
+        yield new PawnMove(srcCoords, destCoords);
+        continue;
+      }
+      if (destCoords === this.enPassantCoords)
+        yield new EnPassantPawnMove(srcCoords, destCoords);
+    }
+  }
+
+  protected getCastlingMove(kingCoords: ICoords, rookSrcY: number) {
+    return new CastlingMove(
+      kingCoords,
+      this.board.coords(kingCoords.x, this.board.castledKingFiles[Math.sign(rookSrcY - kingCoords.y) as -1 | 1]),
+      this.board.coords(kingCoords.x, rookSrcY)
+    );
+  }
+
+  protected *castlingMoves() {
+    const attackedCoords = this.board.getAttackedCoordsSet(this.activeColor.opposite);
+    const kingCoords = this.board.getKingCoords(this.activeColor);
+    if (attackedCoords.has(kingCoords)) return;
+
+    for (const rookSrcY of this.castlingRights.get(this.activeColor))
+      if (this.board.canCastle(rookSrcY, this.activeColor, attackedCoords))
+        yield this.getCastlingMove(kingCoords, rookSrcY);
+  }
+
+  protected override computeLegalMoves() {
+    return super.computeLegalMoves().concat(...this.castlingMoves());
   }
 }

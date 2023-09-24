@@ -1,4 +1,4 @@
-import ChessGame from "@/standard/ChessGame.ts";
+import ChessGame from "@/variants/standard/ChessGame.ts";
 
 const pgn1 = await Deno.readTextFile("pgn-files/nikolic_arsovic_1989.pgn");
 const pgn2 = await Deno.readTextFile("pgn-files/petrosian_milanovic_2005.pgn");

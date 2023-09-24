@@ -1,5 +1,5 @@
-import Piece from "@/standard/Piece.ts";
 import ShatranjPiece from "@/variants/shatranj/ShatranjPiece.ts";
+import Piece from "@/variants/standard/Piece.ts";
 import { assert, assertEquals, assertFalse } from "@dev_deps";
 
 Deno.test("piece opposite", () => {

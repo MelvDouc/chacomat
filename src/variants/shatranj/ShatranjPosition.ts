@@ -1,12 +1,11 @@
-import BasePosition from "@/base/BasePosition.ts";
-import type Coords from "@/base/Coords.ts";
+import Color from "@/base/Color.ts";
 import type Move from "@/base/moves/Move.ts";
 import PawnMove from "@/base/moves/PawnMove.ts";
-import Color from "@/constants/Color.ts";
-import { ShatranjPositionObject } from "@/types.ts";
+import PieceMove from "@/base/moves/PieceMove.ts";
+import { ICoords, IMove, IPosition, JSONPosition } from "@/typings/types.ts";
 import ShatranjBoard from "@/variants/shatranj/ShatranjBoard.ts";
 
-export default class ShatranjPosition extends BasePosition<ShatranjBoard> {
+export default class ShatranjPosition implements IPosition {
   public static get START_FEN() {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 1";
   }
@@ -26,7 +25,7 @@ export default class ShatranjPosition extends BasePosition<ShatranjBoard> {
   }
 
   private static moveAsString(pos: ShatranjPosition, nextPos: ShatranjPosition, addMoveNumber: boolean) {
-    const notation = nextPos.srcMove!.getAlgebraicNotation(pos.board, pos.legalMoves)
+    const notation = nextPos.srcMove!.algebraicNotation(pos.board, pos.legalMoves)
       + (nextPos.isCheckmate() ? "#" : (nextPos.isCheck() ? "+" : ""));
 
     if (pos.activeColor === Color.WHITE) return `${pos.fullMoveNumber}.${notation}`;
@@ -37,39 +36,47 @@ export default class ShatranjPosition extends BasePosition<ShatranjBoard> {
   public readonly board: ShatranjBoard;
   public readonly activeColor: Color;
   public readonly fullMoveNumber: number;
-  public prev?: ShatranjPosition;
   public srcMove?: Move;
-  public readonly next: ShatranjPosition[] = [];
+  public prev?: typeof this;
+  public readonly next: (typeof this)[] = [];
+  public comment?: string;
+  protected _isCheck!: boolean;
+  protected _legalMoves!: IMove[];
 
   public constructor({ board, activeColor, fullMoveNumber }: {
     board: ShatranjBoard;
     activeColor: Color;
     fullMoveNumber: number;
   }) {
-    super();
     this.board = board;
     this.activeColor = activeColor;
     this.fullMoveNumber = fullMoveNumber;
   }
 
-  protected *pseudoLegalPawnMoves(srcCoords: Coords) {
-    const forwardCoords = srcCoords.peer(this.activeColor.direction, 0);
+  public get legalMoves() {
+    return this._legalMoves ??= this.computeLegalMoves();
+  }
 
-    if (forwardCoords && !this.board.has(forwardCoords))
-      yield new PawnMove(srcCoords, forwardCoords);
+  public get legalMovesAsAlgebraicNotation() {
+    return this.legalMoves.map((move) => move.algebraicNotation(this.board, this.legalMoves));
+  }
 
-    for (const destCoords of this.board.attackedCoords(srcCoords))
-      if (this.board.get(destCoords)?.color === this.activeColor.opposite)
-        yield new PawnMove(srcCoords, destCoords);
+  public isCheck() {
+    return this._isCheck ??= this.board.isColorInCheck(this.activeColor);
   }
 
   public isCheckmate() {
     return this.isCheck() && !this.legalMoves.length
-      || this.board.getNonKingPieces().get(this.activeColor)?.length === 0;
+      || this.board.nonKingPieces().get(this.activeColor)?.length === 0;
   }
 
   public isStalemate() {
     return !this.isCheck() && !this.legalMoves.length;
+  }
+
+  public isMainLine(): boolean {
+    return !this.prev
+      || this.prev.isMainLine() && this.prev.next.indexOf(this) === 0;
   }
 
   public toString() {
@@ -91,16 +98,57 @@ export default class ShatranjPosition extends BasePosition<ShatranjBoard> {
     return moveList;
   }
 
-  public toObject(): ShatranjPositionObject {
-    return {
-      ...super.toObject(),
-      FEN: this.toString(),
-      prev: this.prev?.toObject() ?? null,
-      next: this.next.map((position) => ({
-        move: position.srcMove!.toObject(this.board, this.legalMoves),
-        position: position.toObject()
-      })),
-      legalMoves: this.legalMoves.map((move) => move.toObject(this.board, this.legalMoves))
+  public toJSON() {
+    const obj: JSONPosition = {
+      board: this.board.toArray(),
+      activeColor: this.activeColor.abbreviation,
+      fullMoveNumber: this.fullMoveNumber,
     };
+    if (this.comment) obj.comment = this.comment;
+    return obj;
+  }
+
+  // ===== ===== ===== ===== =====
+  // PROTECTED
+  // ===== ===== ===== ===== =====
+
+  protected *forwardPawnMoves(srcCoords: ICoords) {
+    const forwardCoords = srcCoords.peer(this.activeColor.direction, 0);
+
+    if (forwardCoords && !this.board.has(forwardCoords))
+      yield new PawnMove(srcCoords, forwardCoords);
+  }
+
+  protected *pawnCaptures(srcCoords: ICoords) {
+    for (const destCoords of this.board.attackedCoords(srcCoords))
+      if (this.board.get(destCoords)?.color === this.activeColor.opposite)
+        yield new PawnMove(srcCoords, destCoords);
+  }
+
+  protected *pseudoLegalMoves() {
+    for (const [srcCoords, srcPiece] of this.board.piecesOfColor(this.activeColor)) {
+      if (srcPiece.isPawn()) {
+        yield* this.forwardPawnMoves(srcCoords);
+        yield* this.pawnCaptures(srcCoords);
+        continue;
+      }
+
+      for (const destCoords of this.board.attackedCoords(srcCoords))
+        if (this.board.get(destCoords)?.color !== this.activeColor)
+          yield new PieceMove(srcCoords, destCoords);
+    }
+  }
+
+  protected computeLegalMoves() {
+    const legalMoves: IMove[] = [];
+
+    for (const move of this.pseudoLegalMoves()) {
+      const undo = move.try(this.board);
+      if (!this.board.isColorInCheck(this.activeColor))
+        legalMoves.push(move);
+      undo();
+    }
+
+    return legalMoves;
   }
 }

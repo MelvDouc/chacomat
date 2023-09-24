@@ -1,28 +1,42 @@
-import Board from "@/standard/Board.ts";
 import CapablancaCoords from "@/variants/capablanca-chess/CapablancaCoords.ts";
 import CapablancaPiece from "@/variants/capablanca-chess/CapablancaPiece.ts";
+import Board from "@/variants/standard/Board.ts";
 
 export default class CapablancaBoard extends Board {
-  public get PieceConstructor() {
-    return CapablancaPiece;
+  public static override getCoordsFromNotation(notation: string) {
+    return CapablancaCoords.fromNotation(notation);
   }
 
-  public get Coords() {
-    return CapablancaCoords;
+  public override readonly width: number = 10;
+
+  public override readonly castledKingFiles = {
+    [-1]: 3,
+    1: 8
+  };
+  public override readonly castledRookFiles = {
+    [-1]: 4,
+    1: 7
+  };
+
+  public override coords(x: number, y: number) {
+    return CapablancaCoords.get(x, y);
   }
 
-  public readonly width: number = 10;
-  public readonly castlingMultiplier: number = 3;
+  public override *attackedCoords(srcCoords: CapablancaCoords) {
+    const srcPiece = this.pieces.get(srcCoords)!;
 
-  public *attackedCoords(srcCoords: CapablancaCoords) {
-    yield* super.attackedCoords(srcCoords);
-
-    if (this.get(srcCoords) instanceof this.PieceConstructor) {
-      const { x: xOffsets, y: yOffsets } = this.PieceConstructor.Pieces.WHITE_KNIGHT.offsets;
-      for (let i = 0; i < xOffsets.length; i++) {
-        const destCoords = srcCoords.peer(xOffsets[i], yOffsets[i]);
-        if (destCoords) yield destCoords;
-      }
+    if (srcPiece.isShortRange()) {
+      yield* this.shortRangeAttackedCoords(srcCoords, srcPiece.offsets);
+      return;
     }
+
+    if (srcPiece instanceof CapablancaPiece)
+      yield* this.shortRangeAttackedCoords(srcCoords, CapablancaPiece.Pieces.WHITE_KNIGHT.offsets);
+
+    yield* this.longRangeAttackedCoords(srcCoords, srcPiece.offsets);
+  }
+
+  public override pieceFromInitial(initial: string) {
+    return CapablancaPiece.fromInitial(initial);
   }
 }

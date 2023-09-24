@@ -1,11 +1,11 @@
-import type Board from "@/standard/Board.ts";
-import CastlingMove from "@/standard/moves/CastlingMove.ts";
+import type Chess960Board from "@/variants/chess960/Chess960Board.ts";
+import CastlingMove from "@/variants/standard/moves/CastlingMove.ts";
 
 export default class Chess960CastlingMove extends CastlingMove {
-  public try(board: Board) {
+  public override try(board: Chess960Board) {
     const king = board.get(this.srcCoords)!;
     const rook = board.get(this.destCoords)!;
-    const kingDestCoords = board.getCastledKingCoords(king.color, this.destCoords.y);
+    const kingDestCoords = board.coords(this.srcCoords.x, board.castledKingFiles[this.direction as -1 | 1]);
     const rookDestCoords = kingDestCoords.peer(0, -this.direction)!;
 
     board

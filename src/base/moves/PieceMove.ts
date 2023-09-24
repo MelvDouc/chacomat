@@ -1,16 +1,15 @@
-import type BaseBoard from "@/base/BaseBoard.ts";
-import type Coords from "@/base/Coords.ts";
 import Move from "@/base/moves/Move.ts";
+import { IBoard, ICoords } from "@/typings/types.ts";
 
 export default class PieceMove extends Move {
   public constructor(
-    public readonly srcCoords: Coords,
-    public readonly destCoords: Coords
+    public readonly srcCoords: ICoords,
+    public readonly destCoords: ICoords
   ) {
     super();
   }
 
-  public try(board: BaseBoard) {
+  public try(board: IBoard) {
     const srcPiece = board.get(this.srcCoords)!;
     const destPiece = board.get(this.destCoords);
     board
@@ -25,7 +24,7 @@ export default class PieceMove extends Move {
     };
   }
 
-  public getAlgebraicNotation(board: BaseBoard, legalMoves: Move[]) {
+  public algebraicNotation(board: IBoard, legalMoves: Move[]) {
     const srcPiece = board.get(this.srcCoords)!;
     let notation = "";
 

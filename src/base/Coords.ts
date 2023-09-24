@@ -1,4 +1,6 @@
-export default class Coords {
+import { ICoords } from "@/typings/types.ts";
+
+export default class Coords implements ICoords {
   protected static readonly FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
   protected static readonly ALL = Array.from({ length: 8 }, (_, x) => {

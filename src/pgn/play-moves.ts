@@ -1,11 +1,10 @@
 import { findClosingCurlyBraceIndex, findClosingParenIndex } from "@/pgn/utils.ts";
-import type ShatranjGame from "@/variants/shatranj/ShatranjGame.ts";
-import type ShatranjPosition from "@/variants/shatranj/ShatranjPosition.ts";
+import { IChessGame, IPosition } from "@/typings/types.ts";
 
 const playLine = (() => {
   const halfMoveRegex = /([NBRQKa-h1-8]{0,4}x?[a-h][1-8]+|0(-0){1,2})/g;
 
-  return (line: string, game: ShatranjGame) => {
+  return (line: string, game: IChessGame) => {
     line = line.replace(/O(-O){1,2}/g, (substring) => substring.replace(/O/g, "0"));
 
     for (const { 0: substring, index } of line.matchAll(halfMoveRegex)) {
@@ -21,11 +20,11 @@ const playLine = (() => {
   };
 })();
 
-function findHalfMove(input: string, { legalMoves, board }: ShatranjPosition) {
-  return legalMoves.find((move) => move.getAlgebraicNotation(board, legalMoves) === input);
+function findHalfMove(input: string, { legalMoves, board }: IPosition) {
+  return legalMoves.find((move) => move.algebraicNotation(board, legalMoves) === input);
 }
 
-export default function playMoves(movesStr: string, game: ShatranjGame) {
+export default function playMoves(movesStr: string, game: IChessGame) {
   for (let i = 0; i < movesStr.length;) {
     if (movesStr[i] === "{") {
       const closingIndex = findClosingCurlyBraceIndex(movesStr, i);

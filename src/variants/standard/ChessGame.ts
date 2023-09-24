@@ -1,49 +1,44 @@
-import type Move from "@/base/moves/Move.ts";
+import BaseGame from "@/base/BaseGame.ts";
+import Color from "@/base/Color.ts";
+import GameResults from "@/base/GameResults.ts";
 import PawnMove from "@/base/moves/PawnMove.ts";
-import Color from "@/constants/Color.ts";
-import GameResults from "@/constants/GameResults.ts";
-import Board from "@/standard/Board.ts";
-import Piece from "@/standard/Piece.ts";
-import Position from "@/standard/Position.ts";
-import ShatranjGame from "@/variants/shatranj/ShatranjGame.ts";
+import { IMove } from "@/typings/types.ts";
+import Position from "@/variants/standard/Position.ts";
 
-export default class ChessGame extends ShatranjGame {
-  protected static get Position() {
+export default class ChessGame extends BaseGame<Position> {
+  protected static override get Position() {
     return Position;
   }
 
-  declare public ["constructor"]: typeof ChessGame;
-  declare public currentPosition: Position;
-
-  public updateResult() {
+  public override getCurrentResult() {
     if (this.currentPosition.isCheckmate()) {
-      this.info.Result = (this.currentPosition.activeColor === Color.WHITE)
+      return (this.currentPosition.activeColor === Color.WHITE)
         ? GameResults.BLACK_WIN
         : GameResults.WHITE_WIN;
-      return;
     }
     if (
       this.currentPosition.isStalemate()
       || this.currentPosition.isInsufficientMaterial()
       || this.currentPosition.isTripleRepetition()
     ) {
-      this.info.Result = GameResults.DRAW;
-      return;
+      return GameResults.DRAW;
     }
-    this.info.Result = GameResults.NONE;
+    return GameResults.NONE;
   }
 
-  public playMove(move: Move, promotionType?: string) {
+  public override playMove(move: IMove, promotionType?: string) {
     const pos = this.currentPosition,
-      board = pos.board.clone() as Board,
-      castlingRights = pos.castlingRights.clone();
-    const srcPiece = board.get(move.srcCoords)!,
-      destPiece = board.get(move.destCoords);
-    const isPawnMove = move instanceof PawnMove;
+      board = pos.board.clone(),
+      castlingRights = pos.castlingRights.clone(),
+      srcPiece = board.get(move.srcCoords)!,
+      destPiece = board.get(move.destCoords),
+      isPawnMove = move instanceof PawnMove;
 
     if (isPawnMove && move.isPromotion(board)) {
       promotionType ??= "Q";
-      move.promotedPiece = Piece.fromInitial(srcPiece.color === Color.WHITE ? promotionType : promotionType.toLowerCase())!;
+      move.promotedPiece = board.pieceFromInitial(
+        srcPiece.color === Color.WHITE ? promotionType : promotionType.toLowerCase()
+      )!;
     }
 
     if (srcPiece.isKing())
@@ -57,12 +52,12 @@ export default class ChessGame extends ShatranjGame {
 
     move.try(board);
 
-    const nextPos = new this.constructor.Position({
+    const nextPos = new (pos.constructor as typeof Position)({
       board,
       activeColor: pos.activeColor.opposite,
       castlingRights,
       enPassantCoords: isPawnMove && move.isDouble()
-        ? board.Coords.get((move.srcCoords.x + move.destCoords.x) / 2, move.destCoords.y)
+        ? move.srcCoords.peer(0, pos.activeColor.direction)
         : null,
       halfMoveClock: (destPiece || isPawnMove) ? 0 : (pos.halfMoveClock + 1),
       fullMoveNumber: pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
@@ -74,9 +69,9 @@ export default class ChessGame extends ShatranjGame {
     return this;
   }
 
-  public playMoveWithNotation(notation: string) {
+  public override playMoveWithNotation(notation: string) {
     const move = this.currentPosition.legalMoves.find((move) => {
-      return notation.startsWith(move.getComputerNotation());
+      return notation.startsWith(move.computerNotation());
     });
 
     if (!move)

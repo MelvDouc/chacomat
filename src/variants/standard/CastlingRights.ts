@@ -1,17 +1,19 @@
-import Color from "@/constants/Color.ts";
+import Color from "@/base/Color.ts";
 
 export default class CastlingRights {
-  public static fromString(castlingStr: string, boardHeight: number, boardWidth: number) {
+  public static fromString(castlingStr: string, boardWidth: number) {
     const castlingRights = new this();
 
-    if (castlingStr.includes("q"))
-      castlingRights.get(Color.BLACK).add(0);
-    if (castlingStr.includes("k"))
-      castlingRights.get(Color.BLACK).add(boardWidth - 1);
-    if (castlingStr.includes("Q"))
-      castlingRights.get(Color.WHITE).add(0);
-    if (castlingStr.includes("k"))
-      castlingRights.get(Color.WHITE).add(boardHeight - 1);
+    if (castlingStr !== "-") {
+      if (castlingStr.includes("q"))
+        castlingRights.get(Color.BLACK).add(0);
+      if (castlingStr.includes("k"))
+        castlingRights.get(Color.BLACK).add(boardWidth - 1);
+      if (castlingStr.includes("Q"))
+        castlingRights.get(Color.WHITE).add(0);
+      if (castlingStr.includes("K"))
+        castlingRights.get(Color.WHITE).add(boardWidth - 1);
+    }
 
     return castlingRights;
   }
@@ -30,7 +32,7 @@ export default class CastlingRights {
   }
 
   public clone() {
-    return new this.constructor([...this.white], [...this.black]);
+    return new this.constructor([...this.white], [...this.black]) as this;
   }
 
   public toString(boardHeight: number, boardWidth: number) {

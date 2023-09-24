@@ -1,5 +1,5 @@
-import ChessGame from "@/standard/ChessGame.ts";
-import Position from "@/standard/Position.ts";
+import ChessGame from "@/variants/standard/ChessGame.ts";
+import Position from "@/variants/standard/Position.ts";
 import { assert, assertArrayIncludes, assertEquals, assertFalse } from "@dev_deps";
 
 Deno.test("checkmate", () => {
@@ -46,5 +46,5 @@ Deno.test("sufficient material - N vs B", () => {
 
 Deno.test("ambiguous move notation", () => {
   const { legalMovesAsAlgebraicNotation } = Position.fromFen("3Q4/8/8/Q2Q4/8/8/8/4K1k1 w - - 0 1");
-  assertArrayIncludes(legalMovesAsAlgebraicNotation.filter(n => n.endsWith("a8")), ["Q8a8", "Qaa8", "Qd5a8"]);
+  assertArrayIncludes(legalMovesAsAlgebraicNotation, ["Q8a8", "Qaa8", "Qd5a8"]);
 });

@@ -1,12 +1,11 @@
-import type BaseBoard from "@/base/BaseBoard.ts";
-import type Coords from "@/base/Coords.ts";
 import Move from "@/base/moves/Move.ts";
+import { IBoard, ICoords } from "@/typings/types.ts";
 
 export default class CastlingMove extends Move {
   public constructor(
-    public readonly srcCoords: Coords,
-    public readonly destCoords: Coords,
-    public readonly rookSrcCoords: Coords
+    public readonly srcCoords: ICoords,
+    public readonly destCoords: ICoords,
+    public readonly rookSrcCoords: ICoords
   ) {
     super();
   }
@@ -19,7 +18,7 @@ export default class CastlingMove extends Move {
     return this.rookSrcCoords.y < this.srcCoords.y;
   }
 
-  public try(board: BaseBoard) {
+  public try(board: IBoard) {
     const king = board.get(this.srcCoords)!;
     const rookDestCoords = this.destCoords.peer(0, -this.direction)!;
     const rook = board.get(this.rookSrcCoords)!;
@@ -39,7 +38,7 @@ export default class CastlingMove extends Move {
     };
   }
 
-  public getAlgebraicNotation() {
+  public algebraicNotation() {
     return this.isQueenSide()
       ? "0-0-0"
       : "0-0";

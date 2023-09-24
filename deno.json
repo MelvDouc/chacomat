@@ -7,7 +7,7 @@
     "@dev_deps": "./dev_deps.ts"
   },
   "compilerOptions": {
-    "noImplicitOverride": false,
+    "noImplicitOverride": true,
     "strict": true
   }
 }

@@ -1,18 +1,18 @@
 import {
   diagonalOffsets,
   kingOffsets
-} from "@/constants/offsets.ts";
+} from "@/base/offsets.ts";
 import ShatranjPiece from "@/variants/shatranj/ShatranjPiece.ts";
 
 export default class Piece extends ShatranjPiece {
-  protected static readonly values = new Map<number, Piece>([...ShatranjPiece.values]);
-  protected static readonly initials = new Map<string, Piece>([...ShatranjPiece.initials]);
+  protected static override readonly values = new Map([...ShatranjPiece.values]);
+  protected static override readonly initials = new Map([...ShatranjPiece.initials]);
 
-  public static get Pieces() {
+  public static override get Pieces() {
     return Pieces;
   }
 
-  public isShortRange() {
+  public override isShortRange() {
     return Math.abs(this.value) < Pieces.WHITE_BISHOP.value;
   }
 }

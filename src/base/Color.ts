@@ -1,4 +1,6 @@
-export default class Color {
+import { IColor } from "@/typings/types.ts";
+
+export default class Color implements IColor {
   public static readonly WHITE = new this("w", -1);
   public static readonly BLACK = new this("b", 1);
 

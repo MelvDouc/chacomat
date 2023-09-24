@@ -1,19 +1,17 @@
-import type BaseBoard from "@/base/BaseBoard.ts";
-import type BasePiece from "@/base/BasePiece.ts";
-import type Coords from "@/base/Coords.ts";
 import Move from "@/base/moves/Move.ts";
+import { IBoard, ICoords, IPiece } from "@/typings/types.ts";
 
 export default class PawnMove extends Move {
-  public promotedPiece: BasePiece | null = null;
+  public promotedPiece: IPiece | null = null;
 
   public constructor(
-    public readonly srcCoords: Coords,
-    public readonly destCoords: Coords
+    public readonly srcCoords: ICoords,
+    public readonly destCoords: ICoords
   ) {
     super();
   }
 
-  public try(board: BaseBoard) {
+  public try(board: IBoard) {
     const srcPiece = board.get(this.srcCoords)!;
     const capturedPiece = board.get(this.destCoords);
 
@@ -30,15 +28,15 @@ export default class PawnMove extends Move {
     };
   }
 
-  public getAlgebraicNotation() {
+  public algebraicNotation() {
     const promotion = !this.promotedPiece ? "" : `=${this.promotedPiece.initial.toUpperCase()}`;
     if (this.isCapture())
       return `${this.srcCoords.fileNotation}x${this.destCoords.notation + promotion}`;
     return this.destCoords.notation + promotion;
   }
 
-  public getComputerNotation() {
-    return super.getComputerNotation() + (this.promotedPiece?.initial.toUpperCase() ?? "");
+  public override computerNotation() {
+    return super.computerNotation() + (this.promotedPiece?.initial.toUpperCase() ?? "");
   }
 
   public isCapture() {
@@ -49,7 +47,7 @@ export default class PawnMove extends Move {
     return Math.abs(this.srcCoords.x - this.destCoords.x) === 2;
   }
 
-  public isPromotion(board: BaseBoard) {
+  public isPromotion(board: IBoard) {
     return this.destCoords.x === board.get(this.srcCoords)?.color.opposite.getPieceRank(board.height);
   }
 }

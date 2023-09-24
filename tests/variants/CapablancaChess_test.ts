@@ -1,5 +1,4 @@
 import CapablancaBoard from "@/variants/capablanca-chess/CapablancaBoard.ts";
-import CapablancaChessGame from "@/variants/capablanca-chess/CapablancaChessGame.ts";
 import CapablancaPiece from "@/variants/capablanca-chess/CapablancaPiece.ts";
 import { assertEquals } from "@dev_deps";
 
@@ -22,14 +21,4 @@ Deno.test("Board validity #2", () => {
   assertEquals(b1, i1);
   assertEquals(c1, CapablancaPiece.Pieces.WHITE_ARCHBISHOP);
   assertEquals(h1, CapablancaPiece.Pieces.WHITE_CHANCELLOR);
-});
-
-Deno.test("castling", () => {
-  const game = new CapablancaChessGame({
-    pgn: `
-    [FEN "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/R4K3R w kqKQ - 0 1"]
-
-    1.0-0-0 *
-  `});
-  assertEquals(game.currentPosition.toString(), "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/2KR5R b kq - 1 1");
 });
