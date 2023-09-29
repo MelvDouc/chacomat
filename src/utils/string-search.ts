@@ -19,8 +19,3 @@ function createClosingCharIndexSearchFn(openingChar: string, closingChar: string
     throw new Error(`Bracket at index ${startIndex} in "${str}" is not closed.`);
   };
 }
-
-export function findIndex(str: string, char: string) {
-  const index = str.indexOf(char);
-  return index !== -1 ? index : str.length;
-}

@@ -1,5 +1,5 @@
-import { findClosingCurlyBraceIndex, findClosingParenIndex } from "@/pgn/utils.ts";
 import { IChessGame, IPosition } from "@/typings/types.ts";
+import { findClosingCurlyBraceIndex, findClosingParenIndex } from "@/utils/string-search.ts";
 
 const playLine = (() => {
   const halfMoveRegex = /([NBRQKa-h1-8]{0,4}x?[a-h][1-8]+|0(-0){1,2})/g;

@@ -1,7 +1,7 @@
 import Color from "@/base/Color.ts";
 import GameResults from "@/base/GameResults.ts";
-import playMoves from "@/pgn/play-moves.ts";
 import { GameInfo, GameResult, IChessGame, IMove, IPosition } from "@/typings/types.ts";
+import playMoves from "@/utils/play-moves.ts";
 
 export default abstract class BaseGame<TPosition extends IPosition & {
   prev?: TPosition;

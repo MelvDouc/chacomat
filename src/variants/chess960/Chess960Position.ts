@@ -1,6 +1,7 @@
 import Color from "@/base/Color.ts";
 import type Coords from "@/base/Coords.ts";
 import { ICoords } from "@/typings/types.ts";
+import { getRandomItem, randomInt, shuffle } from "@/utils/random.ts";
 import Chess960Board from "@/variants/chess960/Chess960Board.ts";
 import Chess960CastlingRights from "@/variants/chess960/Chess960CastlingRights.ts";
 import Chess960CastlingMove from "@/variants/chess960/moves/Chess960CastlingMove.ts";
@@ -22,23 +23,22 @@ export default class Chess960Position extends Position {
   }
 
   protected static getWhiteFirstRank() {
-    const files = new Set(Array.from({ length: 8 }, (_, i) => i));
+    const files = Array.from({ length: 8 }, (_, i) => i);
     const { Pieces } = Piece;
 
     const kingY = randomInt(1, 6);
     const queenRookY = randomInt(0, kingY - 1);
-    const kingRookY = randomInt(kingY + 1, 7);
-    files.delete(kingY);
-    files.delete(queenRookY);
-    files.delete(kingRookY);
+    const kingRookY = randomInt(kingY + 1, 8 - 1);
+    files.splice(kingY, 1);
+    files.splice(files.indexOf(queenRookY), 1);
+    files.splice(files.indexOf(kingRookY), 1);
 
-    const bishopY1 = [...files][randomInt(0, files.size - 1)];
-    files.delete(bishopY1);
+    const bishopY1 = getRandomItem(files);
+    files.splice(files.indexOf(bishopY1), 1);
 
-    const oppositeParityFiles = [...files].filter((i) => i % 2 !== bishopY1 % 2);
-    const bishopY2 = oppositeParityFiles[randomInt(0, oppositeParityFiles.length - 1)];
-    files.delete(bishopY2);
-    const remainingFiles = [...files].sort(() => Math.random() - .5);
+    const bishopY2 = getRandomItem(files.filter((file) => file % 2 !== bishopY1 % 2));
+    files.splice(files.indexOf(bishopY2), 1);
+    const remainingFiles = shuffle(files);
 
     const rank: Piece[] = [];
     rank[kingY] = Pieces.WHITE_KING;
@@ -106,8 +106,4 @@ export default class Chess960Position extends Position {
       rookSrcCoords
     );
   }
-}
-
-function randomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
