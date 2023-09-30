@@ -30,8 +30,8 @@ export default class ChessGame extends BaseGame<Position> {
     const pos = this.currentPosition,
       board = pos.board.clone(),
       castlingRights = pos.castlingRights.clone(),
-      srcPiece = board.get(move.srcCoords)!,
-      destPiece = board.get(move.destCoords),
+      srcPiece = board.get(move.srcIndex)!,
+      destPiece = board.get(move.destIndex),
       isPawnMove = move instanceof PawnMove;
 
     if (isPawnMove && move.isPromotion(board)) {
@@ -41,14 +41,14 @@ export default class ChessGame extends BaseGame<Position> {
       )!;
     }
 
-    if (srcPiece.isKing())
+    else if (srcPiece.isKing())
       castlingRights.get(pos.activeColor).clear();
 
-    if (srcPiece.isRook() && move.srcCoords.x === pos.activeColor.getPieceRank(board.height))
-      castlingRights.get(pos.activeColor).delete(move.srcCoords.y);
+    else if (srcPiece.isRook() && board.indexToRank(move.srcIndex) === pos.activeColor.getPieceRank(board.height))
+      castlingRights.get(pos.activeColor).delete(board.indexToFile(move.srcIndex));
 
-    if (destPiece?.isRook() && move.destCoords.x === pos.activeColor.opposite.getPieceRank(board.height))
-      castlingRights.get(pos.activeColor.opposite).delete(move.destCoords.y);
+    if (destPiece?.isRook() && board.indexToRank(move.destIndex) === pos.activeColor.opposite.getPieceRank(board.height))
+      castlingRights.get(pos.activeColor.opposite).delete(board.indexToFile(move.destIndex));
 
     move.try(board);
 
@@ -56,9 +56,9 @@ export default class ChessGame extends BaseGame<Position> {
       board,
       activeColor: pos.activeColor.opposite,
       castlingRights,
-      enPassantCoords: isPawnMove && move.isDouble()
-        ? move.srcCoords.peer(0, pos.activeColor.direction)
-        : null,
+      enPassantIndex: isPawnMove && move.isDouble(board)
+        ? move.srcIndex + board.height * pos.activeColor.direction
+        : -1,
       halfMoveClock: (destPiece || isPawnMove) ? 0 : (pos.halfMoveClock + 1),
       fullMoveNumber: pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
     });
@@ -70,8 +70,9 @@ export default class ChessGame extends BaseGame<Position> {
   }
 
   public override playMoveWithNotation(notation: string) {
-    const move = this.currentPosition.legalMoves.find((move) => {
-      return notation.startsWith(move.computerNotation());
+    const { board, legalMoves } = this.currentPosition;
+    const move = legalMoves.find((move) => {
+      return notation.startsWith(move.computerNotation(board));
     });
 
     if (!move)

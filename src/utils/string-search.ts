@@ -1,5 +1,6 @@
 export const findClosingParenIndex = createClosingCharIndexSearchFn("(", ")");
 export const findClosingCurlyBraceIndex = createClosingCharIndexSearchFn("{", "}");
+export const isWhiteSpace = createCharTest(/\s/);
 
 function createClosingCharIndexSearchFn(openingChar: string, closingChar: string) {
   return (str: string, startIndex: number) => {
@@ -18,4 +19,8 @@ function createClosingCharIndexSearchFn(openingChar: string, closingChar: string
 
     throw new Error(`Bracket at index ${startIndex} in "${str}" is not closed.`);
   };
+}
+
+function createCharTest(regexp: RegExp) {
+  return (input: string) => regexp.test(input);
 }

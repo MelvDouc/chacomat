@@ -20,22 +20,15 @@ export default abstract class BaseGame<TPosition extends IPosition & {
       pgn = pgn.slice(matchArray[0].length).trimStart();
     }
 
-    const result = pgn.match(/(\*|1\/2-1\/2|0-(0|1)|1-0)$/)?.[0];
+    const result = pgn.match(/(\*|1\/2-1\/2|(0|1)-(0|1))$/)?.[0] as GameResult | undefined;
 
-    if (!gameInfo.Result) {
-      console.warn("Result missing from game info.");
-      if (result) {
-        gameInfo.Result = result as GameResult;
-      }
+    if (result) {
+      pgn = pgn.slice(0, -result.length);
+      if (gameInfo.Result && result !== gameInfo.Result)
+        console.warn(`Result in move list ("${result}") differs from result in game info ("${gameInfo.Result}").`);
     }
 
-    if (!result) {
-      console.warn("Result missing from move list.");
-    } else if (gameInfo.Result && result !== gameInfo.Result) {
-      console.warn(`Result in move list ("${result}") differs from result in game info ("${gameInfo.Result}").`);
-    }
-
-    gameInfo.Result ??= GameResults.NONE;
+    gameInfo.Result ??= result ?? GameResults.NONE;
     return {
       gameInfo,
       moveList: pgn
@@ -98,8 +91,9 @@ export default abstract class BaseGame<TPosition extends IPosition & {
    * @returns This same game.
    */
   public playMoveWithNotation(notation: string) {
-    const move = this.currentPosition.legalMoves.find((move) => {
-      return notation.startsWith(move.computerNotation());
+    const { board, legalMoves } = this.currentPosition;
+    const move = legalMoves.find((move) => {
+      return notation.startsWith(move.computerNotation(board));
     });
 
     if (!move)

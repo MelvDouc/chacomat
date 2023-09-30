@@ -7,12 +7,12 @@ import { assert, assertArrayIncludes, assertEquals, assertFalse } from "@dev_dep
 
 Deno.test("castling rights from string", () => {
   const castlingRights = CastlingRights.fromString("kqKQ", 8);
-  assertEquals(castlingRights.toString(8, 8), "kqKQ");
+  assertEquals(castlingRights.toString(8), "kqKQ");
 });
 
 Deno.test("castling rights from string - dash", () => {
   const castlingRights = CastlingRights.fromString("-", 8);
-  assertEquals(castlingRights.toString(8, 8), "-");
+  assertEquals(castlingRights.toString(8), "-");
 });
 
 Deno.test("castling rights from string - chess960", () => {
@@ -25,7 +25,7 @@ Deno.test("castling rights to string", () => {
   castlingRights.get(Color.WHITE).add(0);
   castlingRights.get(Color.WHITE).add(7);
   castlingRights.get(Color.BLACK).add(7);
-  assertEquals(castlingRights.toString(8, 8), "kKQ");
+  assertEquals(castlingRights.toString(8), "kKQ");
 });
 
 Deno.test("castling rights to string - chess960", () => {

@@ -7,8 +7,8 @@ import { assert, assertEquals, assertLess } from "@dev_deps";
 
 Deno.test("string to board", () => {
   const board = new ShatranjBoard().addPiecesFromString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-  const blackPieceRank = Array.from({ length: 8 }, (_, y) => board.get(board.coords(0, y)));
-  const whitePieceRank = Array.from({ length: 8 }, (_, y) => board.get(board.coords(7, y)));
+  const blackPieceRank = Array.from({ length: 8 }, (_, y) => board.get(y));
+  const whitePieceRank = Array.from({ length: 8 }, (_, y) => board.get(y + 8 * (8 - 1)));
   assert(whitePieceRank.every((piece, i) => blackPieceRank[i] === piece?.opposite));
 });
 
@@ -16,8 +16,8 @@ Deno.test("board to string", () => {
   const board = new ShatranjBoard();
 
   for (let y = 0; y < 8; y++) {
-    board.set(board.coords(1, y), ShatranjPiece.Pieces.BLACK_PAWN);
-    board.set(board.coords(6, y), ShatranjPiece.Pieces.WHITE_PAWN);
+    board.set(y + 8, ShatranjPiece.Pieces.BLACK_PAWN);
+    board.set(y + 8 * (8 - 2), ShatranjPiece.Pieces.WHITE_PAWN);
   }
 
   assertEquals(board.toString(), "8/pppppppp/8/8/8/8/PPPPPPPP/8");
@@ -41,14 +41,14 @@ Deno.test("board validity - Capablanca Chess #1", () => {
 Deno.test("board validity - Capablanca Chess #2", () => {
   const boardStr = "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR";
   const board = new CapablancaBoard().addPiecesFromString(boardStr);
-  const a1 = board.at(7, 0);
-  const b1 = board.at(7, 1);
-  const c1 = board.at(7, 2);
-  const h1 = board.at(7, 7);
-  const i1 = board.at(7, 8);
-  const j1 = board.at(7, 9);
-  assertEquals(a1, j1);
-  assertEquals(b1, i1);
-  assertEquals(c1, CapablancaPiece.Pieces.WHITE_ARCHBISHOP);
-  assertEquals(h1, CapablancaPiece.Pieces.WHITE_CHANCELLOR);
+  const a1 = board.notationToIndex("a1");
+  const b1 = board.notationToIndex("b1");
+  const c1 = board.notationToIndex("c1");
+  const h1 = board.notationToIndex("h1");
+  const i1 = board.notationToIndex("i1");
+  const j1 = board.notationToIndex("j1");
+  assertEquals(board.get(a1), board.get(j1));
+  assertEquals(board.get(b1), board.get(i1));
+  assertEquals(board.get(c1), CapablancaPiece.Pieces.WHITE_ARCHBISHOP, board.get(c1)?.initial);
+  assertEquals(board.get(h1), CapablancaPiece.Pieces.WHITE_CHANCELLOR);
 });

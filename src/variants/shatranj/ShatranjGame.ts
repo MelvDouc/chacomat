@@ -25,7 +25,7 @@ export default class ShatranjGame extends BaseGame<ShatranjPosition> {
   public playMove(move: IMove) {
     const pos = this.currentPosition;
     const board = pos.board.clone();
-    const srcPiece = board.get(move.srcCoords)!;
+    const srcPiece = board.get(move.srcIndex)!;
 
     if (move instanceof PawnMove && move.isPromotion(board))
       move.promotedPiece = board.pieceFromInitial(srcPiece.color === Color.WHITE ? "Q" : "q")!;

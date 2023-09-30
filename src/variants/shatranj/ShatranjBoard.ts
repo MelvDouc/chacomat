@@ -1,15 +1,11 @@
 import Color from "@/base/Color.ts";
-import Coords from "@/base/Coords.ts";
-import { IBoard, IColor, ICoords, IPiece, PieceOffsets } from "@/typings/types.ts";
+import { IBoard, IColor, IPiece, PieceOffsets } from "@/typings/types.ts";
+import { FILES, RANKS } from "@/utils/index-utils.ts";
 import ShatranjPiece from "@/variants/shatranj/ShatranjPiece.ts";
 
 export default class ShatranjBoard implements IBoard {
-  public static getCoordsFromNotation(notation: string) {
-    return Coords.fromNotation(notation);
-  }
-
-  protected readonly pieces = new Map<ICoords, IPiece>();
-  protected readonly kingCoords = new Map<IColor, ICoords>();
+  protected readonly pieces = new Map<number, IPiece>();
+  protected readonly kingIndices = new Map<IColor, number>();
   public readonly height: number = 8;
   public readonly width: number = 8;
 
@@ -22,7 +18,7 @@ export default class ShatranjBoard implements IBoard {
           .split("")
           .forEach((initial, y) => {
             if (initial !== "0")
-              this.set(this.coords(x, y), this.pieceFromInitial(initial)!);
+              this.set(this.coordsToIndex(x, y), this.pieceFromInitial(initial)!);
           });
       });
     return this;
@@ -32,32 +28,69 @@ export default class ShatranjBoard implements IBoard {
   // BOARD ACCESSORS
   // ===== ===== ===== ===== =====
 
-  // overridden by 10x8 boards
-  public coords(x: number, y: number) {
-    return Coords.get(x, y);
+  public has(index: number) {
+    return this.pieces.has(index);
   }
 
-  public has(coords: ICoords) {
-    return this.pieces.has(coords);
-  }
-
-  public get(coords: ICoords) {
-    return this.pieces.get(coords) ?? null;
-  }
-
-  public set(coords: ICoords, piece: IPiece) {
-    this.pieces.set(coords, piece);
-    if (piece.isKing()) this.kingCoords.set(piece.color, coords);
-    return this;
-  }
-
-  public delete(coords: ICoords) {
-    this.pieces.delete(coords);
-    return this;
+  public get(index: number) {
+    return this.pieces.get(index) ?? null;
   }
 
   public at(x: number, y: number) {
-    return this.get(this.coords(x, y));
+    return this.get(this.coordsToIndex(x, y));
+  }
+
+  public set(index: number, piece: IPiece) {
+    this.pieces.set(index, piece);
+    if (piece.isKing()) this.kingIndices.set(piece.color, index);
+    return this;
+  }
+
+  public delete(index: number) {
+    this.pieces.delete(index);
+    return this;
+  }
+
+  public indexToRank(index: number) {
+    return Math.floor(index / this.width);
+  }
+
+  public indexToFile(index: number) {
+    return index % this.width;
+  }
+
+  public indexToCoords(index: number) {
+    return {
+      x: this.indexToRank(index),
+      y: this.indexToFile(index)
+    };
+  }
+
+  public coordsToIndex(x: number, y: number) {
+    return x * this.width + y;
+  }
+
+  public isSafeCoords(x: number, y: number) {
+    return x >= 0 && x < this.height && y >= 0 && y < this.width;
+  }
+
+  public indexToNotation(index: number) {
+    return this.indexToFileNotation(index) + this.indexToRankNotation(index);
+  }
+
+  public indexToRankNotation(index: number) {
+    return RANKS[this.indexToRank(index)];
+  }
+
+  public indexToFileNotation(index: number) {
+    return FILES[this.indexToFile(index)];
+  }
+
+  public notationToIndex(notation: string) {
+    return this.coordsToIndex(
+      this.height - +notation.slice(1),
+      FILES.indexOf(notation[0])
+    );
   }
 
   public pieceCount() {
@@ -72,8 +105,16 @@ export default class ShatranjBoard implements IBoard {
   // GETTERS
   // ===== ===== ===== ===== =====
 
-  public getKingCoords(color: IColor) {
-    return this.kingCoords.get(color)!;
+  public pieceRank(color: IColor) {
+    return (color === Color.WHITE) ? this.height - 1 : 0;
+  }
+
+  public pawnRank(color: IColor) {
+    return this.pieceRank(color) + color.direction;
+  }
+
+  public getKingIndex(color: IColor) {
+    return this.kingIndices.get(color)!;
   }
 
   public piecesOfColor(color: IColor) {
@@ -81,7 +122,7 @@ export default class ShatranjBoard implements IBoard {
       if (entry[1].color === color)
         acc.push(entry);
       return acc;
-    }, [] as [ICoords, IPiece][]);
+    }, [] as [number, IPiece][]);
   }
 
   public nonKingPieces() {
@@ -89,29 +130,30 @@ export default class ShatranjBoard implements IBoard {
       if (!entry[1].isKing())
         acc.get(entry[1].color)!.push(entry);
       return acc;
-    }, new Map<IColor, [ICoords, IPiece][]>([
+    }, new Map<IColor, [number, IPiece][]>([
       [Color.WHITE, []],
       [Color.BLACK, []]
     ]));
   }
 
-  public *attackedCoords(srcCoords: ICoords) {
-    const srcPiece = this.pieces.get(srcCoords)!;
+  public *attackedIndices(srcIndex: number) {
+    const srcPiece = this.pieces.get(srcIndex)!;
 
     if (srcPiece.isShortRange()) {
-      yield* this.shortRangeAttackedCoords(srcCoords, srcPiece.offsets);
+      yield* this.shortRangeAttackedIndices(srcIndex, srcPiece.offsets);
       return;
     }
 
-    yield* this.longRangeAttackedCoords(srcCoords, srcPiece.offsets);
+    yield* this.longRangeAttackedIndices(srcIndex, srcPiece.offsets);
   }
 
-  public getAttackedCoordsSet(color: IColor) {
-    const set = new Set<ICoords>();
+  public getAttackedIndicesSet(color: IColor) {
+    const set = new Set<number>();
 
-    for (const [srcCoords] of this.piecesOfColor(color))
-      for (const destCoords of this.attackedCoords(srcCoords))
-        set.add(destCoords);
+    for (const [srcIndex, srcPiece] of this.pieces)
+      if (srcPiece.color === color)
+        for (const destIndex of this.attackedIndices(srcIndex))
+          set.add(destIndex);
 
     return set;
   }
@@ -121,12 +163,12 @@ export default class ShatranjBoard implements IBoard {
   // ===== ===== ===== ===== =====
 
   public isColorInCheck(color: IColor) {
-    const kingCoords = this.getKingCoords(color);
+    const kingCoords = this.getKingIndex(color);
 
-    for (const [srcCoords, srcPiece] of this.pieces)
+    for (const [srcIndex, srcPiece] of this.pieces)
       if (srcPiece.color === color.opposite)
-        for (const destCoords of this.attackedCoords(srcCoords))
-          if (destCoords === kingCoords)
+        for (const destIndex of this.attackedIndices(srcIndex))
+          if (destIndex === kingCoords)
             return true;
 
     return false;
@@ -166,18 +208,27 @@ export default class ShatranjBoard implements IBoard {
   // PROTECTED
   // ===== ===== ===== ===== =====
 
-  protected *shortRangeAttackedCoords(srcCoords: ICoords, { x: xOffsets, y: yOffsets }: PieceOffsets) {
+  protected *shortRangeAttackedIndices(srcIndex: number, { x: xOffsets, y: yOffsets }: PieceOffsets) {
+    const srcCoords = this.indexToCoords(srcIndex);
+
     for (let i = 0; i < xOffsets.length; i++) {
-      const destCoords = srcCoords.peer(xOffsets[i], yOffsets[i]);
-      if (destCoords) yield destCoords;
+      const x = srcCoords.x + xOffsets[i],
+        y = srcCoords.y + yOffsets[i];
+      if (this.isSafeCoords(x, y))
+        yield this.coordsToIndex(x, y);
     }
   }
 
-  protected *longRangeAttackedCoords(srcCoords: ICoords, { x: xOffsets, y: yOffsets }: PieceOffsets) {
+  protected *longRangeAttackedIndices(srcIndex: number, { x: xOffsets, y: yOffsets }: PieceOffsets) {
+    const srcCoords = this.indexToCoords(srcIndex);
+
     for (let i = 0; i < xOffsets.length; i++) {
-      for (const destCoords of srcCoords.peers(xOffsets[i], yOffsets[i])) {
-        yield destCoords;
-        if (this.has(destCoords)) break;
+      let { x, y } = srcCoords;
+
+      while (this.isSafeCoords(x += xOffsets[i], y += yOffsets[i])) {
+        const destIndex = this.coordsToIndex(x, y);
+        yield destIndex;
+        if (this.has(destIndex)) break;
       }
     }
   }

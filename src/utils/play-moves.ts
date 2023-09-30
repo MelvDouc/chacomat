@@ -1,53 +1,63 @@
 import { IChessGame, IPosition } from "@/typings/types.ts";
-import { findClosingCurlyBraceIndex, findClosingParenIndex } from "@/utils/string-search.ts";
+import CastlingMove from "@/variants/standard/moves/CastlingMove.ts";
 
 const playLine = (() => {
-  const halfMoveRegex = /([NBRQKa-h1-8]{0,4}x?[a-h][1-8]+|0(-0){1,2})/g;
+  const moveRegexp = /([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8]|(?<o>0|O)(-\k<o>){1,2})/g;
 
   return (line: string, game: IChessGame) => {
-    line = line.replace(/O(-O){1,2}/g, (substring) => substring.replace(/O/g, "0"));
-
-    for (const { 0: substring, index } of line.matchAll(halfMoveRegex)) {
-      const halfMove = findHalfMove(substring, game.currentPosition);
-
-      if (!halfMove) {
-        const errMessage = `Illegal move "${substring}" near "${line.slice(index)}" in "${line}".`;
-        throw new Error(errMessage);
-      }
-
-      game.playMove(halfMove);
+    for (const { 0: substring, index } of line.matchAll(moveRegexp)) {
+      const move = findMove(substring, game.currentPosition);
+      if (!move) throw getMoveError({ substring, index: index!, line });
+      game.playMove(move);
     }
   };
 })();
 
-function findHalfMove(input: string, { legalMoves, board }: IPosition) {
-  return legalMoves.find((move) => move.algebraicNotation(board, legalMoves) === input);
+function findMove(input: string, { legalMoves, board }: IPosition) {
+  if (input.includes("-"))
+    return legalMoves.find((move) => move instanceof CastlingMove && move.isQueenSide() === (input.length === 5));
+
+  return legalMoves.find((move) => input.startsWith(move.algebraicNotation(board, legalMoves)));
 }
 
 export default function playMoves(movesStr: string, game: IChessGame) {
-  for (let i = 0; i < movesStr.length;) {
-    if (movesStr[i] === "{") {
-      const closingIndex = findClosingCurlyBraceIndex(movesStr, i);
-      game.currentPosition.comment = movesStr.slice(i + 1, closingIndex);
-      i = closingIndex + 1;
-      continue;
+  let buffer = "";
+  const stack: IPosition[] = [];
+
+  for (let i = 0; i < movesStr.length; i++) {
+    switch (movesStr[i]) {
+      case "(":
+        playLine(buffer, game);
+        stack.push(game.currentPosition);
+        game.goBack();
+        buffer = "";
+        break;
+      case ")":
+        playLine(buffer, game);
+        game.currentPosition = stack.pop()!;
+        buffer = "";
+        break;
+      case "{":
+        playLine(buffer, game);
+        buffer = "";
+        break;
+      case "}":
+        game.currentPosition.comment = buffer;
+        buffer = "";
+        break;
+      default:
+        buffer += movesStr[i];
     }
-
-    if (movesStr[i] === "(") {
-      const closingIndex = findClosingParenIndex(movesStr, i);
-      const { currentPosition } = game;
-      game.goBack();
-      playMoves(movesStr.slice(i + 1, closingIndex), game);
-      game.currentPosition = currentPosition;
-      i = closingIndex + 1;
-      continue;
-    }
-
-    let j = i + 1;
-    while (j < movesStr.length && movesStr[j] !== "(" && movesStr[j] !== "{")
-      j++;
-
-    playLine(movesStr.slice(i, j), game);
-    i = j;
   }
+
+  playLine(buffer, game);
+}
+
+function getMoveError({ substring, index, line }: {
+  substring: string;
+  index: number;
+  line: string;
+}) {
+  const startIndex = (index - 20 < 0) ? 0 : index - 20;
+  return new Error(`Illegal move "${substring}" near "${line.slice(startIndex, index + 20)}".`);
 }

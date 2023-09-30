@@ -1,17 +1,16 @@
 import IBoard from "@/typings/IBoard.ts";
-import ICoords from "@/typings/ICoords.ts";
 
 export default interface IMove {
-  readonly srcCoords: ICoords;
-  readonly destCoords: ICoords;
+  readonly srcIndex: number;
+  readonly destIndex: number;
   try(board: IBoard): () => void;
   algebraicNotation(board: IBoard, legalMoves: IMove[]): string;
-  computerNotation(): string;
+  computerNotation(board: IBoard): string;
   toJSON(board: IBoard, legalMoves: IMove[]): JSONMove;
 }
 
 export interface JSONMove {
-  srcCoords: ICoords;
-  destCoords: ICoords;
+  srcIndex: number;
+  destIndex: number;
   algebraicNotation: string;
 }

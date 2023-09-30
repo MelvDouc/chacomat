@@ -1,5 +1,5 @@
 import Color from "@/base/Color.ts";
-import Coords from "@/base/Coords.ts";
+import { FILES } from "@/utils/index-utils.ts";
 import CastlingRights from "@/variants/standard/CastlingRights.ts";
 
 export default class Chess960CastlingRights extends CastlingRights {
@@ -9,9 +9,9 @@ export default class Chess960CastlingRights extends CastlingRights {
     if (castlingStr !== "-") {
       for (const char of castlingStr) {
         if (char === char.toUpperCase())
-          castlingRights.get(Color.WHITE).add(Coords.fileNameToY(char.toLowerCase()));
+          castlingRights.get(Color.WHITE).add(FILES.indexOf(char.toLowerCase()));
         else
-          castlingRights.get(Color.BLACK).add(Coords.fileNameToY(char));
+          castlingRights.get(Color.BLACK).add(FILES.indexOf(char));
       }
     }
 
@@ -22,9 +22,9 @@ export default class Chess960CastlingRights extends CastlingRights {
     let castlingStr = "";
 
     for (const file of this.get(Color.BLACK))
-      castlingStr += Coords.yToFileName(file);
+      castlingStr += FILES[file];
     for (const file of this.get(Color.WHITE))
-      castlingStr += Coords.yToFileName(file).toUpperCase();
+      castlingStr += FILES[file].toUpperCase();
 
     return castlingStr || "-";
   }

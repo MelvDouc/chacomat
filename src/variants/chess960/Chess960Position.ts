@@ -1,28 +1,26 @@
 import Color from "@/base/Color.ts";
-import type Coords from "@/base/Coords.ts";
-import { ICoords } from "@/typings/types.ts";
 import { getRandomItem, randomInt, shuffle } from "@/utils/random.ts";
 import Chess960Board from "@/variants/chess960/Chess960Board.ts";
 import Chess960CastlingRights from "@/variants/chess960/Chess960CastlingRights.ts";
 import Chess960CastlingMove from "@/variants/chess960/moves/Chess960CastlingMove.ts";
-import Board from "@/variants/standard/Board.ts";
 import Piece from "@/variants/standard/Piece.ts";
 import Position from "@/variants/standard/Position.ts";
 
 export default class Chess960Position extends Position {
-  protected static override get Board() {
-    return Chess960Board;
-  }
-
-  protected static override get CastlingRights() {
-    return Chess960CastlingRights;
-  }
-
+  /** @throws {Error} */
   public static override get START_FEN(): string {
     throw new Error("`Chess960Position` has no unique initial FEN.");
   }
 
-  protected static getWhiteFirstRank() {
+  protected static override createBoard() {
+    return new Chess960Board();
+  }
+
+  protected static override castlingRightsFromString(str: string) {
+    return Chess960CastlingRights.fromString(str);
+  }
+
+  protected static getRandomBlackPieceRank() {
     const files = Array.from({ length: 8 }, (_, i) => i);
     const { Pieces } = Piece;
 
@@ -41,32 +39,32 @@ export default class Chess960Position extends Position {
     const remainingFiles = shuffle(files);
 
     const rank: Piece[] = [];
-    rank[kingY] = Pieces.WHITE_KING;
-    rank[queenRookY] = Pieces.WHITE_ROOK;
-    rank[kingRookY] = Pieces.WHITE_ROOK;
-    rank[bishopY1] = Pieces.WHITE_BISHOP;
-    rank[bishopY2] = Pieces.WHITE_BISHOP;
-    rank[remainingFiles[0]] = Pieces.WHITE_KNIGHT;
-    rank[remainingFiles[1]] = Pieces.WHITE_KNIGHT;
-    rank[remainingFiles[2]] = Pieces.WHITE_QUEEN;
+    rank[kingY] = Pieces.BLACK_KING;
+    rank[queenRookY] = Pieces.BLACK_ROOK;
+    rank[kingRookY] = Pieces.BLACK_ROOK;
+    rank[bishopY1] = Pieces.BLACK_BISHOP;
+    rank[bishopY2] = Pieces.BLACK_BISHOP;
+    rank[remainingFiles[0]] = Pieces.BLACK_KNIGHT;
+    rank[remainingFiles[1]] = Pieces.BLACK_KNIGHT;
+    rank[remainingFiles[2]] = Pieces.BLACK_QUEEN;
     return rank;
   }
 
   public static override new(fen?: string) {
     if (fen) return this.fromFen(fen);
 
-    const board = new this.Board();
-    const castlingRights = new this.CastlingRights();
+    const board = this.createBoard();
+    const castlingRights = this.castlingRightsFromString("-");
 
-    this.getWhiteFirstRank().forEach((piece, y) => {
-      board.set(board.coords(board.height - 1, y), piece);
-      board.set(board.coords(0, y), piece.opposite);
-      board.set(board.coords(board.height - 2, y), Piece.Pieces.WHITE_PAWN);
-      board.set(board.coords(1, y), Piece.Pieces.BLACK_PAWN);
+    this.getRandomBlackPieceRank().forEach((piece, index) => {
+      board.set(index, piece);
+      board.set(index + board.width, Piece.Pieces.BLACK_PAWN);
+      board.set(index + board.width * (board.height - 2), Piece.Pieces.WHITE_PAWN);
+      board.set(index + board.width * (board.height - 1), piece.opposite);
 
       if (piece.isRook()) {
-        castlingRights.get(Color.WHITE).add(y);
-        castlingRights.get(Color.BLACK).add(y);
+        castlingRights.get(Color.WHITE).add(index);
+        castlingRights.get(Color.BLACK).add(index);
       }
     });
 
@@ -74,7 +72,7 @@ export default class Chess960Position extends Position {
       activeColor: Color.WHITE,
       board,
       castlingRights,
-      enPassantCoords: null,
+      enPassantIndex: -1,
       halfMoveClock: 0,
       fullMoveNumber: 1
     });
@@ -85,9 +83,9 @@ export default class Chess960Position extends Position {
 
   public constructor(params: {
     activeColor: Color;
-    board: Board;
+    board: Chess960Board;
     castlingRights: Chess960CastlingRights;
-    enPassantCoords: Coords | null;
+    enPassantIndex: number;
     fullMoveNumber: number;
     halfMoveClock: number;
   }) {
@@ -98,12 +96,11 @@ export default class Chess960Position extends Position {
   // PROTECTED
   // ===== ===== ===== ===== =====
 
-  protected override getCastlingMove(kingCoords: ICoords, rookSrcY: number) {
-    const rookSrcCoords = this.board.coords(kingCoords.x, rookSrcY);
+  protected override getCastlingMove(kingIndex: number, rookSrcIndex: number) {
     return new Chess960CastlingMove(
-      kingCoords,
-      rookSrcCoords,
-      rookSrcCoords
+      kingIndex,
+      rookSrcIndex,
+      rookSrcIndex
     );
   }
 }

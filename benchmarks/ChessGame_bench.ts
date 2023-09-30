@@ -1,18 +1,18 @@
 import ChessGame from "@/variants/standard/ChessGame.ts";
 
-const pgn1 = await Deno.readTextFile("pgn-files/nikolic_arsovic_1989.pgn");
-const pgn2 = await Deno.readTextFile("pgn-files/petrosian_milanovic_2005.pgn");
+const pgn1 = await Deno.readTextFile("pgn-files/bright0.2c_glaurung2.0.1_2007.pgn");
+const pgn2 = await Deno.readTextFile("pgn-files/stockfish_Lc0_2020.pgn");
 const pgn3 = await Deno.readTextFile("pgn-files/defenchess_demolito_2019.pgn");
 
-Deno.bench("Parse long game #1", () => {
+Deno.bench("Parse long game", () => {
   new ChessGame({ pgn: pgn1 });
 });
 
-Deno.bench("Parse long game #2", () => {
+Deno.bench("Parse longer game", () => {
   new ChessGame({ pgn: pgn2 });
 });
 
-Deno.bench("Parse marathon engine game", () => {
+Deno.bench("Parse longest game", () => {
   new ChessGame({ pgn: pgn3 });
 });
 

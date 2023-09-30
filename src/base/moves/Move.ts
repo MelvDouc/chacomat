@@ -1,20 +1,20 @@
-import { IBoard, ICoords, IMove } from "@/typings/types.ts";
+import { IBoard, IMove } from "@/typings/types.ts";
 
 export default abstract class Move implements IMove {
-  public abstract readonly srcCoords: ICoords;
-  public abstract readonly destCoords: ICoords;
+  public abstract readonly srcIndex: number;
+  public abstract readonly destIndex: number;
 
   public abstract try(board: IBoard): () => void;
   public abstract algebraicNotation(board: IBoard, legalMoves: IMove[]): string;
 
-  public computerNotation() {
-    return this.srcCoords.notation + this.destCoords.notation;
+  public computerNotation(board: IBoard) {
+    return board.indexToNotation(this.srcIndex) + board.indexToNotation(this.destIndex);
   }
 
   public toJSON(board: IBoard, legalMoves: IMove[]) {
     return {
-      srcCoords: this.srcCoords,
-      destCoords: this.destCoords,
+      srcIndex: this.srcIndex,
+      destIndex: this.destIndex,
       algebraicNotation: this.algebraicNotation(board, legalMoves)
     };
   }

@@ -1,53 +1,52 @@
 import Move from "@/base/moves/Move.ts";
-import { IBoard, ICoords, IPiece } from "@/typings/types.ts";
+import { IBoard, IPiece } from "@/typings/types.ts";
 
 export default class PawnMove extends Move {
   public promotedPiece: IPiece | null = null;
 
   public constructor(
-    public readonly srcCoords: ICoords,
-    public readonly destCoords: ICoords
+    public readonly srcIndex: number,
+    public readonly destIndex: number
   ) {
     super();
   }
 
   public try(board: IBoard) {
-    const srcPiece = board.get(this.srcCoords)!;
-    const capturedPiece = board.get(this.destCoords);
+    const srcPiece = board.get(this.srcIndex)!;
+    const capturedPiece = board.get(this.destIndex);
 
-    capturedPiece && board.delete(this.destCoords);
     board
-      .set(this.destCoords, this.promotedPiece ?? srcPiece)
-      .delete(this.srcCoords);
+      .set(this.destIndex, this.promotedPiece ?? srcPiece)
+      .delete(this.srcIndex);
 
     return () => {
       board
-        .set(this.srcCoords, srcPiece)
-        .delete(this.destCoords);
-      capturedPiece && board.set(this.destCoords, capturedPiece);
+        .set(this.srcIndex, srcPiece)
+        .delete(this.destIndex);
+      capturedPiece && board.set(this.destIndex, capturedPiece);
     };
   }
 
-  public algebraicNotation() {
-    const promotion = !this.promotedPiece ? "" : `=${this.promotedPiece.initial.toUpperCase()}`;
-    if (this.isCapture())
-      return `${this.srcCoords.fileNotation}x${this.destCoords.notation + promotion}`;
-    return this.destCoords.notation + promotion;
+  public algebraicNotation(board: IBoard) {
+    const destNotation = board.indexToNotation(this.destIndex) + (this.promotedPiece ? `=${this.promotedPiece.initial.toUpperCase()}` : "");
+    if (this.isCapture(board))
+      return `${board.indexToFileNotation(this.srcIndex)}x${destNotation}`;
+    return destNotation;
   }
 
-  public override computerNotation() {
-    return super.computerNotation() + (this.promotedPiece?.initial.toUpperCase() ?? "");
+  public override computerNotation(board: IBoard) {
+    return super.computerNotation(board) + (this.promotedPiece?.initial.toUpperCase() ?? "");
   }
 
-  public isCapture() {
-    return this.srcCoords.y !== this.destCoords.y;
+  public isCapture(board: IBoard) {
+    return board.indexToFile(this.srcIndex) !== board.indexToFile(this.destIndex);
   }
 
-  public isDouble() {
-    return Math.abs(this.srcCoords.x - this.destCoords.x) === 2;
+  public isDouble(board: IBoard) {
+    return Math.abs(this.srcIndex - this.destIndex) === board.height * 2;
   }
 
   public isPromotion(board: IBoard) {
-    return this.destCoords.x === board.get(this.srcCoords)?.color.opposite.getPieceRank(board.height);
+    return board.indexToRank(this.destIndex) === board.pieceRank(board.get(this.srcIndex)!.color.opposite);
   }
 }

@@ -2,7 +2,7 @@ import Color from "@/base/Color.ts";
 import type Move from "@/base/moves/Move.ts";
 import PawnMove from "@/base/moves/PawnMove.ts";
 import PieceMove from "@/base/moves/PieceMove.ts";
-import { ICoords, IMove, IPosition, JSONPosition } from "@/typings/types.ts";
+import { IMove, IPosition, JSONPosition } from "@/typings/types.ts";
 import ShatranjBoard from "@/variants/shatranj/ShatranjBoard.ts";
 
 export default class ShatranjPosition implements IPosition {
@@ -10,11 +10,15 @@ export default class ShatranjPosition implements IPosition {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 1";
   }
 
+  protected static createBoard() {
+    return new ShatranjBoard();
+  }
+
   public static fromFen(fen: string) {
-    const [pieceStr, clr, fullMoveNumber] = fen.split(" ");
+    const [boardStr, clr, fullMoveNumber] = fen.split(" ");
 
     return new this({
-      board: new ShatranjBoard().addPiecesFromString(pieceStr),
+      board: this.createBoard().addPiecesFromString(boardStr),
       activeColor: Color.fromAbbreviation(clr),
       fullMoveNumber: Number(fullMoveNumber)
     });
@@ -112,30 +116,30 @@ export default class ShatranjPosition implements IPosition {
   // PROTECTED
   // ===== ===== ===== ===== =====
 
-  protected *forwardPawnMoves(srcCoords: ICoords) {
-    const forwardCoords = srcCoords.peer(this.activeColor.direction, 0);
+  protected *forwardPawnMoves(srcIndex: number) {
+    const destIndex = srcIndex + this.board.height * this.activeColor.direction;
 
-    if (forwardCoords && !this.board.has(forwardCoords))
-      yield new PawnMove(srcCoords, forwardCoords);
+    if (!this.board.has(destIndex))
+      yield new PawnMove(srcIndex, destIndex);
   }
 
-  protected *pawnCaptures(srcCoords: ICoords) {
-    for (const destCoords of this.board.attackedCoords(srcCoords))
-      if (this.board.get(destCoords)?.color === this.activeColor.opposite)
-        yield new PawnMove(srcCoords, destCoords);
+  protected *pawnCaptures(srcIndex: number) {
+    for (const destIndex of this.board.attackedIndices(srcIndex))
+      if (this.board.get(destIndex)?.color === this.activeColor.opposite)
+        yield new PawnMove(srcIndex, destIndex);
   }
 
   protected *pseudoLegalMoves() {
-    for (const [srcCoords, srcPiece] of this.board.piecesOfColor(this.activeColor)) {
+    for (const [srcIndex, srcPiece] of this.board.piecesOfColor(this.activeColor)) {
       if (srcPiece.isPawn()) {
-        yield* this.forwardPawnMoves(srcCoords);
-        yield* this.pawnCaptures(srcCoords);
+        yield* this.forwardPawnMoves(srcIndex);
+        yield* this.pawnCaptures(srcIndex);
         continue;
       }
 
-      for (const destCoords of this.board.attackedCoords(srcCoords))
-        if (this.board.get(destCoords)?.color !== this.activeColor)
-          yield new PieceMove(srcCoords, destCoords);
+      for (const destIndex of this.board.attackedIndices(srcIndex))
+        if (this.board.get(destIndex)?.color !== this.activeColor)
+          yield new PieceMove(srcIndex, destIndex);
     }
   }
 

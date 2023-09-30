@@ -1,6 +1,7 @@
 import Color from "@/base/Color.ts";
+import { ICastlingRights } from "@/typings/types.ts";
 
-export default class CastlingRights {
+export default class CastlingRights implements ICastlingRights {
   public static fromString(castlingStr: string, boardWidth: number) {
     const castlingRights = new this();
 
@@ -35,14 +36,14 @@ export default class CastlingRights {
     return new this.constructor([...this.white], [...this.black]) as this;
   }
 
-  public toString(boardHeight: number, boardWidth: number) {
+  public toString(boardWidth: number) {
     let castlingStr = "";
 
     if (this.black.has(boardWidth - 1))
       castlingStr += "k";
     if (this.black.has(0))
       castlingStr += "q";
-    if (this.white.has(boardHeight - 1))
+    if (this.white.has(boardWidth - 1))
       castlingStr += "K";
     if (this.white.has(0))
       castlingStr += "Q";

@@ -1,30 +1,27 @@
-import { IColor, ICoords } from "@/typings/types.ts";
+import { IColor } from "@/typings/types.ts";
 import Board from "@/variants/standard/Board.ts";
 
 export default class Chess960Board extends Board {
-  public override canCastle(rookSrcY: number, color: IColor, attackedCoords: Set<ICoords>) {
-    const kingSrcCoords = this.getKingCoords(color),
-      direction = Math.sign(rookSrcY - kingSrcCoords.y) as -1 | 1,
-      kingDestCoords = this.coords(kingSrcCoords.x, this.castledKingFiles[direction]),
-      rookDestCoords = kingDestCoords.peer(0, Math.sign(kingSrcCoords.y - rookSrcY))!,
-      kingYOffset = Math.sign(kingDestCoords.y - kingSrcCoords.y),
-      rookYOffset = Math.sign(rookDestCoords.y - rookSrcY);
+  public override canCastle(rookSrcIndex: number, color: IColor, attackedIndices: Set<number>) {
+    const kingSrcIndex = this.getKingIndex(color),
+      kingDestIndex = this.castledKingIndex(color, Math.sign(rookSrcIndex - kingSrcIndex)),
+      kingOffset = Math.sign(kingDestIndex - kingSrcIndex),
+      rookDestIndex = kingDestIndex - kingOffset,
+      rookOffset = Math.sign(rookDestIndex - rookSrcIndex);
 
-    if (kingYOffset !== 0) {
-      for (let coords = kingSrcCoords.peer(0, kingYOffset)!; ; coords = coords.peer(0, kingYOffset)!) {
-        if (this.has(coords) && coords.y !== rookSrcY || attackedCoords.has(coords))
+    if (kingOffset !== 0)
+      for (let kingIndex = kingSrcIndex + kingOffset; ; kingIndex += kingOffset) {
+        if (this.has(kingIndex) && kingIndex !== rookSrcIndex || attackedIndices.has(kingIndex))
           return false;
-        if (coords === kingDestCoords) break;
+        if (kingIndex === kingDestIndex) break;
       }
-    }
 
-    if (rookYOffset !== 0) {
-      for (let coords = this.coords(kingSrcCoords.x, rookSrcY + rookYOffset); ; coords = coords.peer(0, rookYOffset)!) {
-        if (this.has(coords) && coords !== kingSrcCoords)
+    if (rookOffset !== 0)
+      for (let rookIndex = rookSrcIndex + rookOffset; ; rookIndex += rookOffset) {
+        if (this.has(rookIndex) && rookIndex !== kingSrcIndex)
           return false;
-        if (coords === rookDestCoords) break;
+        if (rookIndex === rookDestIndex) break;
       }
-    }
 
     return true;
   }
