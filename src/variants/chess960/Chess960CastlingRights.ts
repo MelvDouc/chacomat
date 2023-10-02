@@ -3,6 +3,10 @@ import { FILES } from "@/utils/index-utils.ts";
 import CastlingRights from "@/variants/standard/CastlingRights.ts";
 
 export default class Chess960CastlingRights extends CastlingRights {
+  // ===== ===== ===== ===== =====
+  // STATIC PUBLIC
+  // ===== ===== ===== ===== =====
+
   public static override fromString(castlingStr: string) {
     const castlingRights = new this();
 
@@ -17,6 +21,10 @@ export default class Chess960CastlingRights extends CastlingRights {
 
     return castlingRights;
   }
+
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
 
   public override toString() {
     let castlingStr = "";

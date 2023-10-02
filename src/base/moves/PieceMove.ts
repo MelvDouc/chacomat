@@ -2,6 +2,10 @@ import Move from "@/base/moves/Move.ts";
 import { IBoard, IPiece } from "@/typings/types.ts";
 
 export default class PieceMove extends Move {
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
+
   public constructor(
     public readonly srcIndex: number,
     public readonly destIndex: number
@@ -34,6 +38,10 @@ export default class PieceMove extends Move {
     if (board.has(this.destIndex)) notation += "x";
     return srcPiece.initial.toUpperCase() + notation + board.indexToNotation(this.destIndex);
   }
+
+  // ===== ===== ===== ===== =====
+  // PROTECTED
+  // ===== ===== ===== ===== =====
 
   protected exactNotation(board: IBoard, legalMoves: Move[], srcPiece: IPiece) {
     const ambiguousMoves = legalMoves.filter(({ srcIndex, destIndex }) => {

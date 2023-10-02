@@ -7,16 +7,12 @@ import CastlingMove from "@/variants/standard/moves/CastlingMove.ts";
 import EnPassantPawnMove from "@/variants/standard/moves/EnPassantPawnMove.ts";
 
 export default class Position extends ShatranjPosition {
+  // ===== ===== ===== ===== =====
+  // STATIC PUBLIC
+  // ===== ===== ===== ===== =====
+
   public static override get START_FEN() {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
-  }
-
-  protected static override createBoard() {
-    return new Board();
-  }
-
-  protected static castlingRightsFromString(str: string, boardWidth: number) {
-    return CastlingRights.fromString(str, boardWidth);
   }
 
   public static override fromFen(fen: string) {
@@ -26,7 +22,6 @@ export default class Position extends ShatranjPosition {
     return new this({
       board,
       activeColor: Color.fromAbbreviation(clr),
-      // @ts-ignore
       castlingRights: this.castlingRightsFromString(castling, board.width),
       enPassantIndex: enPassant === "-" ? -1 : board.notationToIndex(enPassant),
       halfMoveClock: Number(halfMoveClock),
@@ -37,6 +32,27 @@ export default class Position extends ShatranjPosition {
   public static override new(fen?: string) {
     return this.fromFen(fen ?? this.START_FEN);
   }
+
+  // ===== ===== ===== ===== =====
+  // STATIC PROTECTED
+  // ===== ===== ===== ===== =====
+
+  protected static override readonly promotionInitials = new Map([
+    [Color.WHITE, ["Q", "R", "B", "N"]],
+    [Color.BLACK, ["q", "r", "b", "n"]]
+  ]);
+
+  protected static override createBoard() {
+    return new Board();
+  }
+
+  protected static castlingRightsFromString(str: string, boardWidth: number) {
+    return CastlingRights.fromString(str, boardWidth);
+  }
+
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
 
   declare public readonly board: Board;
   public readonly castlingRights: CastlingRights;
@@ -80,7 +96,7 @@ export default class Position extends ShatranjPosition {
   }
 
   public isInsufficientMaterial() {
-    if (this.board.pieceCount() > 4)
+    if (this.board.pieceCount > 4)
       return false;
 
     const nonKingPieces = this.board.nonKingPieces();
@@ -135,12 +151,12 @@ export default class Position extends ShatranjPosition {
   // ===== ===== ===== ===== =====
 
   protected override *forwardPawnMoves(srcIndex: number) {
-    const destIndex = srcIndex + this.board.height * this.activeColor.direction;
+    const [move0] = [...super.forwardPawnMoves(srcIndex)];
 
-    if (!this.board.has(destIndex)) {
-      yield new PawnMove(srcIndex, destIndex);
+    if (move0) {
+      yield move0;
 
-      if (this.board.indexToRank(srcIndex) === this.activeColor.getPawnRank(this.board.height)) {
+      if (this.board.indexToRank(srcIndex) === this.board.pawnRank(this.activeColor)) {
         const destIndex = srcIndex + this.board.height * this.activeColor.direction * 2;
 
         if (!this.board.has(destIndex))
@@ -170,17 +186,18 @@ export default class Position extends ShatranjPosition {
   }
 
   protected *castlingMoves() {
+    if (this.isCheck())
+      return;
+
     const attackedIndices = this.board.getAttackedIndicesSet(this.activeColor.opposite);
-    const kingIndex = this.board.getKingIndex(this.activeColor);
-    if (attackedIndices.has(kingIndex)) return;
 
     for (const rookSrcY of this.castlingRights.get(this.activeColor)) {
       const rookSrcIndex = this.board.coordsToIndex(
-        this.activeColor.getPieceRank(this.board.height),
+        this.board.pieceRank(this.activeColor),
         rookSrcY
       );
       if (this.board.canCastle(rookSrcIndex, this.activeColor, attackedIndices))
-        yield this.getCastlingMove(kingIndex, rookSrcIndex);
+        yield this.getCastlingMove(this.board.getKingIndex(this.activeColor), rookSrcIndex);
     }
   }
 

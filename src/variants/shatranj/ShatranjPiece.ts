@@ -12,6 +12,7 @@ import { IColor, IPiece, PieceOffsets } from "@/typings/types.ts";
 export default class ShatranjPiece implements IPiece {
   protected static readonly values = new Map<number, ShatranjPiece>();
   protected static readonly initials = new Map<string, ShatranjPiece>();
+  protected static readonly offsets = new Map<string, PieceOffsets>();
 
   public static get Pieces() {
     return ShatranjPieces;
@@ -25,7 +26,7 @@ export default class ShatranjPiece implements IPiece {
   public readonly value: number;
   public readonly initial: string;
   public readonly color: IColor;
-  public readonly offsets: PieceOffsets;
+  readonly #whiteInitial: string;
 
   public constructor({ value, initial, offsets }: {
     value: number;
@@ -34,38 +35,43 @@ export default class ShatranjPiece implements IPiece {
   }) {
     this.value = value;
     this.initial = initial;
-    this.color = initial === initial.toUpperCase() ? Color.WHITE : Color.BLACK;
-    this.offsets = offsets;
+    this.#whiteInitial = initial.toUpperCase();
+    this.color = initial === this.#whiteInitial ? Color.WHITE : Color.BLACK;
     this.constructor.values.set(value, this);
     this.constructor.initials.set(initial, this);
+    this.constructor.offsets.set(initial, offsets);
   }
 
   public get opposite() {
     return this.constructor.values.get(-this.value)!;
   }
 
+  public get offsets() {
+    return this.constructor.offsets.get(this.initial)!;
+  }
+
   public isPawn() {
-    return this.initial.toUpperCase() === "P";
+    return this.#whiteInitial === "P";
   }
 
   public isKing() {
-    return this.initial.toUpperCase() === "K";
+    return this.#whiteInitial === "K";
   }
 
   public isKnight() {
-    return this.initial.toUpperCase() === "N";
+    return this.#whiteInitial === "N";
   }
 
   public isBishop() {
-    return this.initial.toUpperCase() === "B";
+    return this.#whiteInitial === "B";
   }
 
   public isRook() {
-    return this.initial.toUpperCase() === "R";
+    return this.#whiteInitial === "R";
   }
 
   public isQueen() {
-    return this.initial.toUpperCase() === "Q";
+    return this.#whiteInitial === "Q";
   }
 
   public isShortRange() {

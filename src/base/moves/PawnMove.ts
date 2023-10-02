@@ -2,11 +2,10 @@ import Move from "@/base/moves/Move.ts";
 import { IBoard, IPiece } from "@/typings/types.ts";
 
 export default class PawnMove extends Move {
-  public promotedPiece: IPiece | null = null;
-
   public constructor(
     public readonly srcIndex: number,
-    public readonly destIndex: number
+    public readonly destIndex: number,
+    public promotedPiece: IPiece | null = null
   ) {
     super();
   }

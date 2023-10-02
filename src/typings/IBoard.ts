@@ -5,6 +5,7 @@ import { Coords } from "@/typings/types.ts";
 export default interface IBoard {
   readonly height: number;
   readonly width: number;
+  get pieceCount(): number;
   // conversions
   indexToRank(index: number): number;
   indexToFile(index: number): number;
@@ -25,7 +26,6 @@ export default interface IBoard {
   at(x: number, y: number): IPiece | null;
   set(index: number, piece: IPiece): IBoard;
   delete(index: number): IBoard;
-  pieceCount(): number;
   pieceFromInitial(initial: string): IPiece | undefined;
   getKingIndex(color: IColor): number;
   piecesOfColor(color: IColor): [number, IPiece][];

@@ -7,6 +7,7 @@ import ShatranjPiece from "@/variants/shatranj/ShatranjPiece.ts";
 export default class Piece extends ShatranjPiece {
   protected static override readonly values = new Map([...ShatranjPiece.values]);
   protected static override readonly initials = new Map([...ShatranjPiece.initials]);
+  protected static override readonly offsets = new Map([...ShatranjPiece.offsets]);
 
   public static override get Pieces() {
     return Pieces;

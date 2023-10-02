@@ -6,9 +6,17 @@ import { IMove } from "@/typings/types.ts";
 import Position from "@/variants/standard/Position.ts";
 
 export default class ChessGame extends BaseGame<Position> {
+  // ===== ===== ===== ===== =====
+  // STATIC PROTECTED
+  // ===== ===== ===== ===== =====
+
   protected static override get Position() {
     return Position;
   }
+
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
 
   public override getCurrentResult() {
     if (this.currentPosition.isCheckmate()) {
@@ -26,7 +34,7 @@ export default class ChessGame extends BaseGame<Position> {
     return GameResults.NONE;
   }
 
-  public override playMove(move: IMove, promotionType?: string) {
+  public override playMove(move: IMove) {
     const pos = this.currentPosition,
       board = pos.board.clone(),
       castlingRights = pos.castlingRights.clone(),
@@ -34,20 +42,13 @@ export default class ChessGame extends BaseGame<Position> {
       destPiece = board.get(move.destIndex),
       isPawnMove = move instanceof PawnMove;
 
-    if (isPawnMove && move.isPromotion(board)) {
-      promotionType ??= "Q";
-      move.promotedPiece = board.pieceFromInitial(
-        srcPiece.color === Color.WHITE ? promotionType : promotionType.toLowerCase()
-      )!;
-    }
-
-    else if (srcPiece.isKing())
+    if (srcPiece.isKing())
       castlingRights.get(pos.activeColor).clear();
 
-    else if (srcPiece.isRook() && board.indexToRank(move.srcIndex) === pos.activeColor.getPieceRank(board.height))
+    else if (srcPiece.isRook() && board.indexToRank(move.srcIndex) === board.pieceRank(pos.activeColor))
       castlingRights.get(pos.activeColor).delete(board.indexToFile(move.srcIndex));
 
-    if (destPiece?.isRook() && board.indexToRank(move.destIndex) === pos.activeColor.opposite.getPieceRank(board.height))
+    if (destPiece?.isRook() && board.indexToRank(move.destIndex) === board.pieceRank(pos.activeColor.opposite))
       castlingRights.get(pos.activeColor.opposite).delete(board.indexToFile(move.destIndex));
 
     move.try(board);
@@ -67,19 +68,5 @@ export default class ChessGame extends BaseGame<Position> {
     pos.next.push(nextPos);
     this.currentPosition = nextPos;
     return this;
-  }
-
-  public override playMoveWithNotation(notation: string) {
-    const { board, legalMoves } = this.currentPosition;
-    const move = legalMoves.find((move) => {
-      return notation.startsWith(move.computerNotation(board));
-    });
-
-    if (!move)
-      throw new Error(`Illegal move: "${notation}".`);
-
-    return (move instanceof PawnMove)
-      ? this.playMove(move, notation.at(-1))
-      : this.playMove(move);
   }
 }

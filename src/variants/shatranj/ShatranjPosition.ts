@@ -6,12 +6,12 @@ import { IMove, IPosition, JSONPosition } from "@/typings/types.ts";
 import ShatranjBoard from "@/variants/shatranj/ShatranjBoard.ts";
 
 export default class ShatranjPosition implements IPosition {
+  // ===== ===== ===== ===== =====
+  // STATIC PUBLIC
+  // ===== ===== ===== ===== =====
+
   public static get START_FEN() {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 1";
-  }
-
-  protected static createBoard() {
-    return new ShatranjBoard();
   }
 
   public static fromFen(fen: string) {
@@ -28,7 +28,7 @@ export default class ShatranjPosition implements IPosition {
     return this.fromFen(fen ?? this.START_FEN);
   }
 
-  private static moveAsString(pos: ShatranjPosition, nextPos: ShatranjPosition, addMoveNumber: boolean) {
+  public static moveAsString(pos: ShatranjPosition, nextPos: ShatranjPosition, addMoveNumber: boolean) {
     const notation = nextPos.srcMove!.algebraicNotation(pos.board, pos.legalMoves)
       + (nextPos.isCheckmate() ? "#" : (nextPos.isCheck() ? "+" : ""));
 
@@ -37,6 +37,23 @@ export default class ShatranjPosition implements IPosition {
     return notation;
   }
 
+  // ===== ===== ===== ===== =====
+  // STATIC PROTECTED
+  // ===== ===== ===== ===== =====
+
+  protected static readonly promotionInitials = new Map<Color, string[]>([
+    [Color.WHITE, ["Q"]],
+    [Color.BLACK, ["q"]]
+  ]);
+
+  protected static createBoard() {
+    return new ShatranjBoard();
+  }
+
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
+
   public readonly board: ShatranjBoard;
   public readonly activeColor: Color;
   public readonly fullMoveNumber: number;
@@ -44,8 +61,8 @@ export default class ShatranjPosition implements IPosition {
   public prev?: typeof this;
   public readonly next: (typeof this)[] = [];
   public comment?: string;
-  protected _isCheck!: boolean;
-  protected _legalMoves!: IMove[];
+  #isCheck!: boolean;
+  #legalMoves!: IMove[];
 
   public constructor({ board, activeColor, fullMoveNumber }: {
     board: ShatranjBoard;
@@ -58,7 +75,7 @@ export default class ShatranjPosition implements IPosition {
   }
 
   public get legalMoves() {
-    return this._legalMoves ??= this.computeLegalMoves();
+    return this.#legalMoves ??= this.computeLegalMoves();
   }
 
   public get legalMovesAsAlgebraicNotation() {
@@ -66,7 +83,7 @@ export default class ShatranjPosition implements IPosition {
   }
 
   public isCheck() {
-    return this._isCheck ??= this.board.isColorInCheck(this.activeColor);
+    return this.#isCheck ??= this.board.isColorInCheck(this.activeColor);
   }
 
   public isCheckmate() {
@@ -147,9 +164,18 @@ export default class ShatranjPosition implements IPosition {
     const legalMoves: IMove[] = [];
 
     for (const move of this.pseudoLegalMoves()) {
+      const isPromotion = move instanceof PawnMove && move.isPromotion(this.board);
       const undo = move.try(this.board);
-      if (!this.board.isColorInCheck(this.activeColor))
-        legalMoves.push(move);
+
+      if (!this.board.isColorInCheck(this.activeColor)) {
+        if (isPromotion)
+          (this.constructor as typeof ShatranjPosition).promotionInitials.get(this.activeColor)!.forEach((initial) => {
+            legalMoves.push(new PawnMove(move.srcIndex, move.destIndex, this.board.pieceFromInitial(initial)));
+          });
+        else
+          legalMoves.push(move);
+      }
+
       undo();
     }
 

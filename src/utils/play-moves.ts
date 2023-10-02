@@ -2,7 +2,7 @@ import { IChessGame, IPosition } from "@/typings/types.ts";
 import CastlingMove from "@/variants/standard/moves/CastlingMove.ts";
 
 const playLine = (() => {
-  const moveRegexp = /([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8]|(?<o>0|O)(-\k<o>){1,2})/g;
+  const moveRegexp = /([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](=[NBRQK])?|(?<o>0|O)(-\k<o>){1,2})/g;
 
   return (line: string, game: IChessGame) => {
     for (const { 0: substring, index } of line.matchAll(moveRegexp)) {
@@ -24,8 +24,8 @@ export default function playMoves(movesStr: string, game: IChessGame) {
   let buffer = "";
   const stack: IPosition[] = [];
 
-  for (let i = 0; i < movesStr.length; i++) {
-    switch (movesStr[i]) {
+  for (const char of movesStr) {
+    switch (char) {
       case "(":
         playLine(buffer, game);
         stack.push(game.currentPosition);
@@ -46,7 +46,7 @@ export default function playMoves(movesStr: string, game: IChessGame) {
         buffer = "";
         break;
       default:
-        buffer += movesStr[i];
+        buffer += char;
     }
   }
 

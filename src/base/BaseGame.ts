@@ -7,9 +7,9 @@ export default abstract class BaseGame<TPosition extends IPosition & {
   prev?: TPosition;
   readonly next: TPosition[];
 }> implements IChessGame {
-  protected static get Position(): { new: (fen?: string) => IPosition; } {
-    throw new Error(`Method not implemented`);
-  }
+  // ===== ===== ===== ===== =====
+  // STATIC PUBLIC
+  // ===== ===== ===== ===== =====
 
   public static parsePgn(pgn: string) {
     let matchArray: RegExpMatchArray | null;
@@ -35,8 +35,21 @@ export default abstract class BaseGame<TPosition extends IPosition & {
     };
   }
 
+  // ===== ===== ===== ===== =====
+  // STATIC PROTECTED
+  // ===== ===== ===== ===== =====
+
+  protected static get Position(): { new: (fen?: string) => IPosition; } {
+    throw new Error(`Method not implemented`);
+  }
+
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
+
   public readonly info: GameInfo;
-  public currentPosition!: TPosition;
+  #currentPosition: TPosition;
+  #firstPosition: TPosition;
 
   public constructor({ info, pgn }: {
     info?: GameInfo;
@@ -52,14 +65,23 @@ export default abstract class BaseGame<TPosition extends IPosition & {
       moveList = ml;
     }
 
-    this.currentPosition = (this.constructor as typeof BaseGame).Position.new(this.info.FEN) as TPosition;
+    this.#currentPosition = (this.constructor as typeof BaseGame).Position.new(this.info.FEN) as TPosition;
+    this.#firstPosition = this.#currentPosition;
     if (moveList !== null) playMoves(moveList, this);
   }
 
+  public get currentPosition() {
+    return this.#currentPosition;
+  }
+
+  public set currentPosition(position: TPosition) {
+    this.#currentPosition = position;
+    if (!position.prev)
+      this.#firstPosition = position;
+  }
+
   public get firstPosition() {
-    let pos = this.currentPosition;
-    while (pos.prev) pos = pos.prev;
-    return pos;
+    return this.#firstPosition;
   }
 
   public abstract getCurrentResult(): GameResult;
@@ -70,7 +92,7 @@ export default abstract class BaseGame<TPosition extends IPosition & {
   }
 
   public goToStart() {
-    this.currentPosition = this.firstPosition;
+    this.currentPosition = this.#firstPosition;
   }
 
   public goForward() {
@@ -79,7 +101,7 @@ export default abstract class BaseGame<TPosition extends IPosition & {
   }
 
   public goToEnd() {
-    let pos = this.currentPosition;
+    let pos = this.#currentPosition;
     while (pos.next[0]) pos = pos.next[0];
     this.currentPosition = pos;
   }
@@ -90,10 +112,10 @@ export default abstract class BaseGame<TPosition extends IPosition & {
    * @param notation A computer notation like "e2e4" or "a2a1Q".
    * @returns This same game.
    */
-  public playMoveWithNotation(notation: string) {
-    const { board, legalMoves } = this.currentPosition;
+  public playMoveWithNotation(notation: string): this {
+    const { board, legalMoves } = this.#currentPosition;
     const move = legalMoves.find((move) => {
-      return notation.startsWith(move.computerNotation(board));
+      return move.computerNotation(board) === notation;
     });
 
     if (!move)
@@ -109,13 +131,13 @@ export default abstract class BaseGame<TPosition extends IPosition & {
       .concat(`[Result "${this.info.Result}"]`);
 
     if (this.mustAddFENtoInfoString())
-      infoAsStrings.push(`[FEN "${this.firstPosition.toString()}"]`);
+      infoAsStrings.push(`[FEN "${this.#firstPosition.toString()}"]`);
 
     return infoAsStrings.join("\n");
   }
 
   public moveListAsString() {
-    return this.firstPosition.toMoveList();
+    return this.#firstPosition.toMoveList();
   }
 
   public toString() {
@@ -127,7 +149,7 @@ export default abstract class BaseGame<TPosition extends IPosition & {
   // ===== ===== ===== ===== =====
 
   protected mustAddFENtoInfoString() {
-    const { fullMoveNumber, activeColor } = this.firstPosition;
+    const { fullMoveNumber, activeColor } = this.#firstPosition;
     return fullMoveNumber !== 1 || activeColor !== Color.WHITE;
   }
 }

@@ -4,19 +4,23 @@ import CapablancaPosition from "@/variants/capablanca-chess/CapablancaPosition.t
 import ChessGame from "@/variants/standard/ChessGame.ts";
 
 export default class CapablancaChessGame extends BaseGame<CapablancaPosition> {
+  // ===== ===== ===== ===== =====
+  // STATIC PROTECTED
+  // ===== ===== ===== ===== =====
+
   protected static override get Position() {
     return CapablancaPosition;
   }
+
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
 
   public override getCurrentResult() {
     return ChessGame.prototype.getCurrentResult.call(this);
   }
 
-  public override playMove(move: IMove, promotionType?: string) {
-    return ChessGame.prototype.playMove.call(this, move, promotionType) as this;
-  }
-
-  public override playMoveWithNotation(notation: string) {
-    return ChessGame.prototype.playMoveWithNotation.call(this, notation) as this;
+  public override playMove(move: IMove) {
+    return ChessGame.prototype.playMove.call(this, move) as this;
   }
 }

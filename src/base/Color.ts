@@ -1,6 +1,10 @@
 import { IColor } from "@/typings/types.ts";
 
 export default class Color implements IColor {
+  // ===== ===== ===== ===== =====
+  // STATIC PUBLIC
+  // ===== ===== ===== ===== =====
+
   public static readonly WHITE = new this("w", -1);
   public static readonly BLACK = new this("b", 1);
 
@@ -23,6 +27,10 @@ export default class Color implements IColor {
     throw new Error(`Invalid abbreviation: "${abbreviation}".`);
   }
 
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
+
   public constructor(
     public readonly abbreviation: string,
     public readonly direction: number
@@ -30,13 +38,5 @@ export default class Color implements IColor {
 
   public get opposite() {
     return Color.fromDirection(-this.direction);
-  }
-
-  public getPieceRank(boardHeight: number) {
-    return this === Color.WHITE ? boardHeight - 1 : 0;
-  }
-
-  public getPawnRank(boardHeight: number) {
-    return this.getPieceRank(boardHeight) + this.direction;
   }
 }

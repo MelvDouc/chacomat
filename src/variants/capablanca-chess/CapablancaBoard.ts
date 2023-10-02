@@ -2,21 +2,27 @@ import CapablancaPiece from "@/variants/capablanca-chess/CapablancaPiece.ts";
 import Board from "@/variants/standard/Board.ts";
 
 export default class CapablancaBoard extends Board {
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
+
   public override readonly castlingMultiplier: number = 3;
   public override readonly width: number = 10;
 
   public override *attackedIndices(srcIndex: number) {
-    const srcPiece = this.pieces.get(srcIndex)!;
+    yield* super.attackedIndices(srcIndex);
 
-    if (srcPiece.isShortRange()) {
-      yield* this.shortRangeAttackedIndices(srcIndex, srcPiece.offsets);
-      return;
+    if (this.pieces.get(srcIndex) instanceof CapablancaPiece) {
+      const srcCoords = this.indexToCoords(srcIndex);
+      const { x: xOffsets, y: yOffsets } = CapablancaPiece.Pieces.WHITE_KNIGHT.offsets;
+
+      for (let i = 0; i < xOffsets.length; i++) {
+        const x = srcCoords.x + xOffsets[i],
+          y = srcCoords.y + yOffsets[i];
+        if (this.isSafeCoords(x, y))
+          yield this.coordsToIndex(x, y);
+      }
     }
-
-    if (srcPiece instanceof CapablancaPiece)
-      yield* this.shortRangeAttackedIndices(srcIndex, CapablancaPiece.Pieces.WHITE_KNIGHT.offsets);
-
-    yield* this.longRangeAttackedIndices(srcIndex, srcPiece.offsets);
   }
 
   public override pieceFromInitial(initial: string) {

@@ -7,10 +7,46 @@ import Piece from "@/variants/standard/Piece.ts";
 import Position from "@/variants/standard/Position.ts";
 
 export default class Chess960Position extends Position {
+  // ===== ===== ===== ===== =====
+  // STATIC PUBLIC
+  // ===== ===== ===== ===== =====
+
   /** @throws {Error} */
   public static override get START_FEN(): string {
     throw new Error("`Chess960Position` has no unique initial FEN.");
   }
+
+  public static override new(fen?: string) {
+    if (fen) return this.fromFen(fen);
+
+    const board = this.createBoard();
+    const castlingRights = this.castlingRightsFromString("-");
+
+    this.getRandomBlackPieceRank().forEach((piece, index) => {
+      board.set(index, piece);
+      board.set(index + board.width, Piece.Pieces.BLACK_PAWN);
+      board.set(index + board.width * (board.height - 2), Piece.Pieces.WHITE_PAWN);
+      board.set(index + board.width * (board.height - 1), piece.opposite);
+
+      if (piece.isRook()) {
+        castlingRights.get(Color.WHITE).add(index);
+        castlingRights.get(Color.BLACK).add(index);
+      }
+    });
+
+    return new this({
+      activeColor: Color.WHITE,
+      board,
+      castlingRights,
+      enPassantIndex: -1,
+      halfMoveClock: 0,
+      fullMoveNumber: 1
+    });
+  }
+
+  // ===== ===== ===== ===== =====
+  // STATIC PROTECTED
+  // ===== ===== ===== ===== =====
 
   protected static override createBoard() {
     return new Chess960Board();
@@ -50,33 +86,9 @@ export default class Chess960Position extends Position {
     return rank;
   }
 
-  public static override new(fen?: string) {
-    if (fen) return this.fromFen(fen);
-
-    const board = this.createBoard();
-    const castlingRights = this.castlingRightsFromString("-");
-
-    this.getRandomBlackPieceRank().forEach((piece, index) => {
-      board.set(index, piece);
-      board.set(index + board.width, Piece.Pieces.BLACK_PAWN);
-      board.set(index + board.width * (board.height - 2), Piece.Pieces.WHITE_PAWN);
-      board.set(index + board.width * (board.height - 1), piece.opposite);
-
-      if (piece.isRook()) {
-        castlingRights.get(Color.WHITE).add(index);
-        castlingRights.get(Color.BLACK).add(index);
-      }
-    });
-
-    return new this({
-      activeColor: Color.WHITE,
-      board,
-      castlingRights,
-      enPassantIndex: -1,
-      halfMoveClock: 0,
-      fullMoveNumber: 1
-    });
-  }
+  // ===== ===== ===== ===== =====
+  // PUBLIC
+  // ===== ===== ===== ===== =====
 
   declare public readonly board: Chess960Board;
   declare public readonly castlingRights: Chess960CastlingRights;
