@@ -1,11 +1,19 @@
-import Position from "@/variants/standard/Position.ts";
+import Position from "@/game/Position.ts";
 import { assertArrayIncludes, assertEquals } from "@dev_deps";
 
 Deno.test("legal moves", () => {
-  const { board, legalMoves } = Position.new();
+  const { board, legalMoves } = Position.fromFen(Position.START_FEN);
 
-  assertEquals(legalMoves.filter(({ srcIndex }) => board.get(srcIndex)?.isPawn()).length, 16);
-  assertEquals(legalMoves.filter(({ srcIndex }) => board.get(srcIndex)?.isKnight()).length, 4);
+  assertEquals(legalMoves.filter(({ srcCoords }) => board.get(srcCoords)?.isPawn()).length, 16);
+  assertEquals(legalMoves.filter(({ srcCoords }) => board.get(srcCoords)?.isKnight()).length, 4);
+});
+
+Deno.test("promotion notation", () => {
+  const { legalMovesAsAlgebraicNotation } = Position.fromFen("8/8/4K3/8/b1n5/7Q/2p5/1k6 b - - 5 313");
+  assertArrayIncludes(
+    legalMovesAsAlgebraicNotation,
+    ["c1=Q"]
+  );
 });
 
 Deno.test("ambiguous move notation #1", () => {

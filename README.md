@@ -23,8 +23,8 @@ spanishGame
 
 ```javascript
 const spanishGame = new ChessGame({
-  fen: "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b kqKQ - 3 3",
   info: {
+    FEN: "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b kqKQ - 3 3",
     White: "Magnus Carlsen",
     Black: "Ian Nepomniachtchi"
   }
@@ -46,31 +46,4 @@ const spanishGame = new ChessGame({
 
 ## Variants
 
-### Chess960
-
-Also known as **Fischer random chess**.
-
-```javascript
-import { Chess960Game } from "chacomat";
-
-const chess960Game = new Chess960Game();
-console.log(chess960Game.currentPosition.toString()); // e.g. "rbkrnqbn/pppppppp/8/8/8/8/PPPPPPPP/RBKRNQBN w ADad - 0 1"
-```
-
-Note how castling rights are noted using the rooks' initial files.
-
-### Capablanca Chess
-
-[Capablanca Chess](https://en.wikipedia.org/wiki/Capablanca_chess) is also available.
-
-```javascript
-import { CapablancaChessGame } from "chacomat";
-```
-
-### Shatranj
-
-The old game of Shatranj, which chess originated from, is also available.
-
-```javascript
-import { ShatranjGame } from "chacomat";
-```
+Variants were removed in version 2.0.8 to be re-released as a separate package.

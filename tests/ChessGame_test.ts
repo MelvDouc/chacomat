@@ -1,4 +1,4 @@
-import ChessGame from "@/variants/standard/ChessGame.ts";
+import ChessGame from "@/game/ChessGame.ts";
 import { assertEquals } from "@dev_deps";
 
 const pgn1 = await Deno.readTextFile("pgn-files/online-game.pgn");

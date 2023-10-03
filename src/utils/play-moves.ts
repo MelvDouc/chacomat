@@ -1,30 +1,36 @@
-import { IChessGame, IPosition } from "@/typings/types.ts";
-import CastlingMove from "@/variants/standard/moves/CastlingMove.ts";
+import type ChessGame from "@/game/ChessGame.ts";
+import type Position from "@/game/Position.ts";
 
 const playLine = (() => {
-  const moveRegexp = /([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](=[NBRQK])?|(?<o>0|O)(-\k<o>){1,2})/g;
+  const moveRegexp = /([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?|(?<o>0|O)(-\k<o>){1,2})/g;
 
-  return (line: string, game: IChessGame) => {
+  return (line: string, game: ChessGame) => {
     for (const { 0: substring, index } of line.matchAll(moveRegexp)) {
       const move = findMove(substring, game.currentPosition);
-      if (!move) throw getMoveError({ substring, index: index!, line });
-      game.playMove(move);
+
+      if (move) {
+        game.playMove(move);
+        continue;
+      }
+
+      throwMoveError({ substring, index: index!, line });
     }
   };
 })();
 
-function findMove(input: string, { legalMoves, board }: IPosition) {
+function findMove(input: string, { legalMoves, board }: Position) {
   if (input.includes("-"))
-    return legalMoves.find((move) => move instanceof CastlingMove && move.isQueenSide() === (input.length === 5));
+    input = input.replace(/O/g, "0");
 
-  return legalMoves.find((move) => input.startsWith(move.algebraicNotation(board, legalMoves)));
+  return legalMoves.find((move) => input === move.algebraicNotation(board, legalMoves));
 }
 
-export default function playMoves(movesStr: string, game: IChessGame) {
+export default function playMoves(movesList: string, game: ChessGame) {
   let buffer = "";
-  const stack: IPosition[] = [];
+  const stack: Position[] = [];
+  let prevPos: Position | undefined;
 
-  for (const char of movesStr) {
+  for (const char of movesList) {
     switch (char) {
       case "(":
         playLine(buffer, game);
@@ -34,7 +40,10 @@ export default function playMoves(movesStr: string, game: IChessGame) {
         break;
       case ")":
         playLine(buffer, game);
-        game.currentPosition = stack.pop()!;
+        prevPos = stack.pop();
+        if (!prevPos)
+          throw new Error(`Invalid move list: "${movesList}".`);
+        game.currentPosition = prevPos;
         buffer = "";
         break;
       case "{":
@@ -42,7 +51,7 @@ export default function playMoves(movesStr: string, game: IChessGame) {
         buffer = "";
         break;
       case "}":
-        game.currentPosition.comment = buffer;
+        game.currentPosition.comment = buffer.trim();
         buffer = "";
         break;
       default:
@@ -53,11 +62,11 @@ export default function playMoves(movesStr: string, game: IChessGame) {
   playLine(buffer, game);
 }
 
-function getMoveError({ substring, index, line }: {
+function throwMoveError({ substring, index, line }: {
   substring: string;
   index: number;
   line: string;
 }) {
   const startIndex = (index - 20 < 0) ? 0 : index - 20;
-  return new Error(`Illegal move "${substring}" near "${line.slice(startIndex, index + 20)}".`);
+  throw new Error(`Illegal move "${substring}" near "${line.slice(startIndex, index + 20)}".`);
 }

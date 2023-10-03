@@ -1,22 +1,13 @@
-import Color from "@/base/Color.ts";
-import Chess960CastlingRights from "@/variants/chess960/Chess960CastlingRights.ts";
-import Chess960Game from "@/variants/chess960/Chess960Game.ts";
-import CastlingRights from "@/variants/standard/CastlingRights.ts";
-import Position from "@/variants/standard/Position.ts";
 import { assert, assertArrayIncludes, assertEquals, assertFalse } from "@dev_deps";
+import { CastlingRights, ChessGame, Color, Position, coords } from "../mod.ts";
 
 Deno.test("castling rights from string", () => {
-  const castlingRights = CastlingRights.fromString("kqKQ", 8);
-  assertEquals(castlingRights.toString(8), "kqKQ");
+  const castlingRights = CastlingRights.fromString("kqKQ");
+  assertEquals(castlingRights.toString(), "kqKQ");
 });
 
 Deno.test("castling rights from string - dash", () => {
-  const castlingRights = CastlingRights.fromString("-", 8);
-  assertEquals(castlingRights.toString(8), "-");
-});
-
-Deno.test("castling rights from string - chess960", () => {
-  const castlingRights = Chess960CastlingRights.fromString("-");
+  const castlingRights = CastlingRights.fromString("-");
   assertEquals(castlingRights.toString(), "-");
 });
 
@@ -25,19 +16,19 @@ Deno.test("castling rights to string", () => {
   castlingRights.get(Color.WHITE).add(0);
   castlingRights.get(Color.WHITE).add(7);
   castlingRights.get(Color.BLACK).add(7);
-  assertEquals(castlingRights.toString(8), "kKQ");
+  assertEquals(castlingRights.toString(), "kKQ");
 });
 
-Deno.test("castling rights to string - chess960", () => {
-  const castlingRights = new Chess960CastlingRights();
-  castlingRights.get(Color.WHITE).add(1);
-  castlingRights.get(Color.WHITE).add(4);
-  castlingRights.get(Color.BLACK).add(4);
-  assertEquals(castlingRights.toString(), "eBE");
+Deno.test("Rook should be on d1 after 0-0-0.", () => {
+  const game = new ChessGame({
+    pgn: `1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 Qc7 5.Nc3 e6 6.Be3 a6 7.Qd2 b5 8.O-O-O *`
+  });
+  const rook = game.currentPosition.board.get(coords(7, 3));
+  assert(rook?.isRook());
 });
 
 Deno.test("castling possible", () => {
-  const position = Position.new("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+  const position = Position.fromFen("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
   assertArrayIncludes(
     position.legalMovesAsAlgebraicNotation,
     ["0-0", "0-0-0"]
@@ -45,7 +36,7 @@ Deno.test("castling possible", () => {
 });
 
 Deno.test("castling queen side with b1 controlled", () => {
-  const position = Position.new("1r2k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+  const position = Position.fromFen("1r2k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
   assertArrayIncludes(
     position.legalMovesAsAlgebraicNotation,
     ["0-0", "0-0-0"]
@@ -53,17 +44,6 @@ Deno.test("castling queen side with b1 controlled", () => {
 });
 
 Deno.test("castling queen side with c1 controlled", () => {
-  const position = Position.new("2r1k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+  const position = Position.fromFen("2r1k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
   assertFalse(position.legalMovesAsAlgebraicNotation.includes("0-0-0"));
-});
-
-Deno.test("Pieces should be on the right squares after castling", () => {
-  const game = new Chess960Game({ pgn: `[FEN "6k1/8/8/8/8/8/8/2R3KR w CH - 0 1"]` });
-  game.playMoveWithNotation("g1c1");
-  assert(game.currentPosition.board.at(7, 2)?.isKing());
-  assert(game.currentPosition.board.at(7, 3)?.isRook());
-  game.goBack();
-  game.playMoveWithNotation("g1h1");
-  assert(game.currentPosition.board.at(7, 6)?.isKing());
-  assert(game.currentPosition.board.at(7, 5)?.isRook());
 });

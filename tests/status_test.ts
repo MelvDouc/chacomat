@@ -1,5 +1,5 @@
-import ChessGame from "@/variants/standard/ChessGame.ts";
-import Position from "@/variants/standard/Position.ts";
+import ChessGame from "@/game/ChessGame.ts";
+import Position from "@/game/Position.ts";
 import { assert, assertFalse } from "@dev_deps";
 
 Deno.test("checkmate - fool's mate", () => {
