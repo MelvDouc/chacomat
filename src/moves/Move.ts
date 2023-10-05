@@ -1,5 +1,4 @@
-import Board from "@/board/Board.ts";
-import { Coords, JSONMove } from "@/typings/types.ts";
+import { Board, Coords, JSONMove, Position } from "@/typings/types.ts";
 
 export default abstract class Move {
   constructor(
@@ -12,6 +11,14 @@ export default abstract class Move {
 
   computerNotation() {
     return this.srcCoords.notation + this.destCoords.notation;
+  }
+
+  getCheckSign(nextPosition: Position) {
+    if (nextPosition.isCheckmate())
+      return "#";
+    if (nextPosition.isCheck())
+      return "+";
+    return "";
   }
 
   toJSON(board: Board, legalMoves: Move[]): JSONMove {

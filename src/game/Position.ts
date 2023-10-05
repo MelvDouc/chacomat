@@ -4,11 +4,10 @@ import Coords, { coords } from "@/board/Coords.ts";
 import CastlingRights from "@/game/CastlingRights.ts";
 import CastlingMove from "@/moves/CastlingMove.ts";
 import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
-import type Move from "@/moves/Move.ts";
 import PawnMove from "@/moves/PawnMove.ts";
 import PieceMove from "@/moves/PieceMove.ts";
 import Piece from "@/pieces/Piece.ts";
-import { JSONPosition, PositionConstructorArgs } from "@/typings/types.ts";
+import { JSONPosition, Move, PositionConstructorArgs } from "@/typings/types.ts";
 
 export default class Position {
   // ===== ===== ===== ===== =====
@@ -17,7 +16,7 @@ export default class Position {
 
   static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
 
-  static fromFen(fen: string) {
+  static fromFEN(fen: string) {
     const [boardStr, clr, castling, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
     return new this({
@@ -169,6 +168,10 @@ export default class Position {
   }
 
   toString() {
+    return this.toFEN();
+  }
+
+  toFEN() {
     return [
       this.board.toString(),
       this.activeColor.abbreviation,
@@ -184,8 +187,8 @@ export default class Position {
       return "";
 
     const nextPos = this.#next[varCoords];
-    let notation = nextPos.srcMove!.algebraicNotation(this.board, this.legalMoves)
-      + (nextPos.isCheckmate() ? "#" : (nextPos.isCheck() ? "+" : ""));
+    const srcMove = nextPos.srcMove!;
+    let notation = srcMove.algebraicNotation(this.board, this.legalMoves) + srcMove.getCheckSign(nextPos);
 
     if (this.comment)
       notation += ` { ${this.comment} }`;

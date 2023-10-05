@@ -28,7 +28,7 @@ Deno.test("Rook should be on d1 after 0-0-0.", () => {
 });
 
 Deno.test("castling possible", () => {
-  const position = Position.fromFen("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+  const position = Position.fromFEN("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
   assertArrayIncludes(
     position.legalMovesAsAlgebraicNotation,
     ["0-0", "0-0-0"]
@@ -36,7 +36,7 @@ Deno.test("castling possible", () => {
 });
 
 Deno.test("castling queen side with b1 controlled", () => {
-  const position = Position.fromFen("1r2k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+  const position = Position.fromFEN("1r2k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
   assertArrayIncludes(
     position.legalMovesAsAlgebraicNotation,
     ["0-0", "0-0-0"]
@@ -44,6 +44,6 @@ Deno.test("castling queen side with b1 controlled", () => {
 });
 
 Deno.test("castling queen side with c1 controlled", () => {
-  const position = Position.fromFen("2r1k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
+  const position = Position.fromFEN("2r1k3/8/8/8/8/8/8/R3K2R w KQ - 0 1");
   assertFalse(position.legalMovesAsAlgebraicNotation.includes("0-0-0"));
 });

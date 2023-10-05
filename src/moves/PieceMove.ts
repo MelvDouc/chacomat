@@ -1,6 +1,5 @@
-import Board from "@/board/Board.ts";
 import Move from "@/moves/Move.ts";
-import Piece from "@/pieces/Piece.ts";
+import type { Board, Piece } from "@/typings/types.ts";
 
 export default class PieceMove extends Move {
   // ===== ===== ===== ===== =====

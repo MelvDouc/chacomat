@@ -1,6 +1,6 @@
-import Board from "@/board/Board.ts";
 import { coords } from "@/board/Coords.ts";
 import Move from "@/moves/Move.ts";
+import type { Board } from "@/typings/types.ts";
 
 export default class EnPassantPawnMove extends Move {
   override algebraicNotation(): string {

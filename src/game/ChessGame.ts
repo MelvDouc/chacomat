@@ -1,9 +1,8 @@
 import Color from "@/board/Color.ts";
 import GameResults from "@/game/GameResults.ts";
 import Position from "@/game/Position.ts";
-import type Move from "@/moves/Move.ts";
 import PawnMove from "@/moves/PawnMove.ts";
-import { Coords, GameInfo, GameResult } from "@/typings/types.ts";
+import { Coords, GameInfo, GameResult, Move } from "@/typings/types.ts";
 import playMoves from "@/utils/play-moves.ts";
 
 export default class ChessGame {
@@ -57,7 +56,7 @@ export default class ChessGame {
       moveList = ml;
     }
 
-    this.#currentPosition = Position.fromFen(this.info.FEN ?? Position.START_FEN);
+    this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
     this.#firstPosition = this.#currentPosition;
     if (moveList !== null) playMoves(moveList, this);
   }
@@ -121,7 +120,10 @@ export default class ChessGame {
   }
 
   truncateNextMoves() {
-    this.#currentPosition.next.length = 0;
+    const { prev } = this.#currentPosition;
+    if (!prev) return;
+    prev.next.length = 0;
+    this.currentPosition = prev;
   }
 
   playMove(move: Move) {
@@ -188,7 +190,7 @@ export default class ChessGame {
     const infoAsStrings = Object.entries(info)
       .map(([key, value]) => `[${key} "${value}"]`)
       .concat(`[Result "${Result}"]`);
-    const firstPositionFEN = this.#firstPosition.toString();
+    const firstPositionFEN = this.#firstPosition.toFEN();
 
     if (firstPositionFEN !== Position.START_FEN)
       infoAsStrings.push(`[FEN "${firstPositionFEN}"]`);
@@ -200,7 +202,11 @@ export default class ChessGame {
     return this.#firstPosition.toMoveList();
   }
 
-  toString() {
+  toPGN() {
     return `${this.infoAsString()}\n\n${this.moveListAsString()} ${this.info.Result}`;
+  }
+
+  toString() {
+    return this.toPGN();
   }
 }

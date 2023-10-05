@@ -1,5 +1,5 @@
-import type ChessGame from "@/game/ChessGame.ts";
-import type Position from "@/game/Position.ts";
+import type { ChessGame, Position } from "@/typings/types.ts";
+import { findClosingCurlyIndex, findClosingParenIndex } from "@/utils/string-search.ts";
 
 const playLine = (() => {
   const moveRegexp = /([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?|(?<o>0|O)(-\k<o>){1,2})/g;
@@ -27,36 +27,31 @@ function findMove(input: string, { legalMoves, board }: Position) {
 
 export default function playMoves(movesList: string, game: ChessGame) {
   let buffer = "";
-  const stack: Position[] = [];
-  let prevPos: Position | undefined;
 
-  for (const char of movesList) {
-    switch (char) {
-      case "(":
-        playLine(buffer, game);
-        stack.push(game.currentPosition);
-        game.goBack();
-        buffer = "";
-        break;
-      case ")":
-        playLine(buffer, game);
-        prevPos = stack.pop();
-        if (!prevPos)
-          throw new Error(`Invalid move list: "${movesList}".`);
-        game.currentPosition = prevPos;
-        buffer = "";
-        break;
-      case "{":
-        playLine(buffer, game);
-        buffer = "";
-        break;
-      case "}":
-        game.currentPosition.comment = buffer.trim();
-        buffer = "";
-        break;
-      default:
-        buffer += char;
+  for (let i = 0; i < movesList.length;) {
+    if (movesList[i] === "(") {
+      playLine(buffer, game);
+      buffer = "";
+      const closingIndex = findClosingParenIndex(movesList, i);
+      const { currentPosition } = game;
+      game.goBack();
+      playMoves(movesList.slice(i + 1, closingIndex), game);
+      game.currentPosition = currentPosition;
+      i = closingIndex + 1;
+      continue;
     }
+
+    if (movesList[i] === "{") {
+      playLine(buffer, game);
+      buffer = "";
+      const closingIndex = findClosingCurlyIndex(movesList, i);
+      game.currentPosition.comment = movesList.slice(i + 1, closingIndex);
+      i = closingIndex + 1;
+      continue;
+    }
+
+    buffer += movesList[i];
+    i++;
   }
 
   playLine(buffer, game);

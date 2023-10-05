@@ -1,24 +1,28 @@
+import { fileExists } from "@dev_deps";
 import { ChessGame } from "../mod.ts";
 
-const pgn1 = await Deno.readTextFile("pgn-files/bright0.2c_glaurung2.0.1_2007.pgn");
-const pgn2 = await Deno.readTextFile("pgn-files/stockfish_Lc0_2020.pgn");
-const pgn3 = await Deno.readTextFile("pgn-files/defenchess_demolito_2019.pgn");
+const pgnDir = "pgn-files";
+const longestHumanPGN = await Deno.readTextFile(`${pgnDir}/longest-human-game.pgn`);
+const longestEnginePGN = await Deno.readTextFile(`${pgnDir}/longest-engine-game.pgn`);
 
-Deno.bench("Parse long game", () => {
-  new ChessGame({ pgn: pgn1 });
+Deno.bench("Parse long human game", () => {
+  new ChessGame({ pgn: longestHumanPGN });
 });
 
-Deno.bench("Parse longer game", () => {
-  new ChessGame({ pgn: pgn2 });
+Deno.bench("Parse long engine game", () => {
+  new ChessGame({ pgn: longestEnginePGN });
 });
 
-Deno.bench("Parse longest game", () => {
-  new ChessGame({ pgn: pgn3 });
-});
+Deno.bench("Stringify long engine game", async (b) => {
+  const filePath = `${pgnDir}/long-engine-game1.pgn`;
+  const filePath2 = filePath.replace(".pgn", "__stringified.pgn");
+  const longEngineGame1 = await Deno.readTextFile(filePath);
+  const game = new ChessGame({ pgn: longEngineGame1 });
 
-Deno.bench("Stringify long game", (b) => {
-  const game = new ChessGame({ pgn: pgn3 });
   b.start();
-  game.toString();
+  const pgn = game.toPGN();
   b.end();
+
+  if (!(await fileExists(filePath2)))
+    await Deno.writeTextFile(filePath2, pgn);
 });

@@ -1,6 +1,5 @@
-import Board from "@/board/Board.ts";
 import Move from "@/moves/Move.ts";
-import { Coords } from "@/typings/types.ts";
+import { Board, Coords } from "@/typings/types.ts";
 
 export default class CastlingMove extends Move {
   readonly rookSrcCoords: Coords;

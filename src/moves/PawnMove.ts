@@ -1,8 +1,6 @@
-import Board from "@/board/Board.ts";
 import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
 import Move from "@/moves/Move.ts";
-import Piece from "@/pieces/Piece.ts";
-import type { Coords } from "@/typings/types.ts";
+import type { Board, Coords, Piece } from "@/typings/types.ts";
 
 export default class PawnMove extends Move {
   promotedPiece: Piece | null;
