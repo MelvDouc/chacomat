@@ -1,11 +1,11 @@
 import Move from "@/moves/Move.ts";
-import type { Board, Piece } from "@/typings/types.ts";
+import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default class PieceMove extends Move {
   // ===== ===== ===== ===== =====
   // PUBLIC
   // ===== ===== ===== ===== =====
-  try(board: Board) {
+  try(board: ChacoMat.Board) {
     const srcPiece = board.get(this.srcCoords)!;
     const destPiece = board.get(this.destCoords);
     board
@@ -20,7 +20,7 @@ export default class PieceMove extends Move {
     };
   }
 
-  algebraicNotation(board: Board, legalMoves: Move[]) {
+  algebraicNotation(board: ChacoMat.Board, legalMoves: ChacoMat.Move[]) {
     const srcPiece = board.get(this.srcCoords)!;
     let notation = "";
 
@@ -35,13 +35,13 @@ export default class PieceMove extends Move {
   // PRIVATE
   // ===== ===== ===== ===== =====
 
-  #isAmbiguousWith({ srcCoords, destCoords }: Move, board: Board, srcPiece: Piece) {
+  #isAmbiguousWith({ srcCoords, destCoords }: ChacoMat.Move, board: ChacoMat.Board, srcPiece: ChacoMat.Piece) {
     return destCoords === this.destCoords
       && srcCoords !== this.srcCoords
       && board.get(srcCoords) === srcPiece;
   }
 
-  #exactNotation(board: Board, legalMoves: Move[], srcPiece: Piece) {
+  #exactNotation(board: ChacoMat.Board, legalMoves: Move[], srcPiece: ChacoMat.Piece) {
     const ambiguities = new Set<string>();
 
     for (const move of legalMoves) {
@@ -58,11 +58,11 @@ export default class PieceMove extends Move {
     if (ambiguities.size === 0)
       return "";
 
-    if (!ambiguities.has("y"))
-      return this.srcCoords.notation[0];
-
     if (!ambiguities.has("x"))
-      return this.srcCoords.notation[1];
+      return this.srcCoords.fileName;
+
+    if (!ambiguities.has("y"))
+      return this.srcCoords.rankName;
 
     return this.srcCoords.notation;
   }

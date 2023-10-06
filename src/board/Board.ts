@@ -1,7 +1,7 @@
 import Color from "@/board/Color.ts";
 import { coords } from "@/board/Coords.ts";
 import Piece from "@/pieces/Piece.ts";
-import type { Coords, JSONBoard } from "@/typings/types.ts";
+import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default class Board {
   // ===== ===== ===== ===== =====
@@ -11,21 +11,22 @@ export default class Board {
   static fromString(boardStr: string) {
     const board = new this();
 
-    boardStr
-      .replace(/\d+/g, (n) => "0".repeat(+n))
-      .split("/")
-      .forEach((row, x) => {
-        row
-          .split("")
-          .forEach((initial, y) => {
-            if (initial === "0") return;
+    for (const [y, row] of boardStr.split("/").entries()) {
+      let x = 0;
 
-            const piece = Piece.fromInitial(initial);
-            if (!piece) throw new Error(`Unknown piece: ${initial}`);
+      for (const char of row) {
+        if (!isNaN(+char)) {
+          x += +char;
+          continue;
+        }
 
-            board.set(coords(x, y), piece);
-          });
-      });
+        const piece = Piece.fromInitial(char);
+        if (!piece) throw new Error(`Invalid piece initial: ${char}.`);
+
+        board.set(coords(x, y), piece);
+        x++;
+      }
+    }
 
     return board;
   }
@@ -34,32 +35,11 @@ export default class Board {
   // PUBLIC
   // ===== ===== ===== ===== =====
 
-  readonly #pieces = new Map<Coords, Piece>();
-  readonly #kingCoords = new Map<Color, Coords>();
+  readonly #pieces = new Map<ChacoMat.Coords, ChacoMat.Piece>();
+  readonly #kingCoords = new Map<ChacoMat.Color, ChacoMat.Coords>();
 
   get pieces() {
     return this.#pieces;
-  }
-
-  *attackedCoords(srcCoords: Coords) {
-    const srcPiece = this.#pieces.get(srcCoords)!;
-    const { x: xOffsets, y: yOffsets } = srcPiece.offsets;
-
-    if (srcPiece.isShortRange()) {
-      for (let i = 0; i < xOffsets.length; i++) {
-        const destCoords = srcCoords.peer(xOffsets[i], yOffsets[i]);
-        if (destCoords)
-          yield destCoords;
-      }
-      return;
-    }
-
-    for (let i = 0; i < xOffsets.length; i++) {
-      for (const destCoords of srcCoords.peers(xOffsets[i], yOffsets[i])) {
-        yield destCoords;
-        if (this.has(destCoords)) break;
-      }
-    }
   }
 
   clone() {
@@ -68,35 +48,53 @@ export default class Board {
     return clone;
   }
 
-  has(coords: Coords) {
+  has(coords: ChacoMat.Coords) {
     return this.#pieces.has(coords);
   }
 
-  get(coords: Coords) {
+  get(coords: ChacoMat.Coords) {
     return this.#pieces.get(coords) ?? null;
   }
 
-  delete(coords: Coords) {
+  delete(coords: ChacoMat.Coords) {
     this.#pieces.delete(coords);
     return this;
   }
 
-  set(coords: Coords, piece: Piece) {
+  set(coords: ChacoMat.Coords, piece: Piece) {
     this.#pieces.set(coords, piece);
     if (piece.isKing()) this.#kingCoords.set(piece.color, coords);
     return this;
   }
 
-  getKingCoords(color: Color) {
+  getPieceRank(color: ChacoMat.Color) {
+    return color === Color.WHITE ? 8 - 1 : 0;
+  }
+
+  getPawnRank(color: ChacoMat.Color) {
+    return this.getPieceRank(color) + color.direction;
+  }
+
+  getKingCoords(color: ChacoMat.Color) {
     return this.#kingCoords.get(color)!;
   }
 
-  isColorInCheck(color: Color) {
+  attackedCoordsSet(color: ChacoMat.Color) {
+    const set = new Set<ChacoMat.Coords>();
+
+    for (const [srcCoords, piece] of this.piecesOfColor(color))
+      for (const destCoords of piece.attackedCoords(this, srcCoords))
+        set.add(destCoords);
+
+    return set;
+  }
+
+  isColorInCheck(color: ChacoMat.Color) {
     const kingCoords = this.getKingCoords(color);
 
     for (const [srcCoords, srcPiece] of this.#pieces)
       if (srcPiece.color !== color)
-        for (const destCoords of this.attackedCoords(srcCoords))
+        for (const destCoords of srcPiece.attackedCoords(this, srcCoords))
           if (destCoords === kingCoords)
             return true;
 
@@ -108,13 +106,13 @@ export default class Board {
       if (!piece.isKing())
         acc.get(piece.color)!.push([coords, piece]);
       return acc;
-    }, new Map<Color, [Coords, Piece][]>([
+    }, new Map<Color, [ChacoMat.Coords, Piece][]>([
       [Color.WHITE, []],
       [Color.BLACK, []]
     ]));
   }
 
-  piecesOfColor(color: Color) {
+  piecesOfColor(color: ChacoMat.Color) {
     return [...this.#pieces].filter(([, piece]) => {
       return piece.color === color;
     });
@@ -122,9 +120,9 @@ export default class Board {
 
   toString() {
     return Array
-      .from({ length: 8 }, (_, x) => {
+      .from({ length: 8 }, (_, y) => {
         let row = "";
-        for (let y = 0; y < 8; y++)
+        for (let x = 0; x < 8; x++)
           row += this.get(coords(x, y))?.initial ?? "0";
         return row;
       })
@@ -132,9 +130,9 @@ export default class Board {
       .replace(/0+/g, (zeros) => String(zeros.length));
   }
 
-  toArray(): JSONBoard {
-    return Array.from({ length: 8 }, (_, x) => {
-      return Array.from({ length: 8 }, (_, y) => {
+  toArray(): ChacoMat.JSONBoard {
+    return Array.from({ length: 8 }, (_, y) => {
+      return Array.from({ length: 8 }, (_, x) => {
         return this.get(coords(x, y))?.toJSON() ?? null;
       });
     });

@@ -1,11 +1,11 @@
 export const whitePawnOffsets = {
-  x: [-1, -1],
-  y: [-1, 1]
+  x: [-1, 1],
+  y: [-1, -1]
 };
 
 export const blackPawnOffsets = {
-  x: [1, 1],
-  y: [-1, 1]
+  x: [-1, 1],
+  y: [1, 1]
 };
 
 export const knightOffsets = {
@@ -24,6 +24,6 @@ export const diagonalOffsets = {
 };
 
 export const kingOffsets = {
-  x: orthogonalOffsets.x.flatMap((xOffset, i) => [xOffset, diagonalOffsets.x[i]]),
-  y: orthogonalOffsets.y.flatMap((yOffset, i) => [yOffset, diagonalOffsets.y[i]])
+  x: orthogonalOffsets.x.concat(diagonalOffsets.x),
+  y: orthogonalOffsets.y.concat(diagonalOffsets.y)
 };

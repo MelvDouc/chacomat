@@ -2,7 +2,7 @@ import Color from "@/board/Color.ts";
 import GameResults from "@/game/GameResults.ts";
 import Position from "@/game/Position.ts";
 import PawnMove from "@/moves/PawnMove.ts";
-import { Coords, GameInfo, GameResult, Move } from "@/typings/types.ts";
+import { ChacoMat } from "@/typings/chacomat.ts";
 import playMoves from "@/utils/play-moves.ts";
 
 export default class ChessGame {
@@ -13,14 +13,14 @@ export default class ChessGame {
   static parsePgn(pgn: string) {
     const headerRegexp = /^\[(?<key>\w+)\s+"(?<value>[^"]*)"\]/;
     let matchArray: RegExpMatchArray | null;
-    const gameInfo: GameInfo = { Result: GameResults.NONE };
+    const gameInfo: ChacoMat.GameInfo = { Result: GameResults.NONE };
 
     while ((matchArray = pgn.match(headerRegexp))?.groups) {
       gameInfo[matchArray.groups["key"]] = matchArray.groups["value"];
       pgn = pgn.slice(matchArray[0].length).trimStart();
     }
 
-    const result = pgn.match(/(\*|1\/2-1\/2|(0|1)-(0|1))$/)?.[0] as GameResult | undefined;
+    const result = pgn.match(/(\*|1\/2-1\/2|(0|1)-(0|1))$/)?.[0] as ChacoMat.GameResult | undefined;
 
     if (result) {
       pgn = pgn.slice(0, -result.length);
@@ -30,7 +30,7 @@ export default class ChessGame {
 
     return {
       gameInfo,
-      moveList: pgn
+      moveStr: pgn
     };
   }
 
@@ -38,27 +38,26 @@ export default class ChessGame {
   // PUBLIC
   // ===== ===== ===== ===== =====
 
-  readonly info: GameInfo;
+  readonly info: ChacoMat.GameInfo;
   #currentPosition: Position;
-  #firstPosition: Position;
 
-  constructor({ info, pgn }: {
-    info?: GameInfo;
-    pgn?: string;
-  } = {}) {
-    info ??= { Result: GameResults.NONE };
-    this.info = info;
-    let moveList: string | null = null;
+  constructor();
+  constructor(pgn: string);
+  constructor(info: ChacoMat.GameInfo);
 
-    if (pgn) {
-      const { gameInfo, moveList: ml } = ChessGame.parsePgn(pgn.trim());
-      Object.assign(this.info, gameInfo);
-      moveList = ml;
+  constructor(param?: string | ChacoMat.GameInfo) {
+    if (typeof param === "string") {
+      const { gameInfo, moveStr } = ChessGame.parsePgn(param.trim());
+      this.info = gameInfo;
+      this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
+      playMoves(moveStr, this);
+    } else if (typeof param === "object" && param !== null && "Result" in param) {
+      this.info = param;
+      this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
+    } else {
+      this.info = { Result: GameResults.NONE };
+      this.#currentPosition = Position.fromFEN(Position.START_FEN);
     }
-
-    this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
-    this.#firstPosition = this.#currentPosition;
-    if (moveList !== null) playMoves(moveList, this);
   }
 
   get currentPosition() {
@@ -67,12 +66,18 @@ export default class ChessGame {
 
   set currentPosition(position: Position) {
     this.#currentPosition = position;
-    if (!position.prev)
-      this.#firstPosition = position;
   }
 
   get firstPosition() {
-    return this.#firstPosition;
+    let pos = this.#currentPosition;
+    while (pos.prev) pos = pos.prev;
+    return pos;
+  }
+
+  get lastPosition() {
+    let pos = this.#currentPosition;
+    while (pos.next) pos = pos.next[0];
+    return pos;
   }
 
   get currentResult() {
@@ -95,77 +100,79 @@ export default class ChessGame {
   }
 
   goBack() {
-    if (this.currentPosition.prev)
-      this.currentPosition = this.currentPosition.prev!;
+    if (this.#currentPosition.prev)
+      this.#currentPosition = this.#currentPosition.prev!;
   }
 
   goToStart() {
-    this.currentPosition = this.#firstPosition;
+    this.#currentPosition = this.firstPosition;
   }
 
   goForward() {
-    if (this.currentPosition.next[0])
-      this.currentPosition = this.currentPosition.next[0];
+    if (this.#currentPosition.next[0])
+      this.#currentPosition = this.#currentPosition.next[0];
   }
 
   goToEnd() {
-    let pos = this.#currentPosition;
-    while (pos.next[0]) pos = pos.next[0];
-    this.currentPosition = pos;
+    this.#currentPosition = this.lastPosition;
   }
 
   truncatePreviousMoves() {
     this.#currentPosition.prev = null;
-    this.#firstPosition = this.#currentPosition;
   }
 
-  truncateNextMoves() {
-    const { prev } = this.#currentPosition;
-    if (!prev) return;
-    prev.next.length = 0;
-    this.currentPosition = prev;
+  truncateFromCurrentPosition() {
+    this.goBack();
+    this.#currentPosition.next.length = 0;
   }
 
-  playMove(move: Move) {
+  playMove(move: ChacoMat.Move) {
     const pos = this.#currentPosition,
+      activeColor = pos.activeColor,
       board = pos.board.clone(),
       castlingRights = pos.castlingRights.clone(),
       srcPiece = board.get(move.srcCoords)!,
       destPiece = board.get(move.destCoords);
 
     if (srcPiece.isKing())
-      castlingRights.get(pos.activeColor).clear();
+      castlingRights.get(activeColor).clear();
 
-    else if (srcPiece.isRook() && move.srcCoords.x === pos.activeColor.pieceRank)
-      castlingRights.get(pos.activeColor).delete(move.srcCoords.y);
+    else if (srcPiece.isRook() && move.srcCoords.y === board.getPieceRank(activeColor))
+      castlingRights.get(activeColor).delete(move.srcCoords.x);
 
-    if (destPiece?.isRook() && move.destCoords.x === pos.activeColor.opposite.pieceRank)
-      castlingRights.get(pos.activeColor.opposite).delete(move.destCoords.y);
+    if (destPiece?.isRook() && move.destCoords.y === board.getPieceRank(activeColor.opposite))
+      castlingRights.get(activeColor.opposite).delete(move.destCoords.x);
 
     move.try(board);
 
-    this.currentPosition = this.#currentPosition.addNext({
+    const nextPos = new Position({
       board,
-      activeColor: pos.activeColor.opposite,
+      activeColor: activeColor.opposite,
       castlingRights,
       enPassantCoords: move instanceof PawnMove && move.isDouble()
-        ? move.srcCoords.peer(pos.activeColor.direction, 0)
+        ? move.srcCoords.peer(0, activeColor.direction)
         : null,
       halfMoveClock: (destPiece || srcPiece.isPawn()) ? 0 : (pos.halfMoveClock + 1),
-      fullMoveNumber: pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK),
-      srcMove: move
+      fullMoveNumber: pos.fullMoveNumber + Number(activeColor === Color.BLACK)
     });
+    nextPos.srcMove = move;
+    nextPos.prev = pos;
+    pos.next.push(nextPos);
+    this.#currentPosition = nextPos;
     return this;
   }
 
-  playMoveWithCoords(srcCoords: Coords, destCoords: Coords) {
-    const move = this.#currentPosition.legalMoves.find((move) => {
-      return move.srcCoords === srcCoords
-        && move.destCoords === destCoords;
+  playMoveWithCoords(srcX: number, srcY: number, destX: number, destY: number, promotionInitial?: string) {
+    const move = this.#currentPosition.legalMoves.find((m) => {
+      return m.srcCoords.x === srcX
+        && m.srcCoords.y === srcY
+        && m.destCoords.x === destX
+        && m.destCoords.y === destY
+        && (!promotionInitial || m instanceof PawnMove && m.promotedPiece?.whiteInitial === promotionInitial);
     });
 
     if (!move)
-      throw new Error(`Illegal move: ${JSON.stringify({ srcCoords: srcCoords.toJSON(), destCoords: destCoords.toJSON() })}.`);
+      throw new Error(`Illegal move: ${JSON.stringify({ srcX, srcY, destX, destY })}.`);
 
     return this.playMove(move);
   }
@@ -190,7 +197,7 @@ export default class ChessGame {
     const infoAsStrings = Object.entries(info)
       .map(([key, value]) => `[${key} "${value}"]`)
       .concat(`[Result "${Result}"]`);
-    const firstPositionFEN = this.#firstPosition.toFEN();
+    const firstPositionFEN = this.firstPosition.toFEN();
 
     if (firstPositionFEN !== Position.START_FEN)
       infoAsStrings.push(`[FEN "${firstPositionFEN}"]`);
@@ -198,12 +205,8 @@ export default class ChessGame {
     return infoAsStrings.join("\n");
   }
 
-  moveListAsString() {
-    return this.#firstPosition.toMoveList();
-  }
-
   toPGN() {
-    return `${this.infoAsString()}\n\n${this.moveListAsString()} ${this.info.Result}`;
+    return `${this.infoAsString()}\n\n${this.firstPosition.toMoveList().toString()} ${this.info.Result}`;
   }
 
   toString() {

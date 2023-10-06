@@ -1,16 +1,14 @@
-import type Board from "@/board/Board.ts";
-import type Color from "@/board/Color.ts";
-import type Coords from "@/board/Coords.ts";
-import type CastlingRights from "@/game/CastlingRights.ts";
-import type ChessGame from "@/game/ChessGame.ts";
 import GameResults from "@/game/GameResults.ts";
-import type Position from "@/game/Position.ts";
-import type Move from "@/moves/Move.ts";
-import type Piece from "@/pieces/Piece.ts";
 
-export type {
-  Board, CastlingRights, ChessGame, Color, Coords, Move, Piece, Position
-};
+export type Board = import("@/board/Board.ts").default;
+export type Color = import("@/board/Color.ts").default;
+export type Coords = import("@/board/Coords.ts").default;
+export type ChessGame = import("@/game/ChessGame.ts").default;
+export type CastlingRights = import("@/game/CastlingRights.ts").default;
+export type Position = import("@/game/Position.ts").default;
+export type Move = import("@/moves/Move.ts").default;
+export type Piece = import("@/pieces/Piece.ts").default;
+export type MoveList = import("@/utils/MoveList.ts").default;
 
 export interface PieceOffsets {
   x: number[];

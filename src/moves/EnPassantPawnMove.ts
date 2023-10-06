@@ -1,17 +1,17 @@
 import { coords } from "@/board/Coords.ts";
 import Move from "@/moves/Move.ts";
-import type { Board } from "@/typings/types.ts";
+import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default class EnPassantPawnMove extends Move {
   override algebraicNotation(): string {
-    if (this.srcCoords.y !== this.destCoords.y)
-      return `${this.srcCoords.notation[0]}x${this.destCoords.notation}`;
+    if (this.srcCoords.x !== this.destCoords.x)
+      return `${this.srcCoords.fileName}x${this.destCoords.notation}`;
     return this.destCoords.notation;
   }
 
-  override try(board: Board) {
+  override try(board: ChacoMat.Board) {
     const srcPiece = board.get(this.srcCoords)!;
-    const capturedPieceCoords = coords(this.srcCoords.x, this.destCoords.y);
+    const capturedPieceCoords = coords(this.destCoords.x, this.srcCoords.y);
     const capturedPiece = board.get(capturedPieceCoords)!;
 
     board

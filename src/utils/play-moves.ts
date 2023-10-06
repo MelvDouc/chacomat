@@ -1,67 +1,98 @@
-import type { ChessGame, Position } from "@/typings/types.ts";
-import { findClosingCurlyIndex, findClosingParenIndex } from "@/utils/string-search.ts";
+import Coords from "@/board/Coords.ts";
+import CastlingMove from "@/moves/CastlingMove.ts";
+import { ChacoMat } from "@/typings/chacomat.ts";
+import {
+  findClosingCurlyIndex,
+  findClosingParenIndex,
+  findNextBracketIndex
+} from "@/utils/string-search.ts";
 
-const playLine = (() => {
-  const moveRegexp = /([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?|(?<o>0|O)(-\k<o>){1,2})/g;
+interface MoveMatcher {
+  regex: RegExp;
+  find: (groups: Record<string, string>, position: ChacoMat.Position) => ChacoMat.Move | null | undefined;
+}
 
-  return (line: string, game: ChessGame) => {
-    for (const { 0: substring, index } of line.matchAll(moveRegexp)) {
-      const move = findMove(substring, game.currentPosition);
+const moveMatchers: MoveMatcher[] = [
+  {
+    regex: /(?<p>[NBRQK])(?<srcFile>[a-h])?(?<srcRank>[1-8])?x?(?<destNotation>[a-h][1-8])/,
+    find: ({ p, srcFile, srcRank, destNotation }, { board, legalMoves }) => {
+      const destCoords = Coords.fromNotation(destNotation);
 
-      if (move) {
-        game.playMove(move);
-        continue;
+      return legalMoves.find((move) => {
+        return move.destCoords === destCoords
+          && board.get(move.srcCoords)?.whiteInitial === p
+          && (!srcRank || move.srcCoords.rankName === srcRank)
+          && (!srcFile || move.srcCoords.fileName === srcFile);
+      });
+    }
+  },
+  {
+    regex: /((?<srcFile>[a-h])x)?(?<destNotation>[a-h][1-8])(=?[QRBN])?/,
+    find: ({ srcFile, destNotation }, { board, legalMoves }) => {
+      const destCoords = Coords.fromNotation(destNotation);
+
+      return legalMoves.find((move) => {
+        return move.destCoords === destCoords
+          && board.get(move.srcCoords)?.isPawn()
+          && (!srcFile || move.srcCoords.fileName === srcFile);
+      });
+    }
+  },
+  {
+    regex: /(?<o>0|O)-\k<o>(?<o2>-\k<o>)?/,
+    find: ({ o2 }, { legalMoves }) => {
+      for (let i = 1; i <= 2; i++) {
+        const move = legalMoves[legalMoves.length - i];
+        if (move instanceof CastlingMove && move.isQueenSide() === (o2 !== undefined))
+          return move;
       }
 
-      throwMoveError({ substring, index: index!, line });
+      return null;
     }
-  };
-})();
+  }
+];
 
-function findMove(input: string, { legalMoves, board }: Position) {
-  if (input.includes("-"))
-    input = input.replace(/O/g, "0");
+function findMove(input: string, position: ChacoMat.Position) {
+  for (const { regex, find } of moveMatchers) {
+    const matches = input.match(regex);
 
-  return legalMoves.find((move) => input === move.algebraicNotation(board, legalMoves));
-}
-
-export default function playMoves(movesList: string, game: ChessGame) {
-  let buffer = "";
-
-  for (let i = 0; i < movesList.length;) {
-    if (movesList[i] === "(") {
-      playLine(buffer, game);
-      buffer = "";
-      const closingIndex = findClosingParenIndex(movesList, i);
-      const { currentPosition } = game;
-      game.goBack();
-      playMoves(movesList.slice(i + 1, closingIndex), game);
-      game.currentPosition = currentPosition;
-      i = closingIndex + 1;
-      continue;
-    }
-
-    if (movesList[i] === "{") {
-      playLine(buffer, game);
-      buffer = "";
-      const closingIndex = findClosingCurlyIndex(movesList, i);
-      game.currentPosition.comment = movesList.slice(i + 1, closingIndex);
-      i = closingIndex + 1;
-      continue;
-    }
-
-    buffer += movesList[i];
-    i++;
+    if (matches)
+      return find(matches.groups!, position);
   }
 
-  playLine(buffer, game);
+  return null;
 }
 
-function throwMoveError({ substring, index, line }: {
-  substring: string;
-  index: number;
-  line: string;
-}) {
-  const startIndex = (index - 20 < 0) ? 0 : index - 20;
-  throw new Error(`Illegal move "${substring}" near "${line.slice(startIndex, index + 20)}".`);
+function playLine(line: string, game: ChacoMat.ChessGame) {
+  for (const substring of line.trim().split(/\s+/)) {
+    const move = findMove(substring, game.currentPosition);
+    if (move) game.playMove(move);
+  }
 }
+
+function playMoves(moveStr: string, game: ChacoMat.ChessGame) {
+  while (moveStr.length) {
+    if (moveStr[0] === "(") {
+      const closingIndex = findClosingParenIndex(moveStr, 0);
+      const { currentPosition } = game;
+      game.goBack();
+      playMoves(moveStr.slice(1, closingIndex), game);
+      game.currentPosition = currentPosition;
+      moveStr = moveStr.slice(closingIndex + 1);
+      continue;
+    }
+
+    if (moveStr[0] === "{") {
+      const closingIndex = findClosingCurlyIndex(moveStr, 0);
+      game.currentPosition.comment = moveStr.slice(1, closingIndex);
+      moveStr = moveStr.slice(closingIndex + 1);
+      continue;
+    }
+
+    const nextIndex = findNextBracketIndex(moveStr);
+    playLine(moveStr.slice(0, nextIndex), game);
+    moveStr = moveStr.slice(nextIndex);
+  }
+}
+
+export default playMoves;

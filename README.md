@@ -16,41 +16,128 @@ spanishGame
   .playMoveWithNotation("e7e5")
   .playMoveWithNotation("g1f3")
   .playMoveWithNotation("b8c6")
-  .playMoveWithCoords(coords(7, 5), coords(3, 1));
+  .playMoveWithCoords(5, 7, 1, 3); // Bf1b5
+```
+
+### from headers
+
+```javascript
+const spanishGame = new ChessGame({
+  White: "Magnus Carlsen",
+  Black: "Ian Nepomniachtchi",
+  Result: "*"
+});
 ```
 
 ### from a PGN
 
 ```javascript
-const spanishGame = new ChessGame({
-  pgn: `
-    [White "Magnus Carlsen"]
-    [Black "Ian Nepomniachtchi"]
-    [Result "*"]
+const spanishGame = new ChessGame(`
+  [White "Magnus Carlsen"]
+  [Black "Ian Nepomniachtchi"]
+  [Result "*"]
 
-    1. e4 e5 2. Nf3 Nc6 3. Bb5 *
-  `
-});
+  1. e4 e5 2. Nf3 Nc6 3. Bb5 *
+`);
 ```
 
 ## View Game
 
 ### PGN
 
-```typescript
+```javascript
 const pgn = game.toPGN();
 ```
 
 ### FEN
 
-```typescript
+```javascript
 const fen = game.currentPosition.toFEN();
 ```
 
 ### board
 
-```typescript
+```javascript
 const boardArray = game.currentPosition.board.toArray();
+```
+
+### move list
+
+The `Position` class comes with a `toMoveList` method, which returns a linked list of sorts that can be used to iterate over each individual move notation. This may come in handy to create a navigable PGN.
+
+```tsx
+// React component
+function MoveTag({ text, handleClick }: {
+  text: string;
+  handleClick: VoidFunction;
+}) {
+  return (
+    <span className="moveTag" onClick={handleClick}>{text}</span>
+  );
+}
+
+function Pgn({ moveList, game }: {
+  moveList: ChacoMat.MoveList;
+  game: ChacoMat.ChessGame;
+}) {
+  const [mainMove, ...variations] = moveList.moves;
+
+  if (!mainMove)
+    return null;
+
+  return (
+    <span className="pgnMoves">
+      <MoveTag
+        text={mainMove.notation}
+        handleClick={() => game.currentPosition = mainMove.moveList.position}
+      />
+      ( {variations.map(({ notation, moveList }) => (
+        <span key={notation}>
+          <MoveTag
+            text={notation}
+            handleClick={() => game.currentPosition = moveList.position}
+          />
+          <Pgn moveList={moveList} game={game}>
+        </span>
+      ))} )
+      <Pgn moveList={mainMove.moveList} game={game} />
+    </span>
+  );
+}
+```
+
+## Typings
+
+Types can be imported under the `ChacoMat` namespace.
+
+```typescript
+import type { ChacoMat } from "chacomat";
+
+ChacoMat.GameResult; // "1-0" | "0-1" | "1/2-1/2" | "0-0" | "*"
+```
+
+Most components of the game (coordinates, board, move, piece, position) can be serialized, for example, to be sent as a JSON response.
+
+```typescript
+// Express server
+import { type ChacoMat, Position } from "chacomat";
+
+router.get("/:fen", (request, response) => {
+  const position = Position.fromFEN(request.params.fen);
+  response.json(position.toJSON()); // ChacoMat.JSONPosition
+});
+```
+
+## Customization
+
+Some features of the game can be customized.
+
+```javascript
+import { globalConfig as chacomatConfig } from "chacomat";
+
+chacomatConfig.useZerosForCastling = false;
+chacomatConfig.useDoublePlusForCheckmate = true;
+
 ```
 
 ## Variants

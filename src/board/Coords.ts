@@ -1,32 +1,53 @@
 export default class Coords {
-  static readonly ALL = Array.from({ length: 8 }, (_, x) => {
-    return Array.from({ length: 8 }, (_, y) => new this(x, y));
-  });
-
-  static readonly FILES = Array.from({ length: 26 }, (_, i) => String.fromCharCode(i + 97));
+  static readonly #FILES = Array.from({ length: 26 }, (_, i) => String.fromCharCode(i + 97));
 
   static isSafe(x: number, y: number) {
     return x >= 0 && x < 8 && y >= 0 && y < 8;
+  }
+
+  static xToFileName(x: number) {
+    return this.#FILES[x];
+  }
+
+  static yToRankName(y: number) {
+    return String(8 - y);
+  }
+
+  static fileNameToX(fileName: string) {
+    return this.#FILES.indexOf(fileName);
+  }
+
+  static rankNameToY(rankName: string) {
+    return 8 - Number(rankName);
   }
 
   static fromNotation(notation: string) {
     if (!/[a-h][1-8]/.test(notation))
       return null;
 
-    return this.ALL[8 - Number(notation[1])][this.FILES.indexOf(notation[0])];
+    const [fileName, rankName] = notation;
+    return coords(this.fileNameToX(fileName), this.rankNameToY(rankName));
   }
 
   readonly #notation: string;
 
-  private constructor(
+  constructor(
     public readonly x: number,
     public readonly y: number
   ) {
-    this.#notation = String.fromCharCode(y + 97) + String(8 - x);
+    this.#notation = Coords.xToFileName(x) + Coords.yToRankName(y);
   }
 
   get notation() {
     return this.#notation;
+  }
+
+  get fileName() {
+    return this.#notation[0];
+  }
+
+  get rankName() {
+    return this.#notation[1];
   }
 
   isLightSquare() {
@@ -38,7 +59,7 @@ export default class Coords {
       y = this.y + yOffset;
 
     return Coords.isSafe(x, y)
-      ? Coords.ALL[x][y]
+      ? coords(x, y)
       : null;
   }
 
@@ -59,6 +80,10 @@ export default class Coords {
   }
 }
 
+const allCoords = Array.from({ length: 8 }, (_, y) => {
+  return Array.from({ length: 8 }, (_, x) => new Coords(x, y));
+});
+
 export function coords(x: number, y: number) {
-  return Coords.ALL[x][y];
+  return allCoords[y][x];
 }

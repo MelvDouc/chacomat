@@ -18,7 +18,7 @@ Deno.test("stalemate", () => {
 });
 
 Deno.test("triple repetition", () => {
-  const game = new ChessGame({ pgn: "1.Nf3 Nf6 2.Ng1 Ng8 3.Nf3 Nf6 4.Ng1 Ng8 5.Nf3 *" });
+  const game = new ChessGame("1.Nf3 Nf6 2.Ng1 Ng8 3.Nf3 Nf6 4.Ng1 Ng8 5.Nf3 *");
   assert(game.currentPosition.isTripleRepetition());
 });
 

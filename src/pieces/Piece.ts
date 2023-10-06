@@ -7,7 +7,7 @@ import {
   orthogonalOffsets,
   whitePawnOffsets
 } from "@/pieces/offsets.ts";
-import { JSONPiece, PieceOffsets } from "@/typings/types.ts";
+import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default class Piece {
   static readonly #values = new Map<number, Piece>();
@@ -20,14 +20,14 @@ export default class Piece {
 
   readonly value: number;
   readonly initial: string;
-  readonly color: Color;
-  readonly #offsets: PieceOffsets;
+  readonly color: ChacoMat.Color;
+  readonly #offsets: ChacoMat.PieceOffsets;
   readonly #whiteInitial: string;
 
   constructor({ value, initial, offsets }: {
     value: number;
     initial: string;
-    offsets: PieceOffsets;
+    offsets: ChacoMat.PieceOffsets;
   }) {
     this.value = value;
     this.initial = initial;
@@ -78,7 +78,27 @@ export default class Piece {
     return Piece.#shortRangeValues.has(this.value);
   }
 
-  toJSON(): JSONPiece {
+  *attackedCoords(board: ChacoMat.Board, srcCoords: ChacoMat.Coords) {
+    const { x: xOffsets, y: yOffsets } = this.offsets;
+
+    if (this.isShortRange()) {
+      for (let i = 0; i < xOffsets.length; i++) {
+        const destCoords = srcCoords.peer(xOffsets[i], yOffsets[i]);
+        if (destCoords)
+          yield destCoords;
+      }
+      return;
+    }
+
+    for (let i = 0; i < xOffsets.length; i++) {
+      for (const destCoords of srcCoords.peers(xOffsets[i], yOffsets[i])) {
+        yield destCoords;
+        if (board.has(destCoords)) break;
+      }
+    }
+  }
+
+  toJSON(): ChacoMat.JSONPiece {
     return {
       initial: this.initial,
       color: this.color.abbreviation

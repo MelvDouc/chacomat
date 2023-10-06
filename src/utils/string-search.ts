@@ -21,7 +21,14 @@ function findMatchingCharIndex(char1: string, char2: string) {
   };
 }
 
-export function findRealIndex(input: string, substring: string) {
-  const index = input.indexOf(substring);
-  return (index === -1) ? input.length : index;
+export function findNextBracketIndex(input: string) {
+  let i = 0;
+
+  while (i < input.length) {
+    if (input[i] === "(" || input[i] === "{")
+      break;
+    i++;
+  }
+
+  return i;
 }

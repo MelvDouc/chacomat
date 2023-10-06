@@ -5,5 +5,6 @@ export { default as CastlingRights } from "@/game/CastlingRights.ts";
 export { default as ChessGame } from "@/game/ChessGame.ts";
 export { default as GameResults } from "@/game/GameResults.ts";
 export { default as Position } from "@/game/Position.ts";
+export { default as globalConfig } from "@/global-config.ts";
 export { Pieces } from "@/pieces/Piece.ts";
-export * as ChacoMatTypes from "@/typings/types.ts";
+export { ChacoMat } from "@/typings/chacomat.ts";

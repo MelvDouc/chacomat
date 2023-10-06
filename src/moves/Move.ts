@@ -1,27 +1,33 @@
-import { Board, Coords, JSONMove, Position } from "@/typings/types.ts";
+import globalConfig from "@/global-config.ts";
+import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default abstract class Move {
   constructor(
-    public readonly srcCoords: Coords,
-    public readonly destCoords: Coords,
+    public readonly srcCoords: ChacoMat.Coords,
+    public readonly destCoords: ChacoMat.Coords,
   ) { }
 
-  abstract try(board: Board): () => void;
-  abstract algebraicNotation(board: Board, legalMoves: Move[]): string;
+  abstract try(board: ChacoMat.Board): () => void;
+  abstract algebraicNotation(board: ChacoMat.Board, legalMoves: Move[]): string;
+
+  fullAlgebraicNotation(positionBefore: ChacoMat.Position, positionAfter: ChacoMat.Position) {
+    return this.algebraicNotation(positionBefore.board, positionBefore.legalMoves)
+      + this.getCheckSign(positionAfter);
+  }
 
   computerNotation() {
     return this.srcCoords.notation + this.destCoords.notation;
   }
 
-  getCheckSign(nextPosition: Position) {
+  getCheckSign(nextPosition: ChacoMat.Position) {
     if (nextPosition.isCheckmate())
-      return "#";
+      return globalConfig.useDoublePlusForCheckmate ? "++" : "#";
     if (nextPosition.isCheck())
       return "+";
     return "";
   }
 
-  toJSON(board: Board, legalMoves: Move[]): JSONMove {
+  toJSON(board: ChacoMat.Board, legalMoves: Move[]): ChacoMat.JSONMove {
     return {
       srcCoords: this.srcCoords.toJSON(),
       destCoords: this.destCoords.toJSON(),

@@ -63,12 +63,4 @@ export default class Color {
   get opposite() {
     return Color.fromDirection(-this.direction);
   }
-
-  get pieceRank() {
-    return Color.#pieceRanks[this.name];
-  }
-
-  get pawnRank() {
-    return Color.#pawnRanks[this.name];
-  }
 }

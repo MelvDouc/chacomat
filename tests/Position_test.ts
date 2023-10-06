@@ -8,11 +8,12 @@ Deno.test("legal moves", () => {
   assertEquals(legalMoves.filter(({ srcCoords }) => board.get(srcCoords)?.isKnight()).length, 4);
 });
 
+const { legalMovesAsAlgebraicNotation } = Position.fromFEN("8/8/4K3/8/b1n5/7Q/2p5/1k6 b - - 5 313");
 Deno.test("promotion notation", () => {
-  const { legalMovesAsAlgebraicNotation } = Position.fromFEN("8/8/4K3/8/b1n5/7Q/2p5/1k6 b - - 5 313");
   assertArrayIncludes(
     legalMovesAsAlgebraicNotation,
-    ["c1=Q"]
+    ["c1=Q"],
+    legalMovesAsAlgebraicNotation.join(" ")
   );
 });
 

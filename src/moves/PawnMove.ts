@@ -1,16 +1,16 @@
 import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
 import Move from "@/moves/Move.ts";
-import type { Board, Coords, Piece } from "@/typings/types.ts";
+import type { ChacoMat } from "@/typings/chacomat.ts";
 
 export default class PawnMove extends Move {
-  promotedPiece: Piece | null;
+  promotedPiece: ChacoMat.Piece | null;
 
-  constructor(srcCoords: Coords, destCoords: Coords, promotedPiece: Piece | null = null) {
+  constructor(srcCoords: ChacoMat.Coords, destCoords: ChacoMat.Coords, promotedPiece: ChacoMat.Piece | null = null) {
     super(srcCoords, destCoords);
     this.promotedPiece = promotedPiece;
   }
 
-  try(board: Board) {
+  try(board: ChacoMat.Board) {
     const srcPiece = board.get(this.srcCoords)!;
     const destPiece = board.get(this.destCoords);
 
@@ -38,10 +38,10 @@ export default class PawnMove extends Move {
   }
 
   isDouble() {
-    return Math.abs(this.destCoords.x - this.srcCoords.x) === 2;
+    return Math.abs(this.destCoords.y - this.srcCoords.y) === 2;
   }
 
-  isPromotion(board: Board) {
-    return this.destCoords.x === board.get(this.srcCoords)!.color.opposite.pieceRank;
+  isPromotion() {
+    return this.destCoords.y === 0 || this.destCoords.y === 8 - 1;
   }
 }
