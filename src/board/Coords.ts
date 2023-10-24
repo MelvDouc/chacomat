@@ -1,6 +1,10 @@
 export default class Coords {
   static readonly #FILES = Array.from({ length: 26 }, (_, i) => String.fromCharCode(i + 97));
 
+  static readonly ALL = Array.from({ length: 8 }, (_, x) => {
+    return Array.from({ length: 8 }, (_, y) => new this(x, y));
+  });
+
   static isSafe(x: number, y: number) {
     return x >= 0 && x < 8 && y >= 0 && y < 8;
   }
@@ -26,12 +30,12 @@ export default class Coords {
       return null;
 
     const [fileName, rankName] = notation;
-    return coords(this.fileNameToX(fileName), this.rankNameToY(rankName));
+    return this.ALL[this.fileNameToX(fileName)][this.rankNameToY(rankName)];
   }
 
   readonly #notation: string;
 
-  constructor(
+  private constructor(
     public readonly x: number,
     public readonly y: number
   ) {
@@ -59,7 +63,7 @@ export default class Coords {
       y = this.y + yOffset;
 
     return Coords.isSafe(x, y)
-      ? coords(x, y)
+      ? Coords.ALL[x][y]
       : null;
   }
 
@@ -80,10 +84,4 @@ export default class Coords {
   }
 }
 
-const allCoords = Array.from({ length: 8 }, (_, y) => {
-  return Array.from({ length: 8 }, (_, x) => new Coords(x, y));
-});
-
-export function coords(x: number, y: number) {
-  return allCoords[y][x];
-}
+export const coords = Coords.ALL;

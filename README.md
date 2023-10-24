@@ -58,12 +58,25 @@ const fen = game.currentPosition.toFEN();
 ### board
 
 ```javascript
-const boardArray = game.currentPosition.board.toArray();
+game.currentPosition.board.log();
+
+/*
+8 | r n b q k b n r
+7 | p p p p p p p p
+6 | - - - - - - - -
+5 | - - - - - - - -
+4 | - - - - - - - -
+3 | - - - - - - - -
+2 | P P P P P P P P
+1 | R N B Q K B N R
+    - - - - - - - -
+    a b c d e f g h
+*/
 ```
 
 ### move list
 
-The `Position` class comes with a `toMoveList` method, which returns a linked list of sorts that can be used to iterate over each individual move notation. This may come in handy to create a navigable PGN.
+The `Position` class comes with a `toTree` method, which returns a linked list of sorts that can be used to iterate over each individual move notation. This may come in handy to create a navigable PGN.
 
 ```tsx
 // React component
@@ -76,32 +89,21 @@ function MoveTag({ text, handleClick }: {
   );
 }
 
-function Pgn({ moveList, game }: {
-  moveList: ChacoMat.MoveList;
+function Pgn({ position, notation, variations, next, game }: {
   game: ChacoMat.ChessGame;
-}) {
-  const [mainMove, ...variations] = moveList.moves;
-
-  if (!mainMove)
-    return null;
+} & ChacoMat.MoveTree) {
+  const goToPosition = () => {
+    game.currentPosition = position;
+  };
 
   return (
-    <span className="pgnMoves">
-      <MoveTag
-        text={mainMove.notation}
-        handleClick={() => game.currentPosition = mainMove.moveList.position}
-      />
-      ( {variations.map(({ notation, moveList }) => (
-        <span key={notation}>
-          <MoveTag
-            text={notation}
-            handleClick={() => game.currentPosition = moveList.position}
-          />
-          <Pgn moveList={moveList} game={game}>
-        </span>
-      ))} )
-      <Pgn moveList={mainMove.moveList} game={game} />
-    </span>
+    <>
+      <MoveTag text={notation} handleClick={goToPosition} />
+      {variations && variations.map((variation) => (
+        <>( <Pgn {...variations} game={game} /> )</>
+      ))}
+      {next && <Pgn {...next} game={game} />}
+    </>
   );
 }
 ```
@@ -137,7 +139,6 @@ import { globalConfig as chacomatConfig } from "chacomat";
 
 chacomatConfig.useZerosForCastling = false;
 chacomatConfig.useDoublePlusForCheckmate = true;
-
 ```
 
 ## Variants

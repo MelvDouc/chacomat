@@ -1,14 +1,13 @@
 import Board from "@/board/Board.ts";
 import Color from "@/board/Color.ts";
-import Coords from "@/board/Coords.ts";
+import Coords, { coords } from "@/board/Coords.ts";
 import CastlingRights from "@/game/CastlingRights.ts";
 import CastlingMove from "@/moves/CastlingMove.ts";
 import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
 import PawnMove from "@/moves/PawnMove.ts";
 import PieceMove from "@/moves/PieceMove.ts";
-import Piece from "@/pieces/Piece.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
-import MoveList from "@/utils/MoveList.ts";
+import { getMoveTree, stringifyMoveTree } from "@/utils/move-tree.ts";
 
 export default class Position {
   // ===== ===== ===== ===== =====
@@ -20,14 +19,14 @@ export default class Position {
   static fromFEN(fen: string) {
     const [boardStr, clr, castling, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
-    return new this({
-      board: Board.fromString(boardStr),
-      activeColor: Color.fromAbbreviation(clr),
-      castlingRights: CastlingRights.fromString(castling),
-      enPassantCoords: Coords.fromNotation(enPassant),
-      halfMoveClock: Number(halfMoveClock),
-      fullMoveNumber: Number(fullMoveNumber)
-    });
+    return new this(
+      Board.fromString(boardStr),
+      Color.fromAbbreviation(clr),
+      CastlingRights.fromString(castling),
+      Coords.fromNotation(enPassant),
+      Number(halfMoveClock),
+      Number(fullMoveNumber)
+    );
   }
 
   // ===== ===== ===== ===== =====
@@ -43,12 +42,6 @@ export default class Position {
   // PUBLIC
   // ===== ===== ===== ===== =====
 
-  readonly board: Board;
-  readonly activeColor: Color;
-  readonly castlingRights: CastlingRights;
-  readonly enPassantCoords: Coords | null;
-  readonly halfMoveClock: number;
-  readonly fullMoveNumber: number;
   prev: Position | null = null;
   readonly next: Position[] = [];
   srcMove?: ChacoMat.Move;
@@ -56,14 +49,14 @@ export default class Position {
   #isCheck!: boolean;
   #legalMoves!: ChacoMat.Move[];
 
-  constructor({ activeColor, board, castlingRights, enPassantCoords, halfMoveClock, fullMoveNumber }: ChacoMat.PositionConstructorArgs) {
-    this.board = board;
-    this.activeColor = activeColor;
-    this.castlingRights = castlingRights;
-    this.enPassantCoords = enPassantCoords;
-    this.halfMoveClock = halfMoveClock;
-    this.fullMoveNumber = fullMoveNumber;
-  }
+  constructor(
+    readonly board: Board,
+    readonly activeColor: Color,
+    readonly castlingRights: CastlingRights,
+    readonly enPassantCoords: Coords | null,
+    readonly halfMoveClock: number,
+    readonly fullMoveNumber: number
+  ) { }
 
   get legalMoves() {
     return this.#legalMoves ??= this.#computeLegalMoves();
@@ -86,25 +79,22 @@ export default class Position {
   }
 
   isTripleRepetition() {
-    let current: Position | null | undefined = this.prev?.prev;
+    let prevPos: Position | null | undefined = this.prev?.prev;
     let count = 1;
-    let isSameBoard = true;
 
-    while (
-      current
-      && current.board.pieces.size === this.board.pieces.size
-      && count < 3
-    ) {
-      for (const [srcCoords, srcPiece] of this.board.pieces) {
-        if (current.board.get(srcCoords) !== srcPiece) {
-          isSameBoard = false;
-          break;
+    main: while (prevPos && count < 3) {
+      if (prevPos.board.pieces.size !== this.board.pieces.size)
+        return false;
+
+      for (const [coords, piece] of this.board.pieces) {
+        if (prevPos.board.get(coords) !== piece) {
+          prevPos = prevPos.prev?.prev;
+          continue main;
         }
       }
 
-      if (isSameBoard) count++;
-      current = current.prev?.prev;
-      isSameBoard = true;
+      count++;
+      prevPos = prevPos.prev?.prev;
     }
 
     return count === 3;
@@ -114,31 +104,29 @@ export default class Position {
     if (this.board.pieces.size > 4)
       return false;
 
-    const nonKingPieces = this.board.nonKingPieces();
-    const activePieces = nonKingPieces.get(this.activeColor)!;
-    const inactivePieces = nonKingPieces.get(this.activeColor.opposite)!;
-    const [inactiveCoords0, inactivePiece0] = inactivePieces[0] ?? [];
+    const activeEntries: { coords: ChacoMat.Coords; piece: ChacoMat.Piece; }[] = [];
+    const inactiveEntries: typeof activeEntries = [];
 
-    if (activePieces.length === 0)
-      return inactivePieces.length === 0
-        || inactivePieces.length === 1 && (inactivePiece0.isKnight() || inactivePiece0.isBishop());
-
-    if (activePieces.length === 1) {
-      const [activeCoords0, activePiece0] = activePieces[0];
-      if (inactivePieces.length === 0)
-        return activePiece0.isKnight() || activePiece0.isBishop();
-      return inactivePieces.length === 1
-        && activePiece0.isBishop()
-        && inactivePiece0.isBishop()
-        && activeCoords0.isLightSquare() === inactiveCoords0.isLightSquare();
+    for (const [coords, piece] of this.board.pieces) {
+      if (piece.isKing()) continue;
+      const arr = (piece.color === this.activeColor) ? activeEntries : inactiveEntries;
+      arr.push({ coords, piece });
     }
 
-    return false;
-  }
+    const [minEntries, maxEntries] = [activeEntries, inactiveEntries].sort((a, b) => a.length - b.length);
 
-  isMainLine(): boolean {
-    return !this.prev
-      || this.prev.isMainLine() && this.prev.next[0] === this;
+    if (maxEntries.length === 1) {
+      const { coords: maxCoords, piece: maxPiece } = maxEntries[0];
+
+      if (minEntries.length === 0)
+        return maxPiece.isKnight() || maxPiece.isBishop();
+
+      return maxPiece.isBishop()
+        && minEntries[0].piece.isBishop()
+        && minEntries[0].coords.isLightSquare() === maxCoords.isLightSquare();
+    }
+
+    return maxEntries.length === 0;
   }
 
   toString() {
@@ -172,8 +160,13 @@ export default class Position {
     return json;
   }
 
-  toMoveList() {
-    return new MoveList(this);
+  toTree() {
+    const tree = getMoveTree(this);
+    if (!tree) return null;
+    return {
+      ...tree,
+      toString: () => stringifyMoveTree(tree)
+    };
   }
 
   // ===== ===== ===== ===== =====
@@ -181,83 +174,82 @@ export default class Position {
   // ===== ===== ===== ===== =====
 
   *#forwardPawnMoves(srcCoords: Coords) {
-    const destCoords = srcCoords.peer(0, this.activeColor.direction);
+    const pawn = this.board.get(srcCoords)!;
+    const destCoords = srcCoords.peer(0, this.activeColor.direction) as ChacoMat.Coords;
 
-    if (destCoords && !this.board.has(destCoords)) {
-      yield new PawnMove(srcCoords, destCoords);
+    if (!this.board.has(destCoords)) {
+      yield new PawnMove(srcCoords, destCoords, pawn, null);
 
-      if (srcCoords.y === this.board.getPawnRank(this.activeColor)) {
-        const destCoords = srcCoords.peer(0, this.activeColor.direction * 2);
+      if (srcCoords.y === this.activeColor.pawnRank) {
+        const destCoords = srcCoords.peer(0, this.activeColor.direction * 2) as ChacoMat.Coords;
 
-        if (destCoords && !this.board.has(destCoords))
-          yield new PawnMove(srcCoords, destCoords);
+        if (!this.board.has(destCoords))
+          yield new PawnMove(srcCoords, destCoords, pawn, null);
       }
     }
   }
 
   *#pawnCaptures(srcCoords: Coords) {
-    const piece = this.board.get(srcCoords)!;
+    const pawn = this.board.get(srcCoords)!;
 
-    for (const destCoords of piece.attackedCoords(this.board, srcCoords)) {
+    for (const destCoords of pawn.attackedCoords(this.board, srcCoords)) {
       if (this.board.get(destCoords)?.color === this.activeColor.opposite) {
-        yield new PawnMove(srcCoords, destCoords);
+        yield new PawnMove(srcCoords, destCoords, pawn, this.board.get(destCoords));
         continue;
       }
 
       if (destCoords === this.enPassantCoords)
-        yield new EnPassantPawnMove(srcCoords, destCoords);
+        yield new EnPassantPawnMove(srcCoords, destCoords, pawn, coords[destCoords.x][srcCoords.y]);
     }
   }
 
-  *#pseudoLegalMoves() {
-    for (const [srcCoords, piece] of this.board.piecesOfColor(this.activeColor)) {
+  #getPseudoLegalMoves() {
+    const moves: ChacoMat.Move[] = [];
+
+    for (const [srcCoords, piece] of this.board.pieces) {
+      if (piece.color !== this.activeColor) continue;
+
       if (piece.isPawn()) {
-        yield* this.#forwardPawnMoves(srcCoords);
-        yield* this.#pawnCaptures(srcCoords);
+        moves.push(...this.#forwardPawnMoves(srcCoords), ...this.#pawnCaptures(srcCoords));
         continue;
       }
 
       for (const destCoords of piece.attackedCoords(this.board, srcCoords))
         if (this.board.get(destCoords)?.color !== this.activeColor)
-          yield new PieceMove(srcCoords, destCoords);
+          moves.push(new PieceMove(srcCoords, destCoords, piece, this.board.get(destCoords)));
     }
+
+    return moves;
   }
 
   *#castlingMoves() {
     if (this.isCheck()) return;
 
-    const { activeColor, board, castlingRights } = this;
-    const kingCoords = board.getKingCoords(activeColor);
-    const attackedCoords = board.attackedCoordsSet(activeColor.opposite);
+    const kingCoords = this.board.getKingCoords(this.activeColor);
+    const attackedCoords = this.board.attackedCoordsSet(this.activeColor.opposite);
 
-    for (const rookSrcX of castlingRights.get(activeColor)) {
-      const move = new CastlingMove(kingCoords, rookSrcX);
+    for (const rookSrcX of this.castlingRights.get(this.activeColor)) {
+      const move = new CastlingMove(kingCoords, rookSrcX, this.activeColor);
 
-      if (move.isLegal(board, attackedCoords))
+      if (move.isLegal(this.board, attackedCoords))
         yield move;
     }
   }
 
   #computeLegalMoves() {
-    const legalMoves: ChacoMat.Move[] = [];
-
-    for (const move of this.#pseudoLegalMoves()) {
-      const isPromotion = move instanceof PawnMove && move.isPromotion();
-      const undo = move.try(this.board);
+    const legalMoves = this.#getPseudoLegalMoves().reduce((acc, move) => {
+      move.play(this.board);
 
       if (!this.board.isColorInCheck(this.activeColor)) {
-        if (isPromotion)
-          Position.#promotionInitials[this.activeColor.name].forEach((initial) => {
-            legalMoves.push(
-              new PawnMove(move.srcCoords, move.destCoords, Piece.fromInitial(initial))
-            );
-          });
+        if (move instanceof PawnMove && move.isPromotion())
+          acc.push(...move.promotions(Position.#promotionInitials[this.activeColor.name]));
         else
-          legalMoves.push(move);
+          acc.push(move);
       }
 
-      undo();
-    }
+      move.undo(this.board);
+      return acc;
+    }, [] as ChacoMat.Move[]);
 
     legalMoves.push(...this.#castlingMoves());
     return legalMoves;

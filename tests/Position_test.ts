@@ -1,35 +1,56 @@
-import Position from "@/game/Position.ts";
-import { assertArrayIncludes, assertEquals } from "@dev_deps";
+import { Board, CastlingRights, Color, Pieces, Position, coords } from "../mod.ts";
+import { assert, assertEquals, assertFalse } from "./test.index.ts";
 
-Deno.test("legal moves", () => {
-  const { board, legalMoves } = Position.fromFEN(Position.START_FEN);
-
-  assertEquals(legalMoves.filter(({ srcCoords }) => board.get(srcCoords)?.isPawn()).length, 16);
-  assertEquals(legalMoves.filter(({ srcCoords }) => board.get(srcCoords)?.isKnight()).length, 4);
+Deno.test("parse from string", () => {
+  const pos = Position.fromFEN("8/1k6/8/8/5P2/K7/8/8 b - f3 44 78");
+  assertEquals(pos.activeColor, Color.BLACK);
+  assertEquals(pos.board.pieces.size, 3);
+  assertEquals(pos.enPassantCoords, coords[5][5]);
+  assertEquals(pos.halfMoveClock, 44);
+  assertEquals(pos.fullMoveNumber, 78);
 });
 
-const { legalMovesAsAlgebraicNotation } = Position.fromFEN("8/8/4K3/8/b1n5/7Q/2p5/1k6 b - - 5 313");
-Deno.test("promotion notation", () => {
-  assertArrayIncludes(
-    legalMovesAsAlgebraicNotation,
-    ["c1=Q"],
-    legalMovesAsAlgebraicNotation.join(" ")
-  );
+Deno.test("check", () => {
+  const pos = Position.fromFEN("r3r3/pp3R1p/2n4k/5Bp1/2Q1p3/1P3qP1/P5KP/2B5 w - - 8 30");
+  assert(pos.isCheck());
 });
 
-Deno.test("ambiguous move notation #1", () => {
-  const { legalMovesAsAlgebraicNotation } = Position.fromFEN("3Q4/8/8/Q2Q4/8/8/8/4K1k1 w - - 0 1");
-  assertArrayIncludes(legalMovesAsAlgebraicNotation, ["Q8a8", "Qaa8", "Qd5a8"]);
+Deno.test("checkmate - fool's mate", () => {
+  const pos = Position.fromFEN("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3");
+  assert(pos.isCheckmate());
 });
 
-Deno.test("ambiguous move notation #2", () => {
-  const { legalMovesAsAlgebraicNotation } = Position.fromFEN("8/1QQQ4/1Q1Q4/1QQQ4/8/5K2/8/7k w - - 0 1");
-  const moves = ["Qb7c6", "Qc7c6", "Qd7c6", "Qb6c6", "Qd6c6", "Qb5c6", "Qc5c6", "Qd5c6"];
-  assertArrayIncludes(legalMovesAsAlgebraicNotation, moves);
+Deno.test("checkmate - smothered mate", () => {
+  const pos = Position.fromFEN("6rk/5Npp/8/8/8/8/6K1/8 b - - 0 1");
+  assert(pos.isCheckmate());
 });
 
-Deno.test("ambiguous move notation #3", () => {
-  const { legalMovesAsAlgebraicNotation } = Position.fromFEN("8/1Q6/1Q4Q1/2QQ4/Q7/5K2/8/7k w - - 0 1");
-  const moves = ["Qac6", "Q7c6", "Qb6c6", "Qcc6", "Qdc6", "Qgc6"];
-  assertArrayIncludes(legalMovesAsAlgebraicNotation, moves);
+Deno.test("checkmate - B+N mate", () => {
+  const pos = Position.fromFEN("8/8/8/8/8/2n5/1bk5/K7 w - - 0 1");
+  assert(pos.isCheckmate());
+});
+
+Deno.test("stalemate", () => {
+  const pos = Position.fromFEN("5bnr/4p1pq/4Qpkr/7p/7P/4P3/PPPP1PP1/RNB1KBNR b KQ - 2 10");
+  assert(pos.isStalemate());
+});
+
+Deno.test("insufficient material - kings only", () => {
+  const pos = new Position(new Board(), Color.WHITE, new CastlingRights(), null, 1, 0);
+  pos.board.set(coords[0][0], Pieces.WHITE_KING);
+  pos.board.set(coords[7][7], Pieces.BLACK_KING);
+  assert(pos.isInsufficientMaterial());
+});
+
+Deno.test("insufficient material - minor piece only", () => {
+  assert(Position.fromFEN("k7/8/8/8/8/8/8/6BK w - - 0 1").isInsufficientMaterial());
+  assert(Position.fromFEN("kn6/8/8/8/8/8/8/7K b - - 0 1").isInsufficientMaterial());
+});
+
+Deno.test("insufficient material - same-colored bishops", () => {
+  assert(Position.fromFEN("kb6/8/8/8/8/8/8/BK6 w - - 0 1").isInsufficientMaterial());
+});
+
+Deno.test("sufficient material - opposite-colored bishops", () => {
+  assertFalse(Position.fromFEN("kb6/8/8/8/8/8/8/KB6 w - - 0 1").isInsufficientMaterial());
 });

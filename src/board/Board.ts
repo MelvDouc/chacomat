@@ -1,5 +1,4 @@
-import Color from "@/board/Color.ts";
-import { coords } from "@/board/Coords.ts";
+import Coords, { coords } from "@/board/Coords.ts";
 import Piece from "@/pieces/Piece.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 
@@ -23,7 +22,7 @@ export default class Board {
         const piece = Piece.fromInitial(char);
         if (!piece) throw new Error(`Invalid piece initial: ${char}.`);
 
-        board.set(coords(x, y), piece);
+        board.set(coords[x][y], piece);
         x++;
       }
     }
@@ -67,14 +66,6 @@ export default class Board {
     return this;
   }
 
-  getPieceRank(color: ChacoMat.Color) {
-    return color === Color.WHITE ? 8 - 1 : 0;
-  }
-
-  getPawnRank(color: ChacoMat.Color) {
-    return this.getPieceRank(color) + color.direction;
-  }
-
   getKingCoords(color: ChacoMat.Color) {
     return this.#kingCoords.get(color)!;
   }
@@ -82,9 +73,10 @@ export default class Board {
   attackedCoordsSet(color: ChacoMat.Color) {
     const set = new Set<ChacoMat.Coords>();
 
-    for (const [srcCoords, piece] of this.piecesOfColor(color))
-      for (const destCoords of piece.attackedCoords(this, srcCoords))
-        set.add(destCoords);
+    for (const [srcCoords, piece] of this.#pieces)
+      if (piece.color === color)
+        for (const destCoords of piece.attackedCoords(this, srcCoords))
+          set.add(destCoords);
 
     return set;
   }
@@ -101,29 +93,12 @@ export default class Board {
     return false;
   }
 
-  nonKingPieces() {
-    return [...this.#pieces].reduce((acc, [coords, piece]) => {
-      if (!piece.isKing())
-        acc.get(piece.color)!.push([coords, piece]);
-      return acc;
-    }, new Map<Color, [ChacoMat.Coords, Piece][]>([
-      [Color.WHITE, []],
-      [Color.BLACK, []]
-    ]));
-  }
-
-  piecesOfColor(color: ChacoMat.Color) {
-    return [...this.#pieces].filter(([, piece]) => {
-      return piece.color === color;
-    });
-  }
-
   toString() {
     return Array
       .from({ length: 8 }, (_, y) => {
         let row = "";
         for (let x = 0; x < 8; x++)
-          row += this.get(coords(x, y))?.initial ?? "0";
+          row += this.get(coords[x][y])?.initial ?? "0";
         return row;
       })
       .join("/")
@@ -133,8 +108,21 @@ export default class Board {
   toArray(): ChacoMat.JSONBoard {
     return Array.from({ length: 8 }, (_, y) => {
       return Array.from({ length: 8 }, (_, x) => {
-        return this.get(coords(x, y))?.toJSON() ?? null;
+        return this.get(coords[x][y])?.toJSON() ?? null;
       });
     });
+  }
+
+  log() {
+    console.log(
+      this
+        .toArray()
+        .map((row, y) => {
+          return `${Coords.yToRankName(y)} | ${row.map((piece) => piece?.initial ?? "-").join(" ")}`;
+        })
+        .join("\n")
+      + "\n    - - - - - - - -"
+      + "\n    a b c d e f g h"
+    );
   }
 }

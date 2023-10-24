@@ -10,24 +10,29 @@ export default class ChessGame {
   // STATIC PUBLIC
   // ===== ===== ===== ===== =====
 
-  static parsePgn(pgn: string) {
-    const headerRegexp = /^\[(?<key>\w+)\s+"(?<value>[^"]*)"\]/;
-    let matchArray: RegExpMatchArray | null;
-    const gameInfo: ChacoMat.GameInfo = { Result: GameResults.NONE };
+  static parsePGN(pgn: string) {
+    pgn = pgn.trim();
+    const gameInfo = Object.create(null) as ChacoMat.GameInfo;
+    const headerRegex = /^\[(?<key>[^"\s]+)\s+"(?<value>[^"]+)"\]*\s*/;
+    let matchArr: RegExpMatchArray | null;
 
-    while ((matchArray = pgn.match(headerRegexp))?.groups) {
-      gameInfo[matchArray.groups["key"]] = matchArray.groups["value"];
-      pgn = pgn.slice(matchArray[0].length).trimStart();
+    while ((matchArr = pgn.match(headerRegex)) !== null) {
+      gameInfo[matchArr.groups!.key] = matchArr.groups!.value;
+      pgn = pgn.slice(matchArr[0].length);
     }
 
     const result = pgn.match(/(\*|1\/2-1\/2|(0|1)-(0|1))$/)?.[0] as ChacoMat.GameResult | undefined;
 
-    if (result) {
-      pgn = pgn.slice(0, -result.length);
-      if (result !== gameInfo.Result)
-        console.warn(`Result in move list ("${result}") differs from result in game info ("${gameInfo.Result}").`);
-    }
+    if (!gameInfo.Result)
+      console.warn("Result missing from headers.");
 
+    if (!result)
+      console.warn("Result missing from move list.");
+
+    if (gameInfo.Result && result && gameInfo.Result !== result)
+      console.warn(`Result in headers ("${gameInfo.Result}") differs from result in move list ("${result}"). Using one in headers.`);
+
+    gameInfo.Result ??= (result ?? GameResults.NONE);
     return {
       gameInfo,
       moveStr: pgn
@@ -39,7 +44,7 @@ export default class ChessGame {
   // ===== ===== ===== ===== =====
 
   readonly info: ChacoMat.GameInfo;
-  #currentPosition: Position;
+  #currentPosition: ChacoMat.Position;
 
   constructor();
   constructor(pgn: string);
@@ -47,7 +52,7 @@ export default class ChessGame {
 
   constructor(param?: string | ChacoMat.GameInfo) {
     if (typeof param === "string") {
-      const { gameInfo, moveStr } = ChessGame.parsePgn(param.trim());
+      const { gameInfo, moveStr } = ChessGame.parsePGN(param);
       this.info = gameInfo;
       this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
       playMoves(moveStr, this);
@@ -64,7 +69,7 @@ export default class ChessGame {
     return this.#currentPosition;
   }
 
-  set currentPosition(position: Position) {
+  set currentPosition(position: ChacoMat.Position) {
     this.#currentPosition = position;
   }
 
@@ -76,23 +81,23 @@ export default class ChessGame {
 
   get lastPosition() {
     let pos = this.#currentPosition;
-    while (pos.next) pos = pos.next[0];
+    while (pos.next[0]) pos = pos.next[0];
     return pos;
   }
 
   get currentResult() {
-    const currentPosition = this.#currentPosition;
+    const pos = this.#currentPosition;
 
-    if (currentPosition.isCheckmate()) {
-      return (currentPosition.activeColor === Color.WHITE)
+    if (pos.isCheckmate()) {
+      return (pos.activeColor === Color.WHITE)
         ? GameResults.BLACK_WIN
         : GameResults.WHITE_WIN;
     }
     if (
-      currentPosition.isStalemate()
-      || currentPosition.isInsufficientMaterial()
-      || currentPosition.isTripleRepetition()
-      || currentPosition.halfMoveClock >= 50
+      pos.isStalemate()
+      || pos.isInsufficientMaterial()
+      || pos.isTripleRepetition()
+      || pos.halfMoveClock >= 50
     ) {
       return GameResults.DRAW;
     }
@@ -101,7 +106,7 @@ export default class ChessGame {
 
   goBack() {
     if (this.#currentPosition.prev)
-      this.#currentPosition = this.#currentPosition.prev!;
+      this.#currentPosition = this.#currentPosition.prev;
   }
 
   goToStart() {
@@ -119,6 +124,9 @@ export default class ChessGame {
 
   truncatePreviousMoves() {
     this.#currentPosition.prev = null;
+    const fen = this.#currentPosition.toFEN();
+    if (fen !== Position.START_FEN)
+      this.info.FEN = fen;
   }
 
   truncateFromCurrentPosition() {
@@ -128,36 +136,25 @@ export default class ChessGame {
 
   playMove(move: ChacoMat.Move) {
     const pos = this.#currentPosition,
-      activeColor = pos.activeColor,
       board = pos.board.clone(),
-      castlingRights = pos.castlingRights.clone(),
-      srcPiece = board.get(move.srcCoords)!,
-      destPiece = board.get(move.destCoords);
+      castlingRights = pos.castlingRights.clone();
 
-    if (srcPiece.isKing())
-      castlingRights.get(activeColor).clear();
+    this.#updateCastlingRights(castlingRights, move);
+    move.play(board);
 
-    else if (srcPiece.isRook() && move.srcCoords.y === board.getPieceRank(activeColor))
-      castlingRights.get(activeColor).delete(move.srcCoords.x);
-
-    if (destPiece?.isRook() && move.destCoords.y === board.getPieceRank(activeColor.opposite))
-      castlingRights.get(activeColor.opposite).delete(move.destCoords.x);
-
-    move.try(board);
-
-    const nextPos = new Position({
+    const nextPos = new Position(
       board,
-      activeColor: activeColor.opposite,
+      pos.activeColor.opposite,
       castlingRights,
-      enPassantCoords: move instanceof PawnMove && move.isDouble()
-        ? move.srcCoords.peer(0, activeColor.direction)
+      move instanceof PawnMove && move.isDouble()
+        ? move.srcCoords.peer(0, pos.activeColor.direction)
         : null,
-      halfMoveClock: (destPiece || srcPiece.isPawn()) ? 0 : (pos.halfMoveClock + 1),
-      fullMoveNumber: pos.fullMoveNumber + Number(activeColor === Color.BLACK)
-    });
+      (move.capturedPiece || move.srcPiece.isPawn()) ? 0 : (pos.halfMoveClock + 1),
+      pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
+    );
     nextPos.srcMove = move;
-    nextPos.prev = pos;
-    pos.next.push(nextPos);
+    nextPos.prev = this.#currentPosition;
+    this.#currentPosition.next.push(nextPos);
     this.#currentPosition = nextPos;
     return this;
   }
@@ -193,23 +190,29 @@ export default class ChessGame {
   }
 
   infoAsString() {
-    const { Result, FEN: _FEN, ...info } = this.info;
-    const infoAsStrings = Object.entries(info)
+    return Object.entries(this.info)
       .map(([key, value]) => `[${key} "${value}"]`)
-      .concat(`[Result "${Result}"]`);
-    const firstPositionFEN = this.firstPosition.toFEN();
-
-    if (firstPositionFEN !== Position.START_FEN)
-      infoAsStrings.push(`[FEN "${firstPositionFEN}"]`);
-
-    return infoAsStrings.join("\n");
+      .join("\n");
   }
 
   toPGN() {
-    return `${this.infoAsString()}\n\n${this.firstPosition.toMoveList().toString()} ${this.info.Result}`;
+    const tree = this.firstPosition.toTree();
+    const moveStr = (tree ? `${tree.toString()} ` : "") + this.info.Result;
+    return `${this.infoAsString()}\n\n${moveStr}`;
   }
 
   toString() {
     return this.toPGN();
+  }
+
+  #updateCastlingRights(castlingRights: ChacoMat.CastlingRights, move: ChacoMat.Move) {
+    if (move.srcPiece.isKing())
+      castlingRights.get(move.srcPiece.color).clear();
+
+    else if (move.srcPiece.isRook() && move.srcCoords.y === move.srcPiece.color.pieceRank)
+      castlingRights.get(move.srcPiece.color).delete(move.srcCoords.x);
+
+    if (move.capturedPiece?.isRook() && move.destCoords.y === move.srcPiece.color.opposite.pieceRank)
+      castlingRights.get(move.srcPiece.color.opposite).delete(move.destCoords.x);
   }
 }

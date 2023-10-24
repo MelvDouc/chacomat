@@ -1,50 +1,37 @@
-import Board from "@/board/Board.ts";
-import Color from "@/board/Color.ts";
-import { coords } from "@/board/Coords.ts";
-import PawnMove from "@/moves/PawnMove.ts";
-import { Pieces } from "@/pieces/Piece.ts";
-import { assert, assertEquals } from "@dev_deps";
+import { assertEquals } from "@dev_deps";
+import { Board, Color, coords } from "../mod.ts";
+import { assert } from "./test.index.ts";
 
-Deno.test("King in corner should attack 3 squares.", () => {
-  const board = new Board();
-  board.set(coords(0, 0), Pieces.WHITE_KING);
-  board.set(coords(2, 0), Pieces.BLACK_KING);
+Deno.test("Get board from string.", () => {
+  const board = Board.fromString("8/2K1k3/8/8/8/8/8/8");
+  const whiteKingCoords = coords[2][1];
+  const blackKingCoords = coords[4][1];
 
-  assertEquals(board.attackedCoordsSet(Color.WHITE).size, 3);
-  assertEquals(board.attackedCoordsSet(Color.BLACK).size, 5);
+  assert(board.get(whiteKingCoords)?.isKing());
+  assert(board.get(whiteKingCoords)?.color.name === "white");
+  assert(board.get(blackKingCoords)?.isKing());
+  assert(board.get(blackKingCoords)?.color.name === "black");
 });
 
-Deno.test("Rook should always attacked 14 squares.", () => {
-  const board = new Board();
-  const x = Math.floor(Math.random() * 8);
-  const y = Math.floor(Math.random() * 8);
-  board.set(coords(x, y), Pieces.WHITE_ROOK);
+Deno.test("board cloning", () => {
+  const board = Board.fromString("8/2K1k3/8/8/8/8/8/8");
+  const clone = board.clone();
 
-  assertEquals(board.attackedCoordsSet(Color.WHITE).size, 14);
+  assertEquals(board.pieces.size, clone.pieces.size);
+  for (const [coords, piece] of board.pieces)
+    if (clone.get(coords) !== piece)
+      assert(false);
 });
 
-Deno.test("string to board", () => {
-  const board = Board.fromString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-  const blackPieceRank = Array.from({ length: 8 }, (_, x) => board.get(coords(x, 0)));
-  const whitePieceRank = Array.from({ length: 8 }, (_, x) => board.get(coords(x, 8 - 1)));
-  assert(whitePieceRank.every((piece, i) => blackPieceRank[i] === piece?.opposite));
+Deno.test("King coordinates should be auto-updated.", () => {
+  const board = Board.fromString("8/2K1k3/8/8/8/8/8/8");
+  const kingCoords = board.getKingCoords(Color.WHITE);
+  board.set(coords[1][1], board.get(kingCoords)!);
+  assertEquals(board.getKingCoords(Color.WHITE), coords[1][1]);
 });
 
-Deno.test("board to string", () => {
-  const board = new Board();
-
-  for (let x = 0; x < 8; x++) {
-    board.set(coords(x, 1), Pieces.BLACK_PAWN);
-    board.set(coords(x, 6), Pieces.WHITE_PAWN);
-  }
-
-  assertEquals(board.toString(), "8/pppppppp/8/8/8/8/PPPPPPPP/8");
-});
-
-Deno.test("promotion", () => {
-  const whiteMove = new PawnMove(coords(0, 1), coords(0, 0), Pieces.WHITE_QUEEN);
-  const blackMove = new PawnMove(coords(0, 6), coords(0, 7), Pieces.BLACK_QUEEN);
-
-  assert(whiteMove.isPromotion());
-  assert(blackMove.isPromotion());
+Deno.test("A board should be stringifiable and parsable from the same string.", () => {
+  const boardStr = "8/2K1k3/8/8/8/8/8/8";
+  const board = Board.fromString(boardStr);
+  assertEquals(board.toString(), boardStr);
 });

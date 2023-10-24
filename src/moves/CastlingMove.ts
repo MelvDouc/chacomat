@@ -1,19 +1,29 @@
+import Color from "@/board/Color.ts";
 import { coords } from "@/board/Coords.ts";
 import globalConfig from "@/global-config.ts";
 import Move from "@/moves/Move.ts";
+import { Pieces } from "@/pieces/Piece.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default class CastlingMove extends Move {
+  readonly direction: -1 | 1;
+  readonly rook: ChacoMat.Piece;
   readonly rookSrcCoords: ChacoMat.Coords;
   readonly rookDestCoords: ChacoMat.Coords;
-  readonly direction: -1 | 1;
 
-  constructor(srcCoords: ChacoMat.Coords, rookSrcX: number) {
-    const direction = rookSrcX < srcCoords.x ? -1 : 1;
-
-    super(srcCoords, srcCoords.peer(direction * 2, 0)!);
-    this.direction = direction;
-    this.rookSrcCoords = coords(rookSrcX, srcCoords.y);
+  constructor(
+    srcCoords: ChacoMat.Coords,
+    rookSrcX: number,
+    color: ChacoMat.Color
+  ) {
+    super(
+      srcCoords,
+      coords[rookSrcX === 0 ? 2 : 6][srcCoords.y],
+      color === Color.WHITE ? Pieces.WHITE_KING : Pieces.BLACK_KING
+    );
+    this.direction = this.destCoords.x < this.srcCoords.x ? -1 : 1;
+    this.rook = color === Color.WHITE ? Pieces.WHITE_ROOK : Pieces.BLACK_ROOK;
+    this.rookSrcCoords = coords[rookSrcX][this.srcCoords.y];
     this.rookDestCoords = this.destCoords.peer(-this.direction, 0)!;
   }
 
@@ -21,23 +31,20 @@ export default class CastlingMove extends Move {
     return this.rookSrcCoords.x < this.srcCoords.x;
   }
 
-  try(board: ChacoMat.Board) {
-    const king = board.get(this.srcCoords)!;
-    const rook = board.get(this.rookSrcCoords)!;
-
+  play(board: ChacoMat.Board) {
     board
       .delete(this.srcCoords)
-      .set(this.destCoords, king)
+      .set(this.destCoords, this.srcPiece)
       .delete(this.rookSrcCoords)
-      .set(this.rookDestCoords, rook);
+      .set(this.rookDestCoords, this.rook);
+  }
 
-    return () => {
-      board
-        .set(this.srcCoords, king)
-        .delete(this.destCoords)
-        .set(this.rookSrcCoords, rook)
-        .delete(this.rookDestCoords);
-    };
+  undo(board: ChacoMat.Board) {
+    board
+      .delete(this.destCoords)
+      .delete(this.rookDestCoords)
+      .set(this.srcCoords, this.srcPiece)
+      .set(this.rookSrcCoords, this.rook);
   }
 
   algebraicNotation() {
@@ -53,7 +60,7 @@ export default class CastlingMove extends Move {
         break;
     }
 
-    // Rook square are also traversed by the king except for b1/b8.
+    // Rook squares are also traversed by the king except for b1/b8.
     return !this.isQueenSide() || !board.has(this.rookSrcCoords.peer(1, 0)!);
   }
 }

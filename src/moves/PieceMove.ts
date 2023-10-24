@@ -5,47 +5,43 @@ export default class PieceMove extends Move {
   // ===== ===== ===== ===== =====
   // PUBLIC
   // ===== ===== ===== ===== =====
-  try(board: ChacoMat.Board) {
-    const srcPiece = board.get(this.srcCoords)!;
-    const destPiece = board.get(this.destCoords);
-    board
-      .set(this.destCoords, srcPiece)
-      .delete(this.srcCoords);
 
-    return () => {
-      destPiece
-        ? board.set(this.destCoords, destPiece)
-        : board.delete(this.destCoords);
-      board.set(this.srcCoords, srcPiece);
-    };
+  play(board: ChacoMat.Board) {
+    board
+      .set(this.destCoords, this.srcPiece)
+      .delete(this.srcCoords);
+  }
+
+  undo(board: ChacoMat.Board) {
+    this.capturedPiece
+      ? board.set(this.destCoords, this.capturedPiece)
+      : board.delete(this.destCoords);
+    board.set(this.srcCoords, this.srcPiece);
   }
 
   algebraicNotation(board: ChacoMat.Board, legalMoves: ChacoMat.Move[]) {
-    const srcPiece = board.get(this.srcCoords)!;
     let notation = "";
 
-    if (!srcPiece.isKing())
-      notation += this.#exactNotation(board, legalMoves, srcPiece);
+    if (!this.srcPiece.isKing())
+      notation += this.#exactNotation(board, legalMoves);
 
     if (board.has(this.destCoords)) notation += "x";
-    return srcPiece.whiteInitial + notation + this.destCoords.notation;
+    return this.srcPiece.whiteInitial + notation + this.destCoords.notation;
   }
 
   // ===== ===== ===== ===== =====
   // PRIVATE
   // ===== ===== ===== ===== =====
 
-  #isAmbiguousWith({ srcCoords, destCoords }: ChacoMat.Move, board: ChacoMat.Board, srcPiece: ChacoMat.Piece) {
-    return destCoords === this.destCoords
-      && srcCoords !== this.srcCoords
-      && board.get(srcCoords) === srcPiece;
+  #isAmbiguousWith({ srcCoords, destCoords }: ChacoMat.Move, board: ChacoMat.Board) {
+    return destCoords === this.destCoords && board.get(srcCoords) === this.srcPiece;
   }
 
-  #exactNotation(board: ChacoMat.Board, legalMoves: Move[], srcPiece: ChacoMat.Piece) {
+  #exactNotation(board: ChacoMat.Board, legalMoves: Move[]) {
     const ambiguities = new Set<string>();
 
     for (const move of legalMoves) {
-      if (!this.#isAmbiguousWith(move, board, srcPiece))
+      if (move.srcCoords === this.srcCoords || !this.#isAmbiguousWith(move, board))
         continue;
       if (move.srcCoords.x === this.srcCoords.x)
         ambiguities.add("x");

@@ -101,7 +101,7 @@ export default class Piece {
   toJSON(): ChacoMat.JSONPiece {
     return {
       initial: this.initial,
-      color: this.color.abbreviation
+      color: this.color.name
     };
   }
 }

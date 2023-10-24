@@ -3,11 +3,14 @@ import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default abstract class Move {
   constructor(
-    public readonly srcCoords: ChacoMat.Coords,
-    public readonly destCoords: ChacoMat.Coords,
+    readonly srcCoords: ChacoMat.Coords,
+    readonly destCoords: ChacoMat.Coords,
+    readonly srcPiece: ChacoMat.Piece,
+    readonly capturedPiece: ChacoMat.Piece | null = null
   ) { }
 
-  abstract try(board: ChacoMat.Board): () => void;
+  abstract play(board: ChacoMat.Board): void;
+  abstract undo(board: ChacoMat.Board): void;
   abstract algebraicNotation(board: ChacoMat.Board, legalMoves: Move[]): string;
 
   fullAlgebraicNotation(positionBefore: ChacoMat.Position, positionAfter: ChacoMat.Position) {

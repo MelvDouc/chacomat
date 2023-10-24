@@ -1,5 +1,4 @@
 export const findClosingParenIndex = findMatchingCharIndex("(", ")");
-export const findClosingCurlyIndex = findMatchingCharIndex("{", "}");
 
 function findMatchingCharIndex(char1: string, char2: string) {
   return (input: string, startIndex = 0) => {

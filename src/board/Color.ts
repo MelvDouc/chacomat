@@ -23,20 +23,6 @@ export default class Color {
     return this.#from("abbreviation", abbreviation);
   }
 
-  // ===== ===== ===== ===== =====
-  // STATIC PRIVATE
-  // ===== ===== ===== ===== =====
-
-  static readonly #pieceRanks = {
-    [this.WHITE.name]: 8 - 1,
-    [this.BLACK.name]: 0
-  };
-
-  static readonly #pawnRanks = {
-    [this.WHITE.name]: 8 - 2,
-    [this.BLACK.name]: 1
-  };
-
   static #from<K extends keyof Color>(key: K, value: Color[K]) {
     for (const color of this.cases())
       if (color[key] === value)
@@ -62,5 +48,13 @@ export default class Color {
 
   get opposite() {
     return Color.fromDirection(-this.direction);
+  }
+
+  get pieceRank() {
+    return this === Color.WHITE ? 7 : 0;
+  }
+
+  get pawnRank() {
+    return this.pieceRank + this.direction;
   }
 }

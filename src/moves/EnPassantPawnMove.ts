@@ -1,29 +1,36 @@
-import { coords } from "@/board/Coords.ts";
 import Move from "@/moves/Move.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default class EnPassantPawnMove extends Move {
+  readonly capturedPieceCoords: ChacoMat.Coords;
+
+  constructor(
+    srcCoords: ChacoMat.Coords,
+    destCoords: ChacoMat.Coords,
+    srcPiece: ChacoMat.Piece,
+    capturedPieceCoords: ChacoMat.Coords
+  ) {
+    super(srcCoords, destCoords, srcPiece, srcPiece.opposite);
+    this.capturedPieceCoords = capturedPieceCoords;
+  }
+
   override algebraicNotation(): string {
     if (this.srcCoords.x !== this.destCoords.x)
       return `${this.srcCoords.fileName}x${this.destCoords.notation}`;
     return this.destCoords.notation;
   }
 
-  override try(board: ChacoMat.Board) {
-    const srcPiece = board.get(this.srcCoords)!;
-    const capturedPieceCoords = coords(this.destCoords.x, this.srcCoords.y);
-    const capturedPiece = board.get(capturedPieceCoords)!;
-
+  override play(board: ChacoMat.Board) {
     board
-      .set(this.destCoords, srcPiece)
+      .set(this.destCoords, this.srcPiece)
       .delete(this.srcCoords)
-      .delete(capturedPieceCoords);
+      .delete(this.capturedPieceCoords);
+  }
 
-    return () => {
-      board
-        .delete(this.destCoords)
-        .set(this.srcCoords, srcPiece)
-        .set(capturedPieceCoords, capturedPiece);
-    };
+  override undo(board: ChacoMat.Board) {
+    board
+      .delete(this.destCoords)
+      .set(this.srcCoords, this.srcPiece)
+      .set(this.capturedPieceCoords, this.capturedPiece!);
   }
 }
