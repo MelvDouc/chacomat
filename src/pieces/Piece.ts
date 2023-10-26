@@ -103,48 +103,6 @@ export default class Piece {
     }
   }
 
-  *reverseSearch({ board, enPassantCoords }: ChacoMat.Position, destCoords: ChacoMat.Coords) {
-    const { x: xOffsets, y: yOffsets } = this.offsets;
-
-    if (this.isShortRange()) {
-      for (let i = 0; i < xOffsets.length; i++) {
-        const srcCoords = destCoords.peer(-xOffsets[i], -yOffsets[i]);
-        if (
-          srcCoords
-          && board.get(srcCoords) === this
-          && (
-            !this.isPawn()
-            || (board.get(destCoords)?.color === this.color.opposite || destCoords === enPassantCoords)
-          )
-        )
-          yield srcCoords;
-      }
-
-      if (this.isPawn()) {
-        const srcCoords = destCoords.peer(0, -this.color.direction)!;
-        if (board.has(srcCoords)) {
-          if (board.get(srcCoords) === this) yield srcCoords;
-          return;
-        }
-        if (destCoords.y === this.color.pawnRank + this.color.direction * 2) {
-          const srcCoords = destCoords.peer(0, -this.color.direction * 2)!;
-          if (board.get(srcCoords) === this) yield srcCoords;
-        }
-      }
-
-      return;
-    }
-
-    for (let i = 0; i < xOffsets.length; i++) {
-      for (const srcCoords of destCoords.peers(xOffsets[i], yOffsets[i])) {
-        if (board.has(srcCoords)) {
-          if (board.get(srcCoords) === this) yield srcCoords;
-          break;
-        }
-      }
-    }
-  }
-
   toJSON(): ChacoMat.JSONPiece {
     return {
       initial: this.initial,

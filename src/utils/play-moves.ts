@@ -1,8 +1,5 @@
 import Coords from "@/board/Coords.ts";
-import CastlingMove from "@/moves/CastlingMove.ts";
-import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
 import PawnMove from "@/moves/PawnMove.ts";
-import PieceMove from "@/moves/PieceMove.ts";
 import Piece from "@/pieces/Piece.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 import {
@@ -13,48 +10,32 @@ import {
 type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dc" | "pr" | "o" | "o2";
 type HalfMoveGroups = { [K in HalfMoveGroupKey]?: string };
 
-const nonCastlingRegex = /(?<pi>[NBRQK])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(?<pr>=?[QRBN])?/;
+const nonCastlingRegex = /(?<pi>[NBRQK])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /(?<o>0|O)-\k<o>(?<o2>-\k<o>)?/;
 const halfMoveRegex = RegExp(`(${nonCastlingRegex.source}|${castlingRegex.source})`, "g");
 
-function findCastlingMove(legalMoves: ChacoMat.Position["legalMoves"], isQueenSide: boolean) {
-  for (let i = 1; i <= 2; i++) {
-    const move = legalMoves[legalMoves.length - i];
-    if (move instanceof CastlingMove && move.isQueenSide() === isQueenSide)
-      return move;
+function findMove(position: ChacoMat.Position, { pi, sf, sr, dc, pr, o, o2 }: HalfMoveGroups) {
+  if (o) {
+    for (const castlingMove of position.castlingMoves())
+      if (castlingMove.isQueenSide() === (o2 !== void 0))
+        return castlingMove;
+
+    return null;
   }
 
-  return null;
-}
+  const destCoords = Coords.fromNotation(dc as string);
+  const piece = Piece.fromWhiteInitialAndColor(pi ?? "P", position.activeColor)!;
 
-function findMove(position: ChacoMat.Position, { pi, sf, sr, dc, pr, o, o2 }: HalfMoveGroups) {
-  if (o)
-    return findCastlingMove(position.legalMoves, o2 !== void 0);
-
-  const { activeColor, board } = position;
-  const destCoords = Coords.fromNotation(dc as string)!;
-  const piece = Piece.fromWhiteInitialAndColor(pi ?? "P", activeColor)!;
-
-  for (const srcCoords of piece.reverseSearch(position, destCoords)) {
-    if (sf && srcCoords.fileName !== sf || sr && srcCoords.rankName !== sr)
-      continue;
-
-    if (!piece.isPawn())
-      return new PieceMove(srcCoords, destCoords, piece, board.get(srcCoords));
-
-    if (destCoords === position.enPassantCoords)
-      return new EnPassantPawnMove(srcCoords, destCoords, piece);
-
-    if (destCoords.y === activeColor.opposite.pieceRank)
-      return new PawnMove(
-        srcCoords,
-        destCoords,
-        piece,
-        board.get(srcCoords),
-        Piece.fromWhiteInitialAndColor(pr ?? "Q", activeColor)
-      );
-
-    return new PawnMove(srcCoords, destCoords, piece, board.get(srcCoords));
+  for (const move of position.generateLegalMoves()) {
+    if (
+      move.srcPiece === piece
+      && move.destCoords === destCoords
+      && (!sf || move.srcCoords.fileName === sf)
+      && (!sr || move.srcCoords.rankName === sr)
+      && (!(move instanceof PawnMove) || !move.isPromotion() || move.promotedPiece?.whiteInitial === pr)
+    ) {
+      return move;
+    }
   }
 
   return null;

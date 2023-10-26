@@ -5,7 +5,8 @@ import {
   assertFalse,
   assertGreater,
   assertLess,
-  assertNotEquals
+  assertNotEquals,
+  assertStringIncludes,
 } from "@dev_deps";
 
 function assertArray<T>(arr: T[]) {
@@ -27,5 +28,5 @@ export {
   assert, assertArray, assertArrayIncludes, assertEquals,
   assertFalse,
   assertGreater,
-  assertLess, assertNotEquals, assertNullish
+  assertLess, assertNotEquals, assertNullish, assertStringIncludes
 };

@@ -1,3 +1,4 @@
+import ChessGame from "@/game/ChessGame.ts";
 import CastlingMove from "@/moves/CastlingMove.ts";
 import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
 import PawnMove from "@/moves/PawnMove.ts";
@@ -51,6 +52,17 @@ Deno.test("promotion", () => {
   assertEquals(move.algebraicNotation(), "a8=Q");
   move.promotedPiece = Pieces.BLACK_KNIGHT;
   assertEquals(move.algebraicNotation(), "a8=N");
+});
+
+Deno.test("underpromotion and capture", () => {
+  const game = new ChessGame(`
+    [FEN "8/5pkp/b5p1/p7/P4P2/8/1pp2NPP/R6K b - - 1 32"]
+    [Result "*"] *
+  `);
+  assertArrayIncludes(
+    game.currentPosition.legalMovesAsAlgebraicNotation,
+    ["bxa1=R"]
+  );
 });
 
 Deno.test("en passant", () => {

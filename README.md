@@ -100,7 +100,7 @@ function Pgn({ position, notation, variations, next, game }: {
     <>
       <MoveTag text={notation} handleClick={goToPosition} />
       {variations && variations.map((variation) => (
-        <>( <Pgn {...variations} game={game} /> )</>
+        <>( <Pgn {...variation} game={game} /> )</>
       ))}
       {next && <Pgn {...next} game={game} />}
     </>

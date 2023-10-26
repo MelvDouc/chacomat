@@ -113,6 +113,36 @@ export default class Board {
     });
   }
 
+  /**
+   * Get a board clone with colors reversed.
+   */
+  swapColors() {
+    const clone = new Board();
+    this.#pieces.forEach((piece, coords) => {
+      clone.set(coords, piece.opposite);
+    });
+    return clone;
+  }
+
+  /**
+   * Get a board clone with colors reversed.
+   */
+  mirrorHorizontally() {
+    const clone = new Board();
+    this.#pieces.forEach((piece, { x, y }) => {
+      clone.set(coords[8 - x - 1][y], piece);
+    });
+    return clone;
+  }
+
+  mirrorVertically() {
+    const clone = new Board();
+    this.#pieces.forEach((piece, { x, y }) => {
+      clone.set(coords[x][8 - y - 1], piece);
+    });
+    return clone;
+  }
+
   log() {
     console.log(
       this

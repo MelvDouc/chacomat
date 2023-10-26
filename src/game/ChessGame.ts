@@ -205,14 +205,14 @@ export default class ChessGame {
     return this.toPGN();
   }
 
-  #updateCastlingRights(castlingRights: ChacoMat.CastlingRights, move: ChacoMat.Move) {
-    if (move.srcPiece.isKing())
-      castlingRights.get(move.srcPiece.color).clear();
+  #updateCastlingRights(castlingRights: ChacoMat.CastlingRights, { srcCoords, destCoords, srcPiece, capturedPiece }: ChacoMat.Move) {
+    if (srcPiece.isKing())
+      castlingRights.get(srcPiece.color).clear();
 
-    else if (move.srcPiece.isRook() && move.srcCoords.y === move.srcPiece.color.pieceRank)
-      castlingRights.get(move.srcPiece.color).delete(move.srcCoords.x);
+    else if (srcPiece.isRook() && srcCoords.y === srcPiece.color.pieceRank)
+      castlingRights.get(srcPiece.color).delete(srcCoords.x);
 
-    if (move.capturedPiece?.isRook() && move.destCoords.y === move.srcPiece.color.opposite.pieceRank)
-      castlingRights.get(move.srcPiece.color.opposite).delete(move.destCoords.x);
+    if (capturedPiece?.isRook() && destCoords.y === capturedPiece.color.pieceRank)
+      castlingRights.get(capturedPiece.color).delete(destCoords.x);
   }
 }

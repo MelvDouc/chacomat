@@ -1,5 +1,5 @@
 import { Board, CastlingRights, Color, Pieces, Position, coords } from "../mod.ts";
-import { assert, assertEquals, assertFalse } from "./test.index.ts";
+import { assert, assertEquals, assertFalse, assertNotEquals } from "./test.index.ts";
 
 Deno.test("parse from string", () => {
   const pos = Position.fromFEN("8/1k6/8/8/5P2/K7/8/8 b - f3 44 78");
@@ -53,4 +53,15 @@ Deno.test("insufficient material - same-colored bishops", () => {
 
 Deno.test("sufficient material - opposite-colored bishops", () => {
   assertFalse(Position.fromFEN("kb6/8/8/8/8/8/8/KB6 w - - 0 1").isInsufficientMaterial());
+});
+
+Deno.test("reversed position", () => {
+  const pos = Position.fromFEN("rn1qkbnr/1bppp1pp/8/pP6/4PpP1/8/PP1PKP1P/RNBQ1BNR b kq g3 0 6");
+  const reversed = pos.reverse();
+  assertEquals(pos.activeColor, reversed.activeColor.opposite);
+  assertNotEquals(pos.castlingRights.toString(), reversed.castlingRights.toString());
+  assertEquals(pos.board.pieces.size, reversed.board.pieces.size);
+  assertEquals(reversed.enPassantCoords?.notation, "g6");
+  assertEquals(pos.halfMoveClock, reversed.halfMoveClock);
+  assertEquals(pos.fullMoveNumber, reversed.fullMoveNumber);
 });

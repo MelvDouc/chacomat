@@ -50,7 +50,7 @@ export default class Position {
   ) { }
 
   get legalMoves() {
-    return this.#legalMoves ??= this.#computeLegalMoves();
+    return this.#legalMoves ??= [...this.generateLegalMoves()];
   }
 
   get legalMovesAsAlgebraicNotation() {
@@ -159,6 +159,20 @@ export default class Position {
     };
   }
 
+  /**
+   * Clone this position with colors reversed and its board mirrored vertically.
+   */
+  reverse() {
+    return new Position(
+      this.board.swapColors().mirrorVertically(),
+      this.activeColor.opposite,
+      new CastlingRights([...this.castlingRights.get(Color.BLACK)], [...this.castlingRights.get(Color.WHITE)]),
+      this.enPassantCoords?.peer(0, this.activeColor.direction * -3) ?? null,
+      this.halfMoveClock,
+      this.fullMoveNumber
+    );
+  }
+
   // ===== ===== ===== ===== =====
   // PRIVATE
   // ===== ===== ===== ===== =====
@@ -193,26 +207,27 @@ export default class Position {
     }
   }
 
-  #getPseudoLegalMoves() {
-    const moves: ChacoMat.Move[] = [];
-
-    for (const [srcCoords, piece] of this.board.pieces) {
+  *pseudoLegalMoves() {
+    /**
+     * The map has to be spread to avoid an infinite loop
+     * as set/delete operations will occur while iterating.
+     */
+    for (const [srcCoords, piece] of [...this.board.pieces]) {
       if (piece.color !== this.activeColor) continue;
 
       if (piece.isPawn()) {
-        moves.push(...this.#forwardPawnMoves(srcCoords), ...this.#pawnCaptures(srcCoords));
+        yield* this.#forwardPawnMoves(srcCoords);
+        yield* this.#pawnCaptures(srcCoords);
         continue;
       }
 
       for (const destCoords of piece.attackedCoords(this.board, srcCoords))
         if (this.board.get(destCoords)?.color !== this.activeColor)
-          moves.push(new PieceMove(srcCoords, destCoords, piece, this.board.get(destCoords)));
+          yield new PieceMove(srcCoords, destCoords, piece, this.board.get(destCoords));
     }
-
-    return moves;
   }
 
-  *#castlingMoves() {
+  *castlingMoves() {
     const kingCoords = this.board.getKingCoords(this.activeColor);
     const attackedCoordsSet = this.board.getAttackedCoordsSet(this.activeColor.opposite);
     if (attackedCoordsSet.has(kingCoords)) return;
@@ -225,22 +240,20 @@ export default class Position {
     }
   }
 
-  #computeLegalMoves() {
-    const legalMoves = this.#getPseudoLegalMoves().reduce((acc, move) => {
+  *generateLegalMoves() {
+    for (const move of this.pseudoLegalMoves()) {
       move.play(this.board);
-
-      if (!this.board.isColorInCheck(this.activeColor)) {
-        if (move instanceof PawnMove && move.isPromotion())
-          acc.push(...move.promotions());
-        else
-          acc.push(move);
-      }
-
+      const isLegal = !this.board.isColorInCheck(this.activeColor);
       move.undo(this.board);
-      return acc;
-    }, [] as ChacoMat.Move[]);
 
-    legalMoves.push(...this.#castlingMoves());
-    return legalMoves;
+      if (isLegal) {
+        if (move instanceof PawnMove && move.isPromotion())
+          yield* move.promotions();
+        else
+          yield move;
+      }
+    }
+
+    yield* this.castlingMoves();
   }
 }

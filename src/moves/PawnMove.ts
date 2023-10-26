@@ -46,7 +46,7 @@ export default class PawnMove extends Move {
   }
 
   isPromotion() {
-    return this.destCoords.y === 0 || this.destCoords.y === 8 - 1;
+    return this.destCoords.y === this.srcPiece.color.opposite.pieceRank;
   }
 
   *promotions() {
