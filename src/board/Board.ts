@@ -20,7 +20,7 @@ export default class Board {
         }
 
         const piece = Piece.fromInitial(char);
-        if (!piece) throw new Error(`Invalid piece initial: ${char}.`);
+        if (!piece) throw new Error(`Invalid piece initial: "${char}".`);
 
         board.set(coords[x][y], piece);
         x++;
@@ -55,14 +55,14 @@ export default class Board {
     return this.#pieces.get(coords) ?? null;
   }
 
-  delete(coords: ChacoMat.Coords) {
-    this.#pieces.delete(coords);
-    return this;
-  }
-
   set(coords: ChacoMat.Coords, piece: Piece) {
     this.#pieces.set(coords, piece);
     if (piece.isKing()) this.#kingCoords.set(piece.color, coords);
+    return this;
+  }
+
+  delete(coords: ChacoMat.Coords) {
+    this.#pieces.delete(coords);
     return this;
   }
 
@@ -70,7 +70,7 @@ export default class Board {
     return this.#kingCoords.get(color)!;
   }
 
-  attackedCoordsSet(color: ChacoMat.Color) {
+  getAttackedCoordsSet(color: ChacoMat.Color) {
     const set = new Set<ChacoMat.Coords>();
 
     for (const [srcCoords, piece] of this.#pieces)
@@ -84,9 +84,9 @@ export default class Board {
   isColorInCheck(color: ChacoMat.Color) {
     const kingCoords = this.getKingCoords(color);
 
-    for (const [srcCoords, srcPiece] of this.#pieces)
-      if (srcPiece.color !== color)
-        for (const destCoords of srcPiece.attackedCoords(this, srcCoords))
+    for (const [srcCoords, piece] of this.#pieces)
+      if (piece.color !== color)
+        for (const destCoords of piece.attackedCoords(this, srcCoords))
           if (destCoords === kingCoords)
             return true;
 
@@ -121,7 +121,7 @@ export default class Board {
           return `${Coords.yToRankName(y)} | ${row.map((piece) => piece?.initial ?? "-").join(" ")}`;
         })
         .join("\n")
-      + "\n    - - - - - - - -"
+      + "\n    _ _ _ _ _ _ _ _"
       + "\n    a b c d e f g h"
     );
   }

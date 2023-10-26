@@ -49,8 +49,12 @@ export default class PawnMove extends Move {
     return this.destCoords.y === 0 || this.destCoords.y === 8 - 1;
   }
 
-  *promotions(initials: string[]) {
-    for (const initial of initials)
-      yield new PawnMove(this.srcCoords, this.destCoords, this.srcPiece, this.capturedPiece, Piece.fromInitial(initial));
+  *promotions() {
+    const { srcCoords, destCoords, capturedPiece, srcPiece } = this;
+
+    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, Piece.fromWhiteInitialAndColor("Q", srcPiece.color));
+    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, Piece.fromWhiteInitialAndColor("R", srcPiece.color));
+    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, Piece.fromWhiteInitialAndColor("B", srcPiece.color));
+    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, Piece.fromWhiteInitialAndColor("N", srcPiece.color));
   }
 }

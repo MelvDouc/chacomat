@@ -11,11 +11,10 @@ export default abstract class Move {
 
   abstract play(board: ChacoMat.Board): void;
   abstract undo(board: ChacoMat.Board): void;
-  abstract algebraicNotation(board: ChacoMat.Board, legalMoves: Move[]): string;
+  abstract algebraicNotation(position: ChacoMat.Position): string;
 
   fullAlgebraicNotation(positionBefore: ChacoMat.Position, positionAfter: ChacoMat.Position) {
-    return this.algebraicNotation(positionBefore.board, positionBefore.legalMoves)
-      + this.getCheckSign(positionAfter);
+    return this.algebraicNotation(positionBefore) + this.getCheckSign(positionAfter);
   }
 
   computerNotation() {
@@ -30,11 +29,11 @@ export default abstract class Move {
     return "";
   }
 
-  toJSON(board: ChacoMat.Board, legalMoves: Move[]): ChacoMat.JSONMove {
+  toJSON(position: ChacoMat.Position): ChacoMat.JSONMove {
     return {
       srcCoords: this.srcCoords.toJSON(),
       destCoords: this.destCoords.toJSON(),
-      algebraicNotation: this.algebraicNotation(board, legalMoves)
+      algebraicNotation: this.algebraicNotation(position)
     };
   }
 }

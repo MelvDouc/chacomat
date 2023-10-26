@@ -1,3 +1,4 @@
+import { coords } from "@/board/Coords.ts";
 import Move from "@/moves/Move.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 
@@ -7,11 +8,10 @@ export default class EnPassantPawnMove extends Move {
   constructor(
     srcCoords: ChacoMat.Coords,
     destCoords: ChacoMat.Coords,
-    srcPiece: ChacoMat.Piece,
-    capturedPieceCoords: ChacoMat.Coords
+    srcPiece: ChacoMat.Piece
   ) {
     super(srcCoords, destCoords, srcPiece, srcPiece.opposite);
-    this.capturedPieceCoords = capturedPieceCoords;
+    this.capturedPieceCoords = coords[destCoords.x][srcCoords.y];
   }
 
   override algebraicNotation(): string {

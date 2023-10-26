@@ -20,8 +20,8 @@ Deno.test("castling notation", () => {
 
 Deno.test("castling legality", () => {
   const board = Board.fromString("rn2k2r/8/8/8/8/8/7p/R3K2R");
-  const coordsAttackedByWhite = board.attackedCoordsSet(Color.WHITE);
-  const coordsAttackedByBlack = board.attackedCoordsSet(Color.BLACK);
+  const coordsAttackedByWhite = board.getAttackedCoordsSet(Color.WHITE);
+  const coordsAttackedByBlack = board.getAttackedCoordsSet(Color.BLACK);
   assert(
     cl(coords[4][7], 0, Color.WHITE).isLegal(board, coordsAttackedByBlack)
   );

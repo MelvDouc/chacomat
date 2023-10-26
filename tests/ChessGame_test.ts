@@ -17,12 +17,8 @@ Deno.test("Parse game info.", () => {
 });
 
 Deno.test("Parse various moves.", () => {
-  const moveStr = "1.e4 ( 1.d4 d5 ( 1...Nf6 ) 2.c4 ( 2.Bg5 ) 2...c5 ) ( 1.c4 ) 1...Nc6 2.Nf3 d6 3.Bc4 Bg4 4.0-0 Qd7 5.c3 0-0-0";
-  const game = new ChessGame(`
-    [Result "*"]
-
-    ${moveStr} *
-  `);
+  const moveStr = "1.e4 ( 1.d4 d5 ( 1...Nf6 ) 2.c4 ( 2.Bg5 ) 2...c5 ) ( 1.c4 ) 1...Nc6 ( 1...d5 2.exd5 e5 3.dxe6 ) 2.Nf3 d6 3.Bc4 Bg4 4.0-0 Qd7 5.c3 0-0-0 *";
+  const game = new ChessGame(`[Result "*"] ${moveStr} *`);
   const pgn = game.toPGN();
   assert(pgn.includes(moveStr), pgn);
 });

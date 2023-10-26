@@ -19,13 +19,13 @@ export default class PieceMove extends Move {
     board.set(this.srcCoords, this.srcPiece);
   }
 
-  algebraicNotation(board: ChacoMat.Board, legalMoves: ChacoMat.Move[]) {
+  algebraicNotation(position: ChacoMat.Position) {
     let notation = "";
 
     if (!this.srcPiece.isKing())
-      notation += this.#exactNotation(board, legalMoves);
+      notation += this.#exactNotation(position);
 
-    if (board.has(this.destCoords)) notation += "x";
+    if (position.board.has(this.destCoords)) notation += "x";
     return this.srcPiece.whiteInitial + notation + this.destCoords.notation;
   }
 
@@ -33,19 +33,15 @@ export default class PieceMove extends Move {
   // PRIVATE
   // ===== ===== ===== ===== =====
 
-  #isAmbiguousWith({ srcCoords, destCoords }: ChacoMat.Move, board: ChacoMat.Board) {
-    return destCoords === this.destCoords && board.get(srcCoords) === this.srcPiece;
-  }
-
-  #exactNotation(board: ChacoMat.Board, legalMoves: Move[]) {
+  #exactNotation(position: ChacoMat.Position) {
     const ambiguities = new Set<string>();
 
-    for (const move of legalMoves) {
-      if (move.srcCoords === this.srcCoords || !this.#isAmbiguousWith(move, board))
+    for (const { srcCoords, destCoords, srcPiece } of position.legalMoves) {
+      if (srcCoords === this.srcCoords || destCoords !== this.destCoords || srcPiece !== this.srcPiece)
         continue;
-      if (move.srcCoords.x === this.srcCoords.x)
+      if (srcCoords.x === this.srcCoords.x)
         ambiguities.add("x");
-      else if (move.srcCoords.y === this.srcCoords.y)
+      else if (srcCoords.y === this.srcCoords.y)
         ambiguities.add("y");
       else
         ambiguities.add("");
