@@ -1,4 +1,4 @@
-import Coords, { coords } from "@/board/Coords.ts";
+import Coords, { coords } from "@/coordinates/Coords.ts";
 import Piece from "@/pieces/Piece.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 
@@ -7,6 +7,9 @@ export default class Board {
   // STATIC PUBLIC
   // ===== ===== ===== ===== =====
 
+  /**
+   * Create a board from the board portion of an FEN string.
+   */
   static fromString(boardStr: string) {
     const board = new this();
 
@@ -37,14 +40,12 @@ export default class Board {
   readonly #pieces = new Map<ChacoMat.Coords, ChacoMat.Piece>();
   readonly #kingCoords = new Map<ChacoMat.Color, ChacoMat.Coords>();
 
+  /**
+   * The map that contains the pieces.
+   * It uses unique coordinates for keys.
+   */
   get pieces() {
     return this.#pieces;
-  }
-
-  clone() {
-    const clone = new Board();
-    this.#pieces.forEach((piece, coords) => clone.set(coords, piece));
-    return clone;
   }
 
   has(coords: ChacoMat.Coords) {
@@ -70,12 +71,15 @@ export default class Board {
     return this.#kingCoords.get(color)!;
   }
 
+  /**
+   * Get a set of all the coordinates attacked by the pieces of the given color.
+   */
   getAttackedCoordsSet(color: ChacoMat.Color) {
     const set = new Set<ChacoMat.Coords>();
 
     for (const [srcCoords, piece] of this.#pieces)
       if (piece.color === color)
-        for (const destCoords of piece.attackedCoords(this, srcCoords))
+        for (const destCoords of piece.getAttackedCoords(this, srcCoords))
           set.add(destCoords);
 
     return set;
@@ -85,10 +89,8 @@ export default class Board {
     const kingCoords = this.getKingCoords(color);
 
     for (const [srcCoords, piece] of this.#pieces)
-      if (piece.color !== color)
-        for (const destCoords of piece.attackedCoords(this, srcCoords))
-          if (destCoords === kingCoords)
-            return true;
+      if (piece.color !== color && piece.getAttackedCoords(this, srcCoords).includes(kingCoords))
+        return true;
 
     return false;
   }
@@ -113,36 +115,53 @@ export default class Board {
     });
   }
 
-  /**
-   * Get a board clone with colors reversed.
-   */
-  swapColors() {
+  clone() {
     const clone = new Board();
-    this.#pieces.forEach((piece, coords) => {
-      clone.set(coords, piece.opposite);
-    });
+    this.#pieces.forEach((piece, coords) => clone.set(coords, piece));
     return clone;
   }
 
   /**
-   * Get a board clone with colors reversed.
+   * Get a board clone with pieces on opposite ranks or files or with colors reversed.
    */
-  mirrorHorizontally() {
+  mirror({ horizontal, vertical, colors }: {
+    /**
+     * Swap files.
+     */
+    horizontal?: boolean;
+    /**
+     * Swap rank.
+     */
+    vertical?: boolean;
+    /**
+     * Reverse piece colors.
+     */
+    colors?: boolean;
+  }) {
     const clone = new Board();
-    this.#pieces.forEach((piece, { x, y }) => {
-      clone.set(coords[8 - x - 1][y], piece);
+    this.#pieces.forEach((piece, key) => {
+      const x = horizontal ? (8 - key.x - 1) : key.x;
+      const y = vertical ? (8 - key.y - 1) : key.y;
+      clone.set(coords[x][y], colors ? piece.opposite : piece);
     });
     return clone;
   }
 
-  mirrorVertically() {
-    const clone = new Board();
-    this.#pieces.forEach((piece, { x, y }) => {
-      clone.set(coords[x][8 - y - 1], piece);
-    });
-    return clone;
-  }
-
+  /**
+   * Output the board to the console in following format:
+   * ```
+   * 8 | r n b q k b n r
+   * 7 | p p p p p p p p
+   * 6 | - - - - - - - -
+   * 5 | - - - - - - - -
+   * 4 | - - - - - - - -
+   * 3 | - - - - - - - -
+   * 2 | P P P P P P P P
+   * 1 | R N B Q K B N R
+   *     - - - - - - - -
+   *     a b c d e f g h
+   * ```
+   */
   log() {
     console.log(
       this

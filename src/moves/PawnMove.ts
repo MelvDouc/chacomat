@@ -1,4 +1,4 @@
-import { coords } from "@/board/Coords.ts";
+import { coords } from "@/coordinates/Coords.ts";
 import Move from "@/moves/Move.ts";
 import Piece from "@/pieces/Piece.ts";
 import type { ChacoMat } from "@/typings/chacomat.ts";

@@ -41,3 +41,18 @@ Deno.test("Parse long game back and forth.", async () => {
     }
   }
 });
+
+Deno.test("Parse annotations.", () => {
+  const game = new ChessGame(`[Result "*"] 1.d4 e6 2.c4 Bb4 $5 3.Qd2 $4 Bxd2 $21 *`);
+  assertStringIncludes(game.toPGN(), "1.d4 e6 2.c4 Bb4+ $5 3.Qd2 $4 Bxd2+ $21");
+});
+
+Deno.test("Parse null moves.", () => {
+  const game = new ChessGame(`[Result "*"] 1.--`);
+  game
+    .playMoveWithNotation("e7e5")
+    .playMoveWithNotation("e2e4")
+    .playNullMove();
+  game.playNullMove();
+  assertStringIncludes(game.toPGN(), "1.-- e5 2.e4 --");
+});

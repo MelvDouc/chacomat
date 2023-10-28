@@ -29,8 +29,7 @@ export default class Coords {
     if (!/[a-h][1-8]/.test(notation))
       return null;
 
-    const [fileName, rankName] = notation;
-    return this.ALL[this.fileNameToX(fileName)][this.rankNameToY(rankName)];
+    return this.ALL[this.fileNameToX(notation[0])][this.rankNameToY(notation[1])];
   }
 
   readonly #notation: string;
@@ -56,24 +55,6 @@ export default class Coords {
 
   isLightSquare() {
     return this.x % 2 === this.y % 2;
-  }
-
-  peer(xOffset: number, yOffset: number) {
-    const x = this.x + xOffset,
-      y = this.y + yOffset;
-
-    return Coords.isSafe(x, y)
-      ? Coords.ALL[x][y]
-      : null;
-  }
-
-  *peers(xOffset: number, yOffset: number) {
-    let coords = this.peer(xOffset, yOffset);
-
-    while (coords) {
-      yield coords;
-      coords = coords.peer(xOffset, yOffset);
-    }
   }
 
   toJSON() {

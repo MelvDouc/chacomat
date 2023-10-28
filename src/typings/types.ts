@@ -1,8 +1,9 @@
 import GameResults from "@/game/GameResults.ts";
+import { NumericAnnotationGlyphTable } from "@/moves/MoveAnnotations.ts";
 
 export type Board = import("@/board/Board.ts").default;
 export type Color = import("@/board/Color.ts").default;
-export type Coords = import("@/board/Coords.ts").default;
+export type Coords = import("@/coordinates/Coords.ts").default;
 export type ChessGame = import("@/game/ChessGame.ts").default;
 export type CastlingRights = import("@/game/CastlingRights.ts").default;
 export type Position = import("@/game/Position.ts").default;
@@ -13,6 +14,10 @@ export interface PieceOffsets {
   x: number[];
   y: number[];
 }
+
+export type Direction = -1 | 1;
+
+export type NumericAnnotationGlyph = keyof typeof NumericAnnotationGlyphTable;
 
 // ===== ===== ===== ===== =====
 // JSON

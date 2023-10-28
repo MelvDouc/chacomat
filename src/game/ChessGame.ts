@@ -1,4 +1,4 @@
-import Color from "@/board/Color.ts";
+import { coords } from "@/coordinates/Coords.ts";
 import GameResults from "@/game/GameResults.ts";
 import Position from "@/game/Position.ts";
 import PawnMove from "@/moves/PawnMove.ts";
@@ -13,7 +13,7 @@ export default class ChessGame {
   static parsePGN(pgn: string) {
     pgn = pgn.trim();
     const gameInfo = Object.create(null) as ChacoMat.GameInfo;
-    const headerRegex = /^\[(?<key>[^"\s]+)\s+"(?<value>[^"]+)"\]*\s*/;
+    const headerRegex = /^\[(?<key>[^"\s]+)\s+"(?<value>[^"]*)"\]*\s*/;
     let matchArr: RegExpMatchArray | null;
 
     while ((matchArr = pgn.match(headerRegex)) !== null) {
@@ -21,7 +21,7 @@ export default class ChessGame {
       pgn = pgn.slice(matchArr[0].length);
     }
 
-    const result = pgn.match(/(\*|1\/2-1\/2|(0|1)-(0|1))$/)?.[0] as ChacoMat.GameResult | undefined;
+    const result = pgn.match(/(\*|1\/2-1\/2|[01]-[01])$/)?.[0] as ChacoMat.GameResult | undefined;
 
     if (!gameInfo.Result)
       console.warn("Result missing from headers.");
@@ -89,7 +89,7 @@ export default class ChessGame {
     const pos = this.#currentPosition;
 
     if (pos.isCheckmate()) {
-      return (pos.activeColor === Color.WHITE)
+      return (pos.activeColor.isWhite())
         ? GameResults.BLACK_WIN
         : GameResults.WHITE_WIN;
     }
@@ -147,10 +147,10 @@ export default class ChessGame {
       pos.activeColor.opposite,
       castlingRights,
       move instanceof PawnMove && move.isDouble()
-        ? move.srcCoords.peer(0, pos.activeColor.direction)
+        ? coords[move.srcCoords.x][move.srcCoords.y + pos.activeColor.direction]
         : null,
       (move.capturedPiece || move.srcPiece.isPawn()) ? 0 : (pos.halfMoveClock + 1),
-      pos.fullMoveNumber + Number(pos.activeColor === Color.BLACK)
+      pos.fullMoveNumber + Number(!pos.activeColor.isWhite())
     );
     nextPos.srcMove = move;
     nextPos.prev = this.#currentPosition;
@@ -187,6 +187,22 @@ export default class ChessGame {
       throw new Error(`Illegal move: "${notation}".`);
 
     return this.playMove(move);
+  }
+
+  playNullMove() {
+    const pos = this.#currentPosition;
+    const nextPos = new Position(
+      pos.board.clone(),
+      pos.activeColor.opposite,
+      pos.castlingRights.clone(),
+      pos.enPassantCoords,
+      pos.halfMoveClock,
+      pos.fullMoveNumber + Number(!pos.activeColor.isWhite())
+    );
+    nextPos.prev = pos;
+    pos.next.push(nextPos);
+    this.#currentPosition = nextPos;
+    return this;
   }
 
   infoAsString() {

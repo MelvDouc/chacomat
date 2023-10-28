@@ -1,4 +1,4 @@
-import Coords, { coords } from "@/board/Coords.ts";
+import Coords, { coords } from "../src/coordinates/Coords.ts";
 import { assert, assertEquals, assertFalse, assertNullish } from "./test.index.ts";
 
 Deno.test("coords safety", () => {

@@ -1,17 +1,16 @@
-import Color from "@/board/Color.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 
 function getNotation(positionBefore: ChacoMat.Position, positionAfter: ChacoMat.Position, useThreeDots: boolean) {
-  let notation = positionAfter.srcMove!.fullAlgebraicNotation(positionBefore, positionAfter);
+  let notation = positionAfter.srcMove?.fullAlgebraicNotation(positionBefore, positionAfter) ?? "--";
+
+  if (positionBefore.activeColor.isWhite())
+    notation = `${positionBefore.fullMoveNumber}.${notation}`;
+
+  else if (useThreeDots)
+    notation = `${positionBefore.fullMoveNumber}...${notation}`;
 
   if (positionBefore.comment)
-    notation += ` { ${positionBefore.comment} }`;
-
-  if (positionBefore.activeColor === Color.WHITE)
-    return `${positionBefore.fullMoveNumber}.${notation}`;
-
-  if (useThreeDots)
-    return `${positionBefore.fullMoveNumber}...${notation}`;
+    notation = `{ ${positionBefore.comment} } ${notation}`;
 
   return notation;
 }

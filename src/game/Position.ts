@@ -1,6 +1,6 @@
 import Board from "@/board/Board.ts";
 import Color from "@/board/Color.ts";
-import Coords from "@/board/Coords.ts";
+import Coords from "@/coordinates/Coords.ts";
 import CastlingRights from "@/game/CastlingRights.ts";
 import CastlingMove from "@/moves/CastlingMove.ts";
 import PawnMove from "@/moves/PawnMove.ts";
@@ -163,10 +163,12 @@ export default class Position {
    */
   reverse() {
     return new Position(
-      this.board.swapColors().mirrorVertically(),
+      this.board.mirror({ vertical: true, colors: true }),
       this.activeColor.opposite,
       new CastlingRights([...this.castlingRights.get(Color.BLACK)], [...this.castlingRights.get(Color.WHITE)]),
-      this.enPassantCoords?.peer(0, this.activeColor.direction * -3) ?? null,
+      this.enPassantCoords
+        ? Coords.ALL[this.enPassantCoords.x][this.enPassantCoords.y + this.activeColor.direction * -3]
+        : null,
       this.halfMoveClock,
       this.fullMoveNumber
     );
@@ -186,7 +188,7 @@ export default class Position {
         continue;
       }
 
-      for (const destCoords of piece.attackedCoords(this.board, srcCoords))
+      for (const destCoords of piece.getAttackedCoords(this.board, srcCoords))
         if (this.board.get(destCoords)?.color !== this.activeColor)
           yield new PieceMove(srcCoords, destCoords, piece, this.board.get(destCoords));
     }
@@ -228,13 +230,13 @@ export default class Position {
 
   *#forwardPawnMoves(srcCoords: Coords) {
     const pawn = this.board.get(srcCoords)!;
-    const destCoords = srcCoords.peer(0, this.activeColor.direction) as ChacoMat.Coords;
+    const destCoords = Coords.ALL[srcCoords.x][srcCoords.y + this.activeColor.direction];
 
     if (!this.board.has(destCoords)) {
       yield new PawnMove(srcCoords, destCoords, pawn, null, false);
 
       if (srcCoords.y === this.activeColor.pawnRank) {
-        const destCoords = srcCoords.peer(0, this.activeColor.direction * 2) as ChacoMat.Coords;
+        const destCoords = Coords.ALL[srcCoords.x][srcCoords.y + this.activeColor.direction * 2];
 
         if (!this.board.has(destCoords))
           yield new PawnMove(srcCoords, destCoords, pawn, null, false);
@@ -245,7 +247,7 @@ export default class Position {
   *#pawnCaptures(srcCoords: Coords) {
     const pawn = this.board.get(srcCoords)!;
 
-    for (const destCoords of pawn.attackedCoords(this.board, srcCoords)) {
+    for (const destCoords of pawn.getAttackedCoords(this.board, srcCoords)) {
       if (this.board.get(destCoords)?.color === this.activeColor.opposite) {
         yield new PawnMove(srcCoords, destCoords, pawn, this.board.get(destCoords), false);
         continue;
