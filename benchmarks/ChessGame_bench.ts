@@ -13,12 +13,16 @@ Deno.bench("Parse long engine game", () => {
 });
 
 Deno.bench("Stringify long human game", (b) => {
+  longestHumanGame = new ChessGame(longestHumanPGN);
+
   b.start();
   longestHumanGame.toPGN();
   b.end();
 });
 
 Deno.bench("Stringify long engine game", (b) => {
+  longestEngineGame = new ChessGame(longestEnginePGN);
+
   b.start();
   longestEngineGame.toPGN();
   b.end();

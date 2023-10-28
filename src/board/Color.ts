@@ -1,3 +1,5 @@
+import { ChacoMat } from "@/typings/chacomat.ts";
+
 export default class Color {
   // ===== ===== ===== ===== =====
   // STATIC PUBLIC
@@ -11,7 +13,7 @@ export default class Color {
     yield this.BLACK;
   }
 
-  static fromDirection(direction: number): Color {
+  static fromDirection(direction: ChacoMat.Direction): Color {
     return this.#directionDict[direction];
   }
 
@@ -49,9 +51,9 @@ export default class Color {
   // ===== ===== ===== ===== =====
 
   readonly name: string;
-  readonly #direction: number;
+  readonly #direction: ChacoMat.Direction;
 
-  constructor(name: string, direction: number) {
+  constructor(name: string, direction: ChacoMat.Direction) {
     this.name = name;
     this.#direction = direction;
   }
@@ -74,5 +76,9 @@ export default class Color {
 
   get pawnRank() {
     return this.pieceRank + this.#direction;
+  }
+
+  isWhite() {
+    return this === Color.WHITE;
   }
 }

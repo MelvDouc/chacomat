@@ -30,6 +30,6 @@ Deno.test("A rook should always attack 14 squares.", () => {
   const x = Math.floor(Math.random() * 8);
   const y = Math.floor(Math.random() * 8);
   board.set(coords[x][y], Pieces.WHITE_ROOK);
-  const attackedCoords = [...Pieces.WHITE_ROOK.attackedCoords(board, coords[x][y])];
+  const attackedCoords = Pieces.WHITE_ROOK.getAttacks(board, coords[x][y]);
   assertEquals(attackedCoords.length, 14);
 });

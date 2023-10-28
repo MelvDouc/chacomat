@@ -1,4 +1,4 @@
-import Coords from "@/board/Coords.ts";
+import Coords from "@/coordinates/Coords.ts";
 import PawnMove from "@/moves/PawnMove.ts";
 import Piece from "@/pieces/Piece.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
@@ -7,22 +7,12 @@ import {
   findNextBracketIndex
 } from "@/utils/string-search.ts";
 
-type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dc" | "pr" | "o" | "o2";
-type HalfMoveGroups = { [K in HalfMoveGroupKey]?: string };
-
-const nonCastlingRegex = /(?<pi>[NBRQK])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
+const pieceMoveRegex = /(?<pi>[NBRQK])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])/;
+const pawnMoveRegex = /((?<sf>[a-h])x)?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /(?<o>0|O)-\k<o>(?<o2>-\k<o>)?/;
-const halfMoveRegex = RegExp(`(${nonCastlingRegex.source}|${castlingRegex.source})`, "g");
+const glyphRegex = /\$\d+/;
 
-function findMove(position: ChacoMat.Position, { pi, sf, sr, dc, pr, o, o2 }: HalfMoveGroups) {
-  if (o) {
-    for (const castlingMove of position.castlingMoves())
-      if (castlingMove.isQueenSide() === (o2 !== void 0))
-        return castlingMove;
-
-    return null;
-  }
-
+function findNonCastlingMove(position: ChacoMat.Position, { pi, sf, sr, dc, pr }: HalfMoveGroups) {
   const destCoords = Coords.fromNotation(dc as string);
   const piece = Piece.fromWhiteInitialAndColor(pi ?? "P", position.activeColor)!;
 
@@ -41,12 +31,42 @@ function findMove(position: ChacoMat.Position, { pi, sf, sr, dc, pr, o, o2 }: Ha
   return null;
 }
 
+function findCastlingMove(position: ChacoMat.Position, isQueenSide: boolean) {
+  for (const move of position.castlingMoves())
+    if (move.isQueenSide() === isQueenSide)
+      return move;
+
+  return null;
+}
+
 export function playLine(line: string, game: ChacoMat.ChessGame) {
-  for (const { 0: substring, groups } of line.matchAll(halfMoveRegex)) {
-    const move = findMove(game.currentPosition, groups as HalfMoveGroups);
-    if (!move)
-      throw new Error(`Illegal move "${substring}" in "${line}".`);
-    game.playMove(move);
+  let matchArr: RegExpMatchArray | null;
+
+  for (const substring of line.split(/\s+/)) {
+    if ((matchArr = substring.match(pieceMoveRegex)) || (matchArr = substring.match(pawnMoveRegex))) {
+      const move = findNonCastlingMove(game.currentPosition, matchArr.groups as HalfMoveGroups);
+      if (!move)
+        throw new Error(`Illegal move "${substring}" in "${line}".`);
+      game.playMove(move);
+      continue;
+    }
+
+    if (matchArr = substring.match(castlingRegex)) {
+      const move = findCastlingMove(game.currentPosition, matchArr.groups!.o2 !== void 0);
+      if (!move)
+        throw new Error(`Illegal move "${substring}" in "${line}".`);
+      game.playMove(move);
+      continue;
+    }
+
+    if (substring.endsWith("--")) {
+      game.playNullMove();
+      continue;
+    }
+
+    if (glyphRegex.test(substring) && game.currentPosition.srcMove) {
+      game.currentPosition.srcMove.annotationGlyph = substring as ChacoMat.NumericAnnotationGlyph;
+    }
   }
 }
 
@@ -70,7 +90,10 @@ export default function playMoves(moveStr: string, game: ChacoMat.ChessGame) {
     }
 
     const nextIndex = findNextBracketIndex(moveStr);
-    playLine(moveStr.slice(0, nextIndex), game);
+    playLine(moveStr.slice(0, nextIndex).trim(), game);
     moveStr = moveStr.slice(nextIndex);
   }
 }
+
+type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dc" | "pr" | "o" | "o2";
+type HalfMoveGroups = { [K in HalfMoveGroupKey]?: string };

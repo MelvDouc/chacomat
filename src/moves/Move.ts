@@ -2,6 +2,8 @@ import globalConfig from "@/global-config.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 
 export default abstract class Move {
+  public annotationGlyph?: ChacoMat.NumericAnnotationGlyph;
+
   constructor(
     readonly srcCoords: ChacoMat.Coords,
     readonly destCoords: ChacoMat.Coords,
@@ -14,7 +16,9 @@ export default abstract class Move {
   abstract algebraicNotation(position: ChacoMat.Position): string;
 
   fullAlgebraicNotation(positionBefore: ChacoMat.Position, positionAfter: ChacoMat.Position) {
-    return this.algebraicNotation(positionBefore) + this.getCheckSign(positionAfter);
+    return this.algebraicNotation(positionBefore)
+      + this.getCheckSign(positionAfter)
+      + (this.annotationGlyph ? ` ${this.annotationGlyph}` : "");
   }
 
   computerNotation() {
