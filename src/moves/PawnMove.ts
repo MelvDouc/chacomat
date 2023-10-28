@@ -1,9 +1,11 @@
-import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
+import { coords } from "@/board/Coords.ts";
 import Move from "@/moves/Move.ts";
 import Piece from "@/pieces/Piece.ts";
 import type { ChacoMat } from "@/typings/chacomat.ts";
 
 export default class PawnMove extends Move {
+  readonly isEnPassant: boolean;
+  readonly capturedPieceCoords: ChacoMat.Coords | null;
   promotedPiece: ChacoMat.Piece | null;
 
   constructor(
@@ -11,9 +13,12 @@ export default class PawnMove extends Move {
     destCoords: ChacoMat.Coords,
     srcPiece: ChacoMat.Piece,
     capturedPiece: ChacoMat.Piece | null,
+    isEnPassant: boolean,
     promotedPiece: ChacoMat.Piece | null = null
   ) {
     super(srcCoords, destCoords, srcPiece, capturedPiece);
+    this.isEnPassant = isEnPassant;
+    this.capturedPieceCoords = isEnPassant ? coords[destCoords.x][srcCoords.y] : destCoords;
     this.promotedPiece = promotedPiece;
   }
 
@@ -21,6 +26,8 @@ export default class PawnMove extends Move {
     board
       .set(this.destCoords, this.promotedPiece ?? this.srcPiece)
       .delete(this.srcCoords);
+    if (this.isEnPassant)
+      board.delete(this.capturedPieceCoords!);
   }
 
   undo(board: ChacoMat.Board) {
@@ -28,13 +35,17 @@ export default class PawnMove extends Move {
       ? board.set(this.destCoords, this.capturedPiece)
       : board.delete(this.destCoords);
     board.set(this.srcCoords, this.srcPiece);
+    if (this.isEnPassant)
+      board.set(this.capturedPieceCoords!, this.capturedPiece!);
   }
 
   algebraicNotation() {
-    const notation = EnPassantPawnMove.prototype.algebraicNotation.call(this);
-    return (this.promotedPiece)
-      ? `${notation}=${this.promotedPiece.whiteInitial}`
-      : notation;
+    let notation = this.destCoords.notation;
+    if (this.srcCoords.x !== this.destCoords.x)
+      notation = `${this.srcCoords.fileName}x${notation}`;
+    if (this.promotedPiece)
+      notation = `${notation}=${this.promotedPiece.whiteInitial}`;
+    return notation;
   }
 
   override computerNotation() {
@@ -52,9 +63,9 @@ export default class PawnMove extends Move {
   *promotions() {
     const { srcCoords, destCoords, capturedPiece, srcPiece } = this;
 
-    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, Piece.fromWhiteInitialAndColor("Q", srcPiece.color));
-    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, Piece.fromWhiteInitialAndColor("R", srcPiece.color));
-    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, Piece.fromWhiteInitialAndColor("B", srcPiece.color));
-    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, Piece.fromWhiteInitialAndColor("N", srcPiece.color));
+    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, false, Piece.fromWhiteInitialAndColor("Q", srcPiece.color));
+    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, false, Piece.fromWhiteInitialAndColor("R", srcPiece.color));
+    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, false, Piece.fromWhiteInitialAndColor("B", srcPiece.color));
+    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, false, Piece.fromWhiteInitialAndColor("N", srcPiece.color));
   }
 }

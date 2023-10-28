@@ -3,7 +3,6 @@ import Color from "@/board/Color.ts";
 import Coords from "@/board/Coords.ts";
 import CastlingRights from "@/game/CastlingRights.ts";
 import CastlingMove from "@/moves/CastlingMove.ts";
-import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
 import PawnMove from "@/moves/PawnMove.ts";
 import PieceMove from "@/moves/PieceMove.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
@@ -140,7 +139,7 @@ export default class Position {
       activeColor: this.activeColor.name,
       fullMoveNumber: this.fullMoveNumber,
       halfMoveClock: this.halfMoveClock,
-      enPassantCoords: this.enPassantCoords,
+      enPassantCoords: this.enPassantCoords?.toJSON() ?? null,
       castlingRights: {
         [Color.WHITE.name]: [...this.castlingRights.get(Color.WHITE)],
         [Color.BLACK.name]: [...this.castlingRights.get(Color.BLACK)]
@@ -171,40 +170,6 @@ export default class Position {
       this.halfMoveClock,
       this.fullMoveNumber
     );
-  }
-
-  // ===== ===== ===== ===== =====
-  // PRIVATE
-  // ===== ===== ===== ===== =====
-
-  *#forwardPawnMoves(srcCoords: Coords) {
-    const pawn = this.board.get(srcCoords)!;
-    const destCoords = srcCoords.peer(0, this.activeColor.direction) as ChacoMat.Coords;
-
-    if (!this.board.has(destCoords)) {
-      yield new PawnMove(srcCoords, destCoords, pawn, null);
-
-      if (srcCoords.y === this.activeColor.pawnRank) {
-        const destCoords = srcCoords.peer(0, this.activeColor.direction * 2) as ChacoMat.Coords;
-
-        if (!this.board.has(destCoords))
-          yield new PawnMove(srcCoords, destCoords, pawn, null);
-      }
-    }
-  }
-
-  *#pawnCaptures(srcCoords: Coords) {
-    const pawn = this.board.get(srcCoords)!;
-
-    for (const destCoords of pawn.attackedCoords(this.board, srcCoords)) {
-      if (this.board.get(destCoords)?.color === this.activeColor.opposite) {
-        yield new PawnMove(srcCoords, destCoords, pawn, this.board.get(destCoords));
-        continue;
-      }
-
-      if (destCoords === this.enPassantCoords)
-        yield new EnPassantPawnMove(srcCoords, destCoords, pawn);
-    }
   }
 
   *pseudoLegalMoves() {
@@ -255,5 +220,39 @@ export default class Position {
     }
 
     yield* this.castlingMoves();
+  }
+
+  // ===== ===== ===== ===== =====
+  // PRIVATE
+  // ===== ===== ===== ===== =====
+
+  *#forwardPawnMoves(srcCoords: Coords) {
+    const pawn = this.board.get(srcCoords)!;
+    const destCoords = srcCoords.peer(0, this.activeColor.direction) as ChacoMat.Coords;
+
+    if (!this.board.has(destCoords)) {
+      yield new PawnMove(srcCoords, destCoords, pawn, null, false);
+
+      if (srcCoords.y === this.activeColor.pawnRank) {
+        const destCoords = srcCoords.peer(0, this.activeColor.direction * 2) as ChacoMat.Coords;
+
+        if (!this.board.has(destCoords))
+          yield new PawnMove(srcCoords, destCoords, pawn, null, false);
+      }
+    }
+  }
+
+  *#pawnCaptures(srcCoords: Coords) {
+    const pawn = this.board.get(srcCoords)!;
+
+    for (const destCoords of pawn.attackedCoords(this.board, srcCoords)) {
+      if (this.board.get(destCoords)?.color === this.activeColor.opposite) {
+        yield new PawnMove(srcCoords, destCoords, pawn, this.board.get(destCoords), false);
+        continue;
+      }
+
+      if (destCoords === this.enPassantCoords)
+        yield new PawnMove(srcCoords, destCoords, pawn, pawn.opposite, true);
+    }
   }
 }

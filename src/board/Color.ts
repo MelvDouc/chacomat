@@ -12,42 +12,60 @@ export default class Color {
   }
 
   static fromDirection(direction: number): Color {
-    return this.#from("direction", direction);
+    return this.#directionDict[direction];
   }
 
   static fromName(name: string) {
-    return this.#from("name", name);
+    return this.#nameDict[name];
   }
 
   static fromAbbreviation(abbreviation: string) {
-    return this.#from("abbreviation", abbreviation);
+    switch (abbreviation) {
+      case "w":
+        return this.WHITE;
+      case "b":
+        return this.BLACK;
+      default:
+        throw new Error(`Invalid color abbreviation: "${abbreviation}".`);
+    }
   }
 
-  static #from<K extends keyof Color>(key: K, value: Color[K]) {
-    for (const color of this.cases())
-      if (color[key] === value)
-        return color;
-    throw new Error(`Invalid ${key}: ${value}.`);
-  }
+  // ===== ===== ===== ===== =====
+  // STATIC PRIVATE
+  // ===== ===== ===== ===== =====
+
+  static readonly #nameDict: Record<string, Color> = {
+    white: this.WHITE,
+    black: this.BLACK
+  };
+
+  static readonly #directionDict: Record<number, Color> = {
+    [-1]: this.WHITE,
+    1: this.BLACK,
+  };
 
   // ===== ===== ===== ===== =====
   // PUBLIC
   // ===== ===== ===== ===== =====
 
   readonly name: string;
-  readonly direction: number;
+  readonly #direction: number;
 
   constructor(name: string, direction: number) {
     this.name = name;
-    this.direction = direction;
+    this.#direction = direction;
   }
 
   get abbreviation() {
     return this.name[0];
   }
 
+  get direction() {
+    return this.#direction;
+  }
+
   get opposite() {
-    return Color.fromDirection(-this.direction);
+    return Color.#directionDict[-this.#direction];
   }
 
   get pieceRank() {
@@ -55,6 +73,6 @@ export default class Color {
   }
 
   get pawnRank() {
-    return this.pieceRank + this.direction;
+    return this.pieceRank + this.#direction;
   }
 }

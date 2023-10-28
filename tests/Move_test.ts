@@ -1,6 +1,5 @@
 import ChessGame from "@/game/ChessGame.ts";
 import CastlingMove from "@/moves/CastlingMove.ts";
-import EnPassantPawnMove from "@/moves/EnPassantPawnMove.ts";
 import PawnMove from "@/moves/PawnMove.ts";
 import { Board, Color, Pieces, Position, coords } from "../mod.ts";
 import { assert, assertArrayIncludes, assertEquals, assertFalse } from "./test.index.ts";
@@ -46,7 +45,7 @@ Deno.test("ambiguous notation", () => {
 });
 
 Deno.test("promotion", () => {
-  const move = new PawnMove(coords[0][1], coords[0][0], Pieces.WHITE_PAWN, null);
+  const move = new PawnMove(coords[0][1], coords[0][0], Pieces.WHITE_PAWN, null, false);
   assert(move.isPromotion());
   move.promotedPiece = Pieces.WHITE_QUEEN;
   assertEquals(move.algebraicNotation(), "a8=Q");
@@ -68,7 +67,7 @@ Deno.test("underpromotion and capture", () => {
 Deno.test("en passant", () => {
   const position = Position.fromFEN("6k1/8/8/2pP4/8/8/8/2K5 w - c6 0 1");
   const move = position.legalMoves.find(({ destCoords }) => destCoords.x === 2 && destCoords.y === 2);
-  assert(move instanceof EnPassantPawnMove);
+  assert(move instanceof PawnMove && move.isEnPassant);
   move.play(position.board);
   assertEquals(position.board.get(coords[2][2]), move.srcPiece);
   assertFalse(position.board.has(coords[3][3]));

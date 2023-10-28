@@ -19,8 +19,7 @@ export default class Piece {
   }
 
   static fromWhiteInitialAndColor(whiteInitial: string, color: ChacoMat.Color) {
-    const initial = color === Color.WHITE ? whiteInitial : whiteInitial.toLowerCase();
-    return this.fromInitial(initial);
+    return this.fromInitial((color === Color.WHITE) ? whiteInitial : whiteInitial.toLowerCase());
   }
 
   readonly value: number;
