@@ -18,7 +18,7 @@ export default class ChessGame {
 
     while ((matchArr = pgn.match(headerRegex)) !== null) {
       gameInfo[matchArr.groups!.key] = matchArr.groups!.value;
-      pgn = pgn.slice(matchArr[0].length);
+      pgn = pgn.slice(matchArr[0].length).trimStart();
     }
 
     const result = pgn.match(/(\*|1\/2-1\/2|[01]-[01])$/)?.[0] as ChacoMat.GameResult | undefined;
@@ -35,7 +35,7 @@ export default class ChessGame {
     gameInfo.Result ??= (result ?? GameResults.NONE);
     return {
       gameInfo,
-      moveStr: pgn
+      moveString: pgn
     };
   }
 
@@ -48,20 +48,31 @@ export default class ChessGame {
 
   constructor();
   constructor(pgn: string);
-  constructor(info: ChacoMat.GameInfo);
+  constructor({ info, moveString }: { info: ChacoMat.GameInfo; moveString: string; });
 
-  constructor(param?: string | ChacoMat.GameInfo) {
-    if (typeof param === "string") {
-      const { gameInfo, moveStr } = ChessGame.parsePGN(param);
-      this.info = gameInfo;
-      this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
-      playMoves(moveStr, this);
-    } else if (typeof param === "object" && param !== null && "Result" in param) {
-      this.info = param;
-      this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
-    } else {
-      this.info = { Result: GameResults.NONE };
-      this.#currentPosition = Position.fromFEN(Position.START_FEN);
+  constructor(param?: string | { info: ChacoMat.GameInfo; moveString: string; }) {
+    switch (typeof param) {
+      case "string": {
+        const { gameInfo, moveString } = ChessGame.parsePGN(param);
+        this.info = gameInfo;
+        this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
+        playMoves(moveString, this);
+        break;
+      }
+      case "undefined": {
+        this.info = { Result: GameResults.NONE };
+        this.#currentPosition = Position.fromFEN(Position.START_FEN);
+        break;
+      }
+      case "object": {
+        if (param === null)
+          throw new Error("Null parameter not accepted.");
+        const { info, moveString } = param;
+        this.info = info;
+        this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
+        playMoves(moveString, this);
+        break;
+      }
     }
   }
 

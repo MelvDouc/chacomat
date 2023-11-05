@@ -23,9 +23,12 @@ spanishGame
 
 ```javascript
 const spanishGame = new ChessGame({
-  White: "Magnus Carlsen",
-  Black: "Ian Nepomniachtchi",
-  Result: "*"
+  info: {
+    White: "Magnus Carlsen",
+    Black: "Ian Nepomniachtchi",
+    Result: "*"
+  },
+  moveString: "1.e4 e5 2.Nf3 Nc6 3.Bb5 *"
 });
 ```
 

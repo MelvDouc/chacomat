@@ -23,13 +23,19 @@ Deno.test("cloning", () => {
 });
 
 Deno.test("Castling rights should be unset on king move.", () => {
-  const game = new ChessGame({ Result: "*", FEN: "1k6/8/8/8/8/8/8/R3K2R w KQ 0 1" });
+  const game = new ChessGame({
+    info: { Result: "*", FEN: "1k6/8/8/8/8/8/8/R3K2R w KQ 0 1" },
+    moveString: ""
+  });
   game.playMoveWithNotation("e1g1");
   assertEquals(game.currentPosition.castlingRights.get(Color.WHITE).size, 0);
 });
 
 Deno.test("Castling right should be unset on rook move and enemy rook capture.", () => {
-  const game = new ChessGame({ Result: "*", FEN: "r2nk2r/8/8/8/8/8/8/R3K2R w kqKQ 0 1" });
+  const game = new ChessGame({
+    info: { Result: "*", FEN: "r2nk2r/8/8/8/8/8/8/R3K2R w kqKQ 0 1" },
+    moveString: ""
+  });
   game.playMoveWithNotation("a1a8");
   const whiteCastlingRights = game.currentPosition.castlingRights.get(Color.WHITE);
   const blackCastlingRights = game.currentPosition.castlingRights.get(Color.BLACK);
