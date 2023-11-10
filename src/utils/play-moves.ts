@@ -2,15 +2,58 @@ import Coords from "@/coordinates/Coords.ts";
 import PawnMove from "@/moves/PawnMove.ts";
 import Piece from "@/pieces/Piece.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
-import {
-  findClosingParenIndex,
-  findNextBracketIndex
-} from "@/utils/string-search.ts";
+import { type PGNParserTypes } from "@deps";
 
-const pieceMoveRegex = /(?<pi>[NBRQK])(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])/;
-const pawnMoveRegex = /((?<sf>[a-h])x)?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
-const castlingRegex = /(?<o>0|O)-\k<o>(?<o2>-\k<o>)?/;
-const glyphRegex = /\$\d+/;
+const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
+
+export default function playMoves(game: ChacoMat.ChessGame, mainLine: PGNParserTypes.Line) {
+  if (mainLine.comment)
+    game.currentPosition.comment = mainLine.comment;
+
+  mainLine.moveNodes.forEach(({ notation, NAG, comment, variations }) => {
+    const { currentPosition } = game;
+    let next: ChacoMat.Position;
+
+    if (notation === "--") {
+      game.playNullMove();
+      next = game.currentPosition;
+    } else {
+      const move = findMove(currentPosition, notation);
+
+      if (!move)
+        throw new Error(`Illegal move: "${notation}".`);
+
+      if (NAG)
+        move.annotationGlyph = NAG;
+
+      game.playMove(move);
+      next = game.currentPosition;
+    }
+
+    if (comment)
+      next.comment = comment;
+
+    if (variations) {
+      variations.forEach((variation) => {
+        game.currentPosition = currentPosition;
+        playMoves(game, variation);
+      });
+      game.currentPosition = next;
+    }
+  });
+}
+
+function findMove(position: ChacoMat.Position, notation: string) {
+  if (notation.includes("-"))
+    return findCastlingMove(position, notation.length === 5);
+
+  const matchArr = notation.match(moveRegex);
+
+  if (!matchArr || !matchArr.groups)
+    return null;
+
+  return findNonCastlingMove(position, matchArr.groups as HalfMoveGroups);
+}
 
 function findNonCastlingMove(position: ChacoMat.Position, { pi, sf, sr, dc, pr }: HalfMoveGroups) {
   const destCoords = Coords.fromNotation(dc as string);
@@ -37,62 +80,6 @@ function findCastlingMove(position: ChacoMat.Position, isQueenSide: boolean) {
       return move;
 
   return null;
-}
-
-export function playLine(line: string, game: ChacoMat.ChessGame) {
-  let matchArr: RegExpMatchArray | null;
-
-  for (const substring of line.split(/\s+/)) {
-    if ((matchArr = substring.match(pieceMoveRegex)) || (matchArr = substring.match(pawnMoveRegex))) {
-      const move = findNonCastlingMove(game.currentPosition, matchArr.groups as HalfMoveGroups);
-      if (!move)
-        throw new Error(`Illegal move "${substring}" in "${line}".`);
-      game.playMove(move);
-      continue;
-    }
-
-    if (matchArr = substring.match(castlingRegex)) {
-      const move = findCastlingMove(game.currentPosition, matchArr.groups!.o2 !== void 0);
-      if (!move)
-        throw new Error(`Illegal move "${substring}" in "${line}".`);
-      game.playMove(move);
-      continue;
-    }
-
-    if (substring.endsWith("--")) {
-      game.playNullMove();
-      continue;
-    }
-
-    if (glyphRegex.test(substring) && game.currentPosition.srcMove) {
-      game.currentPosition.srcMove.annotationGlyph = substring as ChacoMat.NumericAnnotationGlyph;
-    }
-  }
-}
-
-export default function playMoves(moveStr: string, game: ChacoMat.ChessGame) {
-  while (moveStr.length) {
-    if (moveStr[0] === "(") {
-      const closingIndex = findClosingParenIndex(moveStr, 0);
-      const { currentPosition } = game;
-      game.goBack();
-      playMoves(moveStr.slice(1, closingIndex), game);
-      game.currentPosition = currentPosition;
-      moveStr = moveStr.slice(closingIndex + 1);
-      continue;
-    }
-
-    if (moveStr[0] === "{") {
-      const closingIndex = moveStr.indexOf("}");
-      game.currentPosition.comment = moveStr.slice(1, closingIndex).trim();
-      moveStr = moveStr.slice(closingIndex + 1);
-      continue;
-    }
-
-    const nextIndex = findNextBracketIndex(moveStr);
-    playLine(moveStr.slice(0, nextIndex).trim(), game);
-    moveStr = moveStr.slice(nextIndex);
-  }
 }
 
 type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dc" | "pr" | "o" | "o2";

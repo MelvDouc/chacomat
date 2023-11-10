@@ -176,6 +176,14 @@
     "https://deno.land/x/ts_morph@18.0.0/common/ts_morph_common.js": "845671ca951073400ce142f8acefa2d39ea9a51e29ca80928642f3f8cf2b7700",
     "https://deno.land/x/ts_morph@18.0.0/common/typescript.js": "d5c598b6a2db2202d0428fca5fd79fc9a301a71880831a805d778797d2413c59",
     "https://deno.land/x/wasmbuild@0.15.0/cache.ts": "89eea5f3ce6035a1164b3e655c95f21300498920575ade23161421f5b01967f4",
-    "https://deno.land/x/wasmbuild@0.15.0/loader.ts": "d98d195a715f823151cbc8baa3f32127337628379a02d9eb2a3c5902dbccfc02"
+    "https://deno.land/x/wasmbuild@0.15.0/loader.ts": "d98d195a715f823151cbc8baa3f32127337628379a02d9eb2a3c5902dbccfc02",
+    "https://raw.githubusercontent.com/MelvDouc/pgn-parser/main/mod.ts": "8068c3e839b6e94458949621cc0f06f1b0343da421d6657b5d66af17a19001e3",
+    "https://raw.githubusercontent.com/MelvDouc/pgn-parser/main/src/GameResults.ts": "54c2220098bed7fa27a7f248a60527bc9008f0ddb57e0572092daccebe569d34",
+    "https://raw.githubusercontent.com/MelvDouc/pgn-parser/main/src/Lexer.ts": "025832fe67832dd8713596d8f18ec595a005970f694b701eba0a226e69a3a51a",
+    "https://raw.githubusercontent.com/MelvDouc/pgn-parser/main/src/Line.ts": "048d6ba3a7c1ddeb9468e5a9c624965afaeb6d4049d57f12e82c9efb3db655df",
+    "https://raw.githubusercontent.com/MelvDouc/pgn-parser/main/src/Parser.ts": "bb968731978859b9e0dcf55dd8a983d118b9a0757747b5078cf83ea0a287dc38",
+    "https://raw.githubusercontent.com/MelvDouc/pgn-parser/main/src/string-utils.ts": "b393796dd3e48f0a0d375e1b2c20f913d143207916c8b48d05b0b19bacee940f",
+    "https://raw.githubusercontent.com/MelvDouc/pgn-parser/main/src/typings/types.public.ts": "e066ebab99bd934a1948f2da719a9f7a944891a244fa2caba7de63b64ca1a709",
+    "https://raw.githubusercontent.com/MelvDouc/pgn-parser/main/src/typings/types.ts": "67554de6687396f41a6d6653d6476d20ff9b2c08fa9dbda514c67549ccf0ac92"
   }
 }

@@ -1,5 +1,4 @@
-import GameResults from "@/game/GameResults.ts";
-import { NumericAnnotationGlyphTable } from "@/moves/MoveAnnotations.ts";
+import type { PGNParserTypes } from "@deps";
 
 export type Board = import("@/board/Board.ts").default;
 export type Color = import("@/board/Color.ts").default;
@@ -16,8 +15,6 @@ export interface PieceOffsets {
 }
 
 export type Direction = -1 | 1;
-
-export type NumericAnnotationGlyph = keyof typeof NumericAnnotationGlyphTable;
 
 // ===== ===== ===== ===== =====
 // JSON
@@ -52,35 +49,9 @@ export interface JSONPosition {
 // GAME
 // ===== ===== ===== ===== =====
 
-export type GameInfo = Partial<BaseGameInfo> & {
-  Result: GameResult;
-  [key: string]: unknown;
-};
-
-interface BaseGameInfo {
-  White: string;
-  Black: string;
-  Site: string;
-  Event: string;
-  /** Should be in the format `YYYY.MM.DD`. */
-  Date: string;
-  EventDate: string;
-  Round: string;
-  TimeControl: string;
-  FEN: string;
-  ECO: string;
-  Opening: string;
-  Variation: string;
-  PlyCount: string;
-  SetUp: string;
-  Termination: string;
-  WhiteElo: string;
-  BlackElo: string;
-  BlackTitle: string;
-  WhiteTitle: string;
-}
-
-export type GameResult = typeof GameResults[keyof typeof GameResults];
+export type NumericAnnotationGlyph = PGNParserTypes.NumericAnnotationGlyph;
+export type GameInfo = PGNParserTypes.PGNHeaders;
+export type GameResult = PGNParserTypes.GameResult;
 
 // ===== ===== ===== ===== =====
 // TREE

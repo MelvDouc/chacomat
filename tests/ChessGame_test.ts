@@ -1,20 +1,5 @@
-import { ChessGame, GameResults } from "../mod.ts";
-import { assert, assertEquals, assertStringIncludes } from "./test.index.ts";
-
-Deno.test("Parse game info.", () => {
-  const { gameInfo } = ChessGame.parsePGN(`
-    [Event "WCC"]
-    [Site "Havana CUB"]
-    [Round "1"]
-    [Result "1-0"]
-
-    1-0
-  `);
-  assertEquals(gameInfo.Event, "WCC");
-  assertEquals(gameInfo.Site, "Havana CUB");
-  assertEquals(Number(gameInfo.Round), 1);
-  assertEquals(gameInfo.Result, GameResults.WHITE_WIN);
-});
+import { ChessGame } from "../mod.ts";
+import { assert, assertStringIncludes } from "./test.index.ts";
 
 Deno.test("Parse various moves.", () => {
   const moveStr = "1.e4 ( 1.d4 d5 ( 1...Nf6 ) 2.c4 ( 2.Bg5 ) 2...c5 ) ( 1.c4 ) 1...Nc6 ( 1...d5 2.exd5 e5 3.dxe6 ) 2.Nf3 d6 3.Bc4 Bg4 4.0-0 Qd7 5.c3 0-0-0 *";

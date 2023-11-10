@@ -1,44 +1,11 @@
 import { coords } from "@/coordinates/Coords.ts";
-import GameResults from "@/game/GameResults.ts";
 import Position from "@/game/Position.ts";
 import PawnMove from "@/moves/PawnMove.ts";
 import { ChacoMat } from "@/typings/chacomat.ts";
 import playMoves from "@/utils/play-moves.ts";
+import { GameResults, PGNParser } from "@deps";
 
 export default class ChessGame {
-  // ===== ===== ===== ===== =====
-  // STATIC PUBLIC
-  // ===== ===== ===== ===== =====
-
-  static parsePGN(pgn: string) {
-    pgn = pgn.trim();
-    const gameInfo = Object.create(null) as ChacoMat.GameInfo;
-    const headerRegex = /^\[(?<key>[^"\s]+)\s+"(?<value>[^"]*)"\]*\s*/;
-    let matchArr: RegExpMatchArray | null;
-
-    while ((matchArr = pgn.match(headerRegex)) !== null) {
-      gameInfo[matchArr.groups!.key] = matchArr.groups!.value;
-      pgn = pgn.slice(matchArr[0].length).trimStart();
-    }
-
-    const result = pgn.match(/(\*|1\/2-1\/2|[01]-[01])$/)?.[0] as ChacoMat.GameResult | undefined;
-
-    if (!gameInfo.Result)
-      console.warn("Result missing from headers.");
-
-    if (!result)
-      console.warn("Result missing from move list.");
-
-    if (gameInfo.Result && result && gameInfo.Result !== result)
-      console.warn(`Result in headers ("${gameInfo.Result}") differs from result in move list ("${result}"). Using one in headers.`);
-
-    gameInfo.Result ??= (result ?? GameResults.NONE);
-    return {
-      gameInfo,
-      moveString: pgn
-    };
-  }
-
   // ===== ===== ===== ===== =====
   // PUBLIC
   // ===== ===== ===== ===== =====
@@ -53,10 +20,10 @@ export default class ChessGame {
   constructor(param?: string | { info: ChacoMat.GameInfo; moveString: string; }) {
     switch (typeof param) {
       case "string": {
-        const { gameInfo, moveString } = ChessGame.parsePGN(param);
-        this.info = gameInfo;
+        const parser = new PGNParser(param);
+        this.info = parser.headers;
         this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
-        playMoves(moveString, this);
+        playMoves(this, parser.mainLine);
         break;
       }
       case "undefined": {
@@ -67,10 +34,10 @@ export default class ChessGame {
       case "object": {
         if (param === null)
           throw new Error("Null parameter not accepted.");
-        const { info, moveString } = param;
-        this.info = info;
+        const parser = new PGNParser(param.moveString);
+        this.info = param.info;
         this.#currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
-        playMoves(moveString, this);
+        playMoves(this, parser.mainLine);
         break;
       }
     }

@@ -5,6 +5,7 @@
   },
   "imports": {
     "@/": "./src/",
+    "@deps": "./deps.ts",
     "@dev_deps": "./dev_deps.ts"
   },
   "compilerOptions": {
