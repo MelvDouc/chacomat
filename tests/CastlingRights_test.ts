@@ -1,47 +1,46 @@
-import { CastlingRights, ChessGame, Color } from "../mod.ts";
-import { assert, assertEquals, assertFalse } from "./test.index.ts";
+import Colors from "$src/constants/Colors.ts";
+import CastlingRights from "$src/game/CastlingRights.ts";
+import ChessGame from "$src/game/ChessGame.ts";
+import { expect, test } from "bun:test";
 
-Deno.test("from and to string", () => {
-  const castlingStr = "kqKQ";
-  assertEquals(CastlingRights.fromString(castlingStr).toString(), castlingStr);
-  assertEquals((new CastlingRights()).toString(), "-");
+test("from and to string", () => {
+  expect((new CastlingRights()).toString()).toEqual("kqKQ");
+  expect(CastlingRights.fromString("-").toString()).toEqual("-");
 });
 
-Deno.test("cloning", () => {
+test("cloning", () => {
   const castlingRights = new CastlingRights();
-  castlingRights.get(Color.WHITE).add(7);
-  castlingRights.get(Color.WHITE).add(0);
-  castlingRights.get(Color.BLACK).add(0);
+  const { queenSide, kingSide } = castlingRights;
+  queenSide[Colors.WHITE] = false;
+  kingSide[Colors.BLACK] = false;
   const clone = castlingRights.clone();
 
-  for (const color of Color.cases()) {
-    const cr1 = castlingRights.get(color);
-    const cr2 = clone.get(color);
-    if (cr1.size !== cr2.size)
-      assert(false);
-  }
+  expect(queenSide[Colors.WHITE]).toEqual(clone.queenSide[Colors.WHITE]);
+  expect(queenSide[Colors.BLACK]).toEqual(clone.queenSide[Colors.BLACK]);
+  expect(kingSide[Colors.WHITE]).toEqual(clone.kingSide[Colors.WHITE]);
+  expect(kingSide[Colors.BLACK]).toEqual(clone.kingSide[Colors.BLACK]);
 });
 
-Deno.test("Castling rights should be unset on king move.", () => {
+test("Castling rights should be unset on king move.", () => {
   const game = new ChessGame({
-    info: { Result: "*", FEN: "1k6/8/8/8/8/8/8/R3K2R w KQ 0 1" },
-    moveString: ""
+    Result: "*",
+    FEN: "1k6/8/8/8/8/8/8/R3K2R w KQ 0 1"
   });
   game.playMoveWithNotation("e1g1");
-  assertEquals(game.currentPosition.castlingRights.get(Color.WHITE).size, 0);
+  const { castlingRights } = game.currentPosition;
+  expect(castlingRights.queenSide[Colors.WHITE]).toBeFalse();
+  expect(castlingRights.kingSide[Colors.WHITE]).toBeFalse();
 });
 
-Deno.test("Castling right should be unset on rook move and enemy rook capture.", () => {
+test("Castling right should be unset on rook move and enemy rook capture.", () => {
   const game = new ChessGame({
-    info: { Result: "*", FEN: "r2nk2r/8/8/8/8/8/8/R3K2R w kqKQ 0 1" },
-    moveString: ""
+    Result: "*",
+    FEN: "r2nk2r/8/8/8/8/8/8/R3K2R w kqKQ 0 1"
   });
   game.playMoveWithNotation("a1a8");
-  const whiteCastlingRights = game.currentPosition.castlingRights.get(Color.WHITE);
-  const blackCastlingRights = game.currentPosition.castlingRights.get(Color.BLACK);
-
-  assertFalse(whiteCastlingRights.has(0));
-  assert(whiteCastlingRights.has(7));
-  assertFalse(blackCastlingRights.has(0));
-  assert(blackCastlingRights.has(7));
+  const { castlingRights: { queenSide, kingSide } } = game.currentPosition;
+  expect(queenSide[Colors.WHITE]).toBeFalse();
+  expect(queenSide[Colors.BLACK]).toBeFalse();
+  expect(kingSide[Colors.WHITE]).toBeTrue();
+  expect(kingSide[Colors.BLACK]).toBeTrue();
 });

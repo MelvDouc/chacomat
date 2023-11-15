@@ -1,43 +1,57 @@
-import globalConfig from "@/global-config.ts";
-import { ChacoMat } from "@/typings/chacomat.ts";
+import SquareIndex, { pointTable } from "$src/constants/SquareIndex.ts";
+import globalConfig from "$src/global-config.ts";
+import {
+  Board,
+  NAG,
+  Piece,
+  Position
+} from "$src/typings/types.ts";
 
 export default abstract class Move {
-  public annotationGlyph?: ChacoMat.NumericAnnotationGlyph;
+  public NAG?: NAG;
 
-  constructor(
-    readonly srcCoords: ChacoMat.Coords,
-    readonly destCoords: ChacoMat.Coords,
-    readonly srcPiece: ChacoMat.Piece,
-    readonly capturedPiece: ChacoMat.Piece | null = null
-  ) { }
+  abstract readonly srcPiece: Piece;
 
-  abstract play(board: ChacoMat.Board): void;
-  abstract undo(board: ChacoMat.Board): void;
-  abstract algebraicNotation(position: ChacoMat.Position): string;
+  abstract get srcIndex(): SquareIndex;
+  abstract get destIndex(): SquareIndex;
+  abstract get destPiece(): Piece | null;
 
-  fullAlgebraicNotation(positionBefore: ChacoMat.Position, positionAfter: ChacoMat.Position) {
-    return this.algebraicNotation(positionBefore)
+  abstract play(board: Board): void;
+  abstract undo(board: Board): void;
+  abstract isCapture(): boolean;
+  abstract getAlgebraicNotation(position: Position): string;
+
+  get srcPoint() {
+    return pointTable[this.srcIndex];
+  }
+
+  get destPoint() {
+    return pointTable[this.destIndex];
+  }
+
+  get srcNotation() {
+    return SquareIndex[this.srcIndex];
+  }
+
+  get destNotation() {
+    return SquareIndex[this.destIndex];
+  }
+
+  getComputerNotation() {
+    return this.srcNotation + this.destNotation;
+  }
+
+  getFullAlgebraicNotation(positionBefore: Position, positionAfter: Position) {
+    return this.getAlgebraicNotation(positionBefore)
       + this.getCheckSign(positionAfter)
-      + (this.annotationGlyph ? ` ${this.annotationGlyph}` : "");
+      + (this.NAG ? ` ${this.NAG}` : "");
   }
 
-  computerNotation() {
-    return this.srcCoords.notation + this.destCoords.notation;
-  }
-
-  getCheckSign(nextPosition: ChacoMat.Position) {
+  getCheckSign(nextPosition: Position) {
     if (nextPosition.isCheckmate())
       return globalConfig.useDoublePlusForCheckmate ? "++" : "#";
     if (nextPosition.isCheck())
       return "+";
     return "";
-  }
-
-  toJSON(position: ChacoMat.Position): ChacoMat.JSONMove {
-    return {
-      srcCoords: this.srcCoords.toJSON(),
-      destCoords: this.destCoords.toJSON(),
-      algebraicNotation: this.algebraicNotation(position)
-    };
   }
 }

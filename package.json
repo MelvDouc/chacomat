@@ -1,0 +1,16 @@
+{
+  "name": "bun-chacomat",
+  "module": "dist/index.js",
+  "devDependencies": {
+    "bun-types": "latest",
+    "mitata": "^0.1.6"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "bench": "bun benchmarks/benchmarks.ts",
+    "build": "tsc"
+  },
+  "type": "module"
+}

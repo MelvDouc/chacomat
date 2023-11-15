@@ -1,71 +1,114 @@
-import { coords } from "@/coordinates/Coords.ts";
-import Move from "@/moves/Move.ts";
-import Piece from "@/pieces/Piece.ts";
-import type { ChacoMat } from "@/typings/chacomat.ts";
+import Colors from "$src/constants/Colors.ts";
+import { pieceRanks } from "$src/constants/Ranks.ts";
+import { indexTable } from "$src/constants/SquareIndex.ts";
+import Move from "$src/moves/Move.ts";
+import Piece from "$src/pieces/Piece.ts";
+import Pieces from "$src/pieces/Pieces.ts";
+import { Board, SquareIndex } from "$src/typings/types.ts";
 
 export default class PawnMove extends Move {
-  readonly isEnPassant: boolean;
-  readonly capturedPieceCoords: ChacoMat.Coords | null;
-  promotedPiece: ChacoMat.Piece | null;
+  readonly srcIndex: SquareIndex;
+  readonly destIndex: SquareIndex;
+  readonly srcPiece: Piece;
+  readonly destPiece: Piece | null;
+  private readonly _isEnPassant: boolean;
+  private _promotedPiece: Piece | null = null;
 
-  constructor(
-    srcCoords: ChacoMat.Coords,
-    destCoords: ChacoMat.Coords,
-    srcPiece: ChacoMat.Piece,
-    capturedPiece: ChacoMat.Piece | null,
-    isEnPassant: boolean,
-    promotedPiece: ChacoMat.Piece | null = null
-  ) {
-    super(srcCoords, destCoords, srcPiece, capturedPiece);
-    this.isEnPassant = isEnPassant;
-    this.capturedPieceCoords = isEnPassant ? coords[destCoords.x][srcCoords.y] : destCoords;
-    this.promotedPiece = promotedPiece;
+  constructor({ srcIndex, destIndex, isEnPassant, srcPiece, destPiece }: {
+    srcIndex: SquareIndex;
+    destIndex: SquareIndex;
+    isEnPassant: boolean;
+    srcPiece: Piece;
+    destPiece: Piece | null;
+  }) {
+    super();
+    this.srcPiece = srcPiece;
+    this.srcIndex = srcIndex;
+    this.destIndex = destIndex;
+    this.destPiece = destPiece;
+    this._isEnPassant = isEnPassant;
   }
 
-  play(board: ChacoMat.Board) {
-    board
-      .set(this.destCoords, this.promotedPiece ?? this.srcPiece)
-      .delete(this.srcCoords);
-    if (this.isEnPassant)
-      board.delete(this.capturedPieceCoords!);
+  get promotionInitial() {
+    return this._promotedPiece?.initial.toUpperCase() ?? "";
   }
 
-  undo(board: ChacoMat.Board) {
-    this.capturedPiece
-      ? board.set(this.destCoords, this.capturedPiece)
-      : board.delete(this.destCoords);
-    board.set(this.srcCoords, this.srcPiece);
-    if (this.isEnPassant)
-      board.set(this.capturedPieceCoords!, this.capturedPiece!);
+  get capturedPieceIndex() {
+    if (this._isEnPassant)
+      return indexTable[this.srcPoint.y][this.destPoint.x];
+    return this.destIndex;
   }
 
-  algebraicNotation() {
-    let notation = this.destCoords.notation;
-    if (this.srcCoords.x !== this.destCoords.x)
-      notation = `${this.srcCoords.fileName}x${notation}`;
-    if (this.promotedPiece)
-      notation = `${notation}=${this.promotedPiece.whiteInitial}`;
+  getPromotedPiece() {
+    return this._promotedPiece;
+  }
+
+  setPromotedPiece(piece: Piece) {
+    this._promotedPiece = piece;
+    return this;
+  }
+
+  getAlgebraicNotation() {
+    let notation = this.destNotation;
+
+    if (this.srcPoint.x !== this.destPoint.x)
+      notation = `${this.srcNotation[0]}x${notation}`;
+
+    if (this._promotedPiece)
+      notation = `${notation}=${this.promotionInitial}`;
+
     return notation;
   }
 
-  override computerNotation() {
-    return super.computerNotation() + (this.promotedPiece?.whiteInitial ?? "");
+  play(board: Board) {
+    board
+      .remove(this.capturedPieceIndex)
+      .remove(this.srcIndex)
+      .set(this.destIndex, this._promotedPiece ?? this.srcPiece);
+  }
+
+  undo(board: Board) {
+    board
+      .remove(this.destIndex)
+      .set(this.srcIndex, this.srcPiece);
+    if (this.destPiece)
+      board.set(this.capturedPieceIndex, this.destPiece);
+  }
+
+  getComputerNotation() {
+    return super.getComputerNotation() + this.promotionInitial;
+  }
+
+  isCapture() {
+    return this.destPoint.x !== this.srcPoint.x;
   }
 
   isDouble() {
-    return Math.abs(this.destCoords.y - this.srcCoords.y) === 2;
+    return Math.abs(this.destPoint.y - this.srcPoint.y) === 2;
+  }
+
+  isEnPassant() {
+    return this._isEnPassant;
   }
 
   isPromotion() {
-    return this.destCoords.y === this.srcPiece.color.opposite.pieceRank;
+    return this.destPoint.y === pieceRanks[this.srcPiece.opposite.color];
   }
 
   *promotions() {
-    const { srcCoords, destCoords, capturedPiece, srcPiece } = this;
+    const params = {
+      srcIndex: this.srcIndex,
+      destIndex: this.destIndex,
+      isEnPassant: false,
+      srcPiece: this.srcPiece,
+      destPiece: this.destPiece
+    };
+    const gen = this.srcPiece.color === Colors.WHITE
+      ? Pieces.whitePieces()
+      : Pieces.blackPieces();
 
-    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, false, Piece.fromWhiteInitialAndColor("Q", srcPiece.color));
-    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, false, Piece.fromWhiteInitialAndColor("R", srcPiece.color));
-    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, false, Piece.fromWhiteInitialAndColor("B", srcPiece.color));
-    yield new PawnMove(srcCoords, destCoords, srcPiece, capturedPiece, false, Piece.fromWhiteInitialAndColor("N", srcPiece.color));
+    for (const piece of gen)
+      if (!piece.isPawn() && !piece.isKing())
+        yield (new PawnMove(params)).setPromotedPiece(piece);
   }
 }

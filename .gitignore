@@ -1,4 +1,5 @@
 .vscode
-npm
+node_modules
 playground
-pgn-files
+
+*.js

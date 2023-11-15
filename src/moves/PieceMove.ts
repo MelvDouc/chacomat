@@ -1,47 +1,66 @@
-import Move from "@/moves/Move.ts";
-import { ChacoMat } from "@/typings/chacomat.ts";
+import Move from "$src/moves/Move.ts";
+import Piece from "$src/pieces/Piece.ts";
+import { Board, Position, SquareIndex } from "$src/typings/types.ts";
 
 export default class PieceMove extends Move {
-  // ===== ===== ===== ===== =====
-  // PUBLIC
-  // ===== ===== ===== ===== =====
+  readonly srcIndex: SquareIndex;
+  readonly destIndex: SquareIndex;
+  readonly srcPiece: Piece;
+  readonly destPiece: Piece | null;
 
-  play(board: ChacoMat.Board) {
+  constructor({ srcIndex, destIndex, srcPiece, destPiece }: {
+    srcIndex: SquareIndex;
+    destIndex: SquareIndex;
+    srcPiece: Piece;
+    destPiece: Piece | null;
+  }) {
+    super();
+    this.srcIndex = srcIndex;
+    this.destIndex = destIndex;
+    this.srcPiece = srcPiece;
+    this.destPiece = destPiece;
+  }
+
+  play(board: Board) {
+    if (this.destPiece)
+      board.remove(this.destIndex);
     board
-      .set(this.destCoords, this.srcPiece)
-      .delete(this.srcCoords);
+      .remove(this.srcIndex)
+      .set(this.destIndex, this.srcPiece);
   }
 
-  undo(board: ChacoMat.Board) {
-    this.capturedPiece
-      ? board.set(this.destCoords, this.capturedPiece)
-      : board.delete(this.destCoords);
-    board.set(this.srcCoords, this.srcPiece);
+  undo(board: Board) {
+    board
+      .remove(this.destIndex)
+      .set(this.srcIndex, this.srcPiece);
+    if (this.destPiece)
+      board.set(this.destIndex, this.destPiece);
   }
 
-  algebraicNotation(position: ChacoMat.Position) {
+  isCapture() {
+    return this.destPiece !== null;
+  }
+
+  getAlgebraicNotation(position: Position) {
     let notation = "";
 
     if (!this.srcPiece.isKing())
-      notation += this.#exactNotation(position);
+      notation += this._exactNotation(position);
 
-    if (position.board.has(this.destCoords)) notation += "x";
-    return this.srcPiece.whiteInitial + notation + this.destCoords.notation;
+    if (this.destPiece) notation += "x";
+    return this.srcPiece.initial.toUpperCase() + notation + this.destNotation;
   }
 
-  // ===== ===== ===== ===== =====
-  // PRIVATE
-  // ===== ===== ===== ===== =====
-
-  #exactNotation(position: ChacoMat.Position) {
+  protected _exactNotation(position: Position) {
     const ambiguities = new Set<string>();
 
-    for (const { srcCoords, destCoords, srcPiece } of position.legalMoves) {
-      if (srcCoords === this.srcCoords || destCoords !== this.destCoords || srcPiece !== this.srcPiece)
+    for (const { srcIndex, destIndex, srcPoint, srcPiece } of position.legalMoves) {
+      if (srcIndex === this.srcIndex || destIndex !== this.destIndex || srcPiece !== this.srcPiece)
         continue;
-      if (srcCoords.x === this.srcCoords.x)
+
+      if (srcPoint.x === this.srcPoint.x)
         ambiguities.add("x");
-      else if (srcCoords.y === this.srcCoords.y)
+      else if (srcPoint.y === this.srcPoint.y)
         ambiguities.add("y");
       else
         ambiguities.add("");
@@ -51,11 +70,11 @@ export default class PieceMove extends Move {
       return "";
 
     if (!ambiguities.has("x"))
-      return this.srcCoords.fileName;
+      return this.srcNotation[0];
 
     if (!ambiguities.has("y"))
-      return this.srcCoords.rankName;
+      return this.srcNotation[1];
 
-    return this.srcCoords.notation;
+    return this.srcNotation;
   }
 }

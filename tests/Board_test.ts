@@ -1,37 +1,37 @@
-import { assertEquals } from "@dev_deps";
-import { Board, Color, coords } from "../mod.ts";
-import { assert } from "./test.index.ts";
+import Colors from "$src/constants/Colors.ts";
+import SquareIndex from "$src/constants/SquareIndex.ts";
+import Board from "$src/game/Board.ts";
+import Pieces from "$src/pieces/Pieces.ts";
+import { expect, test } from "bun:test";
 
-Deno.test("Get board from string.", () => {
+test("Get board from string.", () => {
   const board = Board.fromString("8/2K1k3/8/8/8/8/8/8");
-  const whiteKingCoords = coords[2][1];
-  const blackKingCoords = coords[4][1];
+  const pieceAtC7 = board.get(SquareIndex.c7);
+  const pieceAtE7 = board.get(SquareIndex.e7);
 
-  assert(board.get(whiteKingCoords)?.isKing());
-  assert(board.get(whiteKingCoords)?.color.name === "white");
-  assert(board.get(blackKingCoords)?.isKing());
-  assert(board.get(blackKingCoords)?.color.name === "black");
+  expect(pieceAtC7?.isKing()).toBeTrue();
+  expect(pieceAtC7?.color).toEqual(Colors.WHITE);
+  expect(pieceAtE7?.isKing()).toBeTrue();
+  expect(pieceAtE7?.color).toEqual(Colors.BLACK);
 });
 
-Deno.test("board cloning", () => {
+test("board cloning", () => {
   const board = Board.fromString("8/2K1k3/8/8/8/8/8/8");
   const clone = board.clone();
-
-  assertEquals(board.pieces.size, clone.pieces.size);
-  for (const [coords, piece] of board.pieces)
-    if (clone.get(coords) !== piece)
-      assert(false);
+  expect(board.equals(clone)).toBeTrue();
 });
 
-Deno.test("King coordinates should be auto-updated.", () => {
-  const board = Board.fromString("8/2K1k3/8/8/8/8/8/8");
-  const kingCoords = board.getKingCoords(Color.WHITE);
-  board.set(coords[1][1], board.get(kingCoords)!);
-  assertEquals(board.getKingCoords(Color.WHITE), coords[1][1]);
-});
-
-Deno.test("A board should be stringifiable and parsable from the same string.", () => {
+test("A board should be stringifiable and parsable from the same string.", () => {
   const boardStr = "8/2K1k3/8/8/8/8/8/8";
   const board = Board.fromString(boardStr);
-  assertEquals(board.toString(), boardStr);
+  expect(board.toString()).toEqual(boardStr);
+});
+
+test("Board occupancy should auto-updated.", () => {
+  const board = Board.fromString("8/2K1k3/8/8/8/8/8/8");
+  board
+    .remove(SquareIndex.c7)
+    .set(SquareIndex.b7, Pieces.WHITE_KING);
+  expect(board.has(SquareIndex.c7)).toBeFalse();
+  expect(board.get(SquareIndex.b7)).toEqual(Pieces.WHITE_KING);
 });

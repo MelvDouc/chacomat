@@ -1,35 +1,41 @@
-import { Board, Color, coords, Pieces } from "../mod.ts";
-import { assert, assertEquals } from "./test.index.ts";
+import Colors from "$src/constants/Colors.ts";
+import { indexTable } from "$src/constants/SquareIndex.ts";
+import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import Board from "$src/game/Board.ts";
+import Pieces from "$src/pieces/Pieces.ts";
+import { expect, test } from "bun:test";
 
-Deno.test("colors", () => {
-  for (const key in Pieces) {
-    const piece = Pieces[key as keyof typeof Pieces];
-    const color = key.startsWith("WHITE") ? Color.WHITE : Color.BLACK;
-    assertEquals(piece.color, color);
-  }
+test("colors", () => {
+  for (const piece of Pieces.whitePieces())
+    expect(piece.color).toEqual(Colors.WHITE);
+  for (const piece of Pieces.blackPieces())
+    expect(piece.color).toEqual(Colors.BLACK);
 });
 
-Deno.test("types", () => {
-  assert(Pieces.BLACK_BISHOP.isBishop());
-  assert(Pieces.WHITE_QUEEN.isQueen());
+test("types", () => {
+  expect(Pieces.BLACK_BISHOP.isBishop()).toBeTrue();
+  expect(Pieces.WHITE_QUEEN.isQueen()).toBeTrue();
 });
 
-Deno.test("initials", () => {
-  assertEquals(Pieces.BLACK_PAWN.whiteInitial, Pieces.WHITE_PAWN.initial);
-  assertEquals(Pieces.WHITE_QUEEN.initial, "Q");
-  assertEquals(Pieces.BLACK_KNIGHT.initial, "n");
+test("initials", () => {
+  expect(Pieces.BLACK_PAWN.initial.toUpperCase()).toBe(Pieces.WHITE_PAWN.initial);
+  expect(Pieces.WHITE_QUEEN.initial).toBe("Q");
+  expect(Pieces.BLACK_KNIGHT.initial).toBe("n");
 });
 
-Deno.test("opposites", () => {
-  assertEquals(Pieces.WHITE_ROOK.opposite, Pieces.BLACK_ROOK);
-  assertEquals(Pieces.BLACK_ROOK.opposite, Pieces.WHITE_ROOK);
+test("opposites", () => {
+  expect(Pieces.WHITE_ROOK.opposite).toBe(Pieces.BLACK_ROOK);
+  expect(Pieces.BLACK_ROOK.opposite).toBe(Pieces.WHITE_ROOK);
 });
 
-Deno.test("A rook should always attack 14 squares.", () => {
+test("A rook should always attack 14 squares.", () => {
   const board = new Board();
-  const x = Math.floor(Math.random() * 8);
-  const y = Math.floor(Math.random() * 8);
-  board.set(coords[x][y], Pieces.WHITE_ROOK);
-  const attackedCoords = Pieces.WHITE_ROOK.getAttacks(board, coords[x][y]);
-  assertEquals(attackedCoords.length, 14);
+  const index = indexTable[randomCoord()][randomCoord()];
+  board.set(index, Pieces.WHITE_ROOK);
+  const attacks = Pieces.WHITE_ROOK.getAttacks(index, board);
+  expect(attacks).toHaveLength(14);
 });
+
+function randomCoord() {
+  return Math.floor(Math.random() * BOARD_WIDTH);
+}

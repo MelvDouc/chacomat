@@ -35,7 +35,7 @@ const spanishGame = new ChessGame({
 ### from a PGN
 
 ```javascript
-const spanishGame = new ChessGame(`
+const spanishGame = ChessGame.fromPGN(`
   [White "Magnus Carlsen"]
   [Black "Ian Nepomniachtchi"]
   [Result "*"]
@@ -118,7 +118,7 @@ Types can be imported under the `ChacoMat` namespace.
 ```typescript
 import type { ChacoMat } from "chacomat";
 
-ChacoMat.GameResult; // "1-0" | "0-1" | "1/2-1/2" | "0-0" | "*"
+ChacoMat.GameResult; // "1-0" | "0-1" | "1/2-1/2" | "*"
 ```
 
 Most components of the game (coordinates, board, move, piece, position) can be serialized, for example, to be sent as a JSON response.

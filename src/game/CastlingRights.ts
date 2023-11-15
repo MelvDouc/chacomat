@@ -1,58 +1,82 @@
-import Color from "@/board/Color.ts";
+import Colors from "$src/constants/Colors.ts";
+import { pieceRanks } from "$src/constants/Ranks.ts";
+import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import { Color, Move, Wing } from "$src/typings/types.ts";
 
 export default class CastlingRights {
-  static fromString(castlingStr: string) {
+  static getWing(file: number): Wing {
+    return file < BOARD_WIDTH / 2 ? "queenSide" : "kingSide";
+  }
+
+  static fromString(castlingString: string) {
     const castlingRights = new this();
 
-    if (castlingStr !== "-") {
-      if (castlingStr.includes("q"))
-        castlingRights.get(Color.BLACK).add(0);
-      if (castlingStr.includes("k"))
-        castlingRights.get(Color.BLACK).add(8 - 1);
-      if (castlingStr.includes("Q"))
-        castlingRights.get(Color.WHITE).add(0);
-      if (castlingStr.includes("K"))
-        castlingRights.get(Color.WHITE).add(8 - 1);
-    }
+    if (!castlingString.includes("K"))
+      castlingRights.kingSide[Colors.WHITE] = false;
+    if (!castlingString.includes("Q"))
+      castlingRights.queenSide[Colors.WHITE] = false;
+    if (!castlingString.includes("k"))
+      castlingRights.kingSide[Colors.BLACK] = false;
+    if (!castlingString.includes("q"))
+      castlingRights.queenSide[Colors.BLACK] = false;
 
     return castlingRights;
   }
 
-  readonly #white: Set<number>;
-  readonly #black: Set<number>;
+  readonly queenSide = {
+    [Colors.WHITE]: true,
+    [Colors.BLACK]: true
+  };
+  readonly kingSide = {
+    [Colors.WHITE]: true,
+    [Colors.BLACK]: true
+  };
 
-  constructor(whiteFiles: number[] = [], blackFiles: number[] = []) {
-    this.#white = new Set(whiteFiles);
-    this.#black = new Set(blackFiles);
-  }
+  update({ srcPiece, srcPoint, destPoint, destPiece }: Move) {
+    if (destPiece?.isRook() && destPoint.y === pieceRanks[destPiece.color])
+      this[CastlingRights.getWing(destPoint.x)][destPiece.color] = false;
 
-  get(color: Color) {
-    switch (color) {
-      case Color.WHITE:
-        return this.#white;
-      case Color.BLACK:
-        return this.#black;
-      default:
-        throw new Error(`Invalid color: ${color}.`);
+    if (srcPiece.isKing()) {
+      this.queenSide[srcPiece.color] = false;
+      this.kingSide[srcPiece.color] = false;
+      return;
     }
+
+    if (srcPiece.isRook() && srcPoint.y === pieceRanks[srcPiece.color])
+      this[CastlingRights.getWing(srcPoint.x)][srcPiece.color] = false;
   }
 
   clone() {
-    return new CastlingRights([...this.#white], [...this.#black]) as this;
+    const clone = new CastlingRights();
+    Object.assign(clone.queenSide, this.queenSide);
+    Object.assign(clone.kingSide, this.kingSide);
+    return clone;
   }
 
   toString() {
-    let castlingStr = "";
+    let castlingString = "";
 
-    if (this.#black.has(8 - 1))
-      castlingStr += "k";
-    if (this.#black.has(0))
-      castlingStr += "q";
-    if (this.#white.has(8 - 1))
-      castlingStr += "K";
-    if (this.#white.has(0))
-      castlingStr += "Q";
+    if (this.kingSide[Colors.BLACK])
+      castlingString += "k";
+    if (this.queenSide[Colors.BLACK])
+      castlingString += "q";
+    if (this.kingSide[Colors.WHITE])
+      castlingString += "K";
+    if (this.queenSide[Colors.WHITE])
+      castlingString += "Q";
 
-    return castlingStr || "-";
+    return castlingString || "-";
+  }
+
+  toJSON() {
+    return {
+      queenSide: { ...this.queenSide },
+      kingSide: { ...this.kingSide }
+    };
+  }
+
+  *entries(): Generator<[Wing, Record<Color, boolean>]> {
+    yield ["queenSide", this.queenSide];
+    yield ["kingSide", this.kingSide];
   }
 }
