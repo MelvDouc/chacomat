@@ -1,4 +1,4 @@
-import LongRangePiece from "$src/pieces/long-range/LongRangePiece.ts";
+import LongRangePiece from "$src/pieces/long-range/LongRangePiece";
 
 export default class Bishop extends LongRangePiece {
   static readonly offsets = {

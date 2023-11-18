@@ -1,7 +1,7 @@
-import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import Piece from "$src/pieces/Piece.ts";
-import { Board } from "$src/typings/types.ts";
+import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex";
+import { BOARD_WIDTH } from "$src/constants/dimensions";
+import Piece from "$src/pieces/Piece";
+import { Board } from "$src/typings/types";
 
 export default abstract class LongRangePiece extends Piece {
   override getAttacks(srcIndex: SquareIndex, board: Board) {

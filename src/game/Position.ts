@@ -1,14 +1,14 @@
-import Colors, { colorAbbreviations } from "$src/constants/Colors.ts";
-import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import Board from "$src/game/Board.ts";
-import CastlingRights from "$src/game/CastlingRights.ts";
-import CastlingMove from "$src/moves/CastlingMove.ts";
-import PawnMove from "$src/moves/PawnMove.ts";
-import PieceMove from "$src/moves/PieceMove.ts";
-import Piece from "$src/pieces/Piece.ts";
-import Pieces from "$src/pieces/Pieces.ts";
-import { Color, Move, Wing } from "$src/typings/types.ts";
+import Colors, { colorAbbreviations } from "$src/constants/Colors";
+import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex";
+import { BOARD_WIDTH } from "$src/constants/dimensions";
+import Board from "$src/game/Board";
+import CastlingRights from "$src/game/CastlingRights";
+import CastlingMove from "$src/moves/CastlingMove";
+import PawnMove from "$src/moves/PawnMove";
+import PieceMove from "$src/moves/PieceMove";
+import Piece from "$src/pieces/Piece";
+import Pieces from "$src/pieces/Pieces";
+import { Color, Move, Wing } from "$src/typings/types";
 
 export default class Position {
   static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";

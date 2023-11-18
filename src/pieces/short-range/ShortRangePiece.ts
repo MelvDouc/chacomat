@@ -1,7 +1,7 @@
-import { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import Piece from "$src/pieces/Piece.ts";
-import { SquareIndex } from "$src/typings/types.ts";
+import { indexTable, pointTable } from "$src/constants/SquareIndex";
+import { BOARD_WIDTH } from "$src/constants/dimensions";
+import Piece from "$src/pieces/Piece";
+import { SquareIndex } from "$src/typings/types";
 
 export default abstract class ShortRangePiece extends Piece {
   protected readonly _attacksMemo = new Map<SquareIndex, SquareIndex[]>();

@@ -1,16 +1,15 @@
-import Colors from "$src/constants/Colors.ts";
-import GameResults from "$src/constants/GameResults";
-import IllegalMoveError from "$src/errors/IllegalMoveError.ts";
-import Position from "$src/game/Position.ts";
-import PawnMove from "$src/moves/PawnMove.ts";
-import PGNParser from "$src/pgn-parser/Parser.ts";
-import { Move, PGNHeaders } from "$src/typings/types.ts";
-import playMoves from "$src/utils/play-moves.ts";
+import Colors from "$src/constants/Colors";
+import IllegalMoveError from "$src/errors/IllegalMoveError";
+import Position from "$src/game/Position";
+import PawnMove from "$src/moves/PawnMove";
+import { Move, PGNHeaders } from "$src/typings/types";
+import playMoves from "$src/utils/play-moves";
+import { GameResults, PGNParser } from "pgnify";
 
 export default class ChessGame {
   static fromPGN(pgn: string) {
     const parser = new PGNParser(pgn);
-    const game = new this(parser.headers);
+    const game = new this({ info: parser.headers });
     playMoves(game, parser.mainLine);
     return game;
   }
@@ -18,9 +17,17 @@ export default class ChessGame {
   readonly info: PGNHeaders;
   currentPosition: Position;
 
-  constructor(info?: PGNHeaders) {
-    this.info = info ?? { Result: GameResults.NONE };
+  constructor(params?: {
+    info: PGNHeaders;
+    moveString?: string;
+  }) {
+    this.info = params?.info ?? { Result: GameResults.NONE };
     this.currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
+
+    if (params?.moveString) {
+      const parser = new PGNParser(params.moveString);
+      playMoves(this, parser.mainLine);
+    }
   }
 
   get firstPosition() {

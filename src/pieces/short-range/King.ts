@@ -1,4 +1,4 @@
-import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.ts";
+import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece";
 
 export default class King extends ShortRangePiece {
   static readonly offsets = {

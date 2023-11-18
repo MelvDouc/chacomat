@@ -1,6 +1,6 @@
-import Move from "$src/moves/Move.ts";
-import Piece from "$src/pieces/Piece.ts";
-import { Board, Position, SquareIndex } from "$src/typings/types.ts";
+import Move from "$src/moves/Move";
+import Piece from "$src/pieces/Piece";
+import { Board, Position, SquareIndex } from "$src/typings/types";
 
 export default class PieceMove extends Move {
   readonly srcIndex: SquareIndex;

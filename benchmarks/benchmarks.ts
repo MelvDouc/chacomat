@@ -1,7 +1,7 @@
-import ChessGame from "$src/game/ChessGame.ts";
+import pgn from "$pgn-files/long-engine-game1.pgn";
+import ChessGame from "$src/game/ChessGame";
 import { bench, run } from "mitata";
 
-const pgn = await Bun.file(`${process.cwd()}/pgn-files/long-engine-game1.pgn`).text();
 let game: ChessGame;
 
 bench("Parse long game.", () => {

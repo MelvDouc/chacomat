@@ -1,0 +1,14 @@
+/.vscode
+/benchmarks
+/node_modules
+/pgn-files
+/playground
+/src
+/tests
+
+.gitignore
+bun.lockb
+bunfig.toml
+global.d.ts
+tsconfig.json
+tsconfig.npm.json

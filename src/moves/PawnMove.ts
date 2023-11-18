@@ -1,10 +1,10 @@
-import Colors from "$src/constants/Colors.ts";
-import { pieceRanks } from "$src/constants/Ranks.ts";
-import { indexTable } from "$src/constants/SquareIndex.ts";
-import Move from "$src/moves/Move.ts";
-import Piece from "$src/pieces/Piece.ts";
-import Pieces from "$src/pieces/Pieces.ts";
-import { Board, SquareIndex } from "$src/typings/types.ts";
+import Colors from "$src/constants/Colors";
+import { pieceRanks } from "$src/constants/Ranks";
+import { indexTable } from "$src/constants/SquareIndex";
+import Move from "$src/moves/Move";
+import Piece from "$src/pieces/Piece";
+import Pieces from "$src/pieces/Pieces";
+import { Board, SquareIndex } from "$src/typings/types";
 
 export default class PawnMove extends Move {
   readonly srcIndex: SquareIndex;

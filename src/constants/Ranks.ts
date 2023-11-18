@@ -1,5 +1,5 @@
-import Colors from "$src/constants/Colors.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import Colors from "$src/constants/Colors";
+import { BOARD_WIDTH } from "$src/constants/dimensions";
 
 export const pieceRanks = {
   [Colors.WHITE]: 0,

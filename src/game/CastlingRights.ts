@@ -1,7 +1,7 @@
-import Colors from "$src/constants/Colors.ts";
-import { pieceRanks } from "$src/constants/Ranks.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import { Color, Move, Wing } from "$src/typings/types.ts";
+import Colors from "$src/constants/Colors";
+import { pieceRanks } from "$src/constants/Ranks";
+import { BOARD_WIDTH } from "$src/constants/dimensions";
+import { Color, Move, Wing } from "$src/typings/types";
 
 export default class CastlingRights {
   static getWing(file: number): Wing {

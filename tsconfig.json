@@ -23,6 +23,9 @@
     "paths": {
       "$src/*": [
         "./src/*"
+      ],
+      "$pgn-files/*": [
+        "./pgn-files/*"
       ]
     }
   }

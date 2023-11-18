@@ -1,7 +1,7 @@
-import { indexTable } from "$src/constants/SquareIndex.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import Pieces from "$src/pieces/Pieces.ts";
-import { Color, Piece, SquareIndex } from "$src/typings/types.ts";
+import { indexTable } from "$src/constants/SquareIndex";
+import { BOARD_WIDTH } from "$src/constants/dimensions";
+import Pieces from "$src/pieces/Pieces";
+import { Color, Piece, SquareIndex } from "$src/typings/types";
 
 export default class Board {
   static fromString(boardString: string) {

@@ -1,11 +1,11 @@
-import Colors from "$src/constants/Colors.ts";
-import SquareIndex from "$src/constants/SquareIndex.ts";
-import Board from "$src/game/Board.ts";
-import ChessGame from "$src/game/ChessGame.ts";
-import Position from "$src/game/Position.ts";
-import CastlingMove from "$src/moves/CastlingMove.ts";
-import PawnMove from "$src/moves/PawnMove.ts";
-import Pieces from "$src/pieces/Pieces.ts";
+import Colors from "$src/constants/Colors";
+import SquareIndex from "$src/constants/SquareIndex";
+import Board from "$src/game/Board";
+import ChessGame from "$src/game/ChessGame";
+import Position from "$src/game/Position";
+import CastlingMove from "$src/moves/CastlingMove";
+import PawnMove from "$src/moves/PawnMove";
+import Pieces from "$src/pieces/Pieces";
 import { expect, test } from "bun:test";
 
 function cMove(arg: ConstructorParameters<typeof CastlingMove>[0]) {
@@ -51,10 +51,11 @@ test("promotion", () => {
 });
 
 test("underpromotion and capture", () => {
-  const game = ChessGame.fromPGN(`
+  const pgn = `
     [FEN "8/5pkp/b5p1/p7/P4P2/8/1pp2NPP/R6K b - - 1 32"]
     [Result "*"] *
-  `);
+  `;
+  const game = ChessGame.fromPGN(pgn);
   expect(game.currentPosition.legalMovesAsAlgebraicNotation).toContain("bxa1=R");
 });
 

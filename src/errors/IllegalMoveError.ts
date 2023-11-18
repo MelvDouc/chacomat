@@ -1,4 +1,4 @@
-import { Point, Position } from "$src/typings/types.ts";
+import { Point, Position } from "$src/typings/types";
 
 export default class IllegalMoveError extends Error {
   position?: Position;

@@ -1,5 +1,5 @@
-import Colors from "$src/constants/Colors.ts";
-import { Board, Color, PieceInitial, SquareIndex } from "$src/typings/types.ts";
+import Colors from "$src/constants/Colors";
+import { Board, Color, PieceInitial, SquareIndex } from "$src/typings/types";
 
 export default abstract class Piece {
   static readonly byInitial = new Map<PieceInitial, Piece>();

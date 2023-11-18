@@ -1,6 +1,6 @@
-import Colors from "$src/constants/Colors.ts";
-import CastlingRights from "$src/game/CastlingRights.ts";
-import ChessGame from "$src/game/ChessGame.ts";
+import Colors from "$src/constants/Colors";
+import CastlingRights from "$src/game/CastlingRights";
+import ChessGame from "$src/game/ChessGame";
 import { expect, test } from "bun:test";
 
 test("from and to string", () => {
@@ -23,8 +23,10 @@ test("cloning", () => {
 
 test("Castling rights should be unset on king move.", () => {
   const game = new ChessGame({
-    Result: "*",
-    FEN: "1k6/8/8/8/8/8/8/R3K2R w KQ 0 1"
+    info: {
+      Result: "*",
+      FEN: "1k6/8/8/8/8/8/8/R3K2R w KQ 0 1"
+    }
   });
   game.playMoveWithNotation("e1g1");
   const { castlingRights } = game.currentPosition;
@@ -34,8 +36,10 @@ test("Castling rights should be unset on king move.", () => {
 
 test("Castling right should be unset on rook move and enemy rook capture.", () => {
   const game = new ChessGame({
-    Result: "*",
-    FEN: "r2nk2r/8/8/8/8/8/8/R3K2R w kqKQ 0 1"
+    info: {
+      Result: "*",
+      FEN: "r2nk2r/8/8/8/8/8/8/R3K2R w kqKQ 0 1"
+    }
   });
   game.playMoveWithNotation("a1a8");
   const { castlingRights: { queenSide, kingSide } } = game.currentPosition;

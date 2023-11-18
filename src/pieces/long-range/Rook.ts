@@ -1,4 +1,4 @@
-import LongRangePiece from "$src/pieces/long-range/LongRangePiece.ts";
+import LongRangePiece from "$src/pieces/long-range/LongRangePiece";
 
 export default class Rook extends LongRangePiece {
   static readonly offsets = {

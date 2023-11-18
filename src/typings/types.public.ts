@@ -15,4 +15,4 @@ export {
   SquareIndex,
   WhitePieceInitial,
   Wing
-} from "$src/typings/types.ts";
+} from "$src/typings/types";

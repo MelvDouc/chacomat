@@ -1,11 +1,11 @@
-import SquareIndex, { pointTable } from "$src/constants/SquareIndex.ts";
-import globalConfig from "$src/global-config.ts";
+import SquareIndex, { pointTable } from "$src/constants/SquareIndex";
+import globalConfig from "$src/global-config";
 import {
   Board,
   NAG,
   Piece,
   Position
-} from "$src/typings/types.ts";
+} from "$src/typings/types";
 
 export default abstract class Move {
   public NAG?: NAG;

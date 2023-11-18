@@ -1,12 +1,12 @@
-import Colors from "$src/constants/Colors.ts";
-import Piece from "$src/pieces/Piece.ts";
-import Bishop from "$src/pieces/long-range/Bishop.ts";
-import Queen from "$src/pieces/long-range/Queen.ts";
-import Rook from "$src/pieces/long-range/Rook.ts";
-import King from "$src/pieces/short-range/King.ts";
-import Knight from "$src/pieces/short-range/Knight.ts";
-import Pawn from "$src/pieces/short-range/Pawn.ts";
-import { PieceInitial } from "$src/typings/types.ts";
+import Colors from "$src/constants/Colors";
+import Piece from "$src/pieces/Piece";
+import Bishop from "$src/pieces/long-range/Bishop";
+import Queen from "$src/pieces/long-range/Queen";
+import Rook from "$src/pieces/long-range/Rook";
+import King from "$src/pieces/short-range/King";
+import Knight from "$src/pieces/short-range/Knight";
+import Pawn from "$src/pieces/short-range/Pawn";
+import { PieceInitial } from "$src/typings/types";
 
 const WHITE_PAWN = new Pawn(1, Colors.WHITE, "P");
 const WHITE_KNIGHT = new Knight(2, Colors.WHITE, "N");
