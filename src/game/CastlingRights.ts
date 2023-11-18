@@ -1,7 +1,7 @@
 import Colors from "$src/constants/Colors";
 import { pieceRanks } from "$src/constants/Ranks";
 import { BOARD_WIDTH } from "$src/constants/dimensions";
-import { Color, Move, Wing } from "$src/typings/types";
+import { Color, Wing, RealMove } from "$src/typings/types";
 
 export default class CastlingRights {
   static getWing(file: number): Wing {
@@ -32,7 +32,7 @@ export default class CastlingRights {
     [Colors.BLACK]: true
   };
 
-  update({ srcPiece, srcPoint, destPoint, destPiece }: Move) {
+  update({ srcPiece, srcPoint, destPoint, destPiece }: RealMove) {
     if (destPiece?.isRook() && destPoint.y === pieceRanks[destPiece.color])
       this[CastlingRights.getWing(destPoint.x)][destPiece.color] = false;
 

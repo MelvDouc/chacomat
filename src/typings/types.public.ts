@@ -7,11 +7,13 @@ export {
   GameResult,
   Move,
   NAG,
+  NullMove,
   PGNHeaders,
   Piece,
   PieceInitial,
   Point,
   Position,
+  RealMove,
   SquareIndex,
   WhitePieceInitial,
   Wing

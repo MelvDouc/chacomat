@@ -16,6 +16,8 @@ export default class Pawn extends ShortRangePiece {
     }
   };
 
+  protected readonly _attacksMemo = new Map<SquareIndex, SquareIndex[]>();
+
   get direction() {
     return this.color;
   }

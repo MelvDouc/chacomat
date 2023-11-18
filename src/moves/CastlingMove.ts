@@ -1,11 +1,11 @@
 import Colors from "$src/constants/Colors";
 import SquareIndex from "$src/constants/SquareIndex";
 import globalConfig from "$src/global-config";
-import Move from "$src/moves/Move";
+import RealMove from "$src/moves/RealMove";
 import Pieces from "$src/pieces/Pieces";
 import { Board, Color, Piece, Wing } from "$src/typings/types";
 
-export default class CastlingMove extends Move {
+export default class CastlingMove extends RealMove {
   readonly srcPiece: Piece;
   readonly rook: Piece;
   readonly kingSrcIndex: SquareIndex;

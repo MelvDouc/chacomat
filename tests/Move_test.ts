@@ -68,7 +68,7 @@ test("en passant", () => {
 
   move!.play(board);
 
-  expect(board.get(SquareIndex.c6)).toEqual(move?.srcPiece!);
+  expect(board.get(SquareIndex.c6)).toEqual(move!.srcPiece);
   expect(board.has(SquareIndex.d5)).toBeFalse();
   expect(board.has(SquareIndex.c5)).toBeFalse();
 });

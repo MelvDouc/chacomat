@@ -1,3 +1,4 @@
+import ChessGame from "$src/game/ChessGame";
 import Colors from "$src/constants/Colors";
 import SquareIndex from "$src/constants/SquareIndex";
 import Board from "$src/game/Board";
@@ -6,13 +7,19 @@ import Position from "$src/game/Position";
 import Pieces from "$src/pieces/Pieces";
 import { expect, test } from "bun:test";
 
-test("parse from string", () => {
+test("parse from string 1", () => {
   const pos = Position.fromFEN("8/1k6/8/8/5P2/K7/8/8 b - f3 44 78");
   expect(pos.activeColor).toEqual(Colors.BLACK);
   expect(pos.board.pieceCount).toEqual(3);
   expect(pos.enPassantIndex).toEqual(SquareIndex.f3);
   expect(pos.halfMoveClock).toEqual(44);
   expect(pos.fullMoveNumber).toEqual(78);
+});
+
+test("parse from string 2", () => {
+  const game = ChessGame.fromPGN('[FEN "k1K5/8/8/8/8/8/8/8 b - - 0 1"] 1...Ka7 *');
+  expect(game.firstPosition.toMoveString()).toStartWith("1...Ka7");
+  console.log(game.toPGN());
 });
 
 test("check 1", () => {
@@ -31,7 +38,7 @@ test("checkmate - fool's mate", () => {
 });
 
 test("checkmate - smothered mate", () => {
-  const pos = Position.fromFEN("6rk/5Npp/8/8/8/8/6K1/8 b - - 0 1");
+  const pos = Position.fromFEN("6rk/5Npp/8/8/8/8/8/7K b - - 0 1");
   expect(pos.isCheckmate()).toBeTrue();
 });
 

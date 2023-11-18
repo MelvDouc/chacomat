@@ -1,18 +1,19 @@
 import Colors from "$src/constants/Colors";
 import { pieceRanks } from "$src/constants/Ranks";
 import { indexTable } from "$src/constants/SquareIndex";
-import Move from "$src/moves/Move";
+import RealMove from "$src/moves/RealMove";
 import Piece from "$src/pieces/Piece";
 import Pieces from "$src/pieces/Pieces";
 import { Board, SquareIndex } from "$src/typings/types";
+import AbstractMove from "$src/moves/AbstractMove";
 
-export default class PawnMove extends Move {
+export default class PawnMove extends RealMove {
   readonly srcIndex: SquareIndex;
   readonly destIndex: SquareIndex;
   readonly srcPiece: Piece;
   readonly destPiece: Piece | null;
-  private readonly _isEnPassant: boolean;
-  private _promotedPiece: Piece | null = null;
+  protected readonly _isEnPassant: boolean;
+  protected _promotedPiece: Piece | null = null;
 
   constructor({ srcIndex, destIndex, isEnPassant, srcPiece, destPiece }: {
     srcIndex: SquareIndex;
@@ -77,6 +78,11 @@ export default class PawnMove extends Move {
 
   getComputerNotation() {
     return super.getComputerNotation() + this.promotionInitial;
+  }
+
+  override equals(move: AbstractMove) {
+    return super.equals(move)
+      && (move as PawnMove)._promotedPiece === this._promotedPiece;
   }
 
   isCapture() {

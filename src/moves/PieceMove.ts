@@ -1,8 +1,8 @@
-import Move from "$src/moves/Move";
+import RealMove from "$src/moves/RealMove";
 import Piece from "$src/pieces/Piece";
 import { Board, Position, SquareIndex } from "$src/typings/types";
 
-export default class PieceMove extends Move {
+export default class PieceMove extends RealMove {
   readonly srcIndex: SquareIndex;
   readonly destIndex: SquareIndex;
   readonly srcPiece: Piece;

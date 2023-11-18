@@ -1,7 +1,9 @@
 import Colors from "$src/constants/Colors";
 import IllegalMoveError from "$src/errors/IllegalMoveError";
 import Position from "$src/game/Position";
+import NullMove from "$src/moves/NullMove";
 import PawnMove from "$src/moves/PawnMove";
+import RealMove from "$src/moves/RealMove";
 import { Move, PGNHeaders } from "$src/typings/types";
 import playMoves from "$src/utils/play-moves";
 import { GameResults, PGNParser } from "pgnify";
@@ -21,7 +23,8 @@ export default class ChessGame {
     info: PGNHeaders;
     moveString?: string;
   }) {
-    this.info = params?.info ?? { Result: GameResults.NONE };
+    this.info = params?.info ?? {};
+    this.info.Result ??= GameResults.NONE;
     this.currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
 
     if (params?.moveString) {
@@ -62,8 +65,8 @@ export default class ChessGame {
   }
 
   goBack() {
-    if (this.currentPosition.prev)
-      this.currentPosition = this.currentPosition.prev;
+    const { prev } = this.currentPosition;
+    if (prev) this.currentPosition = prev;
   }
 
   goToStart() {
@@ -71,8 +74,8 @@ export default class ChessGame {
   }
 
   goForward() {
-    if (this.currentPosition.next[0])
-      this.currentPosition = this.currentPosition.next[0];
+    const [next] = this.currentPosition.next;
+    if (next) this.currentPosition = next;
   }
 
   goToEnd() {
@@ -80,7 +83,7 @@ export default class ChessGame {
   }
 
   truncatePreviousMoves() {
-    this.currentPosition.prev = null;
+    delete this.currentPosition.prev;
 
     if (this.currentPosition.fullMoveNumber !== 1 || this.currentPosition.activeColor !== Colors.WHITE)
       this.info.FEN = this.currentPosition.toFEN();
@@ -97,14 +100,14 @@ export default class ChessGame {
       castlingRights = pos.castlingRights.clone();
 
     move.play(board);
-    castlingRights.update(move);
+    if (move instanceof RealMove) castlingRights.update(move);
 
     const nextPos = new Position(
       board,
       pos.inactiveColor,
       castlingRights,
       (move instanceof PawnMove && move.isDouble()) ? (move.srcIndex + move.destIndex) / 2 : null,
-      (move.destPiece || move instanceof PawnMove) ? 0 : (pos.halfMoveClock + 1),
+      (move.isCapture() || move instanceof PawnMove) ? 0 : (pos.halfMoveClock + 1),
       pos.fullMoveNumber + Number(pos.activeColor === Colors.BLACK)
     );
     nextPos.srcMove = move;
@@ -156,19 +159,7 @@ export default class ChessGame {
   }
 
   playNullMove() {
-    const pos = this.currentPosition;
-    const nextPos = new Position(
-      pos.board.clone(),
-      pos.inactiveColor,
-      pos.castlingRights.clone(),
-      null,
-      pos.halfMoveClock,
-      pos.fullMoveNumber + Number(pos.activeColor === Colors.BLACK)
-    );
-    nextPos.prev = pos;
-    pos.next.push(nextPos);
-    this.currentPosition = nextPos;
-    return this;
+    return this.playMove(NullMove.instance);
   }
 
   getInfoAsString() {

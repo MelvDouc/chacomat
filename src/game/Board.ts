@@ -1,7 +1,7 @@
 import { indexTable } from "$src/constants/SquareIndex";
 import { BOARD_WIDTH } from "$src/constants/dimensions";
 import Pieces from "$src/pieces/Pieces";
-import { Color, Piece, SquareIndex } from "$src/typings/types";
+import { Color, Piece, PieceInitial, SquareIndex } from "$src/typings/types";
 
 export default class Board {
   static fromString(boardString: string) {
@@ -28,6 +28,13 @@ export default class Board {
 
   get pieceCount() {
     return this._pieces.size;
+  }
+
+  get materialCount() {
+    return [...this._pieces.values()].reduce((acc, { initial }) => {
+      acc[initial] = (acc[initial] ?? 0) + 1;
+      return acc;
+    }, {} as Record<PieceInitial, number>);
   }
 
   has(index: SquareIndex) {

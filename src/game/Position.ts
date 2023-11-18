@@ -6,14 +6,15 @@ import CastlingRights from "$src/game/CastlingRights";
 import CastlingMove from "$src/moves/CastlingMove";
 import PawnMove from "$src/moves/PawnMove";
 import PieceMove from "$src/moves/PieceMove";
+import RealMove from "$src/moves/RealMove";
 import Piece from "$src/pieces/Piece";
-import Pieces from "$src/pieces/Pieces";
-import { Color, Move, Wing } from "$src/typings/types";
+import { Color, Move } from "$src/typings/types";
+import { isInsufficientMaterial } from "$src/utils/insufficient-material";
 
 export default class Position {
-  static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
+  public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
 
-  static fromFEN(fen: string) {
+  public static fromFEN(fen: string) {
     const [boardString, color, castlingString, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
     return new this(
@@ -26,14 +27,14 @@ export default class Position {
     );
   }
 
-  srcMove: Move | null = null;
-  prev: Position | null = null;
-  readonly next: Position[] = [];
-  comment: string | null = null;
-  private _legalMoves?: Move[];
+  public prev?: Position;
+  public readonly next: Position[] = [];
+  public srcMove?: Move;
+  public comment?: string;
+  private _legalMoves?: RealMove[];
   private _isCheck?: boolean;
 
-  constructor(
+  public constructor(
     public readonly board: Board,
     public readonly activeColor: Color,
     public readonly castlingRights: CastlingRights,
@@ -42,32 +43,61 @@ export default class Position {
     public readonly fullMoveNumber: number
   ) { }
 
-  get inactiveColor() {
+  public get inactiveColor() {
     return -this.activeColor as Color;
   }
 
-  get legalMoves() {
+  public get legalMoves() {
     return this._legalMoves ??= [...this.generateLegalMoves()];
   }
 
-  get legalMovesAsAlgebraicNotation() {
+  public get legalMovesAsAlgebraicNotation() {
     return this.legalMoves.map((move) => move.getAlgebraicNotation(this));
   }
 
-  isCheck() {
+  public getFullMoveNotation(use3Dots = false) {
+    const { prev, srcMove } = this;
+
+    if (!prev || !srcMove)
+      return "";
+
+    let notation = srcMove.getAlgebraicNotation(prev);
+
+    if (srcMove instanceof RealMove)
+      notation += srcMove.getCheckSign(this);
+
+    if (prev.activeColor === Colors.WHITE)
+      notation = `${prev.fullMoveNumber}.${notation}`;
+
+    else if (use3Dots)
+      notation = `${prev.fullMoveNumber}...${notation}`;
+
+    if (this.comment)
+      notation = `{ ${this.comment} } ${notation}`;
+
+    if (srcMove.NAG)
+      notation += ` ${srcMove.NAG}`;
+
+    if (srcMove.comment)
+      notation += ` { ${srcMove.comment} }`;
+
+    return notation;
+  }
+
+  public isCheck() {
     return this._isCheck ??= this.board.isKingEnPrise(this.activeColor);
   }
 
-  isCheckmate() {
+  public isCheckmate() {
     return this.isCheck() && this.legalMoves.length === 0;
   }
 
-  isStalemate() {
+  public isStalemate() {
     return !this.isCheck() && this.legalMoves.length === 0;
   }
 
-  isTripleRepetition() {
-    let prevPos: Position | null = this.prev;
+  public isTripleRepetition() {
+    let prevPos = this.prev;
     let count = 1;
 
     while (prevPos && count < 3) {
@@ -83,63 +113,20 @@ export default class Position {
     return count === 3;
   }
 
-  isInsufficientMaterial() {
-    const useWhite = this.activeColor === Colors.WHITE;
-    const activeB = useWhite ? Pieces.WHITE_BISHOP : Pieces.BLACK_BISHOP;
-    const activeN = useWhite ? Pieces.WHITE_KNIGHT : Pieces.BLACK_KNIGHT;
-    const inactiveB = activeB.opposite;
-    const inactiveN = activeN.opposite;
-    const indicesMap = new Map<Piece, SquareIndex[]>();
-
-    for (const [srcIndex, piece] of this.board.getPieces()) {
-      if (piece.isKing()) continue;
-      if (
-        piece !== activeB
-        && piece !== activeN
-        && piece !== inactiveB
-        && piece !== inactiveN
-      )
-        return false;
-      if (!indicesMap.has(piece))
-        indicesMap.set(piece, []);
-      indicesMap.get(piece)!.push(srcIndex);
-    }
-
-    const activeCount = (indicesMap.get(activeB)?.length ?? 0) + (indicesMap.get(activeN)?.length ?? 0);
-    const inactiveCount = (indicesMap.get(inactiveB)?.length ?? 0) + (indicesMap.get(inactiveN)?.length ?? 0);
-
-    if (activeCount === 0)
-      return inactiveCount === 0;
-
-    if (activeCount > 1)
-      return false;
-
-    if (inactiveCount === 0)
-      return true;
-
-    if (inactiveCount > 1 || !indicesMap.has(activeB) || !indicesMap.has(inactiveB))
-      return false;
-
-    const activePoint = pointTable[indicesMap.get(activeB)![0]];
-    const inactivePoint = pointTable[indicesMap.get(inactiveB)![0]];
-
-    return (activePoint.x % 2 === activePoint.y % 2) === (inactivePoint.x % 2 === inactivePoint.y % 2);
+  public isInsufficientMaterial() {
+    return isInsufficientMaterial(this);
   }
 
-  isMainLine(): boolean {
-    if (!this.prev)
-      return true;
-
-    if (this.prev.next.indexOf(this) !== 0)
-      return false;
-
-    return this.prev.isMainLine();
+  public isMainLine(): boolean {
+    return !this.prev
+      || this.prev.next.indexOf(this) === 0
+      && this.prev.isMainLine();
   }
 
   /**
    * Clone this position with colors reversed and its board mirrored vertically.
    */
-  reverse() {
+  public reverse() {
     const castlingRights = new CastlingRights();
     castlingRights.queenSide[Colors.WHITE] = this.castlingRights.queenSide[Colors.BLACK];
     castlingRights.kingSide[Colors.WHITE] = this.castlingRights.kingSide[Colors.BLACK];
@@ -162,7 +149,7 @@ export default class Position {
     );
   }
 
-  toFEN() {
+  public toFEN() {
     return [
       this.board.toString(),
       colorAbbreviations[this.activeColor],
@@ -173,39 +160,25 @@ export default class Position {
     ].join(" ");
   }
 
-  toMoveString(varIndex = 0, use3Dots = false): string {
-    const next = this.next[varIndex];
-    if (!next) return "";
+  public toMoveString(use3Dots = true): string {
+    const [main, ...vars] = this.next;
 
-    const moveNotation = next.srcMove?.getFullAlgebraicNotation(this, next) ?? "--";
-    let moveString = (this.activeColor === Colors.WHITE)
-      ? `${this.fullMoveNumber}.${moveNotation}`
-      : (use3Dots)
-        ? `${this.fullMoveNumber}...${moveNotation}`
-        : moveNotation;
+    if (!main) return "";
 
-    if (this.comment)
-      moveString = `{ ${this.comment} } ${moveString}`;
+    let notation = main.getFullMoveNotation(use3Dots);
+    vars.forEach((variation) => {
+      let rest = variation.toMoveString(false);
+      if (rest) rest = ` ${rest}`;
+      notation += ` ( ${variation.getFullMoveNotation(true) + rest} )`;
+    });
 
-    if (varIndex === 0)
-      for (let i = 1; i < this.next.length; i++)
-        moveString += ` ( ${this.toMoveString(i, true)} )`;
-
-    const nextNotation = next.toMoveString(0, varIndex === 0 && this.next.length > 1);
-    nextNotation && (moveString += ` ${nextNotation}`);
-    return moveString;
+    let rest = main.toMoveString(vars.length > 0);
+    if (rest) rest = ` ${rest}`;
+    return notation + rest;
   }
 
-  toJSON() {
-    const data: {
-      board: ReturnType<typeof Board.prototype.toArray>;
-      activeColor: string;
-      castlingRights: Record<Wing, Record<Color, boolean>>;
-      enPassantIndex: SquareIndex | null;
-      halfMoveClock: number;
-      fullMoveNumber: number;
-      comment?: string;
-    } = {
+  public toJSON() {
+    return {
       board: this.board.toArray(),
       activeColor: Colors[this.activeColor],
       castlingRights: this.castlingRights.toJSON(),
@@ -213,14 +186,9 @@ export default class Position {
       halfMoveClock: this.halfMoveClock,
       fullMoveNumber: this.fullMoveNumber
     };
-
-    if (this.comment)
-      data.comment = this.comment;
-
-    return data;
   }
 
-  *castlingMoves() {
+  public *castlingMoves() {
     if (this.isCheck())
       return;
 
@@ -234,35 +202,20 @@ export default class Position {
     }
   }
 
-  *generateLegalMoves(): Generator<Move> {
-    for (const [srcIndex, piece] of this.board.getPieces()) {
+  public *generateLegalMoves(): Generator<RealMove> {
+    const { board, enPassantIndex } = this;
+
+    for (const [srcIndex, piece] of board.getPieces()) {
       if (piece.color !== this.activeColor)
         continue;
 
-      for (const destIndex of piece.getPseudoLegalDestIndices({ board: this.board, srcIndex, enPassantIndex: this.enPassantIndex })) {
-        let move: Move;
-
-        if (piece.isPawn()) {
-          const isEnPassant = destIndex === this.enPassantIndex;
-          move = new PawnMove({
-            srcIndex,
-            destIndex,
-            srcPiece: piece,
-            destPiece: isEnPassant ? piece.opposite : this.board.get(destIndex),
-            isEnPassant
-          });
-        } else {
-          move = new PieceMove({
-            srcIndex,
-            destIndex,
-            srcPiece: piece,
-            destPiece: this.board.get(destIndex)
-          });
-        }
-
-        move.play(this.board);
-        const isLegal = !this.board.isKingEnPrise(this.activeColor);
-        move.undo(this.board);
+      for (const destIndex of piece.getPseudoLegalDestIndices({ board, srcIndex, enPassantIndex })) {
+        const move = piece.isPawn()
+          ? this._createPawnMove(srcIndex, destIndex, piece, destIndex === enPassantIndex)
+          : this._createPieceMove(srcIndex, destIndex, piece);
+        move.play(board);
+        const isLegal = !board.isKingEnPrise(this.activeColor);
+        move.undo(board);
 
         if (isLegal) {
           if (move instanceof PawnMove && move.isPromotion())
@@ -276,8 +229,23 @@ export default class Position {
 
     yield* this.castlingMoves();
   }
-}
 
-// ===== ===== ===== ===== =====
-// LOCAL TYPES
-// ===== ===== ===== ===== =====
+  private _createPieceMove(srcIndex: SquareIndex, destIndex: SquareIndex, piece: Piece) {
+    return new PieceMove({
+      srcIndex,
+      destIndex,
+      srcPiece: piece,
+      destPiece: this.board.get(destIndex)
+    });
+  }
+
+  private _createPawnMove(srcIndex: SquareIndex, destIndex: SquareIndex, piece: Piece, isEnPassant: boolean) {
+    return new PawnMove({
+      srcIndex,
+      destIndex,
+      srcPiece: piece,
+      destPiece: isEnPassant ? piece.opposite : this.board.get(destIndex),
+      isEnPassant
+    });
+  }
+}

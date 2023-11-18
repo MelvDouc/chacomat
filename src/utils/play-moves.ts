@@ -3,17 +3,23 @@ import IllegalMoveError from "$src/errors/IllegalMoveError";
 import NullMove from "$src/moves/NullMove";
 import PawnMove from "$src/moves/PawnMove";
 import Pieces from "$src/pieces/Pieces";
-import { ChessGame, NAG as NumericAnnotationGlyph, Piece, Position } from "$src/typings/types";
+import { ChessGame, Piece, Position } from "$src/typings/types";
 import type { PGNify } from "pgnify";
 
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
+const castlingRegex = /^(?<char>[0O])(-\k<char>){1,2}/;
 
 export default function playMoves(game: ChessGame, { comment, nodes }: PGNify.Variation) {
-  if (comment)
-    game.currentPosition.comment = comment;
+  let varComment = comment;
 
   for (const { notation, NAG, comment, variations } of nodes) {
     const posBeforeMove = game.currentPosition;
+
+    if (varComment) {
+      posBeforeMove.comment = varComment;
+      varComment = "";
+    }
+
     const move = findMove(posBeforeMove, notation);
 
     if (!move) {
@@ -23,14 +29,10 @@ export default function playMoves(game: ChessGame, { comment, nodes }: PGNify.Va
       throw error;
     }
 
-    if (move === NullMove)
-      game.playNullMove();
-    else
-      game.playMove(move);
-
+    if (NAG) move.NAG = NAG;
+    if (comment) move.comment = comment;
+    game.playMove(move);
     const posAfterMove = game.currentPosition;
-    (NAG && move !== NullMove) && (move.NAG = NAG as NumericAnnotationGlyph);
-    comment && (posAfterMove.comment = comment);
 
     if (variations) {
       variations.forEach((variation) => {
@@ -43,10 +45,10 @@ export default function playMoves(game: ChessGame, { comment, nodes }: PGNify.Va
 }
 
 function findMove(position: Position, notation: string) {
-  if (notation === NullMove)
-    return NullMove;
+  if (notation === NullMove.algebraicNotation)
+    return NullMove.instance;
 
-  if (notation.includes("-"))
+  if (castlingRegex.test(notation))
     return findCastlingMove(position, notation.length === 5);
 
   const matchArr = notation.match(moveRegex);
