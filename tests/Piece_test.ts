@@ -1,8 +1,8 @@
-import Colors from "$src/constants/Colors";
-import { indexTable } from "$src/constants/SquareIndex";
-import { BOARD_WIDTH } from "$src/constants/dimensions";
-import Board from "$src/game/Board";
-import Pieces from "$src/pieces/Pieces";
+import Colors from "$src/constants/Colors.ts";
+import { indexTable } from "$src/constants/SquareIndex.ts";
+import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import Board from "$src/game/Board.ts";
+import Pieces from "$src/pieces/Pieces.ts";
 import { expect, test } from "bun:test";
 
 test("colors", () => {

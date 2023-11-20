@@ -4,7 +4,12 @@ export {
   CastlingRights,
   ChessGame,
   Color,
+  ColorName,
   GameResult,
+  JSONBoard,
+  JSONCastlingRights,
+  JSONPiece,
+  JSONPosition,
   Move,
   NAG,
   NullMove,
@@ -17,4 +22,4 @@ export {
   SquareIndex,
   WhitePieceInitial,
   Wing
-} from "$src/typings/types";
+} from "$src/typings/types.ts";

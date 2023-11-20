@@ -1,10 +1,10 @@
-import ChessGame from "$src/game/ChessGame";
-import Colors from "$src/constants/Colors";
-import SquareIndex from "$src/constants/SquareIndex";
-import Board from "$src/game/Board";
-import CastlingRights from "$src/game/CastlingRights";
-import Position from "$src/game/Position";
-import Pieces from "$src/pieces/Pieces";
+import ChessGame from "$src/game/ChessGame.ts";
+import Colors from "$src/constants/Colors.ts";
+import SquareIndex from "$src/constants/SquareIndex.ts";
+import Board from "$src/game/Board.ts";
+import CastlingRights from "$src/game/CastlingRights.ts";
+import Position from "$src/game/Position.ts";
+import Pieces from "$src/pieces/Pieces.ts";
 import { expect, test } from "bun:test";
 
 test("parse from string 1", () => {

@@ -1,6 +1,6 @@
-import Colors from "$src/constants/Colors";
-import CastlingRights from "$src/game/CastlingRights";
-import ChessGame from "$src/game/ChessGame";
+import Colors from "$src/constants/Colors.ts";
+import CastlingRights from "$src/game/CastlingRights.ts";
+import ChessGame from "$src/game/ChessGame.ts";
 import { expect, test } from "bun:test";
 
 test("from and to string", () => {

@@ -1,7 +1,7 @@
-import { indexTable } from "$src/constants/SquareIndex";
-import { BOARD_WIDTH } from "$src/constants/dimensions";
-import Pieces from "$src/pieces/Pieces";
-import { Color, Piece, PieceInitial, SquareIndex } from "$src/typings/types";
+import { indexTable } from "$src/constants/SquareIndex.ts";
+import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import Pieces from "$src/pieces/Pieces.ts";
+import { Color, JSONBoard, Piece, PieceInitial, SquareIndex } from "$src/typings/types.ts";
 
 export default class Board {
   static fromString(boardString: string) {
@@ -23,25 +23,25 @@ export default class Board {
       }, new this());
   }
 
-  protected readonly _pieces = new Map<SquareIndex, Piece>();
-  protected readonly _kingIndices = new Map<Color, SquareIndex>();
+  protected readonly _pieces: Map<SquareIndex, Piece> = new Map();
+  protected readonly _kingIndices: Map<Color, SquareIndex> = new Map();
 
-  get pieceCount() {
+  get pieceCount(): number {
     return this._pieces.size;
   }
 
-  get materialCount() {
+  get materialCount(): Record<PieceInitial, number> {
     return [...this._pieces.values()].reduce((acc, { initial }) => {
       acc[initial] = (acc[initial] ?? 0) + 1;
       return acc;
     }, {} as Record<PieceInitial, number>);
   }
 
-  has(index: SquareIndex) {
+  has(index: SquareIndex): boolean {
     return this._pieces.has(index);
   }
 
-  equals(board: Board) {
+  equals(board: Board): boolean {
     if (this.pieceCount !== board.pieceCount)
       return false;
 
@@ -52,7 +52,7 @@ export default class Board {
     return true;
   }
 
-  isKingEnPrise(color: Color) {
+  isKingEnPrise(color: Color): boolean {
     const kingIndex = this.getKingIndex(color);
 
     for (const [srcIndex, piece] of this._pieces)
@@ -64,15 +64,15 @@ export default class Board {
     return false;
   }
 
-  get(index: SquareIndex) {
+  get(index: SquareIndex): Piece | null {
     return this._pieces.get(index) ?? null;
   }
 
-  getKingIndex(color: Color) {
+  getKingIndex(color: Color): SquareIndex {
     return this._kingIndices.get(color)!;
   }
 
-  getColorAttacks(color: Color) {
+  getColorAttacks(color: Color): Set<SquareIndex> {
     return [...this._pieces].reduce((acc, [srcIndex, piece]) => {
       if (piece.color === color)
         for (const attack of piece.getAttacks(srcIndex, this))
@@ -86,19 +86,19 @@ export default class Board {
     return [...this._pieces.entries()];
   }
 
-  set(index: SquareIndex, piece: Piece) {
+  set(index: SquareIndex, piece: Piece): this {
     this._pieces.set(index, piece);
     if (piece.isKing())
       this._kingIndices.set(piece.color, index);
     return this;
   }
 
-  remove(index: SquareIndex) {
+  remove(index: SquareIndex): this {
     this._pieces.delete(index);
     return this;
   }
 
-  clone() {
+  clone(): Board {
     const clone = new Board();
     this._pieces.forEach((piece, srcIndex) => clone.set(srcIndex, piece));
     return clone;
@@ -111,7 +111,7 @@ export default class Board {
     vertically?: boolean;
     horizontally?: boolean;
     swapColors?: boolean;
-  }) {
+  }): Board {
     const clone = new Board();
 
     for (let y = 0; y < BOARD_WIDTH; y++) {
@@ -129,14 +129,14 @@ export default class Board {
     return clone;
   }
 
-  toString() {
+  toString(): string {
     return this.toArray()
       .map((_, y, arr) => arr[BOARD_WIDTH - y - 1].map((piece) => piece?.initial ?? "0").join(""))
       .join("/")
       .replace(/0+/g, (zeros) => String(zeros.length));
   }
 
-  toArray() {
+  toArray(): JSONBoard {
     return Array.from({ length: BOARD_WIDTH }, (_, y) => {
       return Array.from({ length: BOARD_WIDTH }, (_, x) => {
         const index = indexTable[y][x];
@@ -160,7 +160,7 @@ export default class Board {
    *     a b c d e f g h
    * ```
    */
-  log() {
+  log(): void {
     console.log(
       this
         .toArray()

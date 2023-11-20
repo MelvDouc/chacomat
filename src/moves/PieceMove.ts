@@ -1,12 +1,12 @@
-import RealMove from "$src/moves/RealMove";
-import Piece from "$src/pieces/Piece";
-import { Board, Position, SquareIndex } from "$src/typings/types";
+import RealMove from "$src/moves/RealMove.ts";
+import Piece from "$src/pieces/Piece.ts";
+import { Board, Position, SquareIndex } from "$src/typings/types.ts";
 
 export default class PieceMove extends RealMove {
-  readonly srcIndex: SquareIndex;
-  readonly destIndex: SquareIndex;
-  readonly srcPiece: Piece;
-  readonly destPiece: Piece | null;
+  public readonly srcIndex: SquareIndex;
+  public readonly destIndex: SquareIndex;
+  public readonly srcPiece: Piece;
+  public readonly destPiece: Piece | null;
 
   constructor({ srcIndex, destIndex, srcPiece, destPiece }: {
     srcIndex: SquareIndex;
@@ -21,7 +21,7 @@ export default class PieceMove extends RealMove {
     this.destPiece = destPiece;
   }
 
-  play(board: Board) {
+  public play(board: Board) {
     if (this.destPiece)
       board.remove(this.destIndex);
     board
@@ -29,7 +29,7 @@ export default class PieceMove extends RealMove {
       .set(this.destIndex, this.srcPiece);
   }
 
-  undo(board: Board) {
+  public undo(board: Board) {
     board
       .remove(this.destIndex)
       .set(this.srcIndex, this.srcPiece);
@@ -37,11 +37,11 @@ export default class PieceMove extends RealMove {
       board.set(this.destIndex, this.destPiece);
   }
 
-  isCapture() {
+  public isCapture() {
     return this.destPiece !== null;
   }
 
-  getAlgebraicNotation(position: Position) {
+  public override getAlgebraicNotation(position: Position) {
     let notation = "";
 
     if (!this.srcPiece.isKing())

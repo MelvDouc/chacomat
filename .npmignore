@@ -1,8 +1,9 @@
 /.vscode
 /benchmarks
+/local
 /node_modules
 /pgn-files
-/playground
+/scripts
 /src
 /tests
 
@@ -11,4 +12,3 @@ bun.lockb
 bunfig.toml
 global.d.ts
 tsconfig.json
-tsconfig.npm.json

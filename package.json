@@ -19,10 +19,11 @@
   },
   "scripts": {
     "bench": "bun benchmarks/benchmarks.ts",
-    "build": "rm -rf dist/* && npx tsc -p tsconfig.npm.json && npx tsc-alias -p tsconfig.npm.json",
+    "build": "rm -rf dist/* && bun run scripts/build.ts",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
+    "bun-plugin-dts": "^0.2.1",
     "bun-types": "latest",
     "mitata": "^0.1.6",
     "tsc-alias": "^1.8.8"

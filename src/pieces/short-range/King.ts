@@ -1,23 +1,22 @@
-import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece";
-import { SquareIndex } from "$src/typings/types";
+import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.ts";
+import { SquareIndex } from "$src/typings/types.ts";
 
 export default class King extends ShortRangePiece {
-  static readonly offsets = {
+  public static readonly offsets = {
     x: [0, -1, 0, 1, -1, -1, 1, 1],
     y: [-1, 0, 1, 0, -1, 1, 1, -1]
   };
+  public static readonly _attacksMemo: Map<SquareIndex, SquareIndex[]> = new Map();
 
-  static readonly _attacksMemo = new Map<SquareIndex, SquareIndex[]>();
-
-  protected get _offsets() {
+  protected override get _offsets() {
     return King.offsets;
   }
 
-  protected get _attacksMemo() {
+  protected override get _attacksMemo(): Map<SquareIndex, SquareIndex[]> {
     return King._attacksMemo;
   }
 
-  isKing() {
+  public override isKing() {
     return true;
   }
 }

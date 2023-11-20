@@ -1,7 +1,7 @@
-import Colors from "$src/constants/Colors";
-import SquareIndex from "$src/constants/SquareIndex";
-import Board from "$src/game/Board";
-import Pieces from "$src/pieces/Pieces";
+import Colors from "$src/constants/Colors.ts";
+import SquareIndex from "$src/constants/SquareIndex.ts";
+import Board from "$src/game/Board.ts";
+import Pieces from "$src/pieces/Pieces.ts";
 import { expect, test } from "bun:test";
 
 test("Get board from string.", () => {

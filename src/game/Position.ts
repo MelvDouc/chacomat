@@ -1,15 +1,15 @@
-import Colors, { colorAbbreviations } from "$src/constants/Colors";
-import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex";
-import { BOARD_WIDTH } from "$src/constants/dimensions";
-import Board from "$src/game/Board";
-import CastlingRights from "$src/game/CastlingRights";
-import CastlingMove from "$src/moves/CastlingMove";
-import PawnMove from "$src/moves/PawnMove";
-import PieceMove from "$src/moves/PieceMove";
-import RealMove from "$src/moves/RealMove";
-import Piece from "$src/pieces/Piece";
-import { Color, Move } from "$src/typings/types";
-import { isInsufficientMaterial } from "$src/utils/insufficient-material";
+import Colors, { colorAbbreviations } from "$src/constants/Colors.ts";
+import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
+import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import Board from "$src/game/Board.ts";
+import CastlingRights from "$src/game/CastlingRights.ts";
+import CastlingMove from "$src/moves/CastlingMove.ts";
+import PawnMove from "$src/moves/PawnMove.ts";
+import PieceMove from "$src/moves/PieceMove.ts";
+import RealMove from "$src/moves/RealMove.ts";
+import Piece from "$src/pieces/Piece.ts";
+import { Color, JSONPosition, Move } from "$src/typings/types.ts";
+import { isInsufficientMaterial } from "$src/utils/insufficient-material.ts";
 
 export default class Position {
   public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
@@ -43,19 +43,19 @@ export default class Position {
     public readonly fullMoveNumber: number
   ) { }
 
-  public get inactiveColor() {
+  public get inactiveColor(): Color {
     return -this.activeColor as Color;
   }
 
-  public get legalMoves() {
+  public get legalMoves(): RealMove[] {
     return this._legalMoves ??= [...this.generateLegalMoves()];
   }
 
-  public get legalMovesAsAlgebraicNotation() {
+  public get legalMovesAsAlgebraicNotation(): string[] {
     return this.legalMoves.map((move) => move.getAlgebraicNotation(this));
   }
 
-  public getFullMoveNotation(use3Dots = false) {
+  public getFullMoveNotation(use3Dots = false): string {
     const { prev, srcMove } = this;
 
     if (!prev || !srcMove)
@@ -72,8 +72,8 @@ export default class Position {
     else if (use3Dots)
       notation = `${prev.fullMoveNumber}...${notation}`;
 
-    if (this.comment)
-      notation = `{ ${this.comment} } ${notation}`;
+    if (prev.comment)
+      notation = `{ ${prev.comment} } ${notation}`;
 
     if (srcMove.NAG)
       notation += ` ${srcMove.NAG}`;
@@ -84,19 +84,19 @@ export default class Position {
     return notation;
   }
 
-  public isCheck() {
+  public isCheck(): boolean {
     return this._isCheck ??= this.board.isKingEnPrise(this.activeColor);
   }
 
-  public isCheckmate() {
+  public isCheckmate(): boolean {
     return this.isCheck() && this.legalMoves.length === 0;
   }
 
-  public isStalemate() {
+  public isStalemate(): boolean {
     return !this.isCheck() && this.legalMoves.length === 0;
   }
 
-  public isTripleRepetition() {
+  public isTripleRepetition(): boolean {
     let prevPos = this.prev;
     let count = 1;
 
@@ -113,7 +113,7 @@ export default class Position {
     return count === 3;
   }
 
-  public isInsufficientMaterial() {
+  public isInsufficientMaterial(): boolean {
     return isInsufficientMaterial(this);
   }
 
@@ -126,7 +126,7 @@ export default class Position {
   /**
    * Clone this position with colors reversed and its board mirrored vertically.
    */
-  public reverse() {
+  public reverse(): Position {
     const castlingRights = new CastlingRights();
     castlingRights.queenSide[Colors.WHITE] = this.castlingRights.queenSide[Colors.BLACK];
     castlingRights.kingSide[Colors.WHITE] = this.castlingRights.kingSide[Colors.BLACK];
@@ -149,7 +149,7 @@ export default class Position {
     );
   }
 
-  public toFEN() {
+  public toFEN(): string {
     return [
       this.board.toString(),
       colorAbbreviations[this.activeColor],
@@ -177,7 +177,7 @@ export default class Position {
     return notation + rest;
   }
 
-  public toJSON() {
+  public toJSON(): JSONPosition {
     return {
       board: this.board.toArray(),
       activeColor: Colors[this.activeColor],
@@ -188,7 +188,7 @@ export default class Position {
     };
   }
 
-  public *castlingMoves() {
+  public *castlingMoves(): Generator<CastlingMove> {
     if (this.isCheck())
       return;
 
@@ -230,7 +230,7 @@ export default class Position {
     yield* this.castlingMoves();
   }
 
-  private _createPieceMove(srcIndex: SquareIndex, destIndex: SquareIndex, piece: Piece) {
+  private _createPieceMove(srcIndex: SquareIndex, destIndex: SquareIndex, piece: Piece): PieceMove {
     return new PieceMove({
       srcIndex,
       destIndex,
@@ -239,7 +239,7 @@ export default class Position {
     });
   }
 
-  private _createPawnMove(srcIndex: SquareIndex, destIndex: SquareIndex, piece: Piece, isEnPassant: boolean) {
+  private _createPawnMove(srcIndex: SquareIndex, destIndex: SquareIndex, piece: Piece, isEnPassant: boolean): PawnMove {
     return new PawnMove({
       srcIndex,
       destIndex,

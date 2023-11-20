@@ -1,8 +1,7 @@
-export { default as Colors } from "$src/constants/Colors";
-export { default as SquareIndex } from "$src/constants/SquareIndex";
-export { default as IllegalMoveError } from "$src/errors/IllegalMoveError";
-export { default as ChessGame } from "$src/game/ChessGame";
-export { default as globalConfig } from "$src/global-config";
-export { default as Pieces } from "$src/pieces/Pieces";
-export * as ChacoMat from "$src/typings/types.public";
+export { default as Colors } from "$src/constants/Colors.ts";
+export { default as SquareIndex } from "$src/constants/SquareIndex.ts";
+export { default as ChessGame } from "$src/game/ChessGame.ts";
+export { default as globalConfig } from "$src/global-config.ts";
+export { default as Pieces } from "$src/pieces/Pieces.ts";
+export type * as ChacoMat from "$src/typings/types.public.ts";
 export { GameResults } from "pgnify";

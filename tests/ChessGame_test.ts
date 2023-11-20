@@ -1,5 +1,5 @@
 import pgn1 from "$pgn-files/long-engine-game1.pgn";
-import ChessGame from "$src/game/ChessGame";
+import ChessGame from "$src/game/ChessGame.ts";
 import { expect, test } from "bun:test";
 
 test("Parse various moves.", () => {

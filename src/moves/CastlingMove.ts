@@ -1,17 +1,17 @@
-import Colors from "$src/constants/Colors";
-import SquareIndex from "$src/constants/SquareIndex";
-import globalConfig from "$src/global-config";
-import RealMove from "$src/moves/RealMove";
-import Pieces from "$src/pieces/Pieces";
-import { Board, Color, Piece, Wing } from "$src/typings/types";
+import Colors from "$src/constants/Colors.ts";
+import SquareIndex from "$src/constants/SquareIndex.ts";
+import globalConfig from "$src/global-config.ts";
+import RealMove from "$src/moves/RealMove.ts";
+import Pieces from "$src/pieces/Pieces.ts";
+import { Board, Color, Piece, Wing } from "$src/typings/types.ts";
 
 export default class CastlingMove extends RealMove {
-  readonly srcPiece: Piece;
-  readonly rook: Piece;
-  readonly kingSrcIndex: SquareIndex;
-  readonly kingDestIndex: SquareIndex;
-  readonly rookSrcIndex: SquareIndex;
-  readonly rookDestIndex: SquareIndex;
+  public readonly srcPiece: Piece;
+  public readonly rook: Piece;
+  public readonly kingSrcIndex: SquareIndex;
+  public readonly kingDestIndex: SquareIndex;
+  public readonly rookSrcIndex: SquareIndex;
+  public readonly rookDestIndex: SquareIndex;
   protected readonly _xOffset: -1 | 1;
 
   constructor({ color, wing }: {
@@ -36,19 +36,19 @@ export default class CastlingMove extends RealMove {
     }
   }
 
-  get srcIndex() {
+  public override get srcIndex(): SquareIndex {
     return this.kingSrcIndex;
   }
 
-  get destIndex() {
+  public override get destIndex(): SquareIndex {
     return this.kingDestIndex;
   }
 
-  get destPiece() {
+  public override get destPiece(): null {
     return null;
   }
 
-  play(board: Board) {
+  public override play(board: Board): void {
     board
       .remove(this.kingSrcIndex)
       .remove(this.rookSrcIndex)
@@ -56,7 +56,7 @@ export default class CastlingMove extends RealMove {
       .set(this.rookDestIndex, this.rook);
   }
 
-  undo(board: Board) {
+  public override undo(board: Board): void {
     board
       .remove(this.kingDestIndex)
       .remove(this.rookDestIndex)
@@ -64,15 +64,15 @@ export default class CastlingMove extends RealMove {
       .set(this.rookSrcIndex, this.rook);
   }
 
-  isCapture() {
+  public override isCapture(): boolean {
     return false;
   }
 
-  isQueenSide() {
+  public isQueenSide(): boolean {
     return this._xOffset === -1;
   }
 
-  isLegal(board: Board, enemyAttacks: Set<SquareIndex>) {
+  public isLegal(board: Board, enemyAttacks: Set<SquareIndex>): boolean {
     for (let i = this.kingSrcIndex + this._xOffset; ; i += this._xOffset) {
       if (board.has(i) || enemyAttacks.has(i))
         return false;
@@ -87,7 +87,7 @@ export default class CastlingMove extends RealMove {
     return true;
   }
 
-  getAlgebraicNotation() {
+  public override getAlgebraicNotation(): string {
     const char = globalConfig.useZerosForCastling ? "0" : "O";
     return char + `-${char}`.repeat(this.isQueenSide() ? 2 : 1);
   }

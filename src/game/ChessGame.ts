@@ -1,11 +1,10 @@
-import Colors from "$src/constants/Colors";
-import IllegalMoveError from "$src/errors/IllegalMoveError";
-import Position from "$src/game/Position";
-import NullMove from "$src/moves/NullMove";
-import PawnMove from "$src/moves/PawnMove";
-import RealMove from "$src/moves/RealMove";
-import { Move, PGNHeaders } from "$src/typings/types";
-import playMoves from "$src/utils/play-moves";
+import Colors from "$src/constants/Colors.ts";
+import Position from "$src/game/Position.ts";
+import NullMove from "$src/moves/NullMove.ts";
+import PawnMove from "$src/moves/PawnMove.ts";
+import RealMove from "$src/moves/RealMove.ts";
+import { GameResult, Move, PGNHeaders } from "$src/typings/types.ts";
+import playMoves from "$src/utils/play-moves.ts";
 import { GameResults, PGNParser } from "pgnify";
 
 export default class ChessGame {
@@ -33,19 +32,19 @@ export default class ChessGame {
     }
   }
 
-  get firstPosition() {
+  get firstPosition(): Position {
     let pos = this.currentPosition;
     while (pos.prev) pos = pos.prev;
     return pos;
   }
 
-  get lastPosition() {
+  get lastPosition(): Position {
     let pos = this.currentPosition;
     while (pos.next[0]) pos = pos.next[0];
     return pos;
   }
 
-  get currentResult() {
+  get currentResult(): GameResult {
     const pos = this.currentPosition;
 
     if (pos.isCheckmate())
@@ -64,37 +63,37 @@ export default class ChessGame {
     return GameResults.NONE;
   }
 
-  goBack() {
+  goBack(): void {
     const { prev } = this.currentPosition;
     if (prev) this.currentPosition = prev;
   }
 
-  goToStart() {
+  goToStart(): void {
     this.currentPosition = this.firstPosition;
   }
 
-  goForward() {
+  goForward(): void {
     const [next] = this.currentPosition.next;
     if (next) this.currentPosition = next;
   }
 
-  goToEnd() {
+  goToEnd(): void {
     this.currentPosition = this.lastPosition;
   }
 
-  truncatePreviousMoves() {
+  truncatePreviousMoves(): void {
     delete this.currentPosition.prev;
 
     if (this.currentPosition.fullMoveNumber !== 1 || this.currentPosition.activeColor !== Colors.WHITE)
       this.info.FEN = this.currentPosition.toFEN();
   }
 
-  truncateFromCurrentPosition() {
+  truncateFromCurrentPosition(): void {
     this.goBack();
     this.currentPosition.next.length = 0;
   }
 
-  playMove(move: Move) {
+  playMove(move: Move): this {
     const pos = this.currentPosition,
       board = pos.board.clone(),
       castlingRights = pos.castlingRights.clone();
@@ -117,7 +116,7 @@ export default class ChessGame {
     return this;
   }
 
-  playMoveWithPoints(srcX: number, srcY: number, destX: number, destY: number, promotionInitial?: string) {
+  playMoveWithPoints(srcX: number, srcY: number, destX: number, destY: number, promotionInitial?: string): this {
     const move = this.currentPosition.legalMoves.find((m) => {
       return m.srcPoint.x === srcX
         && m.srcPoint.y === srcY
@@ -130,11 +129,8 @@ export default class ChessGame {
     });
 
     if (!move) {
-      const error = new IllegalMoveError("Illegal move.");
-      error.position = this.currentPosition;
-      error.srcPoint = { x: srcX, y: srcY };
-      error.destPoint = { x: destX, y: destY };
-      throw error;
+      const points = JSON.stringify({ srcX, srcY, destX, destY });
+      throw new Error(`Illegal move ${points} in ${this.currentPosition.toFEN()}.`);
     }
 
     return this.playMove(move);
@@ -149,30 +145,27 @@ export default class ChessGame {
       return move.getComputerNotation() === notation;
     });
 
-    if (!move) {
-      const error = new IllegalMoveError(`Illegal move: "${notation}".`);
-      error.position = this.currentPosition;
-      throw error;
-    }
+    if (!move)
+      throw new Error(`Illegal move: "${notation}" in ${this.currentPosition.toFEN()}.`);
 
     return this.playMove(move);
   }
 
-  playNullMove() {
+  playNullMove(): this {
     return this.playMove(NullMove.instance);
   }
 
-  getInfoAsString() {
+  getInfoAsString(): string {
     return Object.entries(this.info)
       .map(([key, value]) => `[${key} "${value}"]`)
       .join("\n");
   }
 
-  toPGN() {
+  toPGN(): string {
     return `${this.getInfoAsString()}\n\n${this.firstPosition.toMoveString()} ${this.info.Result}`;
   }
 
-  toString() {
+  toString(): string {
     return this.toPGN();
   }
 }

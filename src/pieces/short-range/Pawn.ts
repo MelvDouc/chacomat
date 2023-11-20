@@ -1,11 +1,11 @@
-import Colors from "$src/constants/Colors";
-import { pawnRanks } from "$src/constants/Ranks";
-import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex";
-import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece";
-import { Board } from "$src/typings/types";
+import Colors from "$src/constants/Colors.ts";
+import { pawnRanks } from "$src/constants/Ranks.ts";
+import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
+import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.ts";
+import { Board } from "$src/typings/types.ts";
 
 export default class Pawn extends ShortRangePiece {
-  static readonly attackOffsets = {
+  public static readonly attackOffsets = {
     [Colors.WHITE]: {
       x: [-1, 1],
       y: [1, 1]
@@ -18,19 +18,19 @@ export default class Pawn extends ShortRangePiece {
 
   protected readonly _attacksMemo = new Map<SquareIndex, SquareIndex[]>();
 
-  get direction() {
+  public get direction() {
     return this.color;
   }
 
-  protected get _offsets() {
+  protected override get _offsets() {
     return Pawn.attackOffsets[this.color];
   }
 
-  isPawn() {
+  public override isPawn() {
     return true;
   }
 
-  override getPseudoLegalDestIndices(params: {
+  public override getPseudoLegalDestIndices(params: {
     srcIndex: SquareIndex;
     board: Board;
     enPassantIndex: SquareIndex | null;

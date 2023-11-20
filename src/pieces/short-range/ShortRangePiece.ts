@@ -1,12 +1,12 @@
-import { indexTable, pointTable } from "$src/constants/SquareIndex";
-import { BOARD_WIDTH } from "$src/constants/dimensions";
-import Piece from "$src/pieces/Piece";
-import { SquareIndex } from "$src/typings/types";
+import { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
+import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import Piece from "$src/pieces/Piece.ts";
+import { SquareIndex } from "$src/typings/types.ts";
 
 export default abstract class ShortRangePiece extends Piece {
   protected abstract get _attacksMemo(): Map<SquareIndex, SquareIndex[]>;
 
-  override getAttacks(srcIndex: SquareIndex) {
+  public override getAttacks(srcIndex: SquareIndex) {
     if (!this._attacksMemo.has(srcIndex)) {
       const srcPoint = pointTable[srcIndex];
       const attacks = this._offsets.x.reduce((acc, xOffset, i) => {

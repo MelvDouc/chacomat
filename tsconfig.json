@@ -15,6 +15,7 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
     "allowJs": false,
     "types": [
       "bun-types" // add Bun global

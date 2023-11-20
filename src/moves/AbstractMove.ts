@@ -1,14 +1,14 @@
-import { Board, Position } from "$src/typings/types";
+import { Board, Position } from "$src/typings/types.ts";
 
 export default abstract class AbstractMove {
   public NAG?: string;
   public comment?: string;
 
-  abstract isCapture(): boolean;
-  abstract getAlgebraicNotation(position: Position): string;
-  abstract equals(move: AbstractMove): boolean;
-  abstract play(board: Board): void;
-  abstract toJSON(): {
+  public abstract isCapture(): boolean;
+  public abstract getAlgebraicNotation(position: Position): string;
+  public abstract equals(move: AbstractMove): boolean;
+  public abstract play(board: Board): void;
+  public abstract toJSON(): {
     srcIndex: number;
     destIndex: number;
   };

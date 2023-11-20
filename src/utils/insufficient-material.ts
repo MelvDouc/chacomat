@@ -1,6 +1,6 @@
-import { Position } from "$src/typings/types";
-import Colors from "$src/constants/Colors";
-import { pointTable } from "$src/constants/SquareIndex";
+import { Position } from "$src/typings/types.ts";
+import Colors from "$src/constants/Colors.ts";
+import { pointTable } from "$src/constants/SquareIndex.ts";
 
 export function isInsufficientMaterial({ board, activeColor, inactiveColor }: Position) {
   const { P, N, B, R, Q, p, n, b, r, q } = board.materialCount;

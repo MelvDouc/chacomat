@@ -1,33 +1,23 @@
-import Colors from "$src/constants/Colors";
-import IllegalMoveError from "$src/errors/IllegalMoveError";
-import NullMove from "$src/moves/NullMove";
-import PawnMove from "$src/moves/PawnMove";
-import Pieces from "$src/pieces/Pieces";
-import { ChessGame, Piece, Position } from "$src/typings/types";
+import Colors from "$src/constants/Colors.ts";
+import NullMove from "$src/moves/NullMove.ts";
+import PawnMove from "$src/moves/PawnMove.ts";
+import Pieces from "$src/pieces/Pieces.ts";
+import { ChessGame, Piece, Position } from "$src/typings/types.ts";
 import type { PGNify } from "pgnify";
 
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /^(?<char>[0O])(-\k<char>){1,2}/;
 
 export default function playMoves(game: ChessGame, { comment, nodes }: PGNify.Variation) {
-  let varComment = comment;
+  if (comment)
+    game.currentPosition.comment = comment;
 
   for (const { notation, NAG, comment, variations } of nodes) {
     const posBeforeMove = game.currentPosition;
-
-    if (varComment) {
-      posBeforeMove.comment = varComment;
-      varComment = "";
-    }
-
     const move = findMove(posBeforeMove, notation);
 
-    if (!move) {
-      const error = new IllegalMoveError(`Illegal move: "${notation}".`);
-      error.position = posBeforeMove;
-      error.notation = notation;
-      throw error;
-    }
+    if (!move)
+      throw new Error(`Illegal move: "${notation}" in ${posBeforeMove.toFEN()}.`);
 
     if (NAG) move.NAG = NAG;
     if (comment) move.comment = comment;

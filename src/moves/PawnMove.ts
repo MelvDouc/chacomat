@@ -1,17 +1,17 @@
-import Colors from "$src/constants/Colors";
-import { pieceRanks } from "$src/constants/Ranks";
-import { indexTable } from "$src/constants/SquareIndex";
-import RealMove from "$src/moves/RealMove";
-import Piece from "$src/pieces/Piece";
-import Pieces from "$src/pieces/Pieces";
-import { Board, SquareIndex } from "$src/typings/types";
-import AbstractMove from "$src/moves/AbstractMove";
+import Colors from "$src/constants/Colors.ts";
+import { pieceRanks } from "$src/constants/Ranks.ts";
+import { indexTable } from "$src/constants/SquareIndex.ts";
+import RealMove from "$src/moves/RealMove.ts";
+import Piece from "$src/pieces/Piece.ts";
+import Pieces from "$src/pieces/Pieces.ts";
+import { Board, SquareIndex } from "$src/typings/types.ts";
+import AbstractMove from "$src/moves/AbstractMove.ts";
 
 export default class PawnMove extends RealMove {
-  readonly srcIndex: SquareIndex;
-  readonly destIndex: SquareIndex;
-  readonly srcPiece: Piece;
-  readonly destPiece: Piece | null;
+  public readonly srcIndex: SquareIndex;
+  public readonly destIndex: SquareIndex;
+  public readonly srcPiece: Piece;
+  public readonly destPiece: Piece | null;
   protected readonly _isEnPassant: boolean;
   protected _promotedPiece: Piece | null = null;
 
@@ -30,26 +30,26 @@ export default class PawnMove extends RealMove {
     this._isEnPassant = isEnPassant;
   }
 
-  get promotionInitial() {
+  public get promotionInitial() {
     return this._promotedPiece?.initial.toUpperCase() ?? "";
   }
 
-  get capturedPieceIndex() {
+  public get capturedPieceIndex() {
     if (this._isEnPassant)
       return indexTable[this.srcPoint.y][this.destPoint.x];
     return this.destIndex;
   }
 
-  getPromotedPiece() {
+  public getPromotedPiece() {
     return this._promotedPiece;
   }
 
-  setPromotedPiece(piece: Piece) {
+  public setPromotedPiece(piece: Piece) {
     this._promotedPiece = piece;
     return this;
   }
 
-  getAlgebraicNotation() {
+  public override getAlgebraicNotation() {
     let notation = this.destNotation;
 
     if (this.srcPoint.x !== this.destPoint.x)
@@ -61,14 +61,14 @@ export default class PawnMove extends RealMove {
     return notation;
   }
 
-  play(board: Board) {
+  public play(board: Board) {
     board
       .remove(this.capturedPieceIndex)
       .remove(this.srcIndex)
       .set(this.destIndex, this._promotedPiece ?? this.srcPiece);
   }
 
-  undo(board: Board) {
+  public undo(board: Board) {
     board
       .remove(this.destIndex)
       .set(this.srcIndex, this.srcPiece);
@@ -76,32 +76,32 @@ export default class PawnMove extends RealMove {
       board.set(this.capturedPieceIndex, this.destPiece);
   }
 
-  getComputerNotation() {
+  public override getComputerNotation() {
     return super.getComputerNotation() + this.promotionInitial;
   }
 
-  override equals(move: AbstractMove) {
+  public override equals(move: AbstractMove) {
     return super.equals(move)
       && (move as PawnMove)._promotedPiece === this._promotedPiece;
   }
 
-  isCapture() {
+  public isCapture() {
     return this.destPoint.x !== this.srcPoint.x;
   }
 
-  isDouble() {
+  public isDouble() {
     return Math.abs(this.destPoint.y - this.srcPoint.y) === 2;
   }
 
-  isEnPassant() {
+  public isEnPassant() {
     return this._isEnPassant;
   }
 
-  isPromotion() {
+  public isPromotion() {
     return this.destPoint.y === pieceRanks[this.srcPiece.opposite.color];
   }
 
-  *promotions() {
+  public *promotions() {
     const params = {
       srcIndex: this.srcIndex,
       destIndex: this.destIndex,

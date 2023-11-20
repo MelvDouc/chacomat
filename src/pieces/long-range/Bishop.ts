@@ -1,16 +1,16 @@
-import LongRangePiece from "$src/pieces/long-range/LongRangePiece";
+import LongRangePiece from "$src/pieces/long-range/LongRangePiece.ts";
 
 export default class Bishop extends LongRangePiece {
-  static readonly offsets = {
+  public static readonly offsets = {
     x: [-1, -1, 1, 1],
     y: [-1, 1, 1, -1]
   };
 
-  protected get _offsets() {
+  protected override get _offsets(): { x: number[]; y: number[]; } {
     return Bishop.offsets;
   }
 
-  isBishop() {
+  public override isBishop(): boolean {
     return true;
   }
 }

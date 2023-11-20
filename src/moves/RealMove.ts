@@ -1,45 +1,45 @@
-import SquareIndex, { pointTable } from "$src/constants/SquareIndex";
-import globalConfig from "$src/global-config";
-import AbstractMove from "$src/moves/AbstractMove";
-import { Board, Piece, Position } from "$src/typings/types";
+import SquareIndex, { pointTable } from "$src/constants/SquareIndex.ts";
+import globalConfig from "$src/global-config.ts";
+import AbstractMove from "$src/moves/AbstractMove.ts";
+import { Board, Piece, Point, Position } from "$src/typings/types.ts";
 
 export default abstract class RealMove extends AbstractMove {
-  abstract readonly srcPiece: Piece;
+  public abstract readonly srcPiece: Piece;
 
-  abstract get srcIndex(): SquareIndex;
-  abstract get destIndex(): SquareIndex;
-  abstract get destPiece(): Piece | null;
+  public abstract get srcIndex(): SquareIndex;
+  public abstract get destIndex(): SquareIndex;
+  public abstract get destPiece(): Piece | null;
 
-  abstract undo(board: Board): void;
+  public abstract undo(board: Board): void;
 
-  get srcPoint() {
+  public get srcPoint(): Point {
     return pointTable[this.srcIndex];
   }
 
-  get destPoint() {
+  public get destPoint(): Point {
     return pointTable[this.destIndex];
   }
 
-  get srcNotation() {
+  public get srcNotation(): string {
     return SquareIndex[this.srcIndex];
   }
 
-  get destNotation() {
+  public get destNotation(): string {
     return SquareIndex[this.destIndex];
   }
 
-  equals(move: AbstractMove) {
+  public override equals(move: AbstractMove): boolean {
     return move instanceof RealMove
       && this.srcPiece === move.srcPiece
       && this.srcIndex === move.srcIndex
       && this.destIndex === move.destIndex;
   }
 
-  getComputerNotation() {
+  public getComputerNotation(): string {
     return this.srcNotation + this.destNotation;
   }
 
-  getCheckSign(nextPosition: Position) {
+  public getCheckSign(nextPosition: Position): string {
     if (nextPosition.isCheckmate())
       return globalConfig.useDoublePlusForCheckmate ? "++" : "#";
     if (nextPosition.isCheck())
@@ -47,7 +47,10 @@ export default abstract class RealMove extends AbstractMove {
     return "";
   }
 
-  toJSON() {
+  public override toJSON(): {
+    srcIndex: number;
+    destIndex: number;
+  } {
     return {
       srcIndex: this.srcIndex,
       destIndex: this.destIndex

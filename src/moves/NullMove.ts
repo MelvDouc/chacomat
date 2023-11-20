@@ -1,28 +1,31 @@
-import AbstractMove from "$src/moves/AbstractMove";
+import AbstractMove from "$src/moves/AbstractMove.ts";
 
 export default class NullMove extends AbstractMove {
   public static readonly algebraicNotation = "--";
-  public static readonly instance = new this();
+  public static readonly instance: NullMove = new this();
 
   private constructor() {
     super();
   }
 
-  override equals(move: AbstractMove): boolean {
+  public override equals(move: AbstractMove): boolean {
     return move === this;
   }
 
-  isCapture() {
+  public override isCapture(): boolean {
     return false;
   }
 
-  getAlgebraicNotation() {
+  public override getAlgebraicNotation(): string {
     return NullMove.algebraicNotation;
   }
 
-  play() { }
+  public override play(): void { }
 
-  toJSON() {
+  public toJSON(): {
+    srcIndex: number;
+    destIndex: number;
+  } {
     return {
       srcIndex: -1,
       destIndex: -1

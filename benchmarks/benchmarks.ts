@@ -1,5 +1,5 @@
 import pgn from "$pgn-files/long-engine-game1.pgn";
-import ChessGame from "$src/game/ChessGame";
+import ChessGame from "$src/game/ChessGame.ts";
 import { bench, run } from "mitata";
 
 let game: ChessGame;
