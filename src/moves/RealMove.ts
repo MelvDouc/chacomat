@@ -46,4 +46,11 @@ export default abstract class RealMove extends AbstractMove {
       return "+";
     return "";
   }
+
+  toJSON() {
+    return {
+      srcIndex: this.srcIndex,
+      destIndex: this.destIndex
+    };
+  }
 }

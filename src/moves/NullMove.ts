@@ -21,4 +21,11 @@ export default class NullMove extends AbstractMove {
   }
 
   play() { }
+
+  toJSON() {
+    return {
+      srcIndex: -1,
+      destIndex: -1
+    };
+  }
 }
