@@ -11,8 +11,6 @@ enum SquareIndex {
   a8, b8, c8, d8, e8, f8, g8, h8
 }
 
-export const fileNames = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
-
 export const indexTable = Array.from({ length: BOARD_WIDTH }, (_, y) => {
   return Array.from({ length: BOARD_WIDTH }, (_, x) => {
     return y * BOARD_WIDTH + x;

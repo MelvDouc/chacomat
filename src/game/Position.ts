@@ -97,7 +97,10 @@ export default class Position {
   }
 
   public isTripleRepetition(): boolean {
-    let prevPos = this.prev;
+    if (!this.srcMove || this.srcMove.isCapture() || this.srcMove instanceof CastlingMove)
+      return false;
+
+    let prevPos = this.prev?.prev;
     let count = 1;
 
     while (prevPos && count < 3) {
@@ -107,7 +110,7 @@ export default class Position {
       if (prevPos.board.equals(this.board))
         count++;
 
-      prevPos = prevPos.prev;
+      prevPos = prevPos.prev?.prev;
     }
 
     return count === 3;
@@ -194,7 +197,7 @@ export default class Position {
 
     const enemyAttacks = this.board.getColorAttacks(this.inactiveColor);
 
-    for (const [wing, rights] of this.castlingRights.entries()) {
+    for (const [wing, rights] of this.castlingRights) {
       if (!rights[this.activeColor]) continue;
       const move = new CastlingMove({ color: this.activeColor, wing });
       if (move.isLegal(this.board, enemyAttacks))
@@ -205,7 +208,7 @@ export default class Position {
   public *generateLegalMoves(): Generator<RealMove> {
     const { board, enPassantIndex } = this;
 
-    for (const [srcIndex, piece] of board.getPieces()) {
+    for (const [srcIndex, piece] of board.getEntries()) {
       if (piece.color !== this.activeColor)
         continue;
 
@@ -219,8 +222,7 @@ export default class Position {
 
         if (isLegal) {
           if (move instanceof PawnMove && move.isPromotion())
-            for (const promotion of move.promotions())
-              yield promotion;
+            yield* move.promotions();
           else
             yield move;
         }

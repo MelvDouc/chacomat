@@ -2,7 +2,7 @@ import Colors from "$src/constants/Colors.ts";
 import { pawnRanks } from "$src/constants/Ranks.ts";
 import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
 import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.ts";
-import { Board } from "$src/typings/types.ts";
+import { Board, PieceOffsets } from "$src/typings/types.ts";
 
 export default class Pawn extends ShortRangePiece {
   public static readonly attackOffsets = {
@@ -18,15 +18,15 @@ export default class Pawn extends ShortRangePiece {
 
   protected readonly _attacksMemo = new Map<SquareIndex, SquareIndex[]>();
 
-  public get direction() {
+  public get direction(): number {
     return this.color;
   }
 
-  protected override get _offsets() {
+  protected override get _offsets(): PieceOffsets {
     return Pawn.attackOffsets[this.color];
   }
 
-  public override isPawn() {
+  public override isPawn(): boolean {
     return true;
   }
 

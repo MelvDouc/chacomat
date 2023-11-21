@@ -3,12 +3,12 @@ import NullMove from "$src/moves/NullMove.ts";
 import PawnMove from "$src/moves/PawnMove.ts";
 import Pieces from "$src/pieces/Pieces.ts";
 import { ChessGame, Piece, Position } from "$src/typings/types.ts";
-import type { PGNify } from "pgnify";
+import { type IVariation } from "pgnify";
 
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
-const castlingRegex = /^(?<char>[0O])(-\k<char>){1,2}/;
+const castlingRegex = /^(?<o>[0O])(-\k<o>){1,2}/;
 
-export default function playMoves(game: ChessGame, { comment, nodes }: PGNify.Variation) {
+export default function playMoves(game: ChessGame, { comment, nodes }: IVariation) {
   if (comment)
     game.currentPosition.comment = comment;
 
@@ -17,7 +17,12 @@ export default function playMoves(game: ChessGame, { comment, nodes }: PGNify.Va
     const move = findMove(posBeforeMove, notation);
 
     if (!move)
-      throw new Error(`Illegal move: "${notation}" in ${posBeforeMove.toFEN()}.`);
+      throw new Error("Illegal move.", {
+        cause: {
+          notation,
+          position: posBeforeMove
+        }
+      });
 
     if (NAG) move.NAG = NAG;
     if (comment) move.comment = comment;
@@ -73,5 +78,5 @@ function findCastlingMove(position: Position, isQueenSide: boolean) {
   return null;
 }
 
-type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dc" | "pr" | "o" | "o2";
+type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dc" | "pr";
 type HalfMoveGroups = { [K in HalfMoveGroupKey]?: string };

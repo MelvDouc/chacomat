@@ -73,10 +73,10 @@ export default class CastlingMove extends RealMove {
   }
 
   public isLegal(board: Board, enemyAttacks: Set<SquareIndex>): boolean {
-    for (let i = this.kingSrcIndex + this._xOffset; ; i += this._xOffset) {
-      if (board.has(i) || enemyAttacks.has(i))
+    for (let i = 1; i <= 2; i++) {
+      const kingIndex = this.kingSrcIndex + this._xOffset * i;
+      if (board.has(kingIndex) || enemyAttacks.has(kingIndex))
         return false;
-      if (i === this.kingDestIndex) break;
     }
 
     if (this.isQueenSide()) {

@@ -1,5 +1,5 @@
 import Colors from "$src/constants/Colors.ts";
-import type { PGNify } from "pgnify";
+import type { GameResult, PGNHeaders } from "pgnify";
 
 export type Board = import("$src/game/Board.ts").default;
 export type Color = typeof Colors["WHITE"] | typeof Colors["BLACK"];
@@ -22,6 +22,11 @@ export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
 export interface Point {
   x: number;
   y: number;
+}
+
+export interface PieceOffsets {
+  x: number[];
+  y: number[];
 }
 
 // ===== ===== ===== ===== =====
@@ -52,5 +57,7 @@ export interface JSONPosition {
 // PGN PARSER
 // ===== ===== ===== ===== =====
 
-export type PGNHeaders = PGNify.PGNHeaders;
-export type GameResult = PGNify.GameResult;
+export {
+  GameResult,
+  PGNHeaders
+};

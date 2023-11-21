@@ -31,9 +31,9 @@ export function isInsufficientMaterial({ board, activeColor, inactiveColor }: Po
   if (activeKnights || inactiveKnights)
     return false;
 
-  const [activeBishopIndex] = board.getPieces().find(([, piece]) => piece.isBishop() && piece.color === activeColor)!;
+  const [activeBishopIndex] = board.getEntries().find(([, piece]) => piece.isBishop() && piece.color === activeColor)!;
   const activePoint = pointTable[activeBishopIndex];
-  const [inactiveBishopIndex] = board.getPieces().find(([, piece]) => piece.isBishop() && piece.color === inactiveColor)!;
+  const [inactiveBishopIndex] = board.getEntries().find(([, piece]) => piece.isBishop() && piece.color === inactiveColor)!;
   const inactivePoint = pointTable[inactiveBishopIndex];
 
   return (activePoint.x % 2 === activePoint.y % 2) === (inactivePoint.x % 2 === inactivePoint.y % 2);

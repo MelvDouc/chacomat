@@ -82,7 +82,7 @@ export default class Board {
     }, new Set<SquareIndex>());
   }
 
-  getPieces() {
+  getEntries(): [SquareIndex, Piece][] {
     return [...this._pieces.entries()];
   }
 

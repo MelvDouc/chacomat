@@ -1,14 +1,18 @@
 import Colors from "$src/constants/Colors.ts";
-import { Board, Color, JSONPiece, PieceInitial, SquareIndex } from "$src/typings/types.ts";
+import {
+  Board,
+  Color,
+  JSONPiece,
+  PieceInitial,
+  PieceOffsets,
+  SquareIndex
+} from "$src/typings/types.ts";
 
 export default abstract class Piece {
   public static readonly byInitial: Map<PieceInitial, Piece> = new Map();
   protected static readonly _byValue: Record<number, Piece> = {};
 
-  protected abstract get _offsets(): {
-    x: number[];
-    y: number[];
-  };
+  protected abstract get _offsets(): PieceOffsets;
 
   constructor(
     readonly value: number,

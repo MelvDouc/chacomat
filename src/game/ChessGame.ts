@@ -8,17 +8,17 @@ import playMoves from "$src/utils/play-moves.ts";
 import { GameResults, PGNParser } from "pgnify";
 
 export default class ChessGame {
-  static fromPGN(pgn: string) {
+  public static fromPGN(pgn: string) {
     const parser = new PGNParser(pgn);
     const game = new this({ info: parser.headers });
     playMoves(game, parser.mainLine);
     return game;
   }
 
-  readonly info: PGNHeaders;
-  currentPosition: Position;
+  public readonly info: PGNHeaders;
+  public currentPosition: Position;
 
-  constructor(params?: {
+  public constructor(params?: {
     info: PGNHeaders;
     moveString?: string;
   }) {
@@ -32,19 +32,19 @@ export default class ChessGame {
     }
   }
 
-  get firstPosition(): Position {
+  public get firstPosition(): Position {
     let pos = this.currentPosition;
     while (pos.prev) pos = pos.prev;
     return pos;
   }
 
-  get lastPosition(): Position {
+  public get lastPosition(): Position {
     let pos = this.currentPosition;
     while (pos.next[0]) pos = pos.next[0];
     return pos;
   }
 
-  get currentResult(): GameResult {
+  public get currentResult(): GameResult {
     const pos = this.currentPosition;
 
     if (pos.isCheckmate())
@@ -63,37 +63,37 @@ export default class ChessGame {
     return GameResults.NONE;
   }
 
-  goBack(): void {
+  public goBack(): void {
     const { prev } = this.currentPosition;
     if (prev) this.currentPosition = prev;
   }
 
-  goToStart(): void {
+  public goToStart(): void {
     this.currentPosition = this.firstPosition;
   }
 
-  goForward(): void {
+  public goForward(): void {
     const [next] = this.currentPosition.next;
     if (next) this.currentPosition = next;
   }
 
-  goToEnd(): void {
+  public goToEnd(): void {
     this.currentPosition = this.lastPosition;
   }
 
-  truncatePreviousMoves(): void {
+  public truncatePreviousMoves(): void {
     delete this.currentPosition.prev;
 
     if (this.currentPosition.fullMoveNumber !== 1 || this.currentPosition.activeColor !== Colors.WHITE)
       this.info.FEN = this.currentPosition.toFEN();
   }
 
-  truncateFromCurrentPosition(): void {
+  public truncateFromCurrentPosition(): void {
     this.goBack();
     this.currentPosition.next.length = 0;
   }
 
-  playMove(move: Move): this {
+  public playMove(move: Move): this {
     const pos = this.currentPosition,
       board = pos.board.clone(),
       castlingRights = pos.castlingRights.clone();
@@ -116,7 +116,7 @@ export default class ChessGame {
     return this;
   }
 
-  playMoveWithPoints(srcX: number, srcY: number, destX: number, destY: number, promotionInitial?: string): this {
+  public playMoveWithPoints(srcX: number, srcY: number, destX: number, destY: number, promotionInitial?: string): this {
     const move = this.currentPosition.legalMoves.find((m) => {
       return m.srcPoint.x === srcX
         && m.srcPoint.y === srcY
@@ -128,10 +128,16 @@ export default class ChessGame {
         );
     });
 
-    if (!move) {
-      const points = JSON.stringify({ srcX, srcY, destX, destY });
-      throw new Error(`Illegal move ${points} in ${this.currentPosition.toFEN()}.`);
-    }
+    if (!move)
+      throw new Error("Illegal move.", {
+        cause: {
+          position: this.currentPosition,
+          srcX,
+          srcY,
+          destX,
+          destY
+        }
+      });
 
     return this.playMove(move);
   }
@@ -140,32 +146,37 @@ export default class ChessGame {
    * @param notation A computer notation like "e2e4" or "a2a1Q".
    * @returns This same game.
    */
-  playMoveWithNotation(notation: string): this {
+  public playMoveWithNotation(notation: string): this {
     const move = this.currentPosition.legalMoves.find((move) => {
       return move.getComputerNotation() === notation;
     });
 
     if (!move)
-      throw new Error(`Illegal move: "${notation}" in ${this.currentPosition.toFEN()}.`);
+      throw new Error("Illegal move.", {
+        cause: {
+          notation,
+          position: this.currentPosition
+        }
+      });
 
     return this.playMove(move);
   }
 
-  playNullMove(): this {
+  public playNullMove(): this {
     return this.playMove(NullMove.instance);
   }
 
-  getInfoAsString(): string {
+  public getInfoAsString(): string {
     return Object.entries(this.info)
       .map(([key, value]) => `[${key} "${value}"]`)
       .join("\n");
   }
 
-  toPGN(): string {
+  public toPGN(): string {
     return `${this.getInfoAsString()}\n\n${this.firstPosition.toMoveString()} ${this.info.Result}`;
   }
 
-  toString(): string {
+  public toString(): string {
     return this.toPGN();
   }
 }
