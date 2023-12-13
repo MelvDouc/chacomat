@@ -44,7 +44,7 @@ function findMove(position: Position, notation: string) {
     return NullMove.instance;
 
   if (castlingRegex.test(notation))
-    return findCastlingMove(position, notation.length === 5);
+    return findCastlingMove(position, notation[3] === "-");
 
   const matchArr = notation.match(moveRegex);
 

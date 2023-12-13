@@ -1,6 +1,6 @@
 {
   "name": "chacomat",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "author": {
     "name": "Melvin Doucet",
     "email": "melv.douc@gmail.com",
@@ -26,8 +26,8 @@
   ],
   "license": "MIT",
   "scripts": {
-    "bench": "bun benchmarks/benchmarks.ts",
-    "build": "rm -rf dist/* && bun run scripts/build.ts",
+    "bench": "bun tests/benchmarks/benchmarks.ts",
+    "build": "rm -rf dist/* && bun run build.ts",
     "prepublishOnly": "bun run build"
   },
   "type": "module"
