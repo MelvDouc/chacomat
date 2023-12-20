@@ -8,6 +8,7 @@
 /tests
 
 .gitignore
+build.ts
 bun.lockb
 bunfig.toml
 global.d.ts
