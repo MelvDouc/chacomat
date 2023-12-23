@@ -1,20 +1,10 @@
 import Colors from "$src/constants/Colors.ts";
-import type { GameResult, PGNHeaders } from "pgnify";
+import type SquareIndex from "$src/constants/SquareIndex.ts";
 
-export type Board = import("$src/game/Board.ts").default;
 export type Color = typeof Colors["WHITE"] | typeof Colors["BLACK"];
-export type CastlingRights = import("$src/game/CastlingRights").default;
-export type ChessGame = import("$src/game/ChessGame").default;
 export type NAG = `$${string}`;
-export type Position = import("$src/game/Position.ts").default;
-export type SquareIndex = import("$src/constants/SquareIndex.ts").default;
 export type Wing = "queenSide" | "kingSide";
 
-export type Move = import("$src/moves/AbstractMove.ts").default;
-export type RealMove = import("$src/moves/RealMove.ts").default;
-export type NullMove = import("$src/moves/NullMove.ts").default;
-
-export type Piece = import("$src/pieces/Piece.ts").default;
 export type WhitePieceInitial = "P" | "N" | "K" | "B" | "R" | "Q";
 export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
 export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
@@ -60,4 +50,4 @@ export interface JSONPosition {
 export {
   GameResult,
   PGNHeaders
-};
+} from "pgnify";

@@ -1,5 +1,6 @@
+import type SquareIndex from "$src/constants/SquareIndex.ts";
 import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.ts";
-import { PieceOffsets, SquareIndex } from "$src/typings/types.ts";
+import { PieceOffsets } from "$src/typings/types.ts";
 
 export default class King extends ShortRangePiece {
   public static readonly offsets: PieceOffsets = {

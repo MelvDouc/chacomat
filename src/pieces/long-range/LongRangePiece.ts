@@ -1,7 +1,7 @@
 import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
 import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import type Board from "$src/game/Board.ts";
 import Piece from "$src/pieces/Piece.ts";
-import { Board } from "$src/typings/types.ts";
 
 export default abstract class LongRangePiece extends Piece {
   public override getAttacks(srcIndex: SquareIndex, board: Board): SquareIndex[] {

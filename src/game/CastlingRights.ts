@@ -1,7 +1,8 @@
 import Colors from "$src/constants/Colors.ts";
 import { pieceRanks } from "$src/constants/Ranks.ts";
 import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import { JSONCastlingRights, RealMove, Wing } from "$src/typings/types.ts";
+import type RealMove from "$src/moves/RealMove.ts";
+import { JSONCastlingRights, Wing } from "$src/typings/types.ts";
 
 export default class CastlingRights {
   public static getWing(file: number): Wing {

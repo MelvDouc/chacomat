@@ -8,8 +8,9 @@ import PawnMove from "$src/moves/PawnMove.ts";
 import PieceMove from "$src/moves/PieceMove.ts";
 import RealMove from "$src/moves/RealMove.ts";
 import Piece from "$src/pieces/Piece.ts";
-import { Color, JSONPosition, Move } from "$src/typings/types.ts";
 import { isInsufficientMaterial } from "$src/utils/insufficient-material.ts";
+import { JSONPosition, Color } from "$src/typings/types.ts";
+import type Move from "$src/moves/AbstractMove.ts";
 
 export default class Position {
   public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";

@@ -1,8 +1,9 @@
 import Colors from "$src/constants/Colors.ts";
 import { pawnRanks } from "$src/constants/Ranks.ts";
 import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
+import type Board from "$src/game/Board.ts";
 import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.ts";
-import { Board, PieceOffsets } from "$src/typings/types.ts";
+import { PieceOffsets } from "$src/typings/types.ts";
 
 export default class Pawn extends ShortRangePiece {
   public static readonly attackOffsets = {

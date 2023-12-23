@@ -1,9 +1,11 @@
+import { type IVariation } from "pgnify";
 import Colors from "$src/constants/Colors.ts";
+import type ChessGame from "$src/game/ChessGame.ts";
+import type Position from "$src/game/Position.ts";
 import NullMove from "$src/moves/NullMove.ts";
 import PawnMove from "$src/moves/PawnMove.ts";
+import type Piece from "$src/pieces/Piece.ts";
 import Pieces from "$src/pieces/Pieces.ts";
-import { ChessGame, Piece, Position } from "$src/typings/types.ts";
-import { type IVariation } from "pgnify";
 
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /^(?<o>[0O])(-\k<o>){1,2}/;

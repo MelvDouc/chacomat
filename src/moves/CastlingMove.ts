@@ -1,9 +1,11 @@
 import Colors from "$src/constants/Colors.ts";
 import SquareIndex from "$src/constants/SquareIndex.ts";
+import type Board from "$src/game/Board.ts";
 import globalConfig from "$src/global-config.ts";
 import RealMove from "$src/moves/RealMove.ts";
+import type Piece from "$src/pieces/Piece.ts";
 import Pieces from "$src/pieces/Pieces.ts";
-import { Board, Color, Piece, Wing } from "$src/typings/types.ts";
+import { Color, Wing } from "$src/typings/types.ts";
 
 export default class CastlingMove extends RealMove {
   public readonly srcPiece: Piece;

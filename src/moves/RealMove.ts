@@ -1,7 +1,10 @@
 import SquareIndex, { pointTable } from "$src/constants/SquareIndex.ts";
+import type Board from "$src/game/Board.ts";
+import type Position from "$src/game/Position.ts";
 import globalConfig from "$src/global-config.ts";
 import AbstractMove from "$src/moves/AbstractMove.ts";
-import { Board, Piece, Point, Position } from "$src/typings/types.ts";
+import type Piece from "$src/pieces/Piece.ts";
+import { Point } from "$src/typings/types.ts";
 
 export default abstract class RealMove extends AbstractMove {
   public abstract readonly srcPiece: Piece;

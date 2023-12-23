@@ -1,6 +1,8 @@
+import SquareIndex from "$src/constants/SquareIndex.ts";
+import type Board from "$src/game/Board.ts";
+import type Position from "$src/game/Position.ts";
 import RealMove from "$src/moves/RealMove.ts";
 import Piece from "$src/pieces/Piece.ts";
-import { Board, Position, SquareIndex } from "$src/typings/types.ts";
 
 export default class PieceMove extends RealMove {
   public readonly srcIndex: SquareIndex;

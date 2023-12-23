@@ -1,7 +1,8 @@
-import { indexTable } from "$src/constants/SquareIndex.ts";
+import SquareIndex, { indexTable } from "$src/constants/SquareIndex.ts";
 import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
+import Piece from "$src/pieces/Piece.ts";
 import Pieces from "$src/pieces/Pieces.ts";
-import { Color, JSONBoard, Piece, PieceInitial, SquareIndex } from "$src/typings/types.ts";
+import { Color, JSONBoard, PieceInitial } from "$src/typings/types.ts";
 
 export default class Board {
   static fromString(boardString: string) {

@@ -1,11 +1,11 @@
 import Colors from "$src/constants/Colors.ts";
 import { pieceRanks } from "$src/constants/Ranks.ts";
-import { indexTable } from "$src/constants/SquareIndex.ts";
-import RealMove from "$src/moves/RealMove.ts";
-import Piece from "$src/pieces/Piece.ts";
-import Pieces from "$src/pieces/Pieces.ts";
-import { Board, SquareIndex } from "$src/typings/types.ts";
+import SquareIndex, { indexTable } from "$src/constants/SquareIndex.ts";
+import type Board from "$src/game/Board.ts";
 import AbstractMove from "$src/moves/AbstractMove.ts";
+import RealMove from "$src/moves/RealMove.ts";
+import type Piece from "$src/pieces/Piece.ts";
+import Pieces from "$src/pieces/Pieces.ts";
 
 export default class PawnMove extends RealMove {
   public readonly srcIndex: SquareIndex;

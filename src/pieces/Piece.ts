@@ -1,12 +1,7 @@
 import Colors from "$src/constants/Colors.ts";
-import {
-  Board,
-  Color,
-  JSONPiece,
-  PieceInitial,
-  PieceOffsets,
-  SquareIndex
-} from "$src/typings/types.ts";
+import SquareIndex from "$src/constants/SquareIndex.ts";
+import Board from "$src/game/Board.ts";
+import { Color, JSONPiece, PieceInitial, PieceOffsets } from "$src/typings/types.ts";
 
 export default abstract class Piece {
   public static readonly byInitial: Map<PieceInitial, Piece> = new Map();

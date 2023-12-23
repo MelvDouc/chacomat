@@ -1,11 +1,12 @@
+import { GameResults, PGNParser } from "pgnify";
 import Colors from "$src/constants/Colors.ts";
 import Position from "$src/game/Position.ts";
+import type Move from "$src/moves/AbstractMove.ts";
 import NullMove from "$src/moves/NullMove.ts";
 import PawnMove from "$src/moves/PawnMove.ts";
 import RealMove from "$src/moves/RealMove.ts";
-import { GameResult, Move, PGNHeaders } from "$src/typings/types.ts";
 import playMoves from "$src/utils/play-moves.ts";
-import { GameResults, PGNParser } from "pgnify";
+import { GameResult, PGNHeaders } from "$src/typings/types.ts";
 
 export default class ChessGame {
   public static fromPGN(pgn: string) {
