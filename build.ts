@@ -11,3 +11,5 @@ await Bun.build({
     dts()
   ]
 });
+const contents = await Bun.file("dist/index.js").text();
+await Bun.write("dist/index.js", contents + "\nexport * as ChacoMat from \"./index.d.ts\";");
