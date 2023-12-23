@@ -1,13 +1,12 @@
-import LongRangePiece from "$src/pieces/long-range/LongRangePiece.ts";
-import King from "$src/pieces/short-range/King.ts";
-import { PieceOffsets } from "$src/typings/types.ts";
+import LongRangePiece from "$src/pieces/long-range/LongRangePiece.js";
+import King from "$src/pieces/short-range/King.js";
 
 export default class Queen extends LongRangePiece {
-  protected override get _offsets(): PieceOffsets {
+  protected override get _offsets() {
     return King.offsets;
   }
 
-  public override isQueen(): boolean {
+  public override isQueen() {
     return true;
   }
 }

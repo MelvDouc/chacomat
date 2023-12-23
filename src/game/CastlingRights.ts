@@ -1,8 +1,7 @@
-import Colors from "$src/constants/Colors.ts";
-import { pieceRanks } from "$src/constants/Ranks.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import type RealMove from "$src/moves/RealMove.ts";
-import { JSONCastlingRights, Wing } from "$src/typings/types.ts";
+import Color from "$src/constants/Color.js";
+import { BOARD_WIDTH } from "$src/constants/dimensions.js";
+import type RealMove from "$src/moves/RealMove.js";
+import { JSONCastlingRights, Wing } from "$src/typings/types.js";
 
 export default class CastlingRights {
   public static getWing(file: number): Wing {
@@ -13,62 +12,62 @@ export default class CastlingRights {
     const castlingRights = new this();
 
     if (!castlingString.includes("K"))
-      castlingRights.kingSide[Colors.WHITE] = false;
+      castlingRights.white.kingSide = false;
     if (!castlingString.includes("Q"))
-      castlingRights.queenSide[Colors.WHITE] = false;
+      castlingRights.white.queenSide = false;
     if (!castlingString.includes("k"))
-      castlingRights.kingSide[Colors.BLACK] = false;
+      castlingRights.black.kingSide = false;
     if (!castlingString.includes("q"))
-      castlingRights.queenSide[Colors.BLACK] = false;
+      castlingRights.black.queenSide = false;
 
     return castlingRights;
   }
 
-  public readonly queenSide = {
-    [Colors.WHITE]: true,
-    [Colors.BLACK]: true
+  public readonly white = {
+    kingSide: true,
+    queenSide: true
   };
-  public readonly kingSide = {
-    [Colors.WHITE]: true,
-    [Colors.BLACK]: true
+  public readonly black = {
+    kingSide: true,
+    queenSide: true
   };
-
-  public *[Symbol.iterator](): Generator<[Wing, JSONCastlingRights[Wing]]> {
-    yield ["queenSide", this.queenSide];
-    yield ["kingSide", this.kingSide];
-  }
 
   public update({ srcPiece, srcPoint, destPoint, destPiece }: RealMove): void {
-    if (destPiece?.isRook() && destPoint.y === pieceRanks[destPiece.color])
-      this[CastlingRights.getWing(destPoint.x)][destPiece.color] = false;
+    if (destPiece?.isRook() && destPoint.y === destPiece.color.initialPieceRank) {
+      const rights = destPiece.color.isWhite() ? this.white : this.black;
+      rights[CastlingRights.getWing(destPoint.x)] = false;
+    }
+
+    const rights = srcPiece.color.isWhite() ? this.white : this.black;
 
     if (srcPiece.isKing()) {
-      this.queenSide[srcPiece.color] = false;
-      this.kingSide[srcPiece.color] = false;
+      rights.queenSide = false;
+      rights.kingSide = false;
       return;
     }
 
-    if (srcPiece.isRook() && srcPoint.y === pieceRanks[srcPiece.color])
-      this[CastlingRights.getWing(srcPoint.x)][srcPiece.color] = false;
+    if (srcPiece.isRook() && srcPoint.y === srcPiece.color.initialPieceRank) {
+      rights[CastlingRights.getWing(srcPoint.x)] = false;
+    }
   }
 
   public clone(): CastlingRights {
     const clone = new CastlingRights();
-    Object.assign(clone.queenSide, this.queenSide);
-    Object.assign(clone.kingSide, this.kingSide);
+    Object.assign(clone.white, this.white);
+    Object.assign(clone.black, this.black);
     return clone;
   }
 
   public toString(): string {
     let castlingString = "";
 
-    if (this.kingSide[Colors.BLACK])
+    if (this.black.kingSide)
       castlingString += "k";
-    if (this.queenSide[Colors.BLACK])
+    if (this.black.queenSide)
       castlingString += "q";
-    if (this.kingSide[Colors.WHITE])
+    if (this.white.kingSide)
       castlingString += "K";
-    if (this.queenSide[Colors.WHITE])
+    if (this.white.queenSide)
       castlingString += "Q";
 
     return castlingString || "-";
@@ -76,8 +75,8 @@ export default class CastlingRights {
 
   public toJSON(): JSONCastlingRights {
     return {
-      queenSide: { ...this.queenSide },
-      kingSide: { ...this.kingSide }
+      white: { ...this.white },
+      black: { ...this.black }
     };
   }
 }

@@ -1,33 +1,21 @@
-import Colors from "$src/constants/Colors.ts";
-import { pawnRanks } from "$src/constants/Ranks.ts";
-import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.ts";
-import type Board from "$src/game/Board.ts";
-import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.ts";
-import { PieceOffsets } from "$src/typings/types.ts";
+import Color from "$src/constants/Color.js";
+import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.js";
+import type Board from "$src/game/Board.js";
+import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.js";
 
 export default class Pawn extends ShortRangePiece {
-  public static readonly attackOffsets = {
-    [Colors.WHITE]: {
-      x: [-1, 1],
-      y: [1, 1]
-    },
-    [Colors.BLACK]: {
-      x: [-1, 1],
-      y: [-1, -1]
-    }
-  };
+  public static readonly attackOffsets = new Map([
+    [Color.White, { x: [-1, 1], y: [1, 1] }],
+    [Color.Black, { x: [-1, 1], y: [-1, -1] }]
+  ]);
 
-  protected readonly _attacksMemo = new Map<SquareIndex, SquareIndex[]>();
+  protected readonly _attacksMemo = new Map();
 
-  public get direction(): number {
-    return this.color;
+  protected override get _offsets() {
+    return Pawn.attackOffsets.get(this.color)!;
   }
 
-  protected override get _offsets(): PieceOffsets {
-    return Pawn.attackOffsets[this.color];
-  }
-
-  public override isPawn(): boolean {
+  public override isPawn() {
     return true;
   }
 
@@ -47,13 +35,13 @@ export default class Pawn extends ShortRangePiece {
     srcIndex: SquareIndex;
   }) {
     const { x, y } = pointTable[srcIndex];
-    const destIndex = indexTable[y + this.direction][x];
+    const destIndex = indexTable[y + this.color.direction][x];
 
     if (!board.has(destIndex)) {
       yield destIndex;
 
-      if (y === pawnRanks[this.color]) {
-        const destIndex = indexTable[y + this.direction * 2][x];
+      if (y === this.color.initialPawnRank) {
+        const destIndex = indexTable[y + this.color.direction * 2][x];
 
         if (!board.has(destIndex))
           yield destIndex;
@@ -67,7 +55,7 @@ export default class Pawn extends ShortRangePiece {
     enPassantIndex: number | null;
   }) {
     for (const destIndex of this.getAttacks(srcIndex))
-      if (board.get(destIndex)?.color === -this.color || destIndex === enPassantIndex)
+      if (board.get(destIndex)?.color === this.color.opposite || destIndex === enPassantIndex)
         yield destIndex;
   }
 }

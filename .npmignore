@@ -1,15 +1,10 @@
 /.vscode
-/benchmarks
 /local
 /node_modules
 /pgn-files
-/scripts
 /src
 /tests
 
 .gitignore
-build.ts
-bun.lockb
-bunfig.toml
-global.d.ts
 tsconfig.json
+tsconfig.build.json

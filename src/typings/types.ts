@@ -1,7 +1,5 @@
-import Colors from "$src/constants/Colors.ts";
-import type SquareIndex from "$src/constants/SquareIndex.ts";
+import type SquareIndex from "$src/constants/SquareIndex.js";
 
-export type Color = typeof Colors["WHITE"] | typeof Colors["BLACK"];
 export type NAG = `$${string}`;
 export type Wing = "queenSide" | "kingSide";
 
@@ -23,20 +21,18 @@ export interface PieceOffsets {
 // JSON
 // ===== ===== ===== ===== =====
 
-export type ColorName = typeof Colors[typeof Colors.WHITE | typeof Colors.BLACK];
-
 export interface JSONPiece {
   initial: PieceInitial;
-  color: ColorName;
+  color: string;
 }
 
 export type JSONBoard = (JSONPiece | null)[][];
 
-export type JSONCastlingRights = Record<Wing, Record<Color, boolean>>;
+export type JSONCastlingRights = Record<"white" | "black", Record<Wing, boolean>>;
 
 export interface JSONPosition {
   board: JSONBoard;
-  activeColor: ColorName;
+  activeColor: string;
   castlingRights: JSONCastlingRights;
   enPassantIndex: SquareIndex | null;
   halfMoveClock: number;

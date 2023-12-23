@@ -1,4 +1,4 @@
-import { BOARD_WIDTH, SQUARE_COUNT } from "$src/constants/dimensions.ts";
+import { BOARD_WIDTH, SQUARE_COUNT } from "$src/constants/dimensions.js";
 
 enum SquareIndex {
   a1, b1, c1, d1, e1, f1, g1, h1,

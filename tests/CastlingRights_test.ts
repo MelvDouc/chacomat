@@ -1,7 +1,8 @@
-import Colors from "$src/constants/Colors.ts";
-import CastlingRights from "$src/game/CastlingRights.ts";
-import ChessGame from "$src/game/ChessGame.ts";
-import { expect, test } from "bun:test";
+import Color from "$src/constants/Color.js";
+import CastlingRights from "$src/game/CastlingRights.js";
+import ChessGame from "$src/game/ChessGame.js";
+import { expect } from "expect";
+import { test } from "node:test";
 
 test("from and to string", () => {
   expect((new CastlingRights()).toString()).toEqual("kqKQ");
@@ -10,15 +11,15 @@ test("from and to string", () => {
 
 test("cloning", () => {
   const castlingRights = new CastlingRights();
-  const { queenSide, kingSide } = castlingRights;
-  queenSide[Colors.WHITE] = false;
-  kingSide[Colors.BLACK] = false;
+  const { white, black } = castlingRights;
+  white.queenSide = false;
+  black.kingSide = false;
   const clone = castlingRights.clone();
 
-  expect(queenSide[Colors.WHITE]).toEqual(clone.queenSide[Colors.WHITE]);
-  expect(queenSide[Colors.BLACK]).toEqual(clone.queenSide[Colors.BLACK]);
-  expect(kingSide[Colors.WHITE]).toEqual(clone.kingSide[Colors.WHITE]);
-  expect(kingSide[Colors.BLACK]).toEqual(clone.kingSide[Colors.BLACK]);
+  expect(white.queenSide).toEqual(clone.white.queenSide);
+  expect(black.queenSide).toEqual(clone.black.queenSide);
+  expect(white.kingSide).toEqual(clone.white.kingSide);
+  expect(black.kingSide).toEqual(clone.black.kingSide);
 });
 
 test("Castling rights should be unset on king move.", () => {
@@ -30,8 +31,8 @@ test("Castling rights should be unset on king move.", () => {
   });
   game.playMoveWithNotation("e1g1");
   const { castlingRights } = game.currentPosition;
-  expect(castlingRights.queenSide[Colors.WHITE]).toBeFalse();
-  expect(castlingRights.kingSide[Colors.WHITE]).toBeFalse();
+  expect(castlingRights.white.queenSide).toBe(false);
+  expect(castlingRights.white.kingSide).toBe(false);
 });
 
 test("Castling right should be unset on rook move and enemy rook capture.", () => {
@@ -42,9 +43,9 @@ test("Castling right should be unset on rook move and enemy rook capture.", () =
     }
   });
   game.playMoveWithNotation("a1a8");
-  const { castlingRights: { queenSide, kingSide } } = game.currentPosition;
-  expect(queenSide[Colors.WHITE]).toBeFalse();
-  expect(queenSide[Colors.BLACK]).toBeFalse();
-  expect(kingSide[Colors.WHITE]).toBeTrue();
-  expect(kingSide[Colors.BLACK]).toBeTrue();
+  const { castlingRights } = game.currentPosition;
+  expect(castlingRights.white.queenSide).toBe(false);
+  expect(castlingRights.black.queenSide).toBe(false);
+  expect(castlingRights.white.kingSide).toBe(true);
+  expect(castlingRights.black.kingSide).toBe(true);
 });

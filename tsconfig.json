@@ -4,29 +4,18 @@
     "lib": [
       "ES2022"
     ],
-    "module": "ES2022",
-    "moduleResolution": "bundler",
-    "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "composite": true,
+    "module": "Node16",
+    "esModuleInterop": true,
+    "skipDefaultLibCheck": true,
     "strict": true,
-    "downlevelIteration": true,
-    "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
-    "allowJs": false,
-    "types": [
-      "bun-types" // add Bun global
-    ],
+    "outDir": "dist",
+    "declaration": true,
     "baseUrl": ".",
     "paths": {
       "$src/*": [
         "./src/*"
-      ],
-      "$pgn-files/*": [
-        "./pgn-files/*"
       ]
     }
   }

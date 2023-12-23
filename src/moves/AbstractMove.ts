@@ -1,5 +1,5 @@
-import type Board from "$src/game/Board.ts";
-import type Position from "$src/game/Position.ts";
+import type Board from "$src/game/Board.js";
+import type Position from "$src/game/Position.js";
 
 export default abstract class AbstractMove {
   public NAG?: string;

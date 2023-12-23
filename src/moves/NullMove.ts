@@ -1,4 +1,4 @@
-import AbstractMove from "$src/moves/AbstractMove.ts";
+import AbstractMove from "$src/moves/AbstractMove.js";
 
 export default class NullMove extends AbstractMove {
   public static readonly algebraicNotation = "--";
@@ -12,15 +12,15 @@ export default class NullMove extends AbstractMove {
     return move === this;
   }
 
-  public override isCapture(): boolean {
+  public override isCapture() {
     return false;
   }
 
-  public override getAlgebraicNotation(): string {
+  public override getAlgebraicNotation() {
     return NullMove.algebraicNotation;
   }
 
-  public override play(): void { }
+  public override play() { }
 
   public toJSON(): {
     srcIndex: number;

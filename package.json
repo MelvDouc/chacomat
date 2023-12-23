@@ -1,6 +1,13 @@
 {
   "name": "chacomat",
   "version": "2.1.5",
+  "type": "module",
+  "module": "dist/index.js",
+  "description": "A TypeScript chess game.",
+  "keywords": [
+    "chess"
+  ],
+  "license": "MIT",
   "author": {
     "name": "Melvin Doucet",
     "email": "melv.douc@gmail.com",
@@ -10,25 +17,21 @@
     "type": "git",
     "url": "https://github.com/MelvDouc/chacomat.git"
   },
-  "main": "dist/index.js",
+  "scripts": {
+    "bench": "node --import tsx/esm tests/benchmarks/benchmarks.ts",
+    "build": "rm -rf dist/* && npx tsc -p tsconfig.build.json && npx tsc-alias -p tsconfig.build.json",
+    "test": "node --import tsx/esm --test ./tests/**/*_test.ts",
+    "prepublishOnly": "npm run build"
+  },
   "dependencies": {
     "pgnify": "1.0.6"
   },
   "devDependencies": {
-    "bun-plugin-dts": "^0.2.1",
-    "bun-types": "latest",
+    "@types/node": "^20.10.5",
+    "expect": "^29.7.0",
     "mitata": "^0.1.6",
+    "tsc-alias": "^1.8.8",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.2"
-  },
-  "description": "A TypeScript chess game.",
-  "keywords": [
-    "chess"
-  ],
-  "license": "MIT",
-  "scripts": {
-    "bench": "bun tests/benchmarks/benchmarks.ts",
-    "build": "rm -rf dist/* && bun run build.ts",
-    "prepublishOnly": "bun run build"
-  },
-  "type": "module"
+  }
 }

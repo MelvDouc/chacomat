@@ -1,5 +1,4 @@
-import LongRangePiece from "$src/pieces/long-range/LongRangePiece.ts";
-import { PieceOffsets } from "$src/typings/types.ts";
+import LongRangePiece from "$src/pieces/long-range/LongRangePiece.js";
 
 export default class Rook extends LongRangePiece {
   public static readonly offsets = {
@@ -7,11 +6,11 @@ export default class Rook extends LongRangePiece {
     y: [-1, 0, 1, 0]
   };
 
-  protected override get _offsets(): PieceOffsets {
+  protected override get _offsets() {
     return Rook.offsets;
   }
 
-  public override isRook(): boolean {
+  public override isRook() {
     return true;
   }
 }

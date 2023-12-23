@@ -1,11 +1,9 @@
-import Colors from "$src/constants/Colors.ts";
-import { pieceRanks } from "$src/constants/Ranks.ts";
-import SquareIndex, { indexTable } from "$src/constants/SquareIndex.ts";
-import type Board from "$src/game/Board.ts";
-import AbstractMove from "$src/moves/AbstractMove.ts";
-import RealMove from "$src/moves/RealMove.ts";
-import type Piece from "$src/pieces/Piece.ts";
-import Pieces from "$src/pieces/Pieces.ts";
+import SquareIndex, { indexTable } from "$src/constants/SquareIndex.js";
+import type Board from "$src/game/Board.js";
+import AbstractMove from "$src/moves/AbstractMove.js";
+import RealMove from "$src/moves/RealMove.js";
+import type Piece from "$src/pieces/Piece.js";
+import Pieces from "$src/pieces/Pieces.js";
 
 export default class PawnMove extends RealMove {
   public readonly srcIndex: SquareIndex;
@@ -98,7 +96,7 @@ export default class PawnMove extends RealMove {
   }
 
   public isPromotion() {
-    return this.destPoint.y === pieceRanks[this.srcPiece.opposite.color];
+    return this.destPoint.y === this.srcPiece.color.opposite.initialPieceRank;
   }
 
   public *promotions() {
@@ -109,7 +107,7 @@ export default class PawnMove extends RealMove {
       srcPiece: this.srcPiece,
       destPiece: this.destPiece
     };
-    const gen = this.srcPiece.color === Colors.WHITE
+    const gen = this.srcPiece.color.isWhite()
       ? Pieces.whitePieces()
       : Pieces.blackPieces();
 

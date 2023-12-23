@@ -1,11 +1,10 @@
+import type ChessGame from "$src/game/ChessGame.js";
+import type Position from "$src/game/Position.js";
+import NullMove from "$src/moves/NullMove.js";
+import PawnMove from "$src/moves/PawnMove.js";
+import type Piece from "$src/pieces/Piece.js";
+import Pieces from "$src/pieces/Pieces.js";
 import { type IVariation } from "pgnify";
-import Colors from "$src/constants/Colors.ts";
-import type ChessGame from "$src/game/ChessGame.ts";
-import type Position from "$src/game/Position.ts";
-import NullMove from "$src/moves/NullMove.ts";
-import PawnMove from "$src/moves/PawnMove.ts";
-import type Piece from "$src/pieces/Piece.ts";
-import Pieces from "$src/pieces/Pieces.ts";
 
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /^(?<o>[0O])(-\k<o>){1,2}/;
@@ -55,7 +54,7 @@ function findMove(position: Position, notation: string) {
 
   const { pi, sf, sr, dc, pr } = matchArr.groups as HalfMoveGroups;
   let piece = Pieces.fromInitial(pi ?? "P") as Piece;
-  if (position.activeColor === Colors.BLACK) piece = piece.opposite;
+  if (!position.activeColor.isWhite()) piece = piece.opposite;
 
   for (const move of position.generateLegalMoves()) {
     if (

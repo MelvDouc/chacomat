@@ -1,7 +1,7 @@
-import Colors from "$src/constants/Colors.ts";
-import SquareIndex from "$src/constants/SquareIndex.ts";
-import Board from "$src/game/Board.ts";
-import { Color, JSONPiece, PieceInitial, PieceOffsets } from "$src/typings/types.ts";
+import Color from "$src/constants/Color.js";
+import SquareIndex from "$src/constants/SquareIndex.js";
+import Board from "$src/game/Board.js";
+import { JSONPiece, PieceInitial, PieceOffsets } from "$src/typings/types.js";
 
 export default abstract class Piece {
   public static readonly byInitial: Map<PieceInitial, Piece> = new Map();
@@ -49,7 +49,7 @@ export default abstract class Piece {
   public toJSON(): JSONPiece {
     return {
       initial: this.initial,
-      color: Colors[this.color]
+      color: this.color.name
     };
   }
 }

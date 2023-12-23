@@ -1,25 +1,25 @@
-import Colors from "$src/constants/Colors.ts";
-import Piece from "$src/pieces/Piece.ts";
-import Bishop from "$src/pieces/long-range/Bishop.ts";
-import Queen from "$src/pieces/long-range/Queen.ts";
-import Rook from "$src/pieces/long-range/Rook.ts";
-import King from "$src/pieces/short-range/King.ts";
-import Knight from "$src/pieces/short-range/Knight.ts";
-import Pawn from "$src/pieces/short-range/Pawn.ts";
-import { PieceInitial } from "$src/typings/types.ts";
+import Color from "$src/constants/Color.js";
+import Piece from "$src/pieces/Piece.js";
+import Bishop from "$src/pieces/long-range/Bishop.js";
+import Queen from "$src/pieces/long-range/Queen.js";
+import Rook from "$src/pieces/long-range/Rook.js";
+import King from "$src/pieces/short-range/King.js";
+import Knight from "$src/pieces/short-range/Knight.js";
+import Pawn from "$src/pieces/short-range/Pawn.js";
+import { PieceInitial } from "$src/typings/types.js";
 
-const WHITE_PAWN = new Pawn(1, Colors.WHITE, "P");
-const WHITE_KNIGHT = new Knight(2, Colors.WHITE, "N");
-const WHITE_KING = new King(3, Colors.WHITE, "K");
-const WHITE_BISHOP = new Bishop(4, Colors.WHITE, "B");
-const WHITE_ROOK = new Rook(5, Colors.WHITE, "R");
-const WHITE_QUEEN = new Queen(6, Colors.WHITE, "Q");
-const BLACK_PAWN = new Pawn(-1, Colors.BLACK, "p");
-const BLACK_KNIGHT = new Knight(-2, Colors.BLACK, "n");
-const BLACK_KING = new King(-3, Colors.BLACK, "k");
-const BLACK_BISHOP = new Bishop(-4, Colors.BLACK, "b");
-const BLACK_ROOK = new Rook(-5, Colors.BLACK, "r");
-const BLACK_QUEEN = new Queen(-6, Colors.BLACK, "q");
+const WHITE_PAWN = new Pawn(1, Color.White, "P");
+const WHITE_KNIGHT = new Knight(2, Color.White, "N");
+const WHITE_KING = new King(3, Color.White, "K");
+const WHITE_BISHOP = new Bishop(4, Color.White, "B");
+const WHITE_ROOK = new Rook(5, Color.White, "R");
+const WHITE_QUEEN = new Queen(6, Color.White, "Q");
+const BLACK_PAWN = new Pawn(-1, Color.Black, "p");
+const BLACK_KNIGHT = new Knight(-2, Color.Black, "n");
+const BLACK_KING = new King(-3, Color.Black, "k");
+const BLACK_BISHOP = new Bishop(-4, Color.Black, "b");
+const BLACK_ROOK = new Rook(-5, Color.Black, "r");
+const BLACK_QUEEN = new Queen(-6, Color.Black, "q");
 
 const whitePieces = [
   WHITE_PAWN,

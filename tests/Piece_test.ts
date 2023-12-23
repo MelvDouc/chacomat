@@ -1,20 +1,21 @@
-import Colors from "$src/constants/Colors.ts";
-import { indexTable } from "$src/constants/SquareIndex.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import Board from "$src/game/Board.ts";
-import Pieces from "$src/pieces/Pieces.ts";
-import { expect, test } from "bun:test";
+import Color from "$src/constants/Color.js";
+import { indexTable } from "$src/constants/SquareIndex.js";
+import { BOARD_WIDTH } from "$src/constants/dimensions.js";
+import Board from "$src/game/Board.js";
+import Pieces from "$src/pieces/Pieces.js";
+import { expect } from "expect";
+import { test } from "node:test";
 
 test("colors", () => {
   for (const piece of Pieces.whitePieces())
-    expect(piece.color).toEqual(Colors.WHITE);
+    expect(piece.color).toEqual(Color.White);
   for (const piece of Pieces.blackPieces())
-    expect(piece.color).toEqual(Colors.BLACK);
+    expect(piece.color).toEqual(Color.Black);
 });
 
 test("types", () => {
-  expect(Pieces.BLACK_BISHOP.isBishop()).toBeTrue();
-  expect(Pieces.WHITE_QUEEN.isQueen()).toBeTrue();
+  expect(Pieces.BLACK_BISHOP.isBishop()).toBe(true);
+  expect(Pieces.WHITE_QUEEN.isQueen()).toBe(true);
 });
 
 test("initials", () => {

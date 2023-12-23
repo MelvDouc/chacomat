@@ -1,5 +1,4 @@
-import LongRangePiece from "$src/pieces/long-range/LongRangePiece.ts";
-import { PieceOffsets } from "$src/typings/types.ts";
+import LongRangePiece from "$src/pieces/long-range/LongRangePiece.js";
 
 export default class Bishop extends LongRangePiece {
   public static readonly offsets = {
@@ -7,11 +6,11 @@ export default class Bishop extends LongRangePiece {
     y: [-1, 1, 1, -1]
   };
 
-  protected override get _offsets(): PieceOffsets {
+  protected override get _offsets() {
     return Bishop.offsets;
   }
 
-  public override isBishop(): boolean {
+  public override isBishop() {
     return true;
   }
 }

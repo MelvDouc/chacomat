@@ -1,30 +1,31 @@
-import Colors from "$src/constants/Colors.ts";
-import SquareIndex from "$src/constants/SquareIndex.ts";
-import Board from "$src/game/Board.ts";
-import ChessGame from "$src/game/ChessGame.ts";
-import Position from "$src/game/Position.ts";
-import CastlingMove from "$src/moves/CastlingMove.ts";
-import PawnMove from "$src/moves/PawnMove.ts";
-import Pieces from "$src/pieces/Pieces.ts";
-import { expect, test } from "bun:test";
+import Color from "$src/constants/Color.js";
+import SquareIndex from "$src/constants/SquareIndex.js";
+import Board from "$src/game/Board.js";
+import ChessGame from "$src/game/ChessGame.js";
+import Position from "$src/game/Position.js";
+import CastlingMove from "$src/moves/CastlingMove.js";
+import PawnMove from "$src/moves/PawnMove.js";
+import Pieces from "$src/pieces/Pieces.js";
+import { expect } from "expect";
+import { test } from "node:test";
 
 function cMove(arg: ConstructorParameters<typeof CastlingMove>[0]) {
   return new CastlingMove(arg);
 }
 
 test("castling notation", () => {
-  expect(cMove({ color: Colors.WHITE, wing: "queenSide" }).getAlgebraicNotation()).toInclude("0-0-0");
-  expect(cMove({ color: Colors.BLACK, wing: "kingSide" }).getAlgebraicNotation()).toInclude("0-0");
+  expect(cMove({ color: Color.White, wing: "queenSide" }).getAlgebraicNotation()).toContain("0-0-0");
+  expect(cMove({ color: Color.Black, wing: "kingSide" }).getAlgebraicNotation()).toContain("0-0");
 });
 
 test("castling legality", () => {
   const board = Board.fromString("rn2k2r/8/8/8/8/8/7p/R3K2R");
-  const whiteAttacks = board.getColorAttacks(Colors.WHITE);
-  const blackAttacks = board.getColorAttacks(Colors.BLACK);
-  expect(cMove({ color: Colors.WHITE, wing: "queenSide" }).isLegal(board, blackAttacks)).toBeTrue();
-  expect(cMove({ color: Colors.WHITE, wing: "kingSide" }).isLegal(board, blackAttacks)).toBeFalse();
-  expect(cMove({ color: Colors.BLACK, wing: "queenSide" }).isLegal(board, whiteAttacks)).toBeFalse();
-  expect(cMove({ color: Colors.BLACK, wing: "kingSide" }).isLegal(board, whiteAttacks)).toBeTrue();
+  const whiteAttacks = board.getColorAttacks(Color.White);
+  const blackAttacks = board.getColorAttacks(Color.Black);
+  expect(cMove({ color: Color.White, wing: "queenSide" }).isLegal(board, blackAttacks)).toBe(true);
+  expect(cMove({ color: Color.White, wing: "kingSide" }).isLegal(board, blackAttacks)).toBe(false);
+  expect(cMove({ color: Color.Black, wing: "queenSide" }).isLegal(board, whiteAttacks)).toBe(false);
+  expect(cMove({ color: Color.Black, wing: "kingSide" }).isLegal(board, whiteAttacks)).toBe(true);
 });
 
 test("ambiguous notation", () => {
@@ -43,7 +44,7 @@ test("promotion", () => {
     destPiece: null,
     isEnPassant: false
   });
-  expect(move.isPromotion()).toBeTrue();
+  expect(move.isPromotion()).toBe(true);
   move.setPromotedPiece(Pieces.WHITE_QUEEN);
   expect(move.getAlgebraicNotation()).toEqual("a8=Q");
   move.setPromotedPiece(Pieces.WHITE_KNIGHT);
@@ -64,11 +65,11 @@ test("en passant", () => {
   const move = legalMoves.find(({ destNotation }) => destNotation === "c6");
 
   expect(move).toBeInstanceOf(PawnMove);
-  expect((move as PawnMove).isEnPassant()).toBeTrue();
+  expect((move as PawnMove).isEnPassant()).toBe(true);
 
   move!.play(board);
 
   expect(board.get(SquareIndex.c6)).toEqual(move!.srcPiece);
-  expect(board.has(SquareIndex.d5)).toBeFalse();
-  expect(board.has(SquareIndex.c5)).toBeFalse();
+  expect(board.has(SquareIndex.d5)).toBe(false);
+  expect(board.has(SquareIndex.c5)).toBe(false);
 });

@@ -1,8 +1,9 @@
-import SquareIndex, { indexTable } from "$src/constants/SquareIndex.ts";
-import { BOARD_WIDTH } from "$src/constants/dimensions.ts";
-import Piece from "$src/pieces/Piece.ts";
-import Pieces from "$src/pieces/Pieces.ts";
-import { Color, JSONBoard, PieceInitial } from "$src/typings/types.ts";
+import type Color from "$src/constants/Color.js";
+import SquareIndex, { indexTable } from "$src/constants/SquareIndex.js";
+import { BOARD_WIDTH } from "$src/constants/dimensions.js";
+import Piece from "$src/pieces/Piece.js";
+import Pieces from "$src/pieces/Pieces.js";
+import { JSONBoard, PieceInitial } from "$src/typings/types.js";
 
 export default class Board {
   static fromString(boardString: string) {
@@ -122,8 +123,8 @@ export default class Board {
         const x2 = horizontally ? (BOARD_WIDTH - x - 1) : x;
         const index = indexTable[y2][x2];
         const piece = this.get(index);
-        if (!piece) continue;
-        clone.set(index, swapColors ? piece.opposite : piece);
+        if (piece)
+          clone.set(index, swapColors ? piece.opposite : piece);
       }
     }
 

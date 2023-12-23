@@ -1,12 +1,10 @@
-import { GameResults, PGNParser } from "pgnify";
-import Colors from "$src/constants/Colors.ts";
-import Position from "$src/game/Position.ts";
-import type Move from "$src/moves/AbstractMove.ts";
-import NullMove from "$src/moves/NullMove.ts";
-import PawnMove from "$src/moves/PawnMove.ts";
-import RealMove from "$src/moves/RealMove.ts";
-import playMoves from "$src/utils/play-moves.ts";
-import { GameResult, PGNHeaders } from "$src/typings/types.ts";
+import Position from "$src/game/Position.js";
+import type Move from "$src/moves/AbstractMove.js";
+import NullMove from "$src/moves/NullMove.js";
+import PawnMove from "$src/moves/PawnMove.js";
+import RealMove from "$src/moves/RealMove.js";
+import playMoves from "$src/utils/play-moves.js";
+import { GameResult, GameResults, PGNHeaders, PGNParser } from "pgnify";
 
 export default class ChessGame {
   public static fromPGN(pgn: string) {
@@ -33,13 +31,13 @@ export default class ChessGame {
     }
   }
 
-  public get firstPosition(): Position {
+  public get firstPosition() {
     let pos = this.currentPosition;
     while (pos.prev) pos = pos.prev;
     return pos;
   }
 
-  public get lastPosition(): Position {
+  public get lastPosition() {
     let pos = this.currentPosition;
     while (pos.next[0]) pos = pos.next[0];
     return pos;
@@ -49,7 +47,7 @@ export default class ChessGame {
     const pos = this.currentPosition;
 
     if (pos.isCheckmate())
-      return (pos.activeColor === Colors.WHITE)
+      return (pos.activeColor.isWhite())
         ? GameResults.BLACK_WIN
         : GameResults.WHITE_WIN;
 
@@ -64,37 +62,37 @@ export default class ChessGame {
     return GameResults.NONE;
   }
 
-  public goBack(): void {
+  public goBack() {
     const { prev } = this.currentPosition;
     if (prev) this.currentPosition = prev;
   }
 
-  public goToStart(): void {
+  public goToStart() {
     this.currentPosition = this.firstPosition;
   }
 
-  public goForward(): void {
+  public goForward() {
     const [next] = this.currentPosition.next;
     if (next) this.currentPosition = next;
   }
 
-  public goToEnd(): void {
+  public goToEnd() {
     this.currentPosition = this.lastPosition;
   }
 
-  public truncatePreviousMoves(): void {
+  public truncatePreviousMoves() {
     delete this.currentPosition.prev;
 
-    if (this.currentPosition.fullMoveNumber !== 1 || this.currentPosition.activeColor !== Colors.WHITE)
+    if (this.currentPosition.fullMoveNumber !== 1 || !this.currentPosition.activeColor.isWhite())
       this.info.FEN = this.currentPosition.toFEN();
   }
 
-  public truncateFromCurrentPosition(): void {
+  public truncateFromCurrentPosition() {
     this.goBack();
     this.currentPosition.next.length = 0;
   }
 
-  public playMove(move: Move): this {
+  public playMove(move: Move) {
     const pos = this.currentPosition,
       board = pos.board.clone(),
       castlingRights = pos.castlingRights.clone();
@@ -108,7 +106,7 @@ export default class ChessGame {
       castlingRights,
       (move instanceof PawnMove && move.isDouble()) ? (move.srcIndex + move.destIndex) / 2 : null,
       (move.isCapture() || move instanceof PawnMove) ? 0 : (pos.halfMoveClock + 1),
-      pos.fullMoveNumber + Number(pos.activeColor === Colors.BLACK)
+      pos.fullMoveNumber + Number(!pos.activeColor.isWhite())
     );
     nextPos.srcMove = move;
     nextPos.prev = pos;
@@ -117,7 +115,7 @@ export default class ChessGame {
     return this;
   }
 
-  public playMoveWithPoints(srcX: number, srcY: number, destX: number, destY: number, promotionInitial?: string): this {
+  public playMoveWithPoints(srcX: number, srcY: number, destX: number, destY: number, promotionInitial?: string) {
     const move = this.currentPosition.legalMoves.find((m) => {
       return m.srcPoint.x === srcX
         && m.srcPoint.y === srcY
@@ -147,7 +145,7 @@ export default class ChessGame {
    * @param notation A computer notation like "e2e4" or "a2a1Q".
    * @returns This same game.
    */
-  public playMoveWithNotation(notation: string): this {
+  public playMoveWithNotation(notation: string) {
     const move = this.currentPosition.legalMoves.find((move) => {
       return move.getComputerNotation() === notation;
     });
@@ -163,21 +161,21 @@ export default class ChessGame {
     return this.playMove(move);
   }
 
-  public playNullMove(): this {
+  public playNullMove() {
     return this.playMove(NullMove.instance);
   }
 
-  public getInfoAsString(): string {
+  public getInfoAsString() {
     return Object.entries(this.info)
       .map(([key, value]) => `[${key} "${value}"]`)
       .join("\n");
   }
 
-  public toPGN(): string {
+  public toPGN() {
     return `${this.getInfoAsString()}\n\n${this.firstPosition.toMoveString()} ${this.info.Result}`;
   }
 
-  public toString(): string {
+  public toString() {
     return this.toPGN();
   }
 }
