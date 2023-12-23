@@ -1,5 +1,6 @@
 export { default as Color } from "$src/constants/Color.js";
 export { default as SquareIndex, indexTable, pointTable } from "$src/constants/SquareIndex.js";
+export { BOARD_WIDTH, SQUARE_COUNT } from "$src/constants/dimensions.js";
 export { default as Board } from "$src/game/Board.js";
 export { default as CastlingRights } from "$src/game/CastlingRights.js";
 export { default as ChessGame } from "$src/game/ChessGame.js";

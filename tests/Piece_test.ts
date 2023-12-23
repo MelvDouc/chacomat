@@ -1,8 +1,5 @@
-import Color from "$src/constants/Color.js";
-import { indexTable } from "$src/constants/SquareIndex.js";
 import { BOARD_WIDTH } from "$src/constants/dimensions.js";
-import Board from "$src/game/Board.js";
-import Pieces from "$src/pieces/Pieces.js";
+import { Board, Color, Pieces, indexTable } from "$src/index.js";
 import { expect } from "expect";
 import { test } from "node:test";
 

@@ -1,6 +1,6 @@
 {
   "name": "chacomat",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "type": "module",
   "module": "dist/index.js",
   "description": "A TypeScript chess game.",

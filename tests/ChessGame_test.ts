@@ -1,4 +1,4 @@
-import ChessGame from "$src/game/ChessGame.js";
+import { ChessGame } from "$src/index.js";
 import { expect } from "expect";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";

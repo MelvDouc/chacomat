@@ -1,10 +1,12 @@
-import ChessGame from "$src/game/ChessGame.js";
-import Color from "$src/constants/Color.js";
-import SquareIndex from "$src/constants/SquareIndex.js";
-import Board from "$src/game/Board.js";
-import CastlingRights from "$src/game/CastlingRights.js";
-import Position from "$src/game/Position.js";
-import Pieces from "$src/pieces/Pieces.js";
+import {
+  ChessGame,
+  Color,
+  SquareIndex,
+  Board,
+  CastlingRights,
+  Position,
+  Pieces
+} from "$src/index.js";
 import { expect } from "expect";
 import { test } from "node:test";
 

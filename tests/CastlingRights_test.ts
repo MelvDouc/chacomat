@@ -1,6 +1,4 @@
-import Color from "$src/constants/Color.js";
-import CastlingRights from "$src/game/CastlingRights.js";
-import ChessGame from "$src/game/ChessGame.js";
+import { CastlingRights, ChessGame } from "$src/index.js";
 import { expect } from "expect";
 import { test } from "node:test";
 
