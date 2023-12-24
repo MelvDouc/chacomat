@@ -9,14 +9,11 @@ A TypeScript chess game.
 ```javascript
 import { ChessGame, coords } from "chacomat";
 
-const spanishGame = new ChessGame();
+const game = new ChessGame();
+const move_e4 = game.currentPosition.findMoveByNotation("e4");
+if (move_e4)
+  game.playMove(move_e4);
 
-spanishGame
-  .playMoveWithNotation("e2e4")
-  .playMoveWithNotation("e7e5")
-  .playMoveWithNotation("g1f3")
-  .playMoveWithNotation("b8c6")
-  .playMoveWithPoints(5, 7, 1, 3); // Bf1b5
 ```
 
 ### from headers
@@ -87,7 +84,7 @@ import type { ChacoMat } from "chacomat";
 ChacoMat.GameResult; // "1-0" | "0-1" | "1/2-1/2" | "*"
 ```
 
-Most components of the game (board, move, piece, position) can be serialized, for example, to be sent as a JSON response.
+Most components of the game (board, piece, position) can be serialized, for example, to be sent as a JSON response.
 
 ```typescript
 // Express server

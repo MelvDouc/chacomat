@@ -1,36 +1,42 @@
 import Color from "$src/constants/Color.js";
-import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.js";
+import SquareIndex from "$src/constants/SquareIndex.js";
 import { BOARD_WIDTH } from "$src/constants/dimensions.js";
+import InvalidFenError from "$src/errors/InvalidFenError.js";
 import Board from "$src/game/Board.js";
 import CastlingRights from "$src/game/CastlingRights.js";
-import CastlingMove from "$src/moves/CastlingMove.js";
-import PawnMove from "$src/moves/PawnMove.js";
-import PieceMove from "$src/moves/PieceMove.js";
 import RealMove from "$src/moves/RealMove.js";
-import Piece from "$src/pieces/Piece.js";
+import { castlingMoves, nonCastlingMoves } from "$src/utils/generate-moves.js";
 import { isInsufficientMaterial } from "$src/utils/insufficient-material.js";
-import { JSONPosition, Wing } from "$src/typings/types.js";
-import type Move from "$src/moves/AbstractMove.js";
+import type { JSONPosition } from "$src/typings/types.js";
 
 export default class Position {
   public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
 
+  private static readonly _fenRegex = /^[PNBRQKpnbrqk1-8]{1,8}(\/[PNBRQKpnbrqk1-8]{1,8}){7} (w|b) ([kqKQ]{1,4}|-) ([a-h][1-8]|-) \d+ \d+$/;
+
+  public static isValidFEN(fen: string) {
+    return this._fenRegex.test(fen);
+  }
+
+  /**
+   * @throws {InvalidFenError}
+   */
   public static fromFEN(fen: string) {
-    const [boardString, colorAbbrev, castlingString, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
+    if (!this.isValidFEN(fen))
+      throw new InvalidFenError(fen);
+
+    const [board, colorAbbrev, castling, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
     return new this(
-      Board.fromString(boardString),
+      Board.fromString(board),
       Color.fromAbbreviation(colorAbbrev),
-      CastlingRights.fromString(castlingString),
+      CastlingRights.fromString(castling),
       SquareIndex[enPassant as keyof typeof SquareIndex] ?? null,
       +halfMoveClock,
       +fullMoveNumber
     );
   }
 
-  public prev?: Position;
-  public readonly next: Position[] = [];
-  public srcMove?: Move;
   public comment?: string;
   private _legalMoves?: RealMove[];
   private _isCheck?: boolean;
@@ -49,40 +55,17 @@ export default class Position {
   }
 
   public get legalMoves() {
-    return this._legalMoves ??= [...this.generateLegalMoves()];
+    return this._legalMoves ??= [...nonCastlingMoves(this), ...castlingMoves(this)];
   }
 
   public get legalMovesAsAlgebraicNotation() {
     return this.legalMoves.map((move) => move.getAlgebraicNotation(this));
   }
 
-  public getFullMoveNotation(use3Dots = false) {
-    const { prev, srcMove } = this;
-
-    if (!prev || !srcMove)
-      return "";
-
-    let notation = srcMove.getAlgebraicNotation(prev);
-
-    if (srcMove instanceof RealMove)
-      notation += srcMove.getCheckSign(this);
-
-    if (prev.activeColor.isWhite())
-      notation = `${prev.fullMoveNumber}.${notation}`;
-
-    else if (use3Dots)
-      notation = `${prev.fullMoveNumber}...${notation}`;
-
-    if (prev.comment)
-      notation = `{ ${prev.comment} } ${notation}`;
-
-    if (srcMove.NAG)
-      notation += ` ${srcMove.NAG}`;
-
-    if (srcMove.comment)
-      notation += ` { ${srcMove.comment} }`;
-
-    return notation;
+  public findMoveByComputerNotation(notation: string) {
+    return this.legalMoves.find((move) => {
+      return move.getComputerNotation() === notation;
+    });
   }
 
   public isCheck() {
@@ -97,33 +80,8 @@ export default class Position {
     return !this.isCheck() && this.legalMoves.length === 0;
   }
 
-  public isTripleRepetition() {
-    if (!this.srcMove || this.srcMove.isCapture() || this.srcMove instanceof CastlingMove)
-      return false;
-
-    let prevPos = this.prev?.prev;
-    let count = 1;
-
-    while (prevPos && count < 3) {
-      if (prevPos.srcMove?.isCapture() || prevPos.srcMove instanceof CastlingMove)
-        break;
-
-      if (prevPos.board.equals(this.board))
-        count++;
-
-      prevPos = prevPos.prev?.prev;
-    }
-
-    return count === 3;
-  }
-
   public isInsufficientMaterial() {
     return isInsufficientMaterial(this);
-  }
-
-  public isMainLine(): boolean {
-    return !this.prev
-      || this.prev.next.indexOf(this) === 0 && this.prev.isMainLine();
   }
 
   /**
@@ -136,11 +94,9 @@ export default class Position {
     castlingRights.black.queenSide = this.castlingRights.white.queenSide;
     castlingRights.black.kingSide = this.castlingRights.white.kingSide;
 
-    let { enPassantIndex } = this;
-    if (enPassantIndex !== null) {
-      const { x, y } = pointTable[enPassantIndex];
-      enPassantIndex = indexTable[BOARD_WIDTH - y - 1][x];
-    }
+    const enPassantIndex = this.enPassantIndex
+      ? this.enPassantIndex - 3 * BOARD_WIDTH * this.activeColor.direction
+      : null;
 
     return new Position(
       this.board.mirror({ vertically: true, swapColors: true }),
@@ -163,23 +119,6 @@ export default class Position {
     ].join(" ");
   }
 
-  public toMoveString(use3Dots = true): string {
-    const [main, ...vars] = this.next;
-
-    if (!main) return "";
-
-    let notation = main.getFullMoveNotation(use3Dots);
-    vars.forEach((variation) => {
-      let rest = variation.toMoveString(false);
-      if (rest) rest = ` ${rest}`;
-      notation += ` ( ${variation.getFullMoveNotation(true) + rest} )`;
-    });
-
-    let rest = main.toMoveString(vars.length > 0);
-    if (rest) rest = ` ${rest}`;
-    return notation + rest;
-  }
-
   public toJSON(): JSONPosition {
     return {
       board: this.board.toArray(),
@@ -189,69 +128,5 @@ export default class Position {
       halfMoveClock: this.halfMoveClock,
       fullMoveNumber: this.fullMoveNumber
     };
-  }
-
-  public *castlingMoves() {
-    if (this.isCheck())
-      return;
-
-    const enemyAttacks = this.board.getColorAttacks(this.inactiveColor);
-    const rights = this.activeColor.isWhite()
-      ? this.castlingRights.white
-      : this.castlingRights.black;
-    let wing: Wing;
-
-    for (wing in rights) {
-      if (!rights[wing]) continue;
-      const move = new CastlingMove({ color: this.activeColor, wing });
-      if (move.isLegal(this.board, enemyAttacks))
-        yield move;
-    }
-  }
-
-  public *generateLegalMoves() {
-    const { board, enPassantIndex } = this;
-
-    for (const [srcIndex, piece] of board.getEntries()) {
-      if (piece.color !== this.activeColor)
-        continue;
-
-      for (const destIndex of piece.getPseudoLegalDestIndices({ board, srcIndex, enPassantIndex })) {
-        const move = piece.isPawn()
-          ? this._createPawnMove(srcIndex, destIndex, piece, destIndex === enPassantIndex)
-          : this._createPieceMove(srcIndex, destIndex, piece);
-        move.play(board);
-        const isLegal = !board.isKingEnPrise(this.activeColor);
-        move.undo(board);
-
-        if (isLegal) {
-          if (move instanceof PawnMove && move.isPromotion())
-            yield* move.promotions();
-          else
-            yield move;
-        }
-      }
-    }
-
-    yield* this.castlingMoves();
-  }
-
-  private _createPieceMove(srcIndex: SquareIndex, destIndex: SquareIndex, piece: Piece) {
-    return new PieceMove({
-      srcIndex,
-      destIndex,
-      srcPiece: piece,
-      destPiece: this.board.get(destIndex)
-    });
-  }
-
-  private _createPawnMove(srcIndex: SquareIndex, destIndex: SquareIndex, piece: Piece, isEnPassant: boolean) {
-    return new PawnMove({
-      srcIndex,
-      destIndex,
-      srcPiece: piece,
-      destPiece: isEnPassant ? piece.opposite : this.board.get(destIndex),
-      isEnPassant
-    });
   }
 }

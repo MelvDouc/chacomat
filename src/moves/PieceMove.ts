@@ -24,19 +24,16 @@ export default class PieceMove extends RealMove {
   }
 
   public play(board: Board) {
-    if (this.destPiece)
-      board.remove(this.destIndex);
     board
       .remove(this.srcIndex)
       .set(this.destIndex, this.srcPiece);
   }
 
   public undo(board: Board) {
-    board
-      .remove(this.destIndex)
-      .set(this.srcIndex, this.srcPiece);
-    if (this.destPiece)
-      board.set(this.destIndex, this.destPiece);
+    this.destPiece
+      ? board.set(this.destIndex, this.destPiece)
+      : board.remove(this.destIndex);
+    board.set(this.srcIndex, this.srcPiece);
   }
 
   public isCapture() {
@@ -49,20 +46,25 @@ export default class PieceMove extends RealMove {
     if (!this.srcPiece.isKing())
       notation += this._exactNotation(position);
 
-    if (this.destPiece) notation += "x";
+    if (this.isCapture()) notation += "x";
     return this.srcPiece.initial.toUpperCase() + notation + this.destNotation;
   }
 
-  protected _exactNotation(position: Position) {
-    const ambiguities = new Set<string>();
+  protected _isAmbiguousWith(move: RealMove) {
+    return move.destIndex === this.destIndex
+      && move.srcPiece === this.srcPiece;
+  }
 
-    for (const { srcIndex, destIndex, srcPoint, srcPiece } of position.legalMoves) {
-      if (srcIndex === this.srcIndex || destIndex !== this.destIndex || srcPiece !== this.srcPiece)
+  protected _exactNotation(position: Position) {
+    const ambiguities = new Set<"x" | "y" | "">();
+
+    for (const move of position.legalMoves) {
+      if (this.srcIndex === move.srcIndex || !this._isAmbiguousWith(move))
         continue;
 
-      if (srcPoint.x === this.srcPoint.x)
+      if (this.srcPoint.x === move.srcPoint.x)
         ambiguities.add("x");
-      else if (srcPoint.y === this.srcPoint.y)
+      else if (this.srcPoint.y === move.srcPoint.y)
         ambiguities.add("y");
       else
         ambiguities.add("");

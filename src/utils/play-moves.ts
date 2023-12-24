@@ -1,62 +1,70 @@
 import type ChessGame from "$src/game/ChessGame.js";
+import IllegalMoveError from "$src/errors/IllegalMoveError.js";
 import type Position from "$src/game/Position.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
 import type Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
+import { castlingMoves, nonCastlingMoves } from "$src/utils/generate-moves.js";
 import { type IVariation } from "pgnify";
 
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /^(?<o>[0O])(-\k<o>){1,2}/;
 
+/**
+ * @throws {IllegalMoveError}
+ */
 export default function playMoves(game: ChessGame, { comment, nodes }: IVariation) {
   if (comment)
     game.currentPosition.comment = comment;
 
   for (const { notation, NAG, comment, variations } of nodes) {
-    const posBeforeMove = game.currentPosition;
-    const move = findMove(posBeforeMove, notation);
+    const treeBefore = game.tree;
+    const move = findMove(treeBefore.position, notation);
 
     if (!move)
-      throw new Error("Illegal move.", {
-        cause: {
-          notation,
-          position: posBeforeMove
-        }
+      throw new IllegalMoveError({
+        message: `Illegal move "${notation}".`,
+        position: treeBefore.position,
+        notation
       });
 
     if (NAG) move.NAG = NAG;
     if (comment) move.comment = comment;
     game.playMove(move);
-    const posAfterMove = game.currentPosition;
+    const treeAfter = game.tree;
 
     if (variations) {
       variations.forEach((variation) => {
-        game.currentPosition = posBeforeMove;
+        game.tree = treeBefore;
         playMoves(game, variation);
       });
-      game.currentPosition = posAfterMove;
+      game.tree = treeAfter;
     }
   }
 }
 
 function findMove(position: Position, notation: string) {
-  if (notation === NullMove.algebraicNotation)
-    return NullMove.instance;
-
-  if (castlingRegex.test(notation))
-    return findCastlingMove(position, notation[3] === "-");
+  if (castlingRegex.test(notation)) {
+    const isQueenSide = notation[3] === "-";
+    return [...castlingMoves(position)].find((move) => {
+      return move.isQueenSide() === isQueenSide;
+    });
+  }
 
   const matchArr = notation.match(moveRegex);
 
-  if (!matchArr)
-    return null;
+  if (!matchArr) {
+    return (notation === NullMove.algebraicNotation)
+      ? NullMove.instance
+      : null;
+  }
 
   const { pi, sf, sr, dc, pr } = matchArr.groups as HalfMoveGroups;
   let piece = Pieces.fromInitial(pi ?? "P") as Piece;
   if (!position.activeColor.isWhite()) piece = piece.opposite;
 
-  for (const move of position.generateLegalMoves()) {
+  for (const move of nonCastlingMoves(position)) {
     if (
       move.srcPiece === piece
       && move.destNotation === dc
@@ -67,14 +75,6 @@ function findMove(position: Position, notation: string) {
       return move;
     }
   }
-
-  return null;
-}
-
-function findCastlingMove(position: Position, isQueenSide: boolean) {
-  for (const move of position.castlingMoves())
-    if (move.isQueenSide() === isQueenSide)
-      return move;
 
   return null;
 }

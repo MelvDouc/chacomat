@@ -4,7 +4,6 @@ import type Position from "$src/game/Position.js";
 import globalConfig from "$src/global-config.js";
 import AbstractMove from "$src/moves/AbstractMove.js";
 import type Piece from "$src/pieces/Piece.js";
-import { Point } from "$src/typings/types.js";
 
 export default abstract class RealMove extends AbstractMove {
   public abstract readonly srcPiece: Piece;
@@ -42,21 +41,23 @@ export default abstract class RealMove extends AbstractMove {
     return this.srcNotation + this.destNotation;
   }
 
-  public getCheckSign(nextPosition: Position) {
-    if (nextPosition.isCheckmate())
+  public getCheckSign(positionAfter: Position) {
+    if (positionAfter.isCheckmate())
       return globalConfig.useDoublePlusForCheckmate ? "++" : "#";
-    if (nextPosition.isCheck())
+    if (positionAfter.isCheck())
       return "+";
     return "";
   }
 
-  public override toJSON(): {
-    srcIndex: number;
-    destIndex: number;
-  } {
-    return {
-      srcIndex: this.srcIndex,
-      destIndex: this.destIndex
-    };
+  public getFullAlgebraicNotation(positionBefore: Position, positionAfter: Position) {
+    let notation = this.getAlgebraicNotation(positionBefore) + this.getCheckSign(positionAfter);
+
+    if (this.NAG)
+      notation += ` ${this.NAG}`;
+
+    if (this.comment)
+      notation += ` { ${this.comment} }`;
+
+    return notation;
   }
 }

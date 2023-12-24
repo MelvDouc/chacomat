@@ -1,4 +1,4 @@
-import ChessGame from "$src/game/ChessGame.js";
+import { ChessGame } from "$src/index.js";
 import { readFile } from "node:fs/promises";
 import { bench, run } from "mitata";
 

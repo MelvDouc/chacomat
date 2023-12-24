@@ -10,6 +10,8 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "verbatimModuleSyntax": true,
     "outDir": "dist",
     "declaration": true,
     "baseUrl": ".",

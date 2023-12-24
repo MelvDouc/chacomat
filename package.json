@@ -1,6 +1,6 @@
 {
   "name": "chacomat",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "type": "module",
   "main": "dist/index.js",
   "description": "A TypeScript chess game.",
@@ -18,17 +18,19 @@
     "url": "https://github.com/MelvDouc/chacomat.git"
   },
   "scripts": {
-    "bench": "node --import tsx/esm tests/benchmarks/benchmarks.ts",
-    "build": "rm -rf dist/* && npx tsc -p tsconfig.build.json && npx tsc-alias -p tsconfig.build.json",
-    "test": "node --import tsx/esm --test ./tests/**/*_test.ts",
+    "clear-dist": "rm -rf dist/*",
+    "bench": "tsx benchmarks/index.ts",
+    "build": "npm run clear-dist && npx tsc -p tsconfig.build.json && npx tsc-alias -p tsconfig.build.json",
+    "test": "tsx --test ./tests/**/*_test.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "pgnify": "1.0.6"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.11",
     "@types/node": "^20.10.5",
-    "expect": "^29.7.0",
+    "chai": "^4.3.10",
     "mitata": "^0.1.6",
     "tsc-alias": "^1.8.8",
     "tsx": "^4.7.0",

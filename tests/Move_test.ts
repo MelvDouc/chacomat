@@ -1,70 +1,81 @@
 import CastlingMove from "$src/moves/CastlingMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
-import { Color, SquareIndex, Board, ChessGame, Position, Pieces } from "$src/index.js";
-import { expect } from "expect";
-import { test } from "node:test";
+import {
+  Color,
+  SquareIndex,
+  Board,
+  ChessGame,
+  Position,
+  Pieces,
+  type ChacoMat
+} from "$src/index.js";
+import { expect } from "chai";
+import assert from "node:assert";
+import { describe, it } from "node:test";
 
-function cMove(arg: ConstructorParameters<typeof CastlingMove>[0]) {
-  return new CastlingMove(arg);
-}
+describe("A castling move", () => {
+  const cMove = (color: Color, wing: ChacoMat.Wing) => new CastlingMove({ color, wing });
 
-test("castling notation", () => {
-  expect(cMove({ color: Color.White, wing: "queenSide" }).getAlgebraicNotation()).toContain("0-0-0");
-  expect(cMove({ color: Color.Black, wing: "kingSide" }).getAlgebraicNotation()).toContain("0-0");
-});
-
-test("castling legality", () => {
-  const board = Board.fromString("rn2k2r/8/8/8/8/8/7p/R3K2R");
-  const whiteAttacks = board.getColorAttacks(Color.White);
-  const blackAttacks = board.getColorAttacks(Color.Black);
-  expect(cMove({ color: Color.White, wing: "queenSide" }).isLegal(board, blackAttacks)).toBe(true);
-  expect(cMove({ color: Color.White, wing: "kingSide" }).isLegal(board, blackAttacks)).toBe(false);
-  expect(cMove({ color: Color.Black, wing: "queenSide" }).isLegal(board, whiteAttacks)).toBe(false);
-  expect(cMove({ color: Color.Black, wing: "kingSide" }).isLegal(board, whiteAttacks)).toBe(true);
-});
-
-test("ambiguous notation", () => {
-  const pos = Position.fromFEN("8/8/2QQ4/8/3Q4/5K2/8/7k w - - 0 1");
-  const { legalMovesAsAlgebraicNotation } = pos;
-  expect(legalMovesAsAlgebraicNotation).toContain("Qcd5");
-  expect(legalMovesAsAlgebraicNotation).toContain("Q4d5");
-  expect(legalMovesAsAlgebraicNotation).toContain("Qd6d5");
-});
-
-test("promotion", () => {
-  const move = new PawnMove({
-    srcIndex: SquareIndex.a7,
-    destIndex: SquareIndex.a8,
-    srcPiece: Pieces.WHITE_PAWN,
-    destPiece: null,
-    isEnPassant: false
+  it("should have the right notation", () => {
+    expect(cMove(Color.White, "queenSide").getAlgebraicNotation()).to.equal("0-0-0");
+    expect(cMove(Color.Black, "kingSide").getAlgebraicNotation()).to.equal("0-0");
   });
-  expect(move.isPromotion()).toBe(true);
-  move.setPromotedPiece(Pieces.WHITE_QUEEN);
-  expect(move.getAlgebraicNotation()).toEqual("a8=Q");
-  move.setPromotedPiece(Pieces.WHITE_KNIGHT);
-  expect(move.getAlgebraicNotation()).toEqual("a8=N");
+
+  it("should know when it's legal", () => {
+    const board = Board.fromString("rn2k2r/8/8/8/8/8/7p/R3K2R");
+    const whiteAttacks = board.getColorAttacks(Color.White);
+    const blackAttacks = board.getColorAttacks(Color.Black);
+    expect(cMove(Color.White, "queenSide").isLegal(board, blackAttacks)).to.be.true;
+    expect(cMove(Color.White, "kingSide").isLegal(board, blackAttacks)).to.be.false;
+    expect(cMove(Color.Black, "queenSide").isLegal(board, whiteAttacks)).to.be.false;
+    expect(cMove(Color.Black, "kingSide").isLegal(board, whiteAttacks)).to.be.true;
+  });
 });
 
-test("underpromotion and capture", () => {
-  const pgn = `
-    [FEN "8/5pkp/b5p1/p7/P4P2/8/1pp2NPP/R6K b - - 1 32"]
-    [Result "*"] *
-  `;
-  const game = ChessGame.fromPGN(pgn);
-  expect(game.currentPosition.legalMovesAsAlgebraicNotation).toContain("bxa1=R");
+describe("A piece move", () => {
+  it("should detect ambiguous notation", () => {
+    const pos = Position.fromFEN("8/8/2QQ4/8/3Q4/5K2/8/7k w - - 0 1");
+    const { legalMovesAsAlgebraicNotation } = pos;
+    expect(legalMovesAsAlgebraicNotation).to.include("Qcd5");
+    expect(legalMovesAsAlgebraicNotation).to.include("Q4d5");
+    expect(legalMovesAsAlgebraicNotation).to.include("Qd6d5");
+  });
 });
 
-test("en passant", () => {
-  const { legalMoves, board } = Position.fromFEN("8/8/8/2pP4/8/8/8/k1K5 w - c6 0 1");
-  const move = legalMoves.find(({ destNotation }) => destNotation === "c6");
+describe("A pawn move", () => {
+  it("should handle promotion", () => {
+    const move = new PawnMove({
+      srcIndex: SquareIndex.a7,
+      destIndex: SquareIndex.a8,
+      srcPiece: Pieces.WHITE_PAWN,
+      destPiece: null,
+      isEnPassant: false
+    });
+    expect(move.isPromotion()).to.be.true;
+    move.setPromotedPiece(Pieces.WHITE_QUEEN);
+    expect(move.getAlgebraicNotation()).to.equal("a8=Q");
+    move.setPromotedPiece(Pieces.WHITE_KNIGHT);
+    expect(move.getAlgebraicNotation()).to.equal("a8=N");
+  });
 
-  expect(move).toBeInstanceOf(PawnMove);
-  expect((move as PawnMove).isEnPassant()).toBe(true);
+  it("should handle underpromotion and capture", () => {
+    const pgn = `
+      [FEN "8/5pkp/b5p1/p7/P4P2/8/1pp2NPP/R6K b - - 1 32"]
+      [Result "*"] *
+    `;
+    const game = ChessGame.fromPGN(pgn);
+    expect(game.currentPosition.legalMovesAsAlgebraicNotation).to.include("bxa1=R");
+  });
 
-  move!.play(board);
+  it("should handle en passant", () => {
+    const { legalMoves, board } = Position.fromFEN("8/8/8/2pP4/8/8/8/k1K5 w - c6 0 1");
+    const move = legalMoves.find(({ destNotation }) => destNotation === "c6");
+    assert(move instanceof PawnMove);
+    expect(move.isEnPassant()).to.be.true;
 
-  expect(board.get(SquareIndex.c6)).toEqual(move!.srcPiece);
-  expect(board.has(SquareIndex.d5)).toBe(false);
-  expect(board.has(SquareIndex.c5)).toBe(false);
+    move.play(board);
+    expect(board.get(SquareIndex.c6)).to.equal(move.srcPiece);
+    expect(board.has(SquareIndex.d5)).to.be.false;
+    expect(board.has(SquareIndex.c5)).to.be.false;
+  });
 });

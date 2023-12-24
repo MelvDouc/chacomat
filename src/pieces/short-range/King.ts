@@ -7,10 +7,6 @@ export default class King extends ShortRangePiece {
   };
   protected static readonly _attacksMemo = new Map();
 
-  protected override get _offsets() {
-    return King.offsets;
-  }
-
   protected override get _attacksMemo() {
     return King._attacksMemo;
   }

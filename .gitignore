@@ -3,5 +3,4 @@
 /local
 /node_modules
 
-*.js
 *.test.pgn

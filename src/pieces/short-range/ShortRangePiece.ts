@@ -1,9 +1,14 @@
 import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.js";
 import { BOARD_WIDTH } from "$src/constants/dimensions.js";
 import Piece from "$src/pieces/Piece.js";
+import type { PieceOffsets } from "$src/typings/types.js";
 
 export default abstract class ShortRangePiece extends Piece {
   protected abstract get _attacksMemo(): Map<SquareIndex, SquareIndex[]>;
+
+  protected get _offsets() {
+    return (this.constructor as typeof ShortRangePiece & { offsets: PieceOffsets; }).offsets;
+  }
 
   public override getAttacks(srcIndex: SquareIndex) {
     if (!this._attacksMemo.has(srcIndex)) {

@@ -1,10 +1,5 @@
-/.vscode
-/local
-/node_modules
-/pgn-files
-/src
-/tests
-
-.gitignore
-tsconfig.json
-tsconfig.build.json
+*
+!/dist/*
+!/LICENSE
+!/package.json
+!/README.md

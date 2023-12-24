@@ -5,7 +5,7 @@ import globalConfig from "$src/global-config.js";
 import RealMove from "$src/moves/RealMove.js";
 import type Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
-import { Wing } from "$src/typings/types.js";
+import type { Wing } from "$src/typings/types.js";
 
 export default class CastlingMove extends RealMove {
   public readonly srcPiece: Piece;

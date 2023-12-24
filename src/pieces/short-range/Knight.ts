@@ -7,10 +7,6 @@ export default class Knight extends ShortRangePiece {
   };
   protected static readonly _attacksMemo = new Map();
 
-  protected override get _offsets() {
-    return Knight.offsets;
-  }
-
   protected override get _attacksMemo() {
     return Knight._attacksMemo;
   }

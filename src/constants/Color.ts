@@ -1,3 +1,5 @@
+import { BOARD_WIDTH } from "$src/constants/dimensions.js";
+
 export default class Color {
   public static readonly White = new this("WHITE", 1);
   public static readonly Black = new this("BLACK", -1);
@@ -23,7 +25,7 @@ export default class Color {
   }
 
   public get initialPieceRank() {
-    return this.isWhite() ? 0 : (8 - 1);
+    return this.isWhite() ? 0 : (BOARD_WIDTH - 1);
   }
 
   public get initialPawnRank() {
