@@ -1,5 +1,6 @@
 import type SquareIndex from "$src/constants/SquareIndex.js";
 import type Position from "$src/game/Position.js";
+import type { PGNify } from "pgnify";
 
 export type NAG = `$${string}`;
 export type Wing = "queenSide" | "kingSide";
@@ -56,7 +57,5 @@ export interface NotationTree {
 // PGN PARSER
 // ===== ===== ===== ===== =====
 
-export type {
-  GameResult,
-  PGNHeaders
-} from "pgnify";
+export type PGNHeaders = PGNify.PGNHeaders;
+export type GameResult = PGNify.GameResult;

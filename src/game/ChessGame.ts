@@ -5,7 +5,7 @@ import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
 import RealMove from "$src/moves/RealMove.js";
 import playMoves from "$src/utils/play-moves.js";
-import { GameResults, PGNParser, type GameResult, type PGNHeaders } from "pgnify";
+import { GameResults, PGNParser, type PGNify } from "pgnify";
 
 export default class ChessGame {
   public static fromPGN(pgn: string) {
@@ -15,11 +15,11 @@ export default class ChessGame {
     return game;
   }
 
-  public readonly info: PGNHeaders;
+  public readonly info: PGNify.PGNHeaders;
   public tree: PositionTree;
 
   public constructor(params?: {
-    info: PGNHeaders;
+    info: PGNify.PGNHeaders;
     moveString?: string;
   }) {
     this.info = params?.info ?? {};
@@ -45,7 +45,7 @@ export default class ChessGame {
     return this.tree.endOfVariation.position;
   }
 
-  public get currentResult(): GameResult {
+  public get currentResult(): PGNify.GameResult {
     const pos = this.currentPosition;
 
     if (pos.isCheckmate())

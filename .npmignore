@@ -1,5 +1,11 @@
-*
-!/dist/*
-!/LICENSE
-!/package.json
-!/README.md
+/benchmarks
+/local
+/node_modules
+/pgn-files
+/src
+/tests
+
+.gitignore
+package-lock.json
+tsconfig.build.json
+tsconfig.json

@@ -6,7 +6,7 @@ import PawnMove from "$src/moves/PawnMove.js";
 import type Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
 import { castlingMoves, nonCastlingMoves } from "$src/utils/generate-moves.js";
-import { type IVariation } from "pgnify";
+import { type Variation } from "pgnify";
 
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /^(?<o>[0O])(-\k<o>){1,2}/;
@@ -14,7 +14,7 @@ const castlingRegex = /^(?<o>[0O])(-\k<o>){1,2}/;
 /**
  * @throws {IllegalMoveError}
  */
-export default function playMoves(game: ChessGame, { comment, nodes }: IVariation) {
+export default function playMoves(game: ChessGame, { comment, nodes }: Variation) {
   if (comment)
     game.currentPosition.comment = comment;
 
