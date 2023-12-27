@@ -1,22 +1,23 @@
+import IllegalMoveError from "$src/errors/IllegalMoveError.js";
 import Position from "$src/game/Position.js";
-import PositionTree from "$src/game/PositionTree.js";
 import type Move from "$src/moves/AbstractMove.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
 import RealMove from "$src/moves/RealMove.js";
-import playMoves from "$src/utils/play-moves.js";
-import { GameResults, PGNParser, type PGNify } from "pgnify";
+import { findMove } from "$src/utils/move-helpers.js";
+import { GameResults, PGNParser, type PGNify, type Variation } from "pgnify";
 
 export default class ChessGame {
   public static fromPGN(pgn: string) {
     const parser = new PGNParser(pgn);
     const game = new this({ info: parser.headers });
-    playMoves(game, parser.mainLine);
+    game._playMoves(parser.mainLine);
     return game;
   }
 
   public readonly info: PGNify.PGNHeaders;
-  public tree: PositionTree;
+  public currentPosition: Position;
+
 
   public constructor(params?: {
     info: PGNify.PGNHeaders;
@@ -24,25 +25,26 @@ export default class ChessGame {
   }) {
     this.info = params?.info ?? {};
     this.info.Result ??= GameResults.NONE;
-    const position = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
-    this.tree = new PositionTree(position);
+    this.currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
 
     if (params?.moveString) {
       const parser = new PGNParser(params.moveString);
-      playMoves(this, parser.mainLine);
+      this._playMoves(parser.mainLine);
     }
   }
 
-  public get currentPosition() {
-    return this.tree.position;
-  }
-
   public get firstPosition() {
-    return this.tree.root.position;
+    let position = this.currentPosition;
+    while (position.prev)
+      position = position.prev;
+    return position;
   }
 
   public get lastPosition() {
-    return this.tree.endOfVariation.position;
+    let position = this.currentPosition;
+    while (position.next[0])
+      position = position.next[0];
+    return position;
   }
 
   public get currentResult(): PGNify.GameResult {
@@ -56,8 +58,8 @@ export default class ChessGame {
     if (
       pos.isStalemate()
       || pos.isInsufficientMaterial()
-      || this.isTripleRepetition()
       || pos.halfMoveClock >= 50
+      || this.isTripleRepetition()
     )
       return GameResults.DRAW;
 
@@ -67,15 +69,15 @@ export default class ChessGame {
   public isTripleRepetition() {
     const { board } = this.currentPosition;
     let count = 1;
-    let tree = this.tree.prev?.prev;
+    let node = this.currentPosition.prev?.prev;
 
-    while (tree && count < 3) {
-      if (tree.position.board.pieceCount !== board.pieceCount)
+    while (node && count < 3) {
+      if (node.board.pieceCount !== board.pieceCount)
         break;
 
       let isSameBoard = true;
 
-      for (const [index, piece] of tree.position.board.getEntries()) {
+      for (const [index, piece] of node.board.getEntries()) {
         if (board.get(index) !== piece) {
           isSameBoard = false;
           break;
@@ -83,40 +85,38 @@ export default class ChessGame {
       }
 
       if (isSameBoard) count++;
-      tree = tree.prev?.prev;
+      node = node.prev?.prev;
     }
 
     return count === 3;
   }
 
   public goBack() {
-    if (this.tree.prev)
-      this.tree = this.tree.prev;
+    if (this.currentPosition.prev)
+      this.currentPosition = this.currentPosition.prev;
   }
 
   public goToStart() {
-    this.tree = this.tree.root;
+    this.currentPosition = this.firstPosition;
   }
 
   public goForward() {
-    if (this.tree.hasMainLine())
-      this.tree = this.tree.mainLine.tree;
+    if (this.currentPosition.next[0])
+      this.currentPosition = this.currentPosition.next[0];
   }
 
   public goToEnd() {
-    this.tree = this.tree.endOfVariation;
+    this.currentPosition = this.lastPosition;
   }
 
   public truncatePreviousMoves() {
-    this.tree.prev = null;
-
+    delete this.currentPosition.prev;
     if (this.currentPosition.fullMoveNumber !== 1 || !this.currentPosition.activeColor.isWhite())
       this.info.FEN = this.currentPosition.toFEN();
   }
 
   public truncateFromCurrentPosition() {
-    this.goBack();
-    this.tree.clearNext();
+    this.currentPosition.next.length = 0;
   }
 
   public playMove(move: Move) {
@@ -135,7 +135,10 @@ export default class ChessGame {
       (move.isCapture() || move instanceof PawnMove) ? 0 : (pos.halfMoveClock + 1),
       pos.fullMoveNumber + Number(!pos.activeColor.isWhite())
     );
-    this.tree = this.tree.addNext(nextPos, move);
+    nextPos.srcMove = move;
+    nextPos.prev = pos;
+    pos.next.push(nextPos);
+    this.currentPosition = nextPos;
     return this;
   }
 
@@ -150,10 +153,40 @@ export default class ChessGame {
   }
 
   public toPGN() {
-    return `${this.getInfoAsString()}\n\n${this.tree.root.toMoveString()} ${this.info.Result}`;
+    return `${this.getInfoAsString()}\n\n${this.firstPosition.toMoveString()} ${this.info.Result}`;
   }
 
   public toString() {
     return this.toPGN();
+  }
+
+  protected _playMoves({ comment, nodes }: Variation) {
+    if (comment)
+      this.currentPosition.comment = comment;
+
+    for (const { notation, NAG, comment, variations } of nodes) {
+      const posBefore = this.currentPosition;
+      const move = findMove(posBefore, notation);
+
+      if (!move)
+        throw new IllegalMoveError({
+          message: `Illegal move "${notation}".`,
+          position: this.currentPosition,
+          notation
+        });
+
+      if (NAG) move.NAG = NAG;
+      if (comment) move.comment = comment;
+      this.playMove(move);
+
+      if (variations) {
+        const posAfter = this.currentPosition;
+        variations.forEach((variation) => {
+          this.currentPosition = posBefore;
+          this._playMoves(variation);
+        });
+        this.currentPosition = posAfter;
+      }
+    }
   }
 }

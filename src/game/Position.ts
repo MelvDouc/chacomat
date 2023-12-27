@@ -4,8 +4,9 @@ import { BOARD_WIDTH } from "$src/constants/dimensions.js";
 import InvalidFenError from "$src/errors/InvalidFenError.js";
 import Board from "$src/game/Board.js";
 import CastlingRights from "$src/game/CastlingRights.js";
+import type AbstractMove from "$src/moves/AbstractMove.js";
 import RealMove from "$src/moves/RealMove.js";
-import { castlingMoves, nonCastlingMoves } from "$src/utils/generate-moves.js";
+import { castlingMoves, nonCastlingMoves } from "$src/utils/move-helpers.js";
 import { isInsufficientMaterial } from "$src/utils/insufficient-material.js";
 import type { JSONPosition } from "$src/typings/types.js";
 
@@ -37,6 +38,9 @@ export default class Position {
     );
   }
 
+  public srcMove?: AbstractMove;
+  public prev?: Position;
+  public readonly next: Position[] = [];
   public comment?: string;
   private _legalMoves?: RealMove[];
   private _isCheck?: boolean;
@@ -117,6 +121,27 @@ export default class Position {
       this.halfMoveClock,
       this.fullMoveNumber
     ].join(" ");
+  }
+
+  public toMoveString(varIndex = 0, use3Dots = true) {
+    if (!this.next[varIndex])
+      return "";
+
+    const next = this.next[varIndex];
+    let notation = next.srcMove!.getFullAlgebraicNotation(this, next);
+
+    if (this.activeColor.isWhite())
+      notation = `${this.fullMoveNumber}.${notation}`;
+    else if (use3Dots)
+      notation = `${this.fullMoveNumber}...${notation}`;
+
+    if (varIndex === 0)
+      for (let i = 1; i < this.next.length; i++)
+        notation += ` ( ${this.toMoveString(i, true)} )`;
+
+    const rest = next.toMoveString(0, varIndex > 0 !== this.next.length > 1);
+    rest && (notation += ` ${rest}`);
+    return notation;
   }
 
   public toJSON(): JSONPosition {

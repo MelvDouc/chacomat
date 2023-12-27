@@ -22,7 +22,7 @@ describe("Parse from string", () => {
 
   it("#2", () => {
     const game = ChessGame.fromPGN('[FEN "k1K5/8/8/8/8/8/8/8 b - - 0 1"] 1...Ka7 *');
-    expect(game.tree.root.toMoveString().startsWith("1...Ka7")).to.be.true;
+    expect(game.firstPosition.toMoveString().startsWith("1...Ka7")).to.be.true;
   });
 });
 

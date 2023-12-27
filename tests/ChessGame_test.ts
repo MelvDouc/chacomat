@@ -1,4 +1,4 @@
-import { ChessGame } from "$src/index.js";
+import { ChessGame, Position } from "$src/index.js";
 import { expect } from "chai";
 import { readFile } from "node:fs/promises";
 import { describe, it } from "node:test";
@@ -38,5 +38,21 @@ describe("A chess game", () => {
     game.playMove(m2);
     game.playNullMove();
     expect(game.toPGN()).to.include("1.-- e5 2.e4 --");
+  });
+});
+
+describe("Game splicing", () => {
+  it("truncate previous moves", () => {
+    const game = ChessGame.fromPGN(`[Result "*"] 1.e4 e5 2.Nf3 Nc6 *`);
+    game.truncatePreviousMoves();
+    expect(game.currentPosition.toFEN()).not.to.eq(Position.START_FEN);
+    expect(game.currentPosition.toMoveString()).to.have.length(0);
+  });
+
+  it("truncate next moves", () => {
+    const game = ChessGame.fromPGN(`[Result "*"] 1.e4 e5 2.Nf3 Nc6 *`);
+    game.currentPosition = game.firstPosition.next[0];
+    game.truncateFromCurrentPosition();
+    expect(game.firstPosition.toMoveString()).to.eq("1.e4");
   });
 });
