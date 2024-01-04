@@ -51,7 +51,7 @@ describe("Game splicing", () => {
 
   it("truncate next moves", () => {
     const game = ChessGame.fromPGN(`[Result "*"] 1.e4 e5 2.Nf3 Nc6 *`);
-    game.currentPosition = game.firstPosition.next[0];
+    game.currentPosition = game.firstPosition.next[0].position;
     game.truncateFromCurrentPosition();
     expect(game.firstPosition.toMoveString()).to.eq("1.e4");
   });

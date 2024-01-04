@@ -45,12 +45,10 @@ export interface JSONPosition {
 // POSITION TREE
 // ===== ===== ===== ===== =====
 
-export interface NotationTree {
-  srcPosition: Position;
-  next: {
-    notation: string;
-    tree: NotationTree;
-  }[];
+export interface PositionTreeNode {
+  notation: string;
+  position: Position;
+  variations?: PositionTreeNode[][];
 }
 
 // ===== ===== ===== ===== =====

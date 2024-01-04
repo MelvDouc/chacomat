@@ -1,14 +1,16 @@
+import type Color from "$src/constants/Color.js";
+import SquareIndex from "$src/constants/SquareIndex.js";
 import type Position from "$src/game/Position.js";
 import CastlingMove from "$src/moves/CastlingMove.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
 import PieceMove from "$src/moves/PieceMove.js";
-import type Piece from "$src/pieces/Piece.js";
+import Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
 import type { Wing } from "$src/typings/types.js";
 
-const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dc>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
-const castlingRegex = /^(?<o>[0O])(-\k<o>){1,2}/;
+const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dn>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
+const castlingRegex = /^(O|0)(-\1){1,2}/;
 
 export function* nonCastlingMoves(position: Position) {
   const { board, activeColor, enPassantIndex } = position;
@@ -69,8 +71,9 @@ export function* castlingMoves({ activeColor, board, castlingRights }: Position)
 export function findMove(position: Position, notation: string) {
   if (castlingRegex.test(notation)) {
     const isQueenSide = notation[3] === "-";
-    return [...castlingMoves(position)].find((move) => {
-      return move.isQueenSide() === isQueenSide;
+    return new CastlingMove({
+      color: position.activeColor,
+      wing: isQueenSide ? "queenSide" : "kingSide"
     });
   }
 
@@ -82,24 +85,31 @@ export function findMove(position: Position, notation: string) {
       : null;
   }
 
-  const { pi, sf, sr, dc, pr } = matchArr.groups as HalfMoveGroups;
-  let piece = Pieces.fromInitial(pi ?? "P") as Piece;
-  if (!position.activeColor.isWhite()) piece = piece.opposite;
+  const { pi, sf, sr, dn, pr } = matchArr.groups as HalfMoveGroups;
+  const destIndex = SquareIndex[dn as keyof typeof SquareIndex];
 
-  for (const move of nonCastlingMoves(position)) {
-    if (
-      move.srcPiece === piece
-      && move.destNotation === dc
-      && (!sf || move.srcNotation[0] === sf)
-      && (!sr || move.srcNotation[1] === sr)
-      && (!(move instanceof PawnMove) || !move.isPromotion() || move.promotionInitial === pr)
-    ) {
-      return move;
-    }
+  if (pi) {
+    const piece = getPieceFromWhiteInitial(pi, position.activeColor) as Piece;
+    return piece.getMoveTo({ destIndex, position, srcFile: sf, srcRank: sr });
   }
 
-  return null;
+  const pawn = position.activeColor.isWhite() ? Pieces.WHITE_PAWN : Pieces.BLACK_PAWN;
+  const move = pawn.getMoveTo({ destIndex, position, srcFile: sf, srcRank: sr });
+
+  if (move && pr) {
+    const promotedPiece = getPieceFromWhiteInitial(pr, position.activeColor) as Piece;
+    move.setPromotedPiece(promotedPiece);
+  }
+
+  return move;
 }
 
-type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dc" | "pr";
+function getPieceFromWhiteInitial(initial: string, color: Color) {
+  const piece = Pieces.fromInitial(initial);
+  return (piece && !color.isWhite())
+    ? piece.opposite
+    : piece;
+}
+
+type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dn" | "pr";
 type HalfMoveGroups = { [K in HalfMoveGroupKey]?: string };

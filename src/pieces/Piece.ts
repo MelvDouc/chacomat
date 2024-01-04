@@ -1,6 +1,9 @@
 import type Color from "$src/constants/Color.js";
 import SquareIndex from "$src/constants/SquareIndex.js";
 import type Board from "$src/game/Board.js";
+import type Position from "$src/game/Position.js";
+import PieceMove from "$src/moves/PieceMove.js";
+import type RealMove from "$src/moves/RealMove.js";
 import type { JSONPiece, PieceInitial, PieceOffsets } from "$src/typings/types.js";
 
 export default abstract class Piece {
@@ -32,6 +35,29 @@ export default abstract class Piece {
     return this.getAttacks(srcIndex, board).filter((destIndex) => {
       return board.get(destIndex)?.color !== this.color;
     });
+  }
+
+  public getMoveTo({ destIndex, position, srcFile, srcRank }: {
+    destIndex: SquareIndex;
+    srcFile: string | undefined;
+    srcRank: string | undefined;
+    position: Position;
+  }): RealMove | null {
+    for (const attack of this.getAttacks(destIndex, position.board)) {
+      if (
+        position.board.get(attack) === this
+        && (!srcFile || SquareIndex[attack][0] === srcFile)
+        && (!srcRank || SquareIndex[attack][1] === srcRank)
+      )
+        return new PieceMove({
+          srcIndex: attack,
+          destIndex,
+          srcPiece: this,
+          destPiece: position.board.get(destIndex)
+        });
+    }
+
+    return null;
   }
 
   public isPawn() { return false; }

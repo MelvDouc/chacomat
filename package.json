@@ -1,6 +1,6 @@
 {
   "name": "chacomat",
-  "version": "2.1.9",
+  "version": "2.2.0",
   "main": "dist/index.js",
   "type": "module",
   "exports": {

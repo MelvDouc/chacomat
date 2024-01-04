@@ -8,12 +8,12 @@ import type AbstractMove from "$src/moves/AbstractMove.js";
 import RealMove from "$src/moves/RealMove.js";
 import { castlingMoves, nonCastlingMoves } from "$src/utils/move-helpers.js";
 import { isInsufficientMaterial } from "$src/utils/insufficient-material.js";
-import type { JSONPosition } from "$src/typings/types.js";
+import type { JSONPosition, PositionTreeNode } from "$src/typings/types.js";
 
 export default class Position {
   public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
 
-  private static readonly _fenRegex = /^[PNBRQKpnbrqk1-8]{1,8}(\/[PNBRQKpnbrqk1-8]{1,8}){7} (w|b) ([kqKQ]{1,4}|-) ([a-h][1-8]|-) \d+ \d+$/;
+  private static readonly _fenRegex = /^[PNBRQKpnbrqk1-8]{1,8}(\/[PNBRQKpnbrqk1-8]{1,8}){7} (w|b) ((?!.*(.).*\1)[KQkq]{1,4}|-) ([a-h][1-8]|-) \d+ \d+$/;
 
   public static isValidFEN(fen: string) {
     return this._fenRegex.test(fen);
@@ -37,10 +37,17 @@ export default class Position {
       +fullMoveNumber
     );
   }
+  private static _stringifyTree(tree: PositionTreeNode[]) {
+    return tree
+      .map(({ notation, variations }) => {
+        variations?.forEach((v) => notation += ` ( ${this._stringifyTree(v)} )`);
+        return notation;
+      })
+      .join(" ");
+  }
 
-  public srcMove?: AbstractMove;
   public prev?: Position;
-  public readonly next: Position[] = [];
+  public readonly next: { move: AbstractMove; position: Position; }[] = [];
   public comment?: string;
   private _legalMoves?: RealMove[];
   private _isCheck?: boolean;
@@ -123,25 +130,12 @@ export default class Position {
     ].join(" ");
   }
 
-  public toMoveString(varIndex = 0, use3Dots = true) {
-    if (!this.next[varIndex])
-      return "";
+  public toMoveString() {
+    return Position._stringifyTree(this.toTree());
+  }
 
-    const next = this.next[varIndex];
-    let notation = next.srcMove!.getFullAlgebraicNotation(this, next);
-
-    if (this.activeColor.isWhite())
-      notation = `${this.fullMoveNumber}.${notation}`;
-    else if (use3Dots)
-      notation = `${this.fullMoveNumber}...${notation}`;
-
-    if (varIndex === 0)
-      for (let i = 1; i < this.next.length; i++)
-        notation += ` ( ${this.toMoveString(i, true)} )`;
-
-    const rest = next.toMoveString(0, varIndex > 0 !== this.next.length > 1);
-    rest && (notation += ` ${rest}`);
-    return notation;
+  public toTree() {
+    return this._toTree(true);
   }
 
   public toJSON(): JSONPosition {
@@ -153,5 +147,34 @@ export default class Position {
       halfMoveClock: this.halfMoveClock,
       fullMoveNumber: this.fullMoveNumber
     };
+  }
+
+  protected _getTreeNode({ move, position }: Position["next"][number], use3Dots: boolean) {
+    let notation = move.getFullAlgebraicNotation(this, position);
+
+    if (this.activeColor.isWhite())
+      notation = `${this.fullMoveNumber}.${notation}`;
+    else if (use3Dots)
+      notation = `${this.fullMoveNumber}...${notation}`;
+
+    return { notation, position } as PositionTreeNode;
+  }
+
+  protected _toTree(use3Dots: boolean): PositionTreeNode[] {
+    if (this.next.length === 0)
+      return [];
+
+    const main = this._getTreeNode(this.next[0], use3Dots);
+
+    if (this.next.length > 1)
+      main.variations = this.next.slice(1).map((item) => {
+        const rest = item.position._toTree(false);
+        rest.unshift(this._getTreeNode(item, true));
+        return rest;
+      });
+
+    const rest = main.position._toTree(this.next.length > 1);
+    rest.unshift(main);
+    return rest;
   }
 }

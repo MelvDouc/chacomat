@@ -43,7 +43,7 @@ export default class ChessGame {
   public get lastPosition() {
     let position = this.currentPosition;
     while (position.next[0])
-      position = position.next[0];
+      position = position.next[0].position;
     return position;
   }
 
@@ -102,7 +102,7 @@ export default class ChessGame {
 
   public goForward() {
     if (this.currentPosition.next[0])
-      this.currentPosition = this.currentPosition.next[0];
+      this.currentPosition = this.currentPosition.next[0].position;
   }
 
   public goToEnd() {
@@ -137,7 +137,7 @@ export default class ChessGame {
     );
     nextPos.srcMove = move;
     nextPos.prev = pos;
-    pos.next.push(nextPos);
+    pos.next.push({ move, position: nextPos });
     this.currentPosition = nextPos;
     return this;
   }

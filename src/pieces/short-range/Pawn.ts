@@ -1,6 +1,9 @@
 import Color from "$src/constants/Color.js";
 import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.js";
+import { BOARD_WIDTH } from "$src/constants/dimensions.js";
 import type Board from "$src/game/Board.js";
+import type Position from "$src/game/Position.js";
+import PawnMove from "$src/moves/PawnMove.js";
 import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.js";
 
 export default class Pawn extends ShortRangePiece {
@@ -28,6 +31,54 @@ export default class Pawn extends ShortRangePiece {
       ...this._forwardIndices(params),
       ...this._captureIndices(params)
     ];
+  }
+
+  public override getMoveTo({ destIndex, position: { board, enPassantIndex }, srcFile }: {
+    destIndex: SquareIndex;
+    srcFile: string | undefined;
+    srcRank: string | undefined;
+    position: Position;
+  }) {
+    const { direction, initialPawnRank } = this.color;
+    const destY = pointTable[destIndex].y;
+
+    if (srcFile) {
+      const srcX = srcFile.charCodeAt(0) - 97;
+      const isEnPassant = destIndex === enPassantIndex;
+      return new PawnMove({
+        srcIndex: indexTable[destY - direction][srcX],
+        destIndex,
+        srcPiece: this,
+        destPiece: isEnPassant ? this.opposite : board.get(destIndex),
+        isEnPassant
+      });
+    }
+
+    const srcIndex = destIndex - BOARD_WIDTH * direction;
+
+    if (board.get(srcIndex) === this)
+      return new PawnMove({
+        srcIndex,
+        destIndex,
+        srcPiece: this,
+        destPiece: null,
+        isEnPassant: false
+      });
+
+    if (!board.has(srcIndex) && destY === initialPawnRank + direction * 2) {
+      const srcIndex = destIndex - BOARD_WIDTH * direction * 2;
+
+      if (board.get(srcIndex) === this)
+        return new PawnMove({
+          srcIndex,
+          destIndex,
+          srcPiece: this,
+          destPiece: null,
+          isEnPassant: false
+        });
+    }
+
+    return null;
   }
 
   private *_forwardIndices({ board, srcIndex }: {
