@@ -38,7 +38,7 @@ export default class Pawn extends ShortRangePiece {
     srcFile: string | undefined;
     srcRank: string | undefined;
     position: Position;
-  }) {
+  }): PawnMove | null {
     const { direction, initialPawnRank } = this.color;
     const destY = pointTable[destIndex].y;
 

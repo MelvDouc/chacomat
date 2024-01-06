@@ -135,7 +135,6 @@ export default class ChessGame {
       (move.isCapture() || move instanceof PawnMove) ? 0 : (pos.halfMoveClock + 1),
       pos.fullMoveNumber + Number(!pos.activeColor.isWhite())
     );
-    nextPos.srcMove = move;
     nextPos.prev = pos;
     pos.next.push({ move, position: nextPos });
     this.currentPosition = nextPos;
