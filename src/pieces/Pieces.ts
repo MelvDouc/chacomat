@@ -1,4 +1,4 @@
-import Color from "$src/constants/Color.js";
+import Color from "$src/game/Color.js";
 import Piece from "$src/pieces/Piece.js";
 import Bishop from "$src/pieces/long-range/Bishop.js";
 import Queen from "$src/pieces/long-range/Queen.js";
@@ -6,7 +6,7 @@ import Rook from "$src/pieces/long-range/Rook.js";
 import King from "$src/pieces/short-range/King.js";
 import Knight from "$src/pieces/short-range/Knight.js";
 import Pawn from "$src/pieces/short-range/Pawn.js";
-import type { PieceInitial } from "$src/typings/types.js";
+import type { PieceInitial } from "$src/types.js";
 
 const WHITE_PAWN = new Pawn(1, Color.White, "P");
 const WHITE_KNIGHT = new Knight(2, Color.White, "N");

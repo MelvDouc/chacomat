@@ -69,7 +69,7 @@ describe("A pawn move", () => {
 
   it("should handle en passant", () => {
     const { legalMoves, board } = Position.fromFEN("8/8/8/2pP4/8/8/8/k1K5 w - c6 0 1");
-    const move = legalMoves.find(({ destNotation }) => destNotation === "c6");
+    const move = legalMoves.find(({ destPoint }) => destPoint.notation === "c6");
     assert(move instanceof PawnMove);
     expect(move.isEnPassant()).to.be.true;
 

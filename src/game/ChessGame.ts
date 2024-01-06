@@ -1,9 +1,9 @@
-import IllegalMoveError from "$src/errors/IllegalMoveError.js";
 import Position from "$src/game/Position.js";
 import type Move from "$src/moves/AbstractMove.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
 import RealMove from "$src/moves/RealMove.js";
+import { IllegalMoveError } from "$src/utils/errors.js";
 import { findMove } from "$src/utils/move-helpers.js";
 import { GameResults, PGNParser, type PGNify, type Variation } from "pgnify";
 
@@ -17,7 +17,6 @@ export default class ChessGame {
 
   public readonly info: PGNify.PGNHeaders;
   public currentPosition: Position;
-
 
   public constructor(params?: {
     info: PGNify.PGNHeaders;
@@ -34,10 +33,7 @@ export default class ChessGame {
   }
 
   public get firstPosition() {
-    let position = this.currentPosition;
-    while (position.prev)
-      position = position.prev;
-    return position;
+    return this.currentPosition.root;
   }
 
   public get lastPosition() {
@@ -58,37 +54,12 @@ export default class ChessGame {
     if (
       pos.isStalemate()
       || pos.isInsufficientMaterial()
+      || pos.isTripleRepetition()
       || pos.halfMoveClock >= 50
-      || this.isTripleRepetition()
     )
       return GameResults.DRAW;
 
     return GameResults.NONE;
-  }
-
-  public isTripleRepetition() {
-    const { board } = this.currentPosition;
-    let count = 1;
-    let node = this.currentPosition.prev?.prev;
-
-    while (node && count < 3) {
-      if (node.board.pieceCount !== board.pieceCount)
-        break;
-
-      let isSameBoard = true;
-
-      for (const [index, piece] of node.board.getEntries()) {
-        if (board.get(index) !== piece) {
-          isSameBoard = false;
-          break;
-        }
-      }
-
-      if (isSameBoard) count++;
-      node = node.prev?.prev;
-    }
-
-    return count === 3;
   }
 
   public goBack() {
@@ -125,16 +96,17 @@ export default class ChessGame {
       castlingRights = pos.castlingRights.clone();
 
     move.play(board);
-    if (move instanceof RealMove) castlingRights.update(move);
+    if (move instanceof RealMove)
+      castlingRights.update(move);
 
-    const nextPos = new Position(
+    const nextPos = new Position({
       board,
-      pos.inactiveColor,
+      activeColor: pos.inactiveColor,
       castlingRights,
-      (move instanceof PawnMove && move.isDouble()) ? (move.srcIndex + move.destIndex) / 2 : null,
-      (move.isCapture() || move instanceof PawnMove) ? 0 : (pos.halfMoveClock + 1),
-      pos.fullMoveNumber + Number(!pos.activeColor.isWhite())
-    );
+      enPassantIndex: (move instanceof PawnMove && move.isDouble()) ? (move.srcIndex + move.destIndex) / 2 : null,
+      halfMoveClock: (move.isCapture() || move instanceof PawnMove) ? 0 : (pos.halfMoveClock + 1),
+      fullMoveNumber: pos.fullMoveNumber + Number(!pos.activeColor.isWhite())
+    });
     nextPos.prev = pos;
     pos.next.push({ move, position: nextPos });
     this.currentPosition = nextPos;
@@ -160,22 +132,26 @@ export default class ChessGame {
   }
 
   protected _playMoves({ comment, nodes }: Variation) {
-    if (comment)
-      this.currentPosition.comment = comment;
+    let commentBefore = comment;
 
     for (const { notation, NAG, comment, variations } of nodes) {
       const posBefore = this.currentPosition;
       const move = findMove(posBefore, notation);
 
       if (!move)
-        throw new IllegalMoveError({
-          message: `Illegal move "${notation}".`,
-          position: this.currentPosition,
-          notation
+        throw new IllegalMoveError(`Illegal move: "${notation}".`, {
+          cause: {
+            notation,
+            position: posBefore
+          }
         });
 
+      if (commentBefore) {
+        move.commentBefore = commentBefore;
+        commentBefore = undefined;
+      }
       if (NAG) move.NAG = NAG;
-      if (comment) move.comment = comment;
+      if (comment) move.commentAfter = comment;
       this.playMove(move);
 
       if (variations) {

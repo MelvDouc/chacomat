@@ -1,5 +1,6 @@
-import SquareIndex, { indexTable } from "$src/constants/SquareIndex.js";
+import { SquareIndex } from "$src/game/constants.js";
 import type Board from "$src/game/Board.js";
+import Point from "$src/game/Point.js";
 import AbstractMove from "$src/moves/AbstractMove.js";
 import RealMove from "$src/moves/RealMove.js";
 import type Piece from "$src/pieces/Piece.js";
@@ -34,7 +35,7 @@ export default class PawnMove extends RealMove {
 
   public get capturedPieceIndex() {
     if (this._isEnPassant)
-      return indexTable[this.srcPoint.y][this.destPoint.x];
+      return Point.get(this.srcPoint.y, this.destPoint.x).index;
     return this.destIndex;
   }
 
@@ -48,10 +49,10 @@ export default class PawnMove extends RealMove {
   }
 
   public override getAlgebraicNotation() {
-    let notation = this.destNotation;
+    let notation = this.destPoint.notation;
 
-    if (this.srcPoint.x !== this.destPoint.x)
-      notation = `${this.srcNotation[0]}x${notation}`;
+    if (this.isCapture())
+      notation = `${this.srcPoint.fileNotation}x${notation}`;
 
     if (this._promotedPiece)
       notation = `${notation}=${this.promotionInitial}`;
@@ -107,11 +108,11 @@ export default class PawnMove extends RealMove {
       srcPiece: this.srcPiece,
       destPiece: this.destPiece
     };
-    const gen = this.srcPiece.color.isWhite()
+    const pieces = this.srcPiece.color.isWhite()
       ? Pieces.whitePieces()
       : Pieces.blackPieces();
 
-    for (const piece of gen)
+    for (const piece of pieces)
       if (!piece.isPawn() && !piece.isKing())
         yield (new PawnMove(params)).setPromotedPiece(piece);
   }

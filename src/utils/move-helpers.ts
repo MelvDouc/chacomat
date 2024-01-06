@@ -1,5 +1,5 @@
-import type Color from "$src/constants/Color.js";
-import SquareIndex from "$src/constants/SquareIndex.js";
+import type Color from "$src/game/Color.js";
+import { SquareIndex } from "$src/game/constants.js";
 import type Position from "$src/game/Position.js";
 import CastlingMove from "$src/moves/CastlingMove.js";
 import NullMove from "$src/moves/NullMove.js";
@@ -7,7 +7,7 @@ import PawnMove from "$src/moves/PawnMove.js";
 import PieceMove from "$src/moves/PieceMove.js";
 import Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
-import type { Wing } from "$src/typings/types.js";
+import type { Wing } from "$src/types.js";
 
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dn>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /^(O|0)(-\1){1,2}/;
@@ -55,9 +55,7 @@ export function* castlingMoves({ activeColor, board, castlingRights }: Position)
   if (enemyAttacks.has(board.getKingIndex(activeColor)))
     return;
 
-  const rights = activeColor.isWhite()
-    ? castlingRights.white
-    : castlingRights.black;
+  const rights = castlingRights.get(activeColor);
   let wing: Wing;
 
   for (wing in rights) {

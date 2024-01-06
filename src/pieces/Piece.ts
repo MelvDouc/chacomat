@@ -1,10 +1,10 @@
-import type Color from "$src/constants/Color.js";
-import SquareIndex from "$src/constants/SquareIndex.js";
+import type Color from "$src/game/Color.js";
+import { SquareIndex } from "$src/game/constants.js";
 import type Board from "$src/game/Board.js";
 import type Position from "$src/game/Position.js";
 import PieceMove from "$src/moves/PieceMove.js";
 import type RealMove from "$src/moves/RealMove.js";
-import type { JSONPiece, PieceInitial, PieceOffsets } from "$src/typings/types.js";
+import type { JSONPiece, PieceInitial, PieceOffsets } from "$src/types.js";
 
 export default abstract class Piece {
   public static readonly byInitial: Map<PieceInitial, Piece> = new Map();

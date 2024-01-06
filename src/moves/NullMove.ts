@@ -20,9 +20,5 @@ export default class NullMove extends AbstractMove {
     return NullMove.algebraicNotation;
   }
 
-  public override getFullAlgebraicNotation() {
-    return this.getAlgebraicNotation();
-  }
-
   public override play() { }
 }

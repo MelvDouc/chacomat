@@ -64,7 +64,14 @@ describe("Stalemate", () => {
 
 describe("Insufficient material", () => {
   it("kings only", () => {
-    const pos = new Position(new Board(), Color.White, new CastlingRights(), null, 1, 0);
+    const pos = new Position({
+      board: new Board(),
+      activeColor: Color.White,
+      castlingRights: new CastlingRights(),
+      enPassantIndex: null,
+      halfMoveClock: 0,
+      fullMoveNumber: 1
+    });
     pos.board.set(SquareIndex.e1, Pieces.WHITE_KING);
     pos.board.set(SquareIndex.e8, Pieces.BLACK_KING);
     expect(pos.isInsufficientMaterial()).to.be.true;
@@ -90,10 +97,10 @@ describe("Triple repetition", () => {
       [Result "1/2-1/2"]
       1.Nf3 Nf6 2.Ng1 Ng8 3.Nf3 Nf6 4.Ng1 1/2-1/2
     `);
-    expect(game.isTripleRepetition()).to.be.false;
+    expect(game.currentPosition.isTripleRepetition()).to.be.false;
     const move = game.currentPosition.findMoveByComputerNotation("f6g8")!;
     game.playMove(move);
-    expect(game.isTripleRepetition()).to.be.true;
+    expect(game.currentPosition.isTripleRepetition()).to.be.true;
   });
 });
 

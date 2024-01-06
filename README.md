@@ -13,7 +13,6 @@ const game = new ChessGame();
 const move_e4 = game.currentPosition.findMoveByNotation("e4");
 if (move_e4)
   game.playMove(move_e4);
-
 ```
 
 ### from headers
@@ -103,8 +102,8 @@ Some features of the game can be customized.
 ```javascript
 import { globalConfig as chacomatConfig } from "chacomat";
 
-chacomatConfig.useZerosForCastling = false;
-chacomatConfig.useDoublePlusForCheckmate = true;
+chacomatConfig.checkmateSign = "++";
+chacomatConfig.castlingCharacter = "O";
 ```
 
 ## Variants

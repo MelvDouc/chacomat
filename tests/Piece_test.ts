@@ -1,5 +1,4 @@
-import { BOARD_WIDTH } from "$src/constants/dimensions.js";
-import { Board, Color, Pieces, indexTable } from "$src/index.js";
+import { Board, Color, Pieces, Point } from "$src/index.js";
 import { expect } from "chai";
 import { describe, it } from "node:test";
 
@@ -30,16 +29,12 @@ describe("Pieces", () => {
 
   it("A rook should always attack 14 squares.", () => {
     const board = new Board();
-    const index = indexTable[randomCoord()][randomCoord()];
+    const index = Point.randomPoint().index;
     board.set(index, Pieces.WHITE_ROOK);
     const attacks = Pieces.WHITE_ROOK.getAttacks(index, board);
     expect(attacks).to.have.length(14);
   });
 });
-
-function randomCoord() {
-  return Math.floor(Math.random() * BOARD_WIDTH);
-}
 
 type Piece = import("$src/index.js").Piece;
 type IsPieceMethod = keyof ({

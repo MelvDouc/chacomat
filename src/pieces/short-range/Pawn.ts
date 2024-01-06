@@ -1,8 +1,8 @@
-import Color from "$src/constants/Color.js";
-import SquareIndex, { indexTable, pointTable } from "$src/constants/SquareIndex.js";
-import { BOARD_WIDTH } from "$src/constants/dimensions.js";
-import type Board from "$src/game/Board.js";
+import Color from "$src/game/Color.js";
+import Board from "$src/game/Board.js";
+import Point from "$src/game/Point.js";
 import type Position from "$src/game/Position.js";
+import { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
 import PawnMove from "$src/moves/PawnMove.js";
 import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.js";
 
@@ -40,13 +40,12 @@ export default class Pawn extends ShortRangePiece {
     position: Position;
   }): PawnMove | null {
     const { direction, initialPawnRank } = this.color;
-    const destY = pointTable[destIndex].y;
+    const destY = Point.fromIndex(destIndex).y;
 
     if (srcFile) {
-      const srcX = srcFile.charCodeAt(0) - 97;
       const isEnPassant = destIndex === enPassantIndex;
       return new PawnMove({
-        srcIndex: indexTable[destY - direction][srcX],
+        srcIndex: Point.get(destY - direction, Point.fileNames.indexOf(srcFile)).index,
         destIndex,
         srcPiece: this,
         destPiece: isEnPassant ? this.opposite : board.get(destIndex),
@@ -54,7 +53,7 @@ export default class Pawn extends ShortRangePiece {
       });
     }
 
-    const srcIndex = destIndex - BOARD_WIDTH * direction;
+    const srcIndex = destIndex - BOARD_LENGTH * direction;
 
     if (board.get(srcIndex) === this)
       return new PawnMove({
@@ -66,7 +65,7 @@ export default class Pawn extends ShortRangePiece {
       });
 
     if (!board.has(srcIndex) && destY === initialPawnRank + direction * 2) {
-      const srcIndex = destIndex - BOARD_WIDTH * direction * 2;
+      const srcIndex = destIndex - BOARD_LENGTH * direction * 2;
 
       if (board.get(srcIndex) === this)
         return new PawnMove({
@@ -85,14 +84,14 @@ export default class Pawn extends ShortRangePiece {
     board: Board;
     srcIndex: SquareIndex;
   }) {
-    const { x, y } = pointTable[srcIndex];
-    const destIndex = indexTable[y + this.color.direction][x];
+    const { x, y } = Point.fromIndex(srcIndex);
+    const destIndex = Point.get(y + this.color.direction, x).index;
 
     if (!board.has(destIndex)) {
       yield destIndex;
 
       if (y === this.color.initialPawnRank) {
-        const destIndex = indexTable[y + this.color.direction * 2][x];
+        const destIndex = Point.get(y + this.color.direction * 2, x).index;
 
         if (!board.has(destIndex))
           yield destIndex;

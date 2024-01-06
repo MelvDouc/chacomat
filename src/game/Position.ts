@@ -1,65 +1,68 @@
-import Color from "$src/constants/Color.js";
-import SquareIndex from "$src/constants/SquareIndex.js";
-import { BOARD_WIDTH } from "$src/constants/dimensions.js";
-import InvalidFenError from "$src/errors/InvalidFenError.js";
 import Board from "$src/game/Board.js";
 import CastlingRights from "$src/game/CastlingRights.js";
+import Color from "$src/game/Color.js";
+import Point from "$src/game/Point.js";
+import PositionTree from "$src/game/PositionTree.js";
 import type AbstractMove from "$src/moves/AbstractMove.js";
 import RealMove from "$src/moves/RealMove.js";
+import type { JSONPosition } from "$src/types.js";
+import { InvalidFENError } from "$src/utils/errors.js";
 import { castlingMoves, nonCastlingMoves } from "$src/utils/move-helpers.js";
-import { isInsufficientMaterial } from "$src/utils/insufficient-material.js";
-import type { JSONPosition, PositionTreeNode } from "$src/typings/types.js";
 
 export default class Position {
   public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
 
-  private static readonly _fenRegex = /^[PNBRQKpnbrqk1-8]{1,8}(\/[PNBRQKpnbrqk1-8]{1,8}){7} (w|b) ((?!.*(.).*\1)[KQkq]{1,4}|-) ([a-h][1-8]|-) \d+ \d+$/;
+  private static readonly _fenRegex = /^[PNBRQKpnbrqk1-8]{1,8}(\/[PNBRQKpnbrqk1-8]{1,8}){7} (w|b) ((?!.*(.).*\1)[KQkq]{1,4}|-) ([a-h][36]|-) \d+ \d+$/;
 
   public static isValidFEN(fen: string) {
     return this._fenRegex.test(fen);
   }
 
   /**
-   * @throws {InvalidFenError}
+   * @throws {InvalidFENError}
    */
   public static fromFEN(fen: string) {
     if (!this.isValidFEN(fen))
-      throw new InvalidFenError(fen);
+      throw new InvalidFENError(fen);
 
     const [board, colorAbbrev, castling, enPassant, halfMoveClock, fullMoveNumber] = fen.split(" ");
 
-    return new this(
-      Board.fromString(board),
-      Color.fromAbbreviation(colorAbbrev),
-      CastlingRights.fromString(castling),
-      SquareIndex[enPassant as keyof typeof SquareIndex] ?? null,
-      +halfMoveClock,
-      +fullMoveNumber
-    );
-  }
-  private static _stringifyTree(tree: PositionTreeNode[]) {
-    return tree
-      .map(({ notation, variations }) => {
-        variations?.forEach((v) => notation += ` ( ${this._stringifyTree(v)} )`);
-        return notation;
-      })
-      .join(" ");
+    return new this({
+      board: Board.fromString(board),
+      activeColor: Color.fromAbbreviation(colorAbbrev),
+      castlingRights: CastlingRights.fromString(castling),
+      enPassantIndex: Point.fromNotation(enPassant)?.index ?? null,
+      halfMoveClock: +halfMoveClock,
+      fullMoveNumber: +fullMoveNumber
+    });
   }
 
+  public readonly board: Board;
+  public readonly activeColor: Color;
+  public readonly castlingRights: CastlingRights;
+  public readonly enPassantIndex: number | null;
+  public readonly halfMoveClock: number;
+  public readonly fullMoveNumber: number;
   public prev?: Position;
   public readonly next: { move: AbstractMove; position: Position; }[] = [];
-  public comment?: string;
   private _legalMoves?: RealMove[];
   private _isCheck?: boolean;
 
-  public constructor(
-    public readonly board: Board,
-    public readonly activeColor: Color,
-    public readonly castlingRights: CastlingRights,
-    public readonly enPassantIndex: SquareIndex | null,
-    public readonly halfMoveClock: number,
-    public readonly fullMoveNumber: number
-  ) { }
+  public constructor({ board, activeColor, castlingRights, enPassantIndex, halfMoveClock, fullMoveNumber }: {
+    board: Board;
+    activeColor: Color;
+    castlingRights: CastlingRights;
+    enPassantIndex: number | null;
+    halfMoveClock: number;
+    fullMoveNumber: number;
+  }) {
+    this.board = board;
+    this.activeColor = activeColor;
+    this.castlingRights = castlingRights;
+    this.enPassantIndex = enPassantIndex;
+    this.halfMoveClock = halfMoveClock;
+    this.fullMoveNumber = fullMoveNumber;
+  }
 
   public get inactiveColor() {
     return this.activeColor.opposite;
@@ -71,6 +74,12 @@ export default class Position {
 
   public get legalMovesAsAlgebraicNotation() {
     return this.legalMoves.map((move) => move.getAlgebraicNotation(this));
+  }
+
+  public get root() {
+    let pos: Position = this;
+    while (pos.prev) pos = pos.prev;
+    return pos;
   }
 
   public findMoveByComputerNotation(notation: string) {
@@ -92,7 +101,69 @@ export default class Position {
   }
 
   public isInsufficientMaterial() {
-    return isInsufficientMaterial(this);
+    const { P, N, B, R, Q, p, n, b, r, q } = this.board.materialCount;
+
+    if (P || R || Q || p || r || q)
+      return false;
+
+    const isWhiteToMove = this.activeColor.isWhite();
+    const activeBishops = isWhiteToMove ? B : b;
+    const activeKnights = isWhiteToMove ? N : n;
+    const activeCount = (activeBishops ?? 0) + (activeKnights ?? 0);
+    const inactiveBishops = isWhiteToMove ? b : B;
+    const inactiveKnights = isWhiteToMove ? n : N;
+    const inactiveCount = (inactiveBishops ?? 0) + (inactiveKnights ?? 0);
+
+    if (activeCount === 0)
+      return inactiveCount <= 1;
+
+    if (activeCount > 1)
+      return false;
+
+    if (inactiveCount === 0)
+      return true;
+
+    if (inactiveCount > 1)
+      return false;
+
+    // check if same-colored bishops
+    if (activeKnights || inactiveKnights)
+      return false;
+
+    const entries = this.board.getEntries();
+    const [bishopIndex1] = entries.find(([, piece]) => {
+      return piece.isBishop() && piece.color === this.activeColor;
+    })!;
+    const [bishopIndex2] = entries.find(([, piece]) => {
+      return piece.isBishop() && piece.color === this.inactiveColor;
+    })!;
+
+    return Point.fromIndex(bishopIndex1).isLightSquare() === Point.fromIndex(bishopIndex2).isLightSquare();
+  }
+
+  public isTripleRepetition() {
+    const { board } = this;
+    let count = 1;
+    let node = this.prev?.prev;
+
+    while (node && count < 3) {
+      if (node.board.pieceCount !== board.pieceCount)
+        break;
+
+      let isSameBoard = true;
+
+      for (const [index, piece] of node.board.getEntries()) {
+        if (board.get(index) !== piece) {
+          isSameBoard = false;
+          break;
+        }
+      }
+
+      if (isSameBoard) count++;
+      node = node.prev?.prev;
+    }
+
+    return count === 3;
   }
 
   /**
@@ -106,17 +177,17 @@ export default class Position {
     castlingRights.black.kingSide = this.castlingRights.white.kingSide;
 
     const enPassantIndex = this.enPassantIndex
-      ? this.enPassantIndex - 3 * BOARD_WIDTH * this.activeColor.direction
+      ? Point.fromIndex(this.enPassantIndex).invertY().index
       : null;
 
-    return new Position(
-      this.board.mirror({ vertically: true, swapColors: true }),
-      this.inactiveColor,
+    return new Position({
+      board: this.board.mirror({ vertically: true, swapColors: true }),
+      activeColor: this.inactiveColor,
       castlingRights,
       enPassantIndex,
-      this.halfMoveClock,
-      this.fullMoveNumber
-    );
+      halfMoveClock: this.halfMoveClock,
+      fullMoveNumber: this.fullMoveNumber
+    });
   }
 
   public toFEN() {
@@ -124,18 +195,18 @@ export default class Position {
       this.board.toString(),
       this.activeColor.abbreviation,
       this.castlingRights.toString(),
-      this.enPassantIndex !== null ? SquareIndex[this.enPassantIndex] : "-",
+      this.enPassantIndex !== null ? Point.fromIndex(this.enPassantIndex).notation : "-",
       this.halfMoveClock,
       this.fullMoveNumber
     ].join(" ");
   }
 
   public toMoveString() {
-    return Position._stringifyTree(this.toTree());
+    return PositionTree.stringify(this.toTree());
   }
 
   public toTree() {
-    return this._toTree(true);
+    return PositionTree.fromPosition(this, true, []);
   }
 
   public toJSON(): JSONPosition {
@@ -147,34 +218,5 @@ export default class Position {
       halfMoveClock: this.halfMoveClock,
       fullMoveNumber: this.fullMoveNumber
     };
-  }
-
-  protected _getTreeNode({ move, position }: Position["next"][number], use3Dots: boolean) {
-    let notation = move.getFullAlgebraicNotation(this, position);
-
-    if (this.activeColor.isWhite())
-      notation = `${this.fullMoveNumber}.${notation}`;
-    else if (use3Dots)
-      notation = `${this.fullMoveNumber}...${notation}`;
-
-    return { notation, position } as PositionTreeNode;
-  }
-
-  protected _toTree(use3Dots: boolean): PositionTreeNode[] {
-    if (this.next.length === 0)
-      return [];
-
-    const main = this._getTreeNode(this.next[0], use3Dots);
-
-    if (this.next.length > 1)
-      main.variations = this.next.slice(1).map((item) => {
-        const rest = item.position._toTree(false);
-        rest.unshift(this._getTreeNode(item, true));
-        return rest;
-      });
-
-    const rest = main.position._toTree(this.next.length > 1);
-    rest.unshift(main);
-    return rest;
   }
 }

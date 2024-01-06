@@ -1,4 +1,4 @@
-import { BOARD_WIDTH } from "$src/constants/dimensions.js";
+import { BOARD_LENGTH } from "$src/game/constants.js";
 
 export default class Color {
   public static readonly White = new this("WHITE", 1);
@@ -11,7 +11,7 @@ export default class Color {
       case "b":
         return this.Black;
       default:
-        throw new Error(`Invalid abbreviation "${abbreviation}".`);
+        throw new Error(`Invalid color abbreviation "${abbreviation}".`);
     }
   }
 
@@ -25,7 +25,7 @@ export default class Color {
   }
 
   public get initialPieceRank() {
-    return this.isWhite() ? 0 : (BOARD_WIDTH - 1);
+    return this.isWhite() ? 0 : (BOARD_LENGTH - 1);
   }
 
   public get initialPawnRank() {

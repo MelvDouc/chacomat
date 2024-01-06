@@ -1,11 +1,12 @@
-import Color from "$src/constants/Color.js";
-import SquareIndex from "$src/constants/SquareIndex.js";
-import type Board from "$src/game/Board.js";
+import Board from "$src/game/Board.js";
+import Color from "$src/game/Color.js";
+import Point from "$src/game/Point.js";
+import { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
 import globalConfig from "$src/global-config.js";
 import RealMove from "$src/moves/RealMove.js";
 import type Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
-import type { Wing } from "$src/typings/types.js";
+import type { Wing } from "$src/types.js";
 
 export default class CastlingMove extends RealMove {
   public readonly srcPiece: Piece;
@@ -16,26 +17,20 @@ export default class CastlingMove extends RealMove {
   public readonly rookDestIndex: SquareIndex;
   protected readonly _xOffset: -1 | 1;
 
-  constructor({ color, wing }: {
+  public constructor({ color, wing }: {
     color: Color;
     wing: Wing;
   }) {
     super();
     this._xOffset = (wing === "queenSide") ? -1 : 1;
-    const isWhite = color.isWhite();
-    this.srcPiece = isWhite ? Pieces.WHITE_KING : Pieces.BLACK_KING;
-    this.rook = isWhite ? Pieces.WHITE_ROOK : Pieces.BLACK_ROOK;
-    this.kingSrcIndex = isWhite ? SquareIndex.e1 : SquareIndex.e8;
+    this.srcPiece = color.isWhite() ? Pieces.WHITE_KING : Pieces.BLACK_KING;
+    this.rook = color.isWhite() ? Pieces.WHITE_ROOK : Pieces.BLACK_ROOK;
 
-    if (this.isQueenSide()) {
-      this.kingDestIndex = isWhite ? SquareIndex.c1 : SquareIndex.c8;
-      this.rookSrcIndex = isWhite ? SquareIndex.a1 : SquareIndex.a8;
-      this.rookDestIndex = isWhite ? SquareIndex.d1 : SquareIndex.d8;
-    } else {
-      this.kingDestIndex = isWhite ? SquareIndex.g1 : SquareIndex.g8;
-      this.rookSrcIndex = isWhite ? SquareIndex.h1 : SquareIndex.h8;
-      this.rookDestIndex = isWhite ? SquareIndex.f1 : SquareIndex.f8;
-    }
+    const rank = this.srcPiece.color.initialPieceRank;
+    this.kingSrcIndex = Point.get(rank, 4).index;
+    this.kingDestIndex = this.kingSrcIndex + this._xOffset * 2;
+    this.rookSrcIndex = Point.get(rank, this.isQueenSide() ? 0 : (BOARD_LENGTH - 1)).index;
+    this.rookDestIndex = this.kingDestIndex - this._xOffset;
   }
 
   public override get srcIndex() {
@@ -82,15 +77,15 @@ export default class CastlingMove extends RealMove {
     }
 
     if (this.isQueenSide()) {
-      const bFileSquareIndex = this.srcPiece.color.isWhite() ? SquareIndex.b1 : SquareIndex.b8;
-      return !board.has(bFileSquareIndex);
+      const bFilePoint = Point.get(this.rook.color.initialPieceRank, 1);
+      return !board.has(bFilePoint.index);
     }
 
     return true;
   }
 
   public override getAlgebraicNotation() {
-    const char = globalConfig.useZerosForCastling ? "0" : "O";
+    const char = globalConfig.castlingCharacter;
     return char + `-${char}`.repeat(this.isQueenSide() ? 2 : 1);
   }
 }

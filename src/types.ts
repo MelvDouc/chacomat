@@ -1,5 +1,4 @@
-import type SquareIndex from "$src/constants/SquareIndex.js";
-import type Position from "$src/game/Position.js";
+import type SquareIndex from "$src/game/constants.js";
 import type { PGNify } from "pgnify";
 
 export type NAG = `$${string}`;
@@ -39,16 +38,6 @@ export interface JSONPosition {
   enPassantIndex: SquareIndex | null;
   halfMoveClock: number;
   fullMoveNumber: number;
-}
-
-// ===== ===== ===== ===== =====
-// POSITION TREE
-// ===== ===== ===== ===== =====
-
-export interface PositionTreeNode {
-  notation: string;
-  position: Position;
-  variations?: PositionTreeNode[][];
 }
 
 // ===== ===== ===== ===== =====

@@ -1,12 +1,12 @@
-import type Color from "$src/constants/Color.js";
-import SquareIndex, { indexTable } from "$src/constants/SquareIndex.js";
-import { BOARD_WIDTH } from "$src/constants/dimensions.js";
+import type Color from "$src/game/Color.js";
+import Point from "$src/game/Point.js";
+import { BOARD_LENGTH, SquareIndex } from "$src/game/constants.js";
 import Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
-import type { JSONBoard, PieceInitial } from "$src/typings/types.js";
+import type { JSONBoard, PieceInitial } from "$src/types.js";
 
 export default class Board {
-  static fromString(boardString: string) {
+  public static fromString(boardString: string) {
     return boardString
       .replace(/\d+/g, (count) => "0".repeat(+count))
       .split("/")
@@ -18,7 +18,7 @@ export default class Board {
           const piece = Pieces.fromInitial(char);
           if (!piece) throw new Error(`Invalid board string character: "${char}".`);
 
-          acc.set(indexTable[BOARD_WIDTH - y - 1][x], piece);
+          acc.set(Point.get(y, x).invertY().index, piece);
         }
 
         return acc;
@@ -28,22 +28,22 @@ export default class Board {
   protected readonly _pieces: Map<SquareIndex, Piece> = new Map();
   protected readonly _kingIndices: Map<Color, SquareIndex> = new Map();
 
-  get pieceCount() {
+  public get pieceCount() {
     return this._pieces.size;
   }
 
-  get materialCount() {
+  public get materialCount() {
     return [...this._pieces.values()].reduce((acc, { initial }) => {
       acc[initial] = (acc[initial] ?? 0) + 1;
       return acc;
     }, {} as Record<PieceInitial, number>);
   }
 
-  has(index: SquareIndex) {
+  public has(index: SquareIndex) {
     return this._pieces.has(index);
   }
 
-  equals(board: Board) {
+  public equals(board: Board) {
     if (this.pieceCount !== board.pieceCount)
       return false;
 
@@ -54,7 +54,7 @@ export default class Board {
     return true;
   }
 
-  isKingEnPrise(color: Color) {
+  public isKingEnPrise(color: Color) {
     const kingIndex = this.getKingIndex(color);
 
     for (const [srcIndex, piece] of this._pieces)
@@ -64,15 +64,15 @@ export default class Board {
     return false;
   }
 
-  get(index: SquareIndex) {
+  public get(index: SquareIndex) {
     return this._pieces.get(index) ?? null;
   }
 
-  getKingIndex(color: Color) {
+  public getKingIndex(color: Color) {
     return this._kingIndices.get(color)!;
   }
 
-  getColorAttacks(color: Color) {
+  public getColorAttacks(color: Color) {
     return [...this._pieces].reduce((acc, [srcIndex, piece]) => {
       if (piece.color === color)
         for (const attack of piece.getAttacks(srcIndex, this))
@@ -82,23 +82,23 @@ export default class Board {
     }, new Set<SquareIndex>());
   }
 
-  getEntries(): [SquareIndex, Piece][] {
+  public getEntries(): [SquareIndex, Piece][] {
     return [...this._pieces.entries()];
   }
 
-  set(index: SquareIndex, piece: Piece) {
+  public set(index: SquareIndex, piece: Piece) {
     this._pieces.set(index, piece);
     if (piece.isKing())
       this._kingIndices.set(piece.color, index);
     return this;
   }
 
-  remove(index: SquareIndex) {
+  public remove(index: SquareIndex) {
     this._pieces.delete(index);
     return this;
   }
 
-  clone() {
+  public clone() {
     const clone = new Board();
     this._pieces.forEach((piece, srcIndex) => clone.set(srcIndex, piece));
     return clone;
@@ -107,39 +107,35 @@ export default class Board {
   /**
    * Get a board clone with pieces on opposite ranks or files or with colors reversed.
    */
-  mirror({ vertically, horizontally, swapColors }: {
+  public mirror({ vertically, horizontally, swapColors }: {
     vertically?: boolean;
     horizontally?: boolean;
     swapColors?: boolean;
   }) {
     const clone = new Board();
 
-    for (let y = 0; y < BOARD_WIDTH; y++) {
-      const y2 = vertically ? (BOARD_WIDTH - y - 1) : y;
-
-      for (let x = 0; x < BOARD_WIDTH; x++) {
-        const x2 = horizontally ? (BOARD_WIDTH - x - 1) : x;
-        const index = indexTable[y2][x2];
-        const piece = this.get(index);
-        if (piece)
-          clone.set(index, swapColors ? piece.opposite : piece);
-      }
+    for (const [index, piece] of this._pieces) {
+      const point = Point.fromIndex(index);
+      const mirroredPoint = (vertically && horizontally) ? point.invert()
+        : (vertically) ? point.invertY()
+          : (horizontally) ? point.invertX()
+            : point;
+      clone.set(mirroredPoint.index, swapColors ? piece.opposite : piece);
     }
 
     return clone;
   }
 
-  toString() {
+  public toString() {
     return this.toArray()
-      .map((_, y, arr) => arr[BOARD_WIDTH - y - 1].map((piece) => piece?.initial ?? "0").join(""))
+      .map((_, y, arr) => arr[Point.invert(y)].map((piece) => piece?.initial ?? "0").join(""))
       .join("/")
       .replace(/0+/g, (zeros) => String(zeros.length));
   }
 
-  toArray(): JSONBoard {
-    return Array.from({ length: BOARD_WIDTH }, (_, y) => {
-      return Array.from({ length: BOARD_WIDTH }, (_, x) => {
-        const index = indexTable[y][x];
+  public toArray(): JSONBoard {
+    return Point.all().map((row) => {
+      return row.map(({ index }) => {
         return this.get(index)?.toJSON() ?? null;
       });
     });
@@ -165,7 +161,7 @@ export default class Board {
       this
         .toArray()
         .map((_, y, arr) => {
-          return `${BOARD_WIDTH - y} | ${arr[BOARD_WIDTH - y - 1].map((piece) => piece?.initial ?? ".").join(" ")}`;
+          return `${BOARD_LENGTH - y} | ${arr[Point.invert(y)].map((piece) => piece?.initial ?? ".").join(" ")}`;
         })
         .join("\n")
       + "\n    _ _ _ _ _ _ _ _"

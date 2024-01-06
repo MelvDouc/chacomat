@@ -1,4 +1,4 @@
-import SquareIndex from "$src/constants/SquareIndex.js";
+import { SquareIndex } from "$src/game/constants.js";
 import type Board from "$src/game/Board.js";
 import type Position from "$src/game/Position.js";
 import RealMove from "$src/moves/RealMove.js";
@@ -47,7 +47,7 @@ export default class PieceMove extends RealMove {
       notation += this._exactNotation(position);
 
     if (this.isCapture()) notation += "x";
-    return this.srcPiece.initial.toUpperCase() + notation + this.destNotation;
+    return this.srcPiece.initial.toUpperCase() + notation + this.destPoint.notation;
   }
 
   protected _isAmbiguousWith(move: RealMove) {
@@ -74,11 +74,11 @@ export default class PieceMove extends RealMove {
       return "";
 
     if (!ambiguities.has("x"))
-      return this.srcNotation[0];
+      return this.srcPoint.fileNotation;
 
     if (!ambiguities.has("y"))
-      return this.srcNotation[1];
+      return this.srcPoint.rankNotation;
 
-    return this.srcNotation;
+    return this.srcPoint.notation;
   }
 }

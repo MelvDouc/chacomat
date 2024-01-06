@@ -1,10 +1,11 @@
-import { BOARD_WIDTH } from "$src/constants/dimensions.js";
+import type Color from "$src/game/Color.js";
+import { BOARD_LENGTH } from "$src/game/constants.js";
 import type RealMove from "$src/moves/RealMove.js";
-import type { JSONCastlingRights, Wing } from "$src/typings/types.js";
+import type { JSONCastlingRights, Wing } from "$src/types.js";
 
 export default class CastlingRights {
   public static getWing(file: number): Wing {
-    return file < BOARD_WIDTH / 2 ? "queenSide" : "kingSide";
+    return file < BOARD_LENGTH / 2 ? "queenSide" : "kingSide";
   }
 
   public static fromString(castlingString: string) {
@@ -31,13 +32,16 @@ export default class CastlingRights {
     queenSide: true
   };
 
+  public get(color: Color) {
+    return color.isWhite() ? this.white : this.black;
+  }
+
   public update({ srcPiece, srcPoint, destPoint, destPiece }: RealMove) {
     if (destPiece?.isRook() && destPoint.y === destPiece.color.initialPieceRank) {
-      const rights = destPiece.color.isWhite() ? this.white : this.black;
-      rights[CastlingRights.getWing(destPoint.x)] = false;
+      this.get(destPiece.color)[CastlingRights.getWing(destPoint.x)] = false;
     }
 
-    const rights = srcPiece.color.isWhite() ? this.white : this.black;
+    const rights = this.get(srcPiece.color);
 
     if (srcPiece.isKing()) {
       rights.queenSide = false;
