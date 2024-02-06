@@ -1,4 +1,4 @@
-import type SquareIndex from "$src/game/constants.js";
+import type { SquareIndex } from "$src/game/constants.js";
 import type { PGNify } from "pgnify";
 
 export type NAG = `$${string}`;
