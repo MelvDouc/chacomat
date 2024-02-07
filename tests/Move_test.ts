@@ -14,7 +14,7 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 
 describe("A castling move", () => {
-  const cMove = (color: Color, wing: ChacoMat.Wing) => new CastlingMove({ color, wing });
+  const cMove = (color: Color, wing: ChacoMat.Wing) => new CastlingMove(color, wing);
 
   it("should have the right notation", () => {
     expect(cMove(Color.White, "queenSide").getAlgebraicNotation()).to.equal("0-0-0");
@@ -44,18 +44,13 @@ describe("A piece move", () => {
 
 describe("A pawn move", () => {
   it("should handle promotion", () => {
-    const move = new PawnMove({
-      srcIndex: SquareIndex.a7,
-      destIndex: SquareIndex.a8,
-      srcPiece: Pieces.WHITE_PAWN,
-      destPiece: null,
-      isEnPassant: false
-    });
+    const move = new PawnMove(SquareIndex.a7, SquareIndex.a8, Pieces.WHITE_PAWN, null, false);
     expect(move.isPromotion()).to.be.true;
-    move.setPromotedPiece(Pieces.WHITE_QUEEN);
-    expect(move.getAlgebraicNotation()).to.equal("a8=Q");
-    move.setPromotedPiece(Pieces.WHITE_KNIGHT);
-    expect(move.getAlgebraicNotation()).to.equal("a8=N");
+    const promotions = [...move.promotions()];
+    const p1 = promotions.find(({ promotedPiece }) => promotedPiece?.isQueen());
+    expect(p1?.getAlgebraicNotation()).to.equal("a8=Q");
+    const p2 = promotions.find(({ promotedPiece }) => promotedPiece?.isKnight());
+    expect(p2?.getAlgebraicNotation()).to.equal("a8=N");
   });
 
   it("should handle underpromotion and capture", () => {
@@ -68,10 +63,11 @@ describe("A pawn move", () => {
   });
 
   it("should handle en passant", () => {
-    const { legalMoves, board } = Position.fromFEN("8/8/8/2pP4/8/8/8/k1K5 w - c6 0 1");
-    const move = legalMoves.find(({ destPoint }) => destPoint.notation === "c6");
+    const pos = Position.fromFEN("8/8/8/2pP4/8/8/8/k1K5 w - c6 0 1");
+    const { board } = pos;
+    const move = pos.findMoveByComputerNotation("d5c6");
     assert(move instanceof PawnMove);
-    expect(move.isEnPassant()).to.be.true;
+    expect(move.isEnPassant).to.be.true;
 
     move.play(board);
     expect(board.get(SquareIndex.c6)).to.equal(move.srcPiece);

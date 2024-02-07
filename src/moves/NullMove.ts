@@ -1,24 +1,15 @@
-import AbstractMove from "$src/moves/AbstractMove.js";
+import Move from "$src/moves/Move.js";
 
-export default class NullMove extends AbstractMove {
+export default class NullMove extends Move {
   public static readonly algebraicNotation = "--";
-  public static readonly instance: NullMove = new this();
 
-  private constructor() {
-    super();
+  public play() { }
+
+  public getComputerNotation() {
+    return "0";
   }
-
-  public override equals(move: AbstractMove): boolean {
-    return move === this;
-  }
-
-  public override isCapture() {
-    return false;
-  }
-
-  public override getAlgebraicNotation() {
+  public getAlgebraicNotation() {
     return NullMove.algebraicNotation;
   }
 
-  public override play() { }
 }

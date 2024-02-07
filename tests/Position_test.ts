@@ -103,16 +103,3 @@ describe("Triple repetition", () => {
     expect(game.currentPosition.isTripleRepetition()).to.be.true;
   });
 });
-
-describe("Other", () => {
-  it("reversed position", () => {
-    const pos = Position.fromFEN("rn1qkbnr/1bppp1pp/8/pP6/4PpP1/8/PP1PKP1P/RNBQ1BNR b kq g3 0 6");
-    const { inactiveColor, castlingRights, board, enPassantIndex, halfMoveClock, fullMoveNumber } = pos.reverse();
-    expect(pos.activeColor).to.equal(inactiveColor);
-    expect(castlingRights.toString()).to.equal(pos.castlingRights.toString().toUpperCase());
-    expect(board.pieceCount).to.equal(pos.board.pieceCount);
-    expect(enPassantIndex).to.equal(SquareIndex.g6);
-    expect(halfMoveClock).to.equal(pos.halfMoveClock);
-    expect(fullMoveNumber).to.equal(pos.fullMoveNumber);
-  });
-});

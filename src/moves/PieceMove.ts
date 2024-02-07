@@ -1,28 +1,9 @@
-import { SquareIndex } from "$src/game/constants.js";
 import type Board from "$src/game/Board.js";
 import type Position from "$src/game/Position.js";
-import RealMove from "$src/moves/RealMove.js";
-import Piece from "$src/pieces/Piece.js";
+import type Move from "$src/moves/Move.js";
+import RegularMove from "$src/moves/RegularMove.js";
 
-export default class PieceMove extends RealMove {
-  public readonly srcIndex: SquareIndex;
-  public readonly destIndex: SquareIndex;
-  public readonly srcPiece: Piece;
-  public readonly destPiece: Piece | null;
-
-  constructor({ srcIndex, destIndex, srcPiece, destPiece }: {
-    srcIndex: SquareIndex;
-    destIndex: SquareIndex;
-    srcPiece: Piece;
-    destPiece: Piece | null;
-  }) {
-    super();
-    this.srcIndex = srcIndex;
-    this.destIndex = destIndex;
-    this.srcPiece = srcPiece;
-    this.destPiece = destPiece;
-  }
-
+export default class PieceMove extends RegularMove {
   public play(board: Board) {
     board
       .remove(this.srcIndex)
@@ -30,36 +11,32 @@ export default class PieceMove extends RealMove {
   }
 
   public undo(board: Board) {
-    this.destPiece
-      ? board.set(this.destIndex, this.destPiece)
+    this.capturedPiece
+      ? board.set(this.destIndex, this.capturedPiece)
       : board.remove(this.destIndex);
     board.set(this.srcIndex, this.srcPiece);
-  }
-
-  public isCapture() {
-    return this.destPiece !== null;
   }
 
   public override getAlgebraicNotation(position: Position) {
     let notation = "";
 
     if (!this.srcPiece.isKing())
-      notation += this._exactNotation(position);
+      notation += this._exactNotation(position.legalMoves);
 
     if (this.isCapture()) notation += "x";
     return this.srcPiece.initial.toUpperCase() + notation + this.destPoint.notation;
   }
 
-  protected _isAmbiguousWith(move: RealMove) {
-    return move.destIndex === this.destIndex
-      && move.srcPiece === this.srcPiece;
-  }
-
-  protected _exactNotation(position: Position) {
+  private _exactNotation(legalMoves: Move[]) {
     const ambiguities = new Set<"x" | "y" | "">();
 
-    for (const move of position.legalMoves) {
-      if (this.srcIndex === move.srcIndex || !this._isAmbiguousWith(move))
+    for (const move of legalMoves) {
+      if (
+        !(move instanceof PieceMove)
+        || this.srcIndex === move.srcIndex
+        || this.srcPiece !== move.srcPiece
+        || move.destIndex !== this.destIndex
+      )
         continue;
 
       if (this.srcPoint.x === move.srcPoint.x)

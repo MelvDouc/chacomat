@@ -3,7 +3,7 @@ import { SquareIndex } from "$src/game/constants.js";
 import type Board from "$src/game/Board.js";
 import type Position from "$src/game/Position.js";
 import PieceMove from "$src/moves/PieceMove.js";
-import type RealMove from "$src/moves/RealMove.js";
+import type RegularMove from "$src/moves/RegularMove.js";
 import type { JSONPiece, PieceInitial, PieceOffsets } from "$src/types.js";
 
 export default abstract class Piece {
@@ -42,19 +42,14 @@ export default abstract class Piece {
     srcFile: string | undefined;
     srcRank: string | undefined;
     position: Position;
-  }): RealMove | null {
+  }): RegularMove | null {
     for (const attack of this.getAttacks(destIndex, position.board)) {
       if (
         position.board.get(attack) === this
         && (!srcFile || SquareIndex[attack][0] === srcFile)
         && (!srcRank || SquareIndex[attack][1] === srcRank)
       )
-        return new PieceMove({
-          srcIndex: attack,
-          destIndex,
-          srcPiece: this,
-          destPiece: position.board.get(destIndex)
-        });
+        return new PieceMove(attack, destIndex, this, position.board.get(destIndex));
     }
 
     return null;

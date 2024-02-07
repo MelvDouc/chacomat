@@ -9,9 +9,12 @@ export type { default as PositionTree } from "$src/game/PositionTree.js";
 export { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
 
 // Moves
-export { default as Move } from "$src/moves/AbstractMove.js";
+export type { default as Move } from "$src/moves/Move.js";
+export type { default as RegularMove } from "$src/moves/RegularMove.js";
+export { default as CastlingMove } from "$src/moves/CastlingMove.js";
 export { default as NullMove } from "$src/moves/NullMove.js";
-export { default as RealMove } from "$src/moves/RealMove.js";
+export { default as PawnMove } from "$src/moves/PawnMove.js";
+export { default as PieceMove } from "$src/moves/PieceMove.js";
 
 // Pieces
 export { default as Piece } from "$src/pieces/Piece.js";

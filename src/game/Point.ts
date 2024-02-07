@@ -12,7 +12,9 @@ export default class Point {
   }
 
   public static fromNotation(notation: string) {
-    return this.indexTable[SquareIndex[notation as keyof typeof SquareIndex]];
+    if (notation in SquareIndex)
+      return this.indexTable[SquareIndex[notation as keyof typeof SquareIndex]];
+    return null;
   }
 
   public static all() {
@@ -67,7 +69,7 @@ export default class Point {
   }
 
   public isLightSquare() {
-    return (this.y % 2 === 0) === (this.x % 2 === 0);
+    return this.y % 2 === this.x % 2;
   }
 
   public invertY() {

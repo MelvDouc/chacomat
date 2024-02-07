@@ -2,9 +2,8 @@ import Board from "$src/game/Board.js";
 import CastlingRights from "$src/game/CastlingRights.js";
 import Color from "$src/game/Color.js";
 import Point from "$src/game/Point.js";
-import PositionTree from "$src/game/PositionTree.js";
-import type AbstractMove from "$src/moves/AbstractMove.js";
-import RealMove from "$src/moves/RealMove.js";
+import { getTree, stringify as stringifyTree } from "$src/game/PositionTree.js";
+import type Move from "$src/moves/Move.js";
 import type { JSONPosition } from "$src/types.js";
 import { InvalidFENError } from "$src/utils/errors.js";
 import { castlingMoves, nonCastlingMoves } from "$src/utils/move-helpers.js";
@@ -44,8 +43,8 @@ export default class Position {
   public readonly halfMoveClock: number;
   public readonly fullMoveNumber: number;
   public prev?: Position;
-  public readonly next: { move: AbstractMove; position: Position; }[] = [];
-  private _legalMoves?: RealMove[];
+  public readonly next: { move: Move; position: Position; }[] = [];
+  private _legalMoves?: Move[];
   private _isCheck?: boolean;
 
   public constructor({ board, activeColor, castlingRights, enPassantIndex, halfMoveClock, fullMoveNumber }: {
@@ -166,30 +165,6 @@ export default class Position {
     return count === 3;
   }
 
-  /**
-   * Clone this position with colors reversed and its board mirrored vertically.
-   */
-  public reverse() {
-    const castlingRights = new CastlingRights();
-    castlingRights.white.queenSide = this.castlingRights.black.queenSide;
-    castlingRights.white.kingSide = this.castlingRights.black.kingSide;
-    castlingRights.black.queenSide = this.castlingRights.white.queenSide;
-    castlingRights.black.kingSide = this.castlingRights.white.kingSide;
-
-    const enPassantIndex = this.enPassantIndex
-      ? Point.fromIndex(this.enPassantIndex).invertY().index
-      : null;
-
-    return new Position({
-      board: this.board.mirror({ vertically: true, swapColors: true }),
-      activeColor: this.inactiveColor,
-      castlingRights,
-      enPassantIndex,
-      halfMoveClock: this.halfMoveClock,
-      fullMoveNumber: this.fullMoveNumber
-    });
-  }
-
   public toFEN() {
     return [
       this.board.toString(),
@@ -202,11 +177,11 @@ export default class Position {
   }
 
   public toMoveString() {
-    return PositionTree.stringify(this.toTree());
+    return stringifyTree(this.toTree());
   }
 
   public toTree() {
-    return PositionTree.fromPosition(this, true, []);
+    return getTree(this, true, []);
   }
 
   public toJSON(): JSONPosition {

@@ -1,8 +1,9 @@
 import Position from "$src/game/Position.js";
-import type Move from "$src/moves/AbstractMove.js";
+import type Move from "$src/moves/Move.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
-import RealMove from "$src/moves/RealMove.js";
+import CastlingMove from "$src/moves/CastlingMove.js";
+import RegularMove from "$src/moves/RegularMove.js";
 import { IllegalMoveError } from "$src/utils/errors.js";
 import { findMove } from "$src/utils/move-helpers.js";
 import { GameResults, PGNParser, type PGNify, type Variation } from "pgnify";
@@ -94,17 +95,28 @@ export default class ChessGame {
     const pos = this.currentPosition,
       board = pos.board.clone(),
       castlingRights = pos.castlingRights.clone();
+    const isRegularMove = move instanceof RegularMove;
 
     move.play(board);
-    if (move instanceof RealMove)
-      castlingRights.update(move);
+
+    if (isRegularMove) {
+      castlingRights.update(move.srcPiece, move.capturedPiece, move.srcPoint, move.destPoint);
+    } else if (move instanceof CastlingMove) {
+      const rights = castlingRights.get(move.king.color);
+      rights.kingSide = false;
+      rights.queenSide = false;
+    }
 
     const nextPos = new Position({
       board,
       activeColor: pos.inactiveColor,
       castlingRights,
-      enPassantIndex: (move instanceof PawnMove && move.isDouble()) ? (move.srcIndex + move.destIndex) / 2 : null,
-      halfMoveClock: (move.isCapture() || move instanceof PawnMove) ? 0 : (pos.halfMoveClock + 1),
+      enPassantIndex: move instanceof PawnMove && move.isDouble()
+        ? (move.srcIndex + move.destIndex) / 2
+        : null,
+      halfMoveClock: isRegularMove && (move.isCapture() || move.srcPiece.isPawn())
+        ? 0
+        : (pos.halfMoveClock + 1),
       fullMoveNumber: pos.fullMoveNumber + Number(!pos.activeColor.isWhite())
     });
     nextPos.prev = pos;
@@ -114,7 +126,7 @@ export default class ChessGame {
   }
 
   public playNullMove() {
-    return this.playMove(NullMove.instance);
+    return this.playMove(new NullMove());
   }
 
   public getInfoAsString() {
@@ -150,8 +162,10 @@ export default class ChessGame {
         move.commentBefore = commentBefore;
         commentBefore = undefined;
       }
+
       if (NAG) move.NAG = NAG;
       if (comment) move.commentAfter = comment;
+
       this.playMove(move);
 
       if (variations) {

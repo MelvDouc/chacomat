@@ -44,37 +44,25 @@ export default class Pawn extends ShortRangePiece {
 
     if (srcFile) {
       const isEnPassant = destIndex === enPassantIndex;
-      return new PawnMove({
-        srcIndex: Point.get(destY - direction, Point.fileNames.indexOf(srcFile)).index,
+      return new PawnMove(
+        Point.get(destY - direction, Point.fileNames.indexOf(srcFile)).index,
         destIndex,
-        srcPiece: this,
-        destPiece: isEnPassant ? this.opposite : board.get(destIndex),
+        this,
+        isEnPassant ? this.opposite : board.get(destIndex),
         isEnPassant
-      });
+      );
     }
 
     const srcIndex = destIndex - BOARD_LENGTH * direction;
 
     if (board.get(srcIndex) === this)
-      return new PawnMove({
-        srcIndex,
-        destIndex,
-        srcPiece: this,
-        destPiece: null,
-        isEnPassant: false
-      });
+      return new PawnMove(srcIndex, destIndex, this, null, false);
 
     if (!board.has(srcIndex) && destY === initialPawnRank + direction * 2) {
       const srcIndex = destIndex - BOARD_LENGTH * direction * 2;
 
       if (board.get(srcIndex) === this)
-        return new PawnMove({
-          srcIndex,
-          destIndex,
-          srcPiece: this,
-          destPiece: null,
-          isEnPassant: false
-        });
+        return new PawnMove(srcIndex, destIndex, this, null, false);
     }
 
     return null;

@@ -1,6 +1,7 @@
 import type Color from "$src/game/Color.js";
 import { BOARD_LENGTH } from "$src/game/constants.js";
-import type RealMove from "$src/moves/RealMove.js";
+import type Point from "$src/game/Point.js";
+import type Piece from "$src/pieces/Piece.js";
 import type { JSONCastlingRights, Wing } from "$src/types.js";
 
 export default class CastlingRights {
@@ -36,9 +37,9 @@ export default class CastlingRights {
     return color.isWhite() ? this.white : this.black;
   }
 
-  public update({ srcPiece, srcPoint, destPoint, destPiece }: RealMove) {
-    if (destPiece?.isRook() && destPoint.y === destPiece.color.initialPieceRank) {
-      this.get(destPiece.color)[CastlingRights.getWing(destPoint.x)] = false;
+  public update(srcPiece: Piece, capturedPiece: Piece | null, srcPoint: Point, destPoint: Point) {
+    if (capturedPiece?.isRook() && destPoint.y === capturedPiece.color.initialPieceRank) {
+      this.get(capturedPiece.color)[CastlingRights.getWing(destPoint.x)] = false;
     }
 
     const rights = this.get(srcPiece.color);

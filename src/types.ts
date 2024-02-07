@@ -40,6 +40,8 @@ export interface JSONPosition {
   fullMoveNumber: number;
 }
 
+export type { PositionTree } from "$src/game/PositionTree.js";
+
 // ===== ===== ===== ===== =====
 // PGN PARSER
 // ===== ===== ===== ===== =====

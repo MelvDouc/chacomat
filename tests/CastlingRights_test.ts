@@ -31,8 +31,8 @@ describe("CastlingRights", () => {
     const move = game.currentPosition.findMoveByComputerNotation("e1g1")!;
     game.playMove(move);
     const { castlingRights } = game.currentPosition;
-    expect(castlingRights.white.queenSide).to.be.false;
-    expect(castlingRights.white.kingSide).to.be.false;
+    expect(castlingRights.white.queenSide, "Can go long.").to.be.false;
+    expect(castlingRights.white.kingSide, "Can go short.").to.be.false;
   });
 
   it("should be unset on rook move and enemy rook capture", () => {

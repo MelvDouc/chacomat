@@ -1,6 +1,6 @@
 import type Color from "$src/game/Color.js";
-import { SquareIndex } from "$src/game/constants.js";
 import type Position from "$src/game/Position.js";
+import { SquareIndex } from "$src/game/constants.js";
 import CastlingMove from "$src/moves/CastlingMove.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
@@ -12,9 +12,7 @@ import type { Wing } from "$src/types.js";
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dn>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /^(O|0)(-\1){1,2}/;
 
-export function* nonCastlingMoves(position: Position) {
-  const { board, activeColor, enPassantIndex } = position;
-
+export function* nonCastlingMoves({ board, activeColor, enPassantIndex }: Position) {
   for (const [srcIndex, piece] of board.getEntries()) {
     if (piece.color !== activeColor)
       continue;
@@ -22,19 +20,14 @@ export function* nonCastlingMoves(position: Position) {
     for (const destIndex of piece.getPseudoLegalDestIndices({ board, srcIndex, enPassantIndex })) {
       const isEnPassant = destIndex === enPassantIndex;
       const move = piece.isPawn()
-        ? new PawnMove({
+        ? new PawnMove(
           srcIndex,
           destIndex,
-          srcPiece: piece,
-          destPiece: isEnPassant ? piece.opposite : board.get(destIndex),
+          piece,
+          isEnPassant ? piece.opposite : board.get(destIndex),
           isEnPassant
-        })
-        : new PieceMove({
-          srcIndex,
-          destIndex,
-          srcPiece: piece,
-          destPiece: board.get(destIndex)
-        });
+        )
+        : new PieceMove(srcIndex, destIndex, piece, board.get(destIndex));
       move.play(board);
       const isLegal = !board.isKingEnPrise(activeColor);
       move.undo(board);
@@ -60,7 +53,7 @@ export function* castlingMoves({ activeColor, board, castlingRights }: Position)
 
   for (wing in rights) {
     if (!rights[wing]) continue;
-    const move = new CastlingMove({ color: activeColor, wing });
+    const move = new CastlingMove(activeColor, wing);
     if (move.isLegal(board, enemyAttacks))
       yield move;
   }
@@ -69,17 +62,14 @@ export function* castlingMoves({ activeColor, board, castlingRights }: Position)
 export function findMove(position: Position, notation: string) {
   if (castlingRegex.test(notation)) {
     const isQueenSide = notation[3] === "-";
-    return new CastlingMove({
-      color: position.activeColor,
-      wing: isQueenSide ? "queenSide" : "kingSide"
-    });
+    return new CastlingMove(position.activeColor, isQueenSide ? "queenSide" : "kingSide");
   }
 
   const matchArr = notation.match(moveRegex);
 
   if (!matchArr) {
     return (notation === NullMove.algebraicNotation)
-      ? NullMove.instance
+      ? new NullMove()
       : null;
   }
 
@@ -96,7 +86,7 @@ export function findMove(position: Position, notation: string) {
 
   if (move && pr) {
     const promotedPiece = getPieceFromWhiteInitial(pr, position.activeColor) as Piece;
-    move.setPromotedPiece(promotedPiece);
+    return move.asPromotion(promotedPiece);
   }
 
   return move;
@@ -104,9 +94,9 @@ export function findMove(position: Position, notation: string) {
 
 function getPieceFromWhiteInitial(initial: string, color: Color) {
   const piece = Pieces.fromInitial(initial);
-  return (piece && !color.isWhite())
-    ? piece.opposite
-    : piece;
+  if (piece)
+    return color.isWhite() ? piece : piece.opposite;
+  return null;
 }
 
 type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dn" | "pr";

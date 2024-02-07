@@ -1,80 +1,47 @@
 import Board from "$src/game/Board.js";
-import Color from "$src/game/Color.js";
+import type Color from "$src/game/Color.js";
 import Point from "$src/game/Point.js";
-import { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
+import { BOARD_LENGTH } from "$src/game/constants.js";
 import globalConfig from "$src/global-config.js";
-import RealMove from "$src/moves/RealMove.js";
+import Move from "$src/moves/Move.js";
 import type Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
 import type { Wing } from "$src/types.js";
 
-export default class CastlingMove extends RealMove {
-  public readonly srcPiece: Piece;
+export default class CastlingMove extends Move {
+  public readonly king: Piece;
   public readonly rook: Piece;
-  public readonly kingSrcIndex: SquareIndex;
-  public readonly kingDestIndex: SquareIndex;
-  public readonly rookSrcIndex: SquareIndex;
-  public readonly rookDestIndex: SquareIndex;
-  protected readonly _xOffset: -1 | 1;
+  public readonly kingSrcIndex: number;
+  public readonly kingDestIndex: number;
+  public readonly rookSrcIndex: number;
+  public readonly rookDestIndex: number;
+  private readonly _xOffset: -1 | 1;
 
-  public constructor({ color, wing }: {
-    color: Color;
-    wing: Wing;
-  }) {
+  public constructor(color: Color, wing: Wing) {
     super();
     this._xOffset = (wing === "queenSide") ? -1 : 1;
-    this.srcPiece = color.isWhite() ? Pieces.WHITE_KING : Pieces.BLACK_KING;
+    this.king = color.isWhite() ? Pieces.WHITE_KING : Pieces.BLACK_KING;
     this.rook = color.isWhite() ? Pieces.WHITE_ROOK : Pieces.BLACK_ROOK;
 
-    const rank = this.srcPiece.color.initialPieceRank;
+    const rank = this.king.color.initialPieceRank;
     this.kingSrcIndex = Point.get(rank, 4).index;
     this.kingDestIndex = this.kingSrcIndex + this._xOffset * 2;
-    this.rookSrcIndex = Point.get(rank, this.isQueenSide() ? 0 : (BOARD_LENGTH - 1)).index;
+    this.rookSrcIndex = Point.get(rank, this.isQueenSide() ? 0 : BOARD_LENGTH - 1).index;
     this.rookDestIndex = this.kingDestIndex - this._xOffset;
-  }
-
-  public override get srcIndex() {
-    return this.kingSrcIndex;
-  }
-
-  public override get destIndex() {
-    return this.kingDestIndex;
-  }
-
-  public override get destPiece() {
-    return null;
-  }
-
-  public override play(board: Board) {
-    board
-      .remove(this.kingSrcIndex)
-      .remove(this.rookSrcIndex)
-      .set(this.kingDestIndex, this.srcPiece)
-      .set(this.rookDestIndex, this.rook);
-  }
-
-  public override undo(board: Board) {
-    board
-      .remove(this.kingDestIndex)
-      .remove(this.rookDestIndex)
-      .set(this.kingSrcIndex, this.srcPiece)
-      .set(this.rookSrcIndex, this.rook);
-  }
-
-  public override isCapture() {
-    return false;
   }
 
   public isQueenSide() {
     return this._xOffset === -1;
   }
 
-  public isLegal(board: Board, enemyAttacks: Set<SquareIndex>) {
-    for (let i = 1; i <= 2; i++) {
-      const kingIndex = this.kingSrcIndex + this._xOffset * i;
-      if (board.has(kingIndex) || enemyAttacks.has(kingIndex))
+  public isLegal(board: Board, enemyAttacks: Set<number>) {
+    let destIndex = this.kingSrcIndex;
+
+    do {
+      destIndex += this._xOffset;
+      if (board.has(destIndex) || enemyAttacks.has(destIndex))
         return false;
-    }
+    } while (destIndex !== this.kingDestIndex);
 
     if (this.isQueenSide()) {
       const bFilePoint = Point.get(this.rook.color.initialPieceRank, 1);
@@ -84,8 +51,22 @@ export default class CastlingMove extends RealMove {
     return true;
   }
 
-  public override getAlgebraicNotation() {
-    const char = globalConfig.castlingCharacter;
-    return char + `-${char}`.repeat(this.isQueenSide() ? 2 : 1);
+  public play(board: Board) {
+    board
+      .remove(this.kingSrcIndex)
+      .remove(this.rookSrcIndex)
+      .set(this.kingDestIndex, this.king)
+      .set(this.rookDestIndex, this.rook);
+  }
+
+  public getComputerNotation() {
+    return Point.fromIndex(this.kingSrcIndex).notation + Point.fromIndex(this.kingDestIndex).notation;
+  }
+
+  public getAlgebraicNotation() {
+    const o = globalConfig.castlingCharacter;
+    return this.isQueenSide()
+      ? `${o}-${o}-${o}`
+      : `${o}-${o}`;
   }
 }
