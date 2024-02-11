@@ -1,18 +1,18 @@
 import Position from "$src/game/Position.js";
+import CastlingMove from "$src/moves/CastlingMove.js";
 import type Move from "$src/moves/Move.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
-import CastlingMove from "$src/moves/CastlingMove.js";
 import RegularMove from "$src/moves/RegularMove.js";
 import { IllegalMoveError } from "$src/utils/errors.js";
 import { findMove } from "$src/utils/move-helpers.js";
-import { GameResults, PGNParser, type PGNify, type Variation } from "pgnify";
+import { GameResults, getTokens, parse, parseMoves, type PGNify } from "pgnify";
 
 export default class ChessGame {
   public static fromPGN(pgn: string) {
-    const parser = new PGNParser(pgn);
-    const game = new this({ info: parser.headers });
-    game._playMoves(parser.mainLine);
+    const { headers, mainLine } = parse(pgn);
+    const game = new this({ info: headers });
+    game._playMoves(mainLine);
     return game;
   }
 
@@ -28,8 +28,7 @@ export default class ChessGame {
     this.currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
 
     if (params?.moveString) {
-      const parser = new PGNParser(params.moveString);
-      this._playMoves(parser.mainLine);
+      this._playMoves(parseMoves(getTokens(params.moveString)));
     }
   }
 
@@ -143,7 +142,7 @@ export default class ChessGame {
     return this.toPGN();
   }
 
-  protected _playMoves({ comment, nodes }: Variation) {
+  protected _playMoves({ comment, nodes }: PGNify.Variation) {
     let commentBefore = comment;
 
     for (const { notation, NAG, comment, variations } of nodes) {

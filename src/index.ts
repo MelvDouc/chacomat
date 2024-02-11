@@ -5,7 +5,6 @@ export { default as CastlingRights } from "$src/game/CastlingRights.js";
 export { default as ChessGame } from "$src/game/ChessGame.js";
 export { default as Point } from "$src/game/Point.js";
 export { default as Position } from "$src/game/Position.js";
-export type { default as PositionTree } from "$src/game/PositionTree.js";
 export { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
 
 // Moves
