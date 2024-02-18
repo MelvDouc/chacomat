@@ -12,7 +12,7 @@ import type { Wing } from "$src/types.js";
 const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dn>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
 const castlingRegex = /^(O|0)(-\1){1,2}/;
 
-export function* nonCastlingMoves({ board, activeColor, enPassantIndex }: Position) {
+export function* regularMoves({ board, activeColor, enPassantIndex }: Position) {
   for (const [srcIndex, piece] of board.getEntries()) {
     if (piece.color !== activeColor)
       continue;
@@ -74,22 +74,21 @@ export function findMove(position: Position, notation: string) {
   }
 
   const { pi, sf, sr, dn, pr } = matchArr.groups as HalfMoveGroups;
+  const piece = getPieceFromWhiteInitial(pi ?? "P", position.activeColor) as Piece;
   const destIndex = SquareIndex[dn as keyof typeof SquareIndex];
 
-  if (pi) {
-    const piece = getPieceFromWhiteInitial(pi, position.activeColor) as Piece;
-    return piece.getMoveTo({ destIndex, position, srcFile: sf, srcRank: sr });
+  for (const move of regularMoves(position)) {
+    if (
+      move.srcPiece === piece
+      && move.destIndex === destIndex
+      && (!sr || sr === move.srcPoint.rankNotation)
+      && (!sf || sf === move.srcPoint.fileNotation)
+      && (!pr || move instanceof PawnMove && move.promotionInitial === pr)
+    )
+      return move;
   }
 
-  const pawn = position.activeColor.isWhite() ? Pieces.WHITE_PAWN : Pieces.BLACK_PAWN;
-  const move = pawn.getMoveTo({ destIndex, position, srcFile: sf, srcRank: sr });
-
-  if (move && pr) {
-    const promotedPiece = getPieceFromWhiteInitial(pr, position.activeColor) as Piece;
-    return move.asPromotion(promotedPiece);
-  }
-
-  return move;
+  return null;
 }
 
 function getPieceFromWhiteInitial(initial: string, color: Color) {

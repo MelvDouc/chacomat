@@ -1,4 +1,4 @@
-import { ChessGame, Position } from "$src/index.js";
+import { ChessGame, Pieces, Position, SquareIndex } from "$src/index.js";
 import { expect } from "chai";
 import { readFile } from "node:fs/promises";
 import { describe, it } from "node:test";
@@ -38,6 +38,14 @@ describe("A chess game", () => {
     game.playMove(m2);
     game.playNullMove();
     expect(game.toPGN()).to.include("1.-- e5 2.e4 --");
+  });
+
+  it("should account for pins", () => {
+    const game = ChessGame.fromPGN(`[Result "*"] 1.d4 e6 2.Nc3 Bb4 3.e3 d5 4.Ne2 *`);
+    const { board } = game.currentPosition;
+    expect(board.has(SquareIndex.g1)).to.be.false;
+    expect(board.get(SquareIndex.e2)).to.equal(Pieces.WHITE_KNIGHT);
+    expect(board.get(SquareIndex.c3)).to.equal(Pieces.WHITE_KNIGHT);
   });
 });
 

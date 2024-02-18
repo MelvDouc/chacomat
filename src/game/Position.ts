@@ -6,7 +6,7 @@ import { getTree, stringify as stringifyTree } from "$src/game/PositionTree.js";
 import type Move from "$src/moves/Move.js";
 import type { JSONPosition } from "$src/types.js";
 import { InvalidFENError } from "$src/utils/errors.js";
-import { castlingMoves, nonCastlingMoves } from "$src/utils/move-helpers.js";
+import { castlingMoves, regularMoves } from "$src/utils/move-helpers.js";
 
 export default class Position {
   public static readonly START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kqKQ - 0 1";
@@ -68,7 +68,7 @@ export default class Position {
   }
 
   public get legalMoves() {
-    return this._legalMoves ??= [...nonCastlingMoves(this), ...castlingMoves(this)];
+    return this._legalMoves ??= [...regularMoves(this), ...castlingMoves(this)];
   }
 
   public get legalMovesAsAlgebraicNotation() {

@@ -127,8 +127,12 @@ export default class Board {
   }
 
   public toString() {
-    return this.toArray()
-      .map((_, y, arr) => arr[Point.invert(y)].map((piece) => piece?.initial ?? "0").join(""))
+    return Point.all()
+      .map((row) => {
+        return row
+          .map((point) => this.get(point.invertY().index)?.initial ?? "0")
+          .join("");
+      })
       .join("/")
       .replace(/0+/g, (zeros) => String(zeros.length));
   }
