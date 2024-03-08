@@ -4,15 +4,14 @@ import type Move from "$src/moves/Move.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
 import RegularMove from "$src/moves/RegularMove.js";
-import { IllegalMoveError } from "$src/utils/errors.js";
-import { findMove } from "$src/utils/move-helpers.js";
+import { playMoves } from "$src/utils/move-helpers.js";
 import { GameResults, getTokens, parse, parseMoves, type PGNify } from "pgnify";
 
 export default class ChessGame {
   public static fromPGN(pgn: string) {
     const { headers, mainLine } = parse(pgn);
     const game = new this({ info: headers });
-    game._playMoves(mainLine);
+    playMoves(game, mainLine);
     return game;
   }
 
@@ -28,7 +27,7 @@ export default class ChessGame {
     this.currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
 
     if (params?.moveString) {
-      this._playMoves(parseMoves(getTokens(params.moveString)));
+      playMoves(this, parseMoves(getTokens(params.moveString)).mainLine);
     }
   }
 
@@ -140,41 +139,5 @@ export default class ChessGame {
 
   public toString() {
     return this.toPGN();
-  }
-
-  protected _playMoves({ comment, nodes }: PGNify.Variation) {
-    let commentBefore = comment;
-
-    for (const { notation, NAG, comment, variations } of nodes) {
-      const posBefore = this.currentPosition;
-      const move = findMove(posBefore, notation);
-
-      if (!move)
-        throw new IllegalMoveError(`Illegal move: "${notation}".`, {
-          cause: {
-            notation,
-            position: posBefore
-          }
-        });
-
-      if (commentBefore) {
-        move.commentBefore = commentBefore;
-        commentBefore = undefined;
-      }
-
-      if (NAG) move.NAG = NAG;
-      if (comment) move.commentAfter = comment;
-
-      this.playMove(move);
-
-      if (variations) {
-        const posAfter = this.currentPosition;
-        variations.forEach((variation) => {
-          this.currentPosition = posBefore;
-          this._playMoves(variation);
-        });
-        this.currentPosition = posAfter;
-      }
-    }
   }
 }

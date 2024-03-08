@@ -1,3 +1,4 @@
+import type ChessGame from "$src/game/ChessGame.js";
 import type Color from "$src/game/Color.js";
 import type Position from "$src/game/Position.js";
 import { SquareIndex } from "$src/game/constants.js";
@@ -8,9 +9,8 @@ import PieceMove from "$src/moves/PieceMove.js";
 import Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
 import type { Wing } from "$src/types.js";
-
-const moveRegex = /^(?<pi>[BKNQR])?(?<sf>[a-h])?(?<sr>[1-8])?x?(?<dn>[a-h][1-8])(=?(?<pr>[QRBN]))?/;
-const castlingRegex = /^(O|0)(-\1){1,2}/;
+import { IllegalMoveError } from "$src/utils/errors.js";
+import type { PGNify } from "pgnify";
 
 export function* regularMoves({ board, activeColor, enPassantIndex }: Position) {
   for (const [srcIndex, piece] of board.getEntries()) {
@@ -59,33 +59,81 @@ export function* castlingMoves({ activeColor, board, castlingRights }: Position)
   }
 }
 
-export function findMove(position: Position, notation: string) {
-  if (castlingRegex.test(notation)) {
-    const isQueenSide = notation[3] === "-";
-    return new CastlingMove(position.activeColor, isQueenSide ? "queenSide" : "kingSide");
+export function playMoves(game: ChessGame, line: PGNify.Variation) {
+  for (const { commentAfter, commentBefore, detail, NAG, variations } of line) {
+    const posBefore = game.currentPosition;
+    const move = findMove(game.currentPosition, detail);
+
+    if (!move) {
+      throw new IllegalMoveError("Illegal move.", {
+        cause: {
+          detail,
+          position: posBefore
+        }
+      });
+    }
+
+    commentBefore && (move.commentBefore = commentBefore);
+    commentAfter && (move.commentAfter = commentAfter);
+    NAG && (move.NAG = NAG);
+    game.playMove(move);
+    const posAfter = game.currentPosition;
+
+    if (variations) {
+      variations.forEach((variation) => {
+        game.currentPosition = posBefore;
+        playMoves(game, variation);
+      });
+      game.currentPosition = posAfter;
+    }
   }
+}
 
-  const matchArr = notation.match(moveRegex);
+function findMove(position: Position, detail: PGNify.MoveDetail) {
+  const { activeColor, board } = position;
 
-  if (!matchArr) {
-    return (notation === NullMove.algebraicNotation)
-      ? new NullMove()
-      : null;
-  }
-
-  const { pi, sf, sr, dn, pr } = matchArr.groups as HalfMoveGroups;
-  const piece = getPieceFromWhiteInitial(pi ?? "P", position.activeColor) as Piece;
-  const destIndex = SquareIndex[dn as keyof typeof SquareIndex];
-
-  for (const move of regularMoves(position)) {
-    if (
-      move.srcPiece === piece
-      && move.destIndex === destIndex
-      && (!sr || sr === move.srcPoint.rankNotation)
-      && (!sf || sf === move.srcPoint.fileNotation)
-      && (!pr || move instanceof PawnMove && move.promotionInitial === pr)
-    )
-      return move;
+  switch (detail.type) {
+    case "piece-move": {
+      const piece = getPieceFromWhiteInitial(detail.pieceInitial, activeColor) as Piece;
+      const destIndex = SquareIndex[detail.destSquare as keyof typeof SquareIndex];
+      for (const srcIndex of piece.getAttacks(destIndex, board)) {
+        if (
+          board.get(srcIndex) === piece
+          && (!detail.srcFile || SquareIndex[srcIndex][0] === detail.srcFile)
+          && (!detail.srcRank || SquareIndex[srcIndex][1] === detail.srcRank)
+        ) {
+          const move = new PieceMove(srcIndex, destIndex, piece, board.get(destIndex));
+          move.play(board);
+          const isLegal = !board.isKingEnPrise(activeColor);
+          move.undo(board);
+          if (isLegal)
+            return move;
+        }
+      }
+      break;
+    }
+    case "pawn-move": {
+      for (const move of regularMoves(position)) {
+        if (
+          move instanceof PawnMove
+          && move.destPoint.notation === detail.destSquare
+          && move.srcPoint.fileNotation === detail.srcFile
+          && (!detail.promotionInitial || move.promotionInitial === detail.promotionInitial)
+        )
+          return move;
+      }
+      break;
+    }
+    case "castling": {
+      for (const move of castlingMoves(position))
+        if (move.isQueenSide() === detail.isQueenSide)
+          return move;
+      break;
+    }
+    case "unknown": {
+      if (detail.notation === NullMove.algebraicNotation)
+        return new NullMove();
+    }
   }
 
   return null;
@@ -97,6 +145,3 @@ function getPieceFromWhiteInitial(initial: string, color: Color) {
     return color.isWhite() ? piece : piece.opposite;
   return null;
 }
-
-type HalfMoveGroupKey = "pi" | "sf" | "sr" | "dn" | "pr";
-type HalfMoveGroups = { [K in HalfMoveGroupKey]?: string };

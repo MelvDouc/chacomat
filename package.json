@@ -34,7 +34,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "pgnify": "^1.1.1"
+    "pgnify": "^1.1.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
