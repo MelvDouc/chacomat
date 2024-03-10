@@ -1,5 +1,5 @@
-import Point from "$src/game/Point.js";
-import { SquareIndex } from "$src/game/constants.js";
+import { BOARD_LENGTH, SquareIndex } from "$src/game/constants.js";
+import { indexToPointTable, isSafe } from "$src/game/Point.js";
 import Piece from "$src/pieces/Piece.js";
 import type { PieceOffsets } from "$src/types.js";
 
@@ -12,13 +12,13 @@ export default abstract class ShortRangePiece extends Piece {
 
   public override getAttacks(srcIndex: SquareIndex) {
     if (!this._attacksMemo.has(srcIndex)) {
-      const srcPoint = Point.fromIndex(srcIndex);
+      const { x: srcX, y: srcY } = indexToPointTable[srcIndex];
       const attacks = this._offsets.x.reduce((acc, xOffset, i) => {
-        const destX = srcPoint.x + xOffset;
-        const destY = srcPoint.y + this._offsets.y[i];
+        const destX = srcX + xOffset;
+        const destY = srcY + this._offsets.y[i];
 
-        if (Point.isSafe(destY) && Point.isSafe(destX))
-          acc.push(Point.get(destY, destX).index);
+        if (isSafe(destY) && isSafe(destX))
+          acc.push(destY * BOARD_LENGTH + destX);
 
         return acc;
       }, [] as SquareIndex[]);

@@ -1,7 +1,6 @@
 import Board from "$src/game/Board.js";
 import type Color from "$src/game/Color.js";
-import Point from "$src/game/Point.js";
-import { BOARD_LENGTH } from "$src/game/constants.js";
+import { BOARD_LENGTH, SquareIndex } from "$src/game/constants.js";
 import globalConfig from "$src/global-config.js";
 import Move from "$src/moves/Move.js";
 import type Piece from "$src/pieces/Piece.js";
@@ -24,9 +23,9 @@ export default class CastlingMove extends Move {
     this.rook = color.isWhite() ? Pieces.WHITE_ROOK : Pieces.BLACK_ROOK;
 
     const rank = this.king.color.initialPieceRank;
-    this.kingSrcIndex = Point.get(rank, 4).index;
+    this.kingSrcIndex = rank * BOARD_LENGTH + 4;
     this.kingDestIndex = this.kingSrcIndex + this._xOffset * 2;
-    this.rookSrcIndex = Point.get(rank, this.isQueenSide() ? 0 : BOARD_LENGTH - 1).index;
+    this.rookSrcIndex = rank * BOARD_LENGTH + (this.isQueenSide() ? 0 : BOARD_LENGTH - 1);
     this.rookDestIndex = this.kingDestIndex - this._xOffset;
   }
 
@@ -44,8 +43,8 @@ export default class CastlingMove extends Move {
     } while (destIndex !== this.kingDestIndex);
 
     if (this.isQueenSide()) {
-      const bFilePoint = Point.get(this.rook.color.initialPieceRank, 1);
-      return !board.has(bFilePoint.index);
+      const bFileIndex = this.rook.color.initialPieceRank * BOARD_LENGTH + 1;
+      return !board.has(bFileIndex);
     }
 
     return true;
@@ -60,7 +59,7 @@ export default class CastlingMove extends Move {
   }
 
   public getComputerNotation() {
-    return Point.fromIndex(this.kingSrcIndex).notation + Point.fromIndex(this.kingDestIndex).notation;
+    return SquareIndex[this.kingSrcIndex] + SquareIndex[this.kingDestIndex];
   }
 
   public getAlgebraicNotation() {

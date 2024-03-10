@@ -1,5 +1,5 @@
 import type Board from "$src/game/Board.js";
-import Point from "$src/game/Point.js";
+import { indexToPointTable } from "$src/game/Point.js";
 import Move from "$src/moves/Move.js";
 import type Piece from "$src/pieces/Piece.js";
 
@@ -26,11 +26,11 @@ export default abstract class RegularMove extends Move {
   }
 
   public get srcPoint() {
-    return Point.fromIndex(this.srcIndex);
+    return indexToPointTable[this.srcIndex];
   }
 
   public get destPoint() {
-    return Point.fromIndex(this.destIndex);
+    return indexToPointTable[this.destIndex];
   }
 
   public isCapture() {

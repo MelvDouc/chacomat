@@ -1,8 +1,9 @@
 import Board from "$src/game/Board.js";
 import CastlingRights from "$src/game/CastlingRights.js";
 import Color from "$src/game/Color.js";
-import Point from "$src/game/Point.js";
+import { indexToPointTable } from "$src/game/Point.js";
 import { getTree, stringify as stringifyTree } from "$src/game/PositionTree.js";
+import { SquareIndex } from "$src/game/constants.js";
 import type Move from "$src/moves/Move.js";
 import type { JSONPosition } from "$src/types.js";
 import { InvalidFENError } from "$src/utils/errors.js";
@@ -30,7 +31,7 @@ export default class Position {
       board: Board.fromString(board),
       activeColor: Color.fromAbbreviation(colorAbbrev),
       castlingRights: CastlingRights.fromString(castling),
-      enPassantIndex: Point.fromNotation(enPassant)?.index ?? null,
+      enPassantIndex: SquareIndex[enPassant as keyof typeof SquareIndex] ?? null,
       halfMoveClock: +halfMoveClock,
       fullMoveNumber: +fullMoveNumber
     });
@@ -137,7 +138,7 @@ export default class Position {
       return piece.isBishop() && piece.color === this.inactiveColor;
     })!;
 
-    return Point.fromIndex(bishopIndex1).isLightSquare() === Point.fromIndex(bishopIndex2).isLightSquare();
+    return indexToPointTable[bishopIndex1].isLightSquare() === indexToPointTable[bishopIndex2].isLightSquare();
   }
 
   public isTripleRepetition() {
@@ -170,7 +171,7 @@ export default class Position {
       this.board.toString(),
       this.activeColor.abbreviation,
       this.castlingRights.toString(),
-      this.enPassantIndex !== null ? Point.fromIndex(this.enPassantIndex).notation : "-",
+      this.enPassantIndex !== null ? SquareIndex[this.enPassantIndex] : "-",
       this.halfMoveClock,
       this.fullMoveNumber
     ].join(" ");

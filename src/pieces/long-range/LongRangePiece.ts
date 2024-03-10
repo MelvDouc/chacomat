@@ -1,17 +1,18 @@
-import { SquareIndex } from "$src/game/constants.js";
 import Board from "$src/game/Board.js";
-import Point from "$src/game/Point.js";
+import { indexToPointTable, isSafe } from "$src/game/Point.js";
+import { BOARD_LENGTH, SquareIndex } from "$src/game/constants.js";
 import Piece from "$src/pieces/Piece.js";
 
 export default abstract class LongRangePiece extends Piece {
   public override getAttacks(srcIndex: SquareIndex, board: Board) {
-    const srcPoint = Point.fromIndex(srcIndex);
-    return this._offsets.x.reduce((acc, xOffset, i) => {
-      let destX = srcPoint.x + xOffset;
-      let destY = srcPoint.y + this._offsets.y[i];
+    const { x: srcX, y: srcY } = indexToPointTable[srcIndex];
 
-      while (Point.isSafe(destY) && Point.isSafe(destX)) {
-        const destIndex = Point.get(destY, destX).index;
+    return this._offsets.x.reduce((acc, xOffset, i) => {
+      let destX = srcX + xOffset;
+      let destY = srcY + this._offsets.y[i];
+
+      while (isSafe(destY) && isSafe(destX)) {
+        const destIndex = destY * BOARD_LENGTH + destX;
         acc.push(destIndex);
         if (board.has(destIndex)) break;
         destX += xOffset;

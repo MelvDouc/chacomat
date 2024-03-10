@@ -1,4 +1,4 @@
-import { Board, Color, Pieces, Point } from "$src/index.js";
+import { Board, Color, Pieces, pointTable, randomCoordinate } from "$src/index.js";
 import { expect } from "chai";
 import { describe, it } from "node:test";
 
@@ -29,7 +29,7 @@ describe("Pieces", () => {
 
   it("A rook should always attack 14 squares.", () => {
     const board = new Board();
-    const index = Point.randomPoint().index;
+    const { index } = pointTable[randomCoordinate()][randomCoordinate()];
     board.set(index, Pieces.WHITE_ROOK);
     const attacks = Pieces.WHITE_ROOK.getAttacks(index, board);
     expect(attacks).to.have.length(14);

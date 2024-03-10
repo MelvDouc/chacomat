@@ -9,8 +9,13 @@ export type BlackPieceInitial = Lowercase<WhitePieceInitial>;
 export type PieceInitial = WhitePieceInitial | BlackPieceInitial;
 
 export interface Point {
-  x: number;
-  y: number;
+  readonly x: number;
+  readonly y: number;
+  get index(): number;
+  get notation(): string;
+  get rankNotation(): string;
+  get fileNotation(): string;
+  isLightSquare(): boolean;
 }
 
 export interface PieceOffsets {

@@ -3,7 +3,13 @@ export { default as Color } from "$src/game/Color.js";
 export { default as Board } from "$src/game/Board.js";
 export { default as CastlingRights } from "$src/game/CastlingRights.js";
 export { default as ChessGame } from "$src/game/ChessGame.js";
-export { default as Point } from "$src/game/Point.js";
+export {
+  indexToPointTable,
+  pointTable,
+  invertCoordinate,
+  isSafe,
+  randomCoordinate,
+} from "$src/game/Point.js";
 export { default as Position } from "$src/game/Position.js";
 export { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
 

@@ -1,86 +1,45 @@
 import { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
-
-export default class Point {
-  public static readonly fileNames = ["a", "b", "c", "d", "e", "f", "g", "h"];
-
-  public static get(y: number, x: number) {
-    return this.table[y][x];
-  }
-
-  public static fromIndex(index: number) {
-    return this.indexTable[index];
-  }
-
-  public static fromNotation(notation: string) {
-    if (notation in SquareIndex)
-      return this.indexTable[SquareIndex[notation as keyof typeof SquareIndex]];
-    return null;
-  }
-
-  public static all() {
-    return this.table;
-  }
-
-  public static invert(coordinate: number) {
-    return BOARD_LENGTH - coordinate - 1;
-  }
-
-  public static randomCoordinate() {
-    return Math.floor(Math.random() * BOARD_LENGTH);
-  }
-
-  public static randomPoint() {
-    return this.get(this.randomCoordinate(), this.randomCoordinate());
-  }
-
-  public static isSafe(coordinate: number) {
-    return coordinate >= 0 && coordinate < BOARD_LENGTH;
-  }
-
-  private static readonly table = Array.from({ length: BOARD_LENGTH }, (_, y) => {
-    return Array.from({ length: BOARD_LENGTH }, (_, x) => {
-      return new this(y, x);
+import type { Point } from "$src/types.js";
+export const pointTable: Point[][] = Array.from({ length: BOARD_LENGTH }, (_, y) => {
+  return Array.from({ length: BOARD_LENGTH }, (_, x) => {
+    const index = y * BOARD_LENGTH + x;
+    const notation = SquareIndex[index];
+    return Object.freeze({
+      x,
+      y,
+      get index() {
+        return index;
+      },
+      get notation() {
+        return notation;
+      },
+      get rankNotation() {
+        return notation[1];
+      },
+      get fileNotation() {
+        return notation[0];
+      },
+      isLightSquare() {
+        return y % 2 === x % 2;
+      }
     });
   });
+});
 
-  private static readonly indexTable = Array.from({ length: BOARD_LENGTH * BOARD_LENGTH }, (_, i) => {
-    return this.table[Math.floor(i / BOARD_LENGTH)][i % BOARD_LENGTH];
-  });
+export const indexToPointTable = Array.from({ length: BOARD_LENGTH * BOARD_LENGTH }, (_, i) => {
+  const y = Math.floor(i / BOARD_LENGTH);
+  const x = i % BOARD_LENGTH;
+  return pointTable[y][x];
+});
 
-  private constructor(
-    public readonly y: number,
-    public readonly x: number
-  ) { }
+export function invertCoordinate(coordinate: number) {
+  return BOARD_LENGTH - coordinate - 1;
+}
 
-  public get index() {
-    return this.y * BOARD_LENGTH + this.x;
-  }
+export function randomCoordinate() {
+  return Math.floor(Math.random() * BOARD_LENGTH);
+}
 
-  public get rankNotation() {
-    return this.notation[1];
-  }
-
-  public get fileNotation() {
-    return this.notation[0];
-  }
-
-  public get notation() {
-    return SquareIndex[this.index];
-  }
-
-  public isLightSquare() {
-    return this.y % 2 === this.x % 2;
-  }
-
-  public invertY() {
-    return Point.get(Point.invert(this.y), this.x);
-  }
-
-  public invertX() {
-    return Point.get(this.y, Point.invert(this.x));
-  }
-
-  public invert() {
-    return Point.get(Point.invert(this.y), Point.invert(this.x));
-  }
+export function isSafe(coordinate: number) {
+  return coordinate >= 0 && coordinate < BOARD_LENGTH;
 }

@@ -98,7 +98,7 @@ export default class ChessGame {
     move.play(board);
 
     if (isRegularMove) {
-      castlingRights.update(move.srcPiece, move.capturedPiece, move.srcPoint, move.destPoint);
+      castlingRights.update(move);
     } else if (move instanceof CastlingMove) {
       const rights = castlingRights.get(move.king.color);
       rights.kingSide = false;

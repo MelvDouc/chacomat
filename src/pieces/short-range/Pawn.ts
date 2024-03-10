@@ -1,7 +1,6 @@
 import Board from "$src/game/Board.js";
 import Color from "$src/game/Color.js";
-import Point from "$src/game/Point.js";
-import { SquareIndex } from "$src/game/constants.js";
+import { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
 import ShortRangePiece from "$src/pieces/short-range/ShortRangePiece.js";
 
 export default class Pawn extends ShortRangePiece {
@@ -35,17 +34,16 @@ export default class Pawn extends ShortRangePiece {
     board: Board;
     srcIndex: SquareIndex;
   }) {
-    const { x, y } = Point.fromIndex(srcIndex);
-    const destIndex = Point.get(y + this.color.direction, x).index;
+    const destIndex = srcIndex + this.color.direction * BOARD_LENGTH;
 
     if (!board.has(destIndex)) {
       yield destIndex;
 
-      if (y === this.color.initialPawnRank) {
-        const destIndex = Point.get(y + this.color.direction * 2, x).index;
+      if (Math.floor(srcIndex / BOARD_LENGTH) === this.color.initialPawnRank) {
+        const destIndex2 = destIndex + this.color.direction * BOARD_LENGTH;
 
-        if (!board.has(destIndex))
-          yield destIndex;
+        if (!board.has(destIndex2))
+          yield destIndex2;
       }
     }
   }

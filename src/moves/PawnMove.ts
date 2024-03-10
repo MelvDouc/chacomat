@@ -1,8 +1,8 @@
 import type Board from "$src/game/Board.js";
+import { BOARD_LENGTH } from "$src/game/constants.js";
 import RegularMove from "$src/moves/RegularMove.js";
 import type Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
-import Point from "$src/game/Point.js";
 
 export default class PawnMove extends RegularMove {
   public readonly isEnPassant: boolean;
@@ -27,7 +27,7 @@ export default class PawnMove extends RegularMove {
 
   public get capturedPieceIndex() {
     return this.isEnPassant
-      ? Point.get(this.srcPoint.y, this.destPoint.x).index
+      ? this.srcPoint.y * BOARD_LENGTH + this.destPoint.x
       : this.destIndex;
   }
 

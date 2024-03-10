@@ -1,5 +1,5 @@
 import type Color from "$src/game/Color.js";
-import Point from "$src/game/Point.js";
+import { indexToPointTable, invertCoordinate, pointTable } from "$src/game/Point.js";
 import { BOARD_LENGTH, SquareIndex } from "$src/game/constants.js";
 import Piece from "$src/pieces/Piece.js";
 import Pieces from "$src/pieces/Pieces.js";
@@ -18,7 +18,7 @@ export default class Board {
           const piece = Pieces.fromInitial(char);
           if (!piece) throw new Error(`Invalid board string character: "${char}".`);
 
-          acc.set(Point.get(y, x).invertY().index, piece);
+          acc.set(invertCoordinate(y) * BOARD_LENGTH + x, piece);
         }
 
         return acc;
@@ -115,22 +115,25 @@ export default class Board {
     const clone = new Board();
 
     for (const [index, piece] of this._pieces) {
-      const point = Point.fromIndex(index);
-      const mirroredPoint = (vertically && horizontally) ? point.invert()
-        : (vertically) ? point.invertY()
-          : (horizontally) ? point.invertX()
-            : point;
-      clone.set(mirroredPoint.index, swapColors ? piece.opposite : piece);
+      let { x, y } = indexToPointTable[index];
+      if (vertically)
+        y = invertCoordinate(y);
+      if (horizontally)
+        x = invertCoordinate(x);
+      clone.set(y * BOARD_LENGTH + x, swapColors ? piece.opposite : piece);
     }
 
     return clone;
   }
 
   public toString() {
-    return Point.all()
+    return pointTable
       .map((row) => {
         return row
-          .map((point) => this.get(point.invertY().index)?.initial ?? "0")
+          .map(({ x, y }) => {
+            const index = invertCoordinate(y) * BOARD_LENGTH + x;
+            return this.get(index)?.initial ?? "0";
+          })
           .join("");
       })
       .join("/")
@@ -138,7 +141,7 @@ export default class Board {
   }
 
   public toArray(): JSONBoard {
-    return Point.all().map((row) => {
+    return pointTable.map((row) => {
       return row.map(({ index }) => {
         return this.get(index)?.toJSON() ?? null;
       });
@@ -165,7 +168,8 @@ export default class Board {
       this
         .toArray()
         .map((_, y, arr) => {
-          return `${BOARD_LENGTH - y} | ${arr[Point.invert(y)].map((piece) => piece?.initial ?? ".").join(" ")}`;
+          const row = arr[invertCoordinate(y)].map((piece) => piece?.initial ?? ".").join(" ");
+          return `${BOARD_LENGTH - y} | ${row}`;
         })
         .join("\n")
       + "\n    _ _ _ _ _ _ _ _"
