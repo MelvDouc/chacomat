@@ -60,14 +60,14 @@ export function* castlingMoves({ activeColor, board, castlingRights }: Position)
 }
 
 export function playMoves(game: ChessGame, line: PGNify.Variation) {
-  for (const { commentAfter, commentBefore, detail, NAG, variations } of line) {
+  for (const { commentAfter, commentBefore, move: m, NAG, variations } of line) {
     const posBefore = game.currentPosition;
-    const move = findMove(game.currentPosition, detail);
+    const move = findMove(game.currentPosition, m);
 
     if (!move) {
       throw new IllegalMoveError("Illegal move.", {
         cause: {
-          detail,
+          move: m,
           position: posBefore
         }
       });
@@ -89,13 +89,13 @@ export function playMoves(game: ChessGame, line: PGNify.Variation) {
   }
 }
 
-function findMove(position: Position, detail: PGNify.MoveDetail) {
+function findMove(position: Position, detail: PGNify.Move) {
   const { activeColor, board } = position;
 
   switch (detail.type) {
     case "piece-move": {
       const piece = getPieceFromWhiteInitial(detail.pieceInitial, activeColor) as Piece;
-      const destIndex = SquareIndex[detail.destSquare as keyof typeof SquareIndex];
+      const destIndex = SquareIndex[detail.destNotation as keyof typeof SquareIndex];
       for (const srcIndex of piece.getAttacks(destIndex, board)) {
         if (
           board.get(srcIndex) === piece
@@ -116,7 +116,7 @@ function findMove(position: Position, detail: PGNify.MoveDetail) {
       for (const move of regularMoves(position)) {
         if (
           move instanceof PawnMove
-          && move.destPoint.notation === detail.destSquare
+          && move.destPoint.notation === detail.destNotation
           && move.srcPoint.fileNotation === detail.srcFile
           && (!detail.promotionInitial || move.promotionInitial === detail.promotionInitial)
         )

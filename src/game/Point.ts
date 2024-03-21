@@ -1,5 +1,6 @@
 import { SquareIndex, BOARD_LENGTH } from "$src/game/constants.js";
 import type { Point } from "$src/types.js";
+
 export const pointTable: Point[][] = Array.from({ length: BOARD_LENGTH }, (_, y) => {
   return Array.from({ length: BOARD_LENGTH }, (_, x) => {
     const index = y * BOARD_LENGTH + x;
