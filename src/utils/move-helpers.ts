@@ -1,7 +1,7 @@
 import type ChessGame from "$src/game/ChessGame.js";
 import type Color from "$src/game/Color.js";
+import { indexToPointTable, pointTable } from "$src/game/Point.js";
 import type Position from "$src/game/Position.js";
-import { SquareIndex } from "$src/game/constants.js";
 import CastlingMove from "$src/moves/CastlingMove.js";
 import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
@@ -95,12 +95,12 @@ function findMove(position: Position, detail: PGNify.Move) {
   switch (detail.type) {
     case "piece-move": {
       const piece = getPieceFromWhiteInitial(detail.pieceInitial, activeColor) as Piece;
-      const destIndex = SquareIndex[detail.destNotation as keyof typeof SquareIndex];
+      const destIndex = pointTable[detail.destY][detail.destX].index;
       for (const srcIndex of piece.getAttacks(destIndex, board)) {
         if (
           board.get(srcIndex) === piece
-          && (!detail.srcFile || SquareIndex[srcIndex][0] === detail.srcFile)
-          && (!detail.srcRank || SquareIndex[srcIndex][1] === detail.srcRank)
+          && (detail.srcX == null || indexToPointTable[srcIndex].x === detail.srcX)
+          && (detail.srcY == null || indexToPointTable[srcIndex].y === detail.srcY)
         ) {
           const move = new PieceMove(srcIndex, destIndex, piece, board.get(destIndex));
           move.play(board);
@@ -113,11 +113,12 @@ function findMove(position: Position, detail: PGNify.Move) {
       break;
     }
     case "pawn-move": {
+      const destIndex = pointTable[detail.destY][detail.destX].index;
       for (const move of regularMoves(position)) {
         if (
           move instanceof PawnMove
-          && move.destPoint.notation === detail.destNotation
-          && move.srcPoint.fileNotation === detail.srcFile
+          && move.destIndex === destIndex
+          && move.srcPoint.x === detail.srcX
           && (!detail.promotionInitial || move.promotionInitial === detail.promotionInitial)
         )
           return move;

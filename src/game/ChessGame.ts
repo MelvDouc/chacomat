@@ -5,7 +5,7 @@ import NullMove from "$src/moves/NullMove.js";
 import PawnMove from "$src/moves/PawnMove.js";
 import RegularMove from "$src/moves/RegularMove.js";
 import { playMoves } from "$src/utils/move-helpers.js";
-import { GameResults, getTokens, parse, parseMoves, type PGNify } from "pgnify";
+import { GameResults, parse, parseMoveString, type PGNify } from "pgnify";
 
 export default class ChessGame {
   public static fromPGN(pgn: string) {
@@ -27,7 +27,7 @@ export default class ChessGame {
     this.currentPosition = Position.fromFEN(this.info.FEN ?? Position.START_FEN);
 
     if (params?.moveString) {
-      playMoves(this, parseMoves(getTokens(params.moveString)).mainLine);
+      playMoves(this, parseMoveString(params.moveString).mainLine);
     }
   }
 
